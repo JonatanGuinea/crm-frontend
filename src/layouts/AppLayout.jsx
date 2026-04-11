@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import GlobalSearch from '../components/GlobalSearch'
 
 const navItems = [
   { to: '/', label: 'Dashboard', exact: true },
@@ -60,9 +61,14 @@ export default function AppLayout() {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 overflow-auto">
-        <Outlet />
-      </main>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <header className="h-14 bg-white border-b border-gray-200 flex items-center px-6 shrink-0">
+          <GlobalSearch />
+        </header>
+        <main className="flex-1 overflow-auto">
+          <Outlet />
+        </main>
+      </div>
     </div>
   )
 }
