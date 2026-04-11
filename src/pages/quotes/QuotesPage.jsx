@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getQuotes, deleteQuote } from '../../api/quotes'
+import { getQuotes, deleteQuote, createInvoiceFromQuote } from '../../api/quotes'
+import QuoteModal from './QuoteModal'
 
 const STATUS_LABELS = {
   draft: 'Borrador', sent: 'Enviado', approved: 'Aprobado',
@@ -15,6 +16,8 @@ const STATUS_COLORS = {
 export default function QuotesPage() {
   const qc = useQueryClient()
   const [statusFilter, setStatusFilter] = useState('')
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editingId, setEditingId] = useState(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['quotes', statusFilter],
@@ -26,10 +29,26 @@ export default function QuotesPage() {
     onSuccess: () => qc.invalidateQueries(['quotes'])
   })
 
+  const toInvoice = useMutation({
+    mutationFn: (id) => createInvoiceFromQuote(id, {}),
+    onSuccess: () => {
+      qc.invalidateQueries(['invoices'])
+      alert('Factura creada correctamente')
+    },
+    onError: (err) => alert(err.response?.data?.error || 'Error al generar factura')
+  })
+
+  function openCreate() { setEditingId(null); setModalOpen(true) }
+  function openEdit(id) { setEditingId(id); setModalOpen(true) }
+  function handleSaved() { setModalOpen(false); qc.invalidateQueries(['quotes']) }
+
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-gray-900">Presupuestos</h2>
+        <button onClick={openCreate} className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors">
+          + Nuevo presupuesto
+        </button>
       </div>
 
       <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
@@ -60,7 +79,12 @@ export default function QuotesPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-gray-600">${Number(q.total).toLocaleString('es-AR')}</td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-right space-x-2">
+                    <button onClick={() => openEdit(q.id)} className="text-indigo-600 hover:underline text-xs">Editar</button>
+                    {q.status === 'approved' && (
+                      <button onClick={() => { if (confirm('¿Generar factura desde este presupuesto?')) toInvoice.mutate(q.id) }}
+                        className="text-green-600 hover:underline text-xs">Facturar</button>
+                    )}
                     {q.status === 'draft' && (
                       <button onClick={() => { if (confirm('¿Eliminar?')) del.mutate(q.id) }} className="text-red-500 hover:underline text-xs">Eliminar</button>
                     )}
@@ -74,8 +98,17 @@ export default function QuotesPage() {
           </table>
         </div>
       )}
+
       {data?.pagination && (
         <p className="mt-3 text-xs text-gray-400">{data.pagination.total} presupuesto(s)</p>
+      )}
+
+      {modalOpen && (
+        <QuoteModal
+          quoteId={editingId}
+          onClose={() => setModalOpen(false)}
+          onSaved={handleSaved}
+        />
       )}
     </div>
   )

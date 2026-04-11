@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getInvoices, deleteInvoice } from '../../api/invoices'
+import InvoiceModal from './InvoiceModal'
 
 const STATUS_LABELS = {
   draft: 'Borrador', sent: 'Enviada', paid: 'Pagada',
@@ -15,6 +16,8 @@ const STATUS_COLORS = {
 export default function InvoicesPage() {
   const qc = useQueryClient()
   const [statusFilter, setStatusFilter] = useState('')
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editingId, setEditingId] = useState(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['invoices', statusFilter],
@@ -26,10 +29,17 @@ export default function InvoicesPage() {
     onSuccess: () => qc.invalidateQueries(['invoices'])
   })
 
+  function openCreate() { setEditingId(null); setModalOpen(true) }
+  function openEdit(id) { setEditingId(id); setModalOpen(true) }
+  function handleSaved() { setModalOpen(false); qc.invalidateQueries(['invoices']) }
+
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-gray-900">Facturas</h2>
+        <button onClick={openCreate} className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors">
+          + Nueva factura
+        </button>
       </div>
 
       <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
@@ -63,7 +73,8 @@ export default function InvoicesPage() {
                     {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('es-AR') : '-'}
                   </td>
                   <td className="px-4 py-3 text-gray-600">${Number(inv.total).toLocaleString('es-AR')}</td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-right space-x-2">
+                    <button onClick={() => openEdit(inv.id)} className="text-indigo-600 hover:underline text-xs">Editar</button>
                     {inv.status === 'draft' && (
                       <button onClick={() => { if (confirm('¿Eliminar?')) del.mutate(inv.id) }} className="text-red-500 hover:underline text-xs">Eliminar</button>
                     )}
@@ -77,8 +88,17 @@ export default function InvoicesPage() {
           </table>
         </div>
       )}
+
       {data?.pagination && (
         <p className="mt-3 text-xs text-gray-400">{data.pagination.total} factura(s)</p>
+      )}
+
+      {modalOpen && (
+        <InvoiceModal
+          invoiceId={editingId}
+          onClose={() => setModalOpen(false)}
+          onSaved={handleSaved}
+        />
       )}
     </div>
   )
