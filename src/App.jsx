@@ -15,6 +15,7 @@ import ProjectDetailPage from './pages/projects/ProjectDetailPage'
 import QuotesPage from './pages/quotes/QuotesPage'
 import InvoicesPage from './pages/invoices/InvoicesPage'
 import NotificationsPage from './pages/notifications/NotificationsPage'
+import MembersPage from './pages/members/MembersPage'
 
 const qc = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } }
@@ -50,6 +51,7 @@ export default function App() {
               <Route path="/quotes" element={<QuotesPage />} />
               <Route path="/invoices" element={<InvoicesPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
+              <Route path="/members" element={<MembersPage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

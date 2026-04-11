@@ -9,6 +9,7 @@ const navItems = [
   { to: '/quotes', label: 'Presupuestos' },
   { to: '/invoices', label: 'Facturas' },
   { to: '/notifications', label: 'Notificaciones' },
+  { to: '/members', label: 'Equipo' },
 ]
 
 export default function AppLayout() {
