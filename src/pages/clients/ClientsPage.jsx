@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
 import { getClients, deleteClient } from '../../api/clients'
 import ClientModal from './ClientModal'
 
@@ -59,6 +60,7 @@ export default function ClientsPage() {
                   <td className="px-4 py-3 text-gray-600">{c.company || '-'}</td>
                   <td className="px-4 py-3 text-gray-600">{c.phone || '-'}</td>
                   <td className="px-4 py-3 text-right space-x-2">
+                    <Link to={`/clients/${c.id}`} className="text-gray-500 hover:underline text-xs">Ver</Link>
                     <button onClick={() => openEdit(c)} className="text-indigo-600 hover:underline text-xs">Editar</button>
                     <button onClick={() => { if (confirm('¿Eliminar cliente?')) del.mutate(c.id) }} className="text-red-500 hover:underline text-xs">Eliminar</button>
                   </td>

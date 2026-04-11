@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
 import { getProjects, deleteProject } from '../../api/projects'
 import ProjectModal from './ProjectModal'
 
@@ -79,6 +80,7 @@ export default function ProjectsPage() {
                     {p.budget != null ? `$${Number(p.budget).toLocaleString('es-AR')}` : '-'}
                   </td>
                   <td className="px-4 py-3 text-right space-x-2">
+                    <Link to={`/projects/${p.id}`} className="text-gray-500 hover:underline text-xs">Ver</Link>
                     <button onClick={() => { setEditing(p); setModalOpen(true) }} className="text-indigo-600 hover:underline text-xs">Editar</button>
                     <button onClick={() => { if (confirm('¿Eliminar proyecto?')) del.mutate(p.id) }} className="text-red-500 hover:underline text-xs">Eliminar</button>
                   </td>

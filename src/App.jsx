@@ -9,7 +9,9 @@ import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import ClientsPage from './pages/clients/ClientsPage'
+import ClientDetailPage from './pages/clients/ClientDetailPage'
 import ProjectsPage from './pages/projects/ProjectsPage'
+import ProjectDetailPage from './pages/projects/ProjectDetailPage'
 import QuotesPage from './pages/quotes/QuotesPage'
 import InvoicesPage from './pages/invoices/InvoicesPage'
 import NotificationsPage from './pages/notifications/NotificationsPage'
@@ -42,7 +44,9 @@ export default function App() {
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route index element={<DashboardPage />} />
               <Route path="/clients" element={<ClientsPage />} />
+              <Route path="/clients/:id" element={<ClientDetailPage />} />
               <Route path="/projects" element={<ProjectsPage />} />
+              <Route path="/projects/:id" element={<ProjectDetailPage />} />
               <Route path="/quotes" element={<QuotesPage />} />
               <Route path="/invoices" element={<InvoicesPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
