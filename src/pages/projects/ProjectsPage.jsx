@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { getProjects, deleteProject } from '../../api/projects'
 import ProjectModal from './ProjectModal'
+import Pagination from '../../components/Pagination'
 
 const STATUS_LABELS = {
   pending: 'Pendiente',
@@ -23,12 +24,13 @@ const STATUS_COLORS = {
 export default function ProjectsPage() {
   const qc = useQueryClient()
   const [statusFilter, setStatusFilter] = useState('')
+  const [page, setPage] = useState(1)
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(null)
 
   const { data, isLoading } = useQuery({
-    queryKey: ['projects', statusFilter],
-    queryFn: () => getProjects(statusFilter ? { status: statusFilter } : {}).then(r => r.data)
+    queryKey: ['projects', statusFilter, page],
+    queryFn: () => getProjects({ ...(statusFilter ? { status: statusFilter } : {}), page }).then(r => r.data)
   })
 
   const del = useMutation({
@@ -47,7 +49,7 @@ export default function ProjectsPage() {
 
       <select
         value={statusFilter}
-        onChange={e => setStatusFilter(e.target.value)}
+        onChange={e => { setStatusFilter(e.target.value); setPage(1) }}
         className="mb-4 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
       >
         <option value="">Todos los estados</option>
@@ -94,11 +96,7 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      {data?.pagination && (
-        <p className="mt-3 text-xs text-gray-400">
-          {data.pagination.total} proyecto(s)
-        </p>
-      )}
+      <Pagination pagination={data?.pagination} onPageChange={setPage} />
 
       {modalOpen && (
         <ProjectModal

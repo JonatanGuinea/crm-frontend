@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getQuotes, deleteQuote, createInvoiceFromQuote } from '../../api/quotes'
 import QuoteModal from './QuoteModal'
+import Pagination from '../../components/Pagination'
 
 const STATUS_LABELS = {
   draft: 'Borrador', sent: 'Enviado', approved: 'Aprobado',
@@ -16,12 +17,13 @@ const STATUS_COLORS = {
 export default function QuotesPage() {
   const qc = useQueryClient()
   const [statusFilter, setStatusFilter] = useState('')
+  const [page, setPage] = useState(1)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(null)
 
   const { data, isLoading } = useQuery({
-    queryKey: ['quotes', statusFilter],
-    queryFn: () => getQuotes(statusFilter ? { status: statusFilter } : {}).then(r => r.data)
+    queryKey: ['quotes', statusFilter, page],
+    queryFn: () => getQuotes({ ...(statusFilter ? { status: statusFilter } : {}), page }).then(r => r.data)
   })
 
   const del = useMutation({
@@ -51,7 +53,7 @@ export default function QuotesPage() {
         </button>
       </div>
 
-      <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
+      <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1) }}
         className="mb-4 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
         <option value="">Todos los estados</option>
         {Object.entries(STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
@@ -99,9 +101,7 @@ export default function QuotesPage() {
         </div>
       )}
 
-      {data?.pagination && (
-        <p className="mt-3 text-xs text-gray-400">{data.pagination.total} presupuesto(s)</p>
-      )}
+      <Pagination pagination={data?.pagination} onPageChange={setPage} />
 
       {modalOpen && (
         <QuoteModal

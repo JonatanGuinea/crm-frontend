@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getInvoices, deleteInvoice } from '../../api/invoices'
 import InvoiceModal from './InvoiceModal'
+import Pagination from '../../components/Pagination'
 
 const STATUS_LABELS = {
   draft: 'Borrador', sent: 'Enviada', paid: 'Pagada',
@@ -16,12 +17,13 @@ const STATUS_COLORS = {
 export default function InvoicesPage() {
   const qc = useQueryClient()
   const [statusFilter, setStatusFilter] = useState('')
+  const [page, setPage] = useState(1)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(null)
 
   const { data, isLoading } = useQuery({
-    queryKey: ['invoices', statusFilter],
-    queryFn: () => getInvoices(statusFilter ? { status: statusFilter } : {}).then(r => r.data)
+    queryKey: ['invoices', statusFilter, page],
+    queryFn: () => getInvoices({ ...(statusFilter ? { status: statusFilter } : {}), page }).then(r => r.data)
   })
 
   const del = useMutation({
@@ -42,7 +44,7 @@ export default function InvoicesPage() {
         </button>
       </div>
 
-      <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
+      <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1) }}
         className="mb-4 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
         <option value="">Todos los estados</option>
         {Object.entries(STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
@@ -89,9 +91,7 @@ export default function InvoicesPage() {
         </div>
       )}
 
-      {data?.pagination && (
-        <p className="mt-3 text-xs text-gray-400">{data.pagination.total} factura(s)</p>
-      )}
+      <Pagination pagination={data?.pagination} onPageChange={setPage} />
 
       {modalOpen && (
         <InvoiceModal

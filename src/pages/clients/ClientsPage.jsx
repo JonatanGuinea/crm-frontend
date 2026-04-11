@@ -3,16 +3,18 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { getClients, deleteClient } from '../../api/clients'
 import ClientModal from './ClientModal'
+import Pagination from '../../components/Pagination'
 
 export default function ClientsPage() {
   const qc = useQueryClient()
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(null)
 
   const { data, isLoading } = useQuery({
-    queryKey: ['clients', search],
-    queryFn: () => getClients(search ? { name: search } : {}).then(r => r.data)
+    queryKey: ['clients', search, page],
+    queryFn: () => getClients({ ...(search ? { name: search } : {}), page }).then(r => r.data)
   })
 
   const del = useMutation({
@@ -22,6 +24,7 @@ export default function ClientsPage() {
 
   function openCreate() { setEditing(null); setModalOpen(true) }
   function openEdit(c) { setEditing(c); setModalOpen(true) }
+  function handleSearch(val) { setSearch(val); setPage(1) }
 
   return (
     <div className="p-8">
@@ -36,7 +39,7 @@ export default function ClientsPage() {
         type="text"
         placeholder="Buscar por nombre..."
         value={search}
-        onChange={e => setSearch(e.target.value)}
+        onChange={e => handleSearch(e.target.value)}
         className="mb-4 w-full max-w-xs px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
 
@@ -74,11 +77,7 @@ export default function ClientsPage() {
         </div>
       )}
 
-      {data?.pagination && (
-        <p className="mt-3 text-xs text-gray-400">
-          {data.pagination.total} cliente(s) — página {data.pagination.page} de {data.pagination.totalPages}
-        </p>
-      )}
+      <Pagination pagination={data?.pagination} onPageChange={setPage} />
 
       {modalOpen && (
         <ClientModal
