@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import GlobalSearch from '../components/GlobalSearch'
+import OrgSwitcher from '../components/OrgSwitcher'
 
 const navItems = [
   { to: '/', label: 'Dashboard', exact: true },
@@ -25,12 +26,10 @@ export default function AppLayout() {
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
       <aside className="w-56 bg-white border-r border-gray-200 flex flex-col">
-        <div className="px-6 py-5 border-b border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200">
           <h1 className="text-lg font-semibold text-gray-900">CRM</h1>
-          {user?.role && (
-            <span className="text-xs text-gray-500 capitalize">{user.role}</span>
-          )}
         </div>
+        <OrgSwitcher />
 
         <nav className="flex-1 px-3 py-4 space-y-1">
           {navItems.map(({ to, label, exact }) => (
