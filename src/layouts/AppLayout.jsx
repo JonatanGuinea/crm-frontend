@@ -1,7 +1,23 @@
 import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext'
 import GlobalSearch from '../components/GlobalSearch'
 import OrgSwitcher from '../components/OrgSwitcher'
+import { getProfile } from '../api/profile'
+
+const API_BASE = import.meta.env.VITE_API_URL.replace('/api', '')
+
+function SidebarAvatar({ avatar, name }) {
+  if (avatar) {
+    return <img src={`${API_BASE}/uploads/${avatar}`} alt={name} className="w-7 h-7 rounded-full object-cover shrink-0" />
+  }
+  const initials = name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
+  return (
+    <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-600 text-xs font-semibold flex items-center justify-center shrink-0">
+      {initials}
+    </div>
+  )
+}
 
 const navItems = [
   { to: '/', label: 'Dashboard', exact: true },
@@ -16,6 +32,11 @@ const navItems = [
 export default function AppLayout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+
+  const { data: profile } = useQuery({
+    queryKey: ['profile'],
+    queryFn: () => getProfile().then(r => r.data.data)
+  })
 
   function handleLogout() {
     logout()
@@ -53,9 +74,10 @@ export default function AppLayout() {
         <div className="px-3 py-4 border-t border-gray-200 space-y-1">
           <Link
             to="/profile"
-            className="block px-3 py-2 rounded-md text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
           >
-            Mi perfil
+            <SidebarAvatar avatar={profile?.avatar} name={profile?.name || user?.name} />
+            <span className="truncate">{profile?.name || user?.name || 'Mi perfil'}</span>
           </Link>
           <button
             onClick={handleLogout}

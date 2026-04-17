@@ -1,9 +1,31 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getProfile, updateProfile, changePassword } from '../../api/profile'
+import { getProfile, updateProfile, changePassword, uploadAvatar } from '../../api/profile'
+
+const API_BASE = import.meta.env.VITE_API_URL.replace('/api', '')
+
+function AvatarCircle({ avatar, name, size = 'lg' }) {
+  const dim = size === 'lg' ? 'w-24 h-24 text-3xl' : 'w-8 h-8 text-sm'
+  if (avatar) {
+    return (
+      <img
+        src={`${API_BASE}/uploads/${avatar}`}
+        alt={name}
+        className={`${dim} rounded-full object-cover`}
+      />
+    )
+  }
+  const initials = name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
+  return (
+    <div className={`${dim} rounded-full bg-indigo-100 text-indigo-600 font-semibold flex items-center justify-center`}>
+      {initials}
+    </div>
+  )
+}
 
 export default function ProfilePage() {
   const qc = useQueryClient()
+  const fileInputRef = useRef(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['profile'],
@@ -15,6 +37,8 @@ export default function ProfilePage() {
 
   const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirm: '' })
   const [pwMsg, setPwMsg] = useState(null)
+
+  const [avatarMsg, setAvatarMsg] = useState(null)
 
   const nameMut = useMutation({
     mutationFn: updateProfile,
@@ -38,6 +62,17 @@ export default function ProfilePage() {
     }
   })
 
+  const avatarMut = useMutation({
+    mutationFn: uploadAvatar,
+    onSuccess: () => {
+      qc.invalidateQueries(['profile'])
+      setAvatarMsg({ type: 'success', text: 'Foto actualizada.' })
+    },
+    onError: (err) => {
+      setAvatarMsg({ type: 'error', text: err.response?.data?.error || 'Error al subir la imagen.' })
+    }
+  })
+
   function handleNameSubmit(e) {
     e.preventDefault()
     setNameMsg(null)
@@ -54,6 +89,14 @@ export default function ProfilePage() {
     pwMut.mutate({ currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword })
   }
 
+  function handleFileChange(e) {
+    const file = e.target.files[0]
+    if (!file) return
+    setAvatarMsg(null)
+    avatarMut.mutate(file)
+    e.target.value = ''
+  }
+
   if (isLoading) {
     return (
       <div className="p-8 flex justify-center">
@@ -65,6 +108,33 @@ export default function ProfilePage() {
   return (
     <div className="p-8 max-w-lg">
       <h1 className="text-2xl font-semibold text-gray-900 mb-8">Mi perfil</h1>
+
+      {/* Avatar */}
+      <div className="mb-8 flex items-center gap-5">
+        <AvatarCircle avatar={data?.avatar} name={data?.name} size="lg" />
+        <div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <button
+            onClick={() => fileInputRef.current.click()}
+            disabled={avatarMut.isPending}
+            className="px-3 py-1.5 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+          >
+            {avatarMut.isPending ? 'Subiendo...' : 'Cambiar foto'}
+          </button>
+          <p className="mt-1 text-xs text-gray-400">JPG, PNG, GIF o WEBP · máx. 5 MB</p>
+          {avatarMsg && (
+            <p className={`mt-1 text-xs ${avatarMsg.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+              {avatarMsg.text}
+            </p>
+          )}
+        </div>
+      </div>
 
       {/* Info actual */}
       <div className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200 text-sm text-gray-700 space-y-1">
