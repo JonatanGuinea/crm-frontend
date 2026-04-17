@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getInvoices, deleteInvoice } from '../../api/invoices'
 import InvoiceModal from './InvoiceModal'
@@ -64,7 +65,9 @@ export default function InvoicesPage() {
               {data?.data?.map(inv => (
                 <tr key={inv.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 text-gray-500">#{inv.number}</td>
-                  <td className="px-4 py-3 font-medium text-gray-900">{inv.title}</td>
+                  <td className="px-4 py-3 font-medium text-gray-900">
+                    <Link to={`/invoices/${inv.id}`} className="hover:text-indigo-600">{inv.title}</Link>
+                  </td>
                   <td className="px-4 py-3 text-gray-600">{inv.client?.name}</td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[inv.status]}`}>

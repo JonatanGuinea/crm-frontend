@@ -18,6 +18,8 @@ import NotificationsPage from './pages/notifications/NotificationsPage'
 import MembersPage from './pages/members/MembersPage'
 import AcceptInvitePage from './pages/auth/AcceptInvitePage'
 import ProfilePage from './pages/profile/ProfilePage'
+import QuoteDetailPage from './pages/quotes/QuoteDetailPage'
+import InvoiceDetailPage from './pages/invoices/InvoiceDetailPage'
 
 const qc = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } }
@@ -52,7 +54,9 @@ export default function App() {
               <Route path="/projects" element={<ProjectsPage />} />
               <Route path="/projects/:id" element={<ProjectDetailPage />} />
               <Route path="/quotes" element={<QuotesPage />} />
+              <Route path="/quotes/:id" element={<QuoteDetailPage />} />
               <Route path="/invoices" element={<InvoicesPage />} />
+              <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/members" element={<MembersPage />} />
               <Route path="/profile" element={<ProfilePage />} />

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getQuotes, deleteQuote, createInvoiceFromQuote } from '../../api/quotes'
 import QuoteModal from './QuoteModal'
@@ -73,7 +74,9 @@ export default function QuotesPage() {
               {data?.data?.map(q => (
                 <tr key={q.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 text-gray-500">#{q.number}</td>
-                  <td className="px-4 py-3 font-medium text-gray-900">{q.title}</td>
+                  <td className="px-4 py-3 font-medium text-gray-900">
+                    <Link to={`/quotes/${q.id}`} className="hover:text-indigo-600">{q.title}</Link>
+                  </td>
                   <td className="px-4 py-3 text-gray-600">{q.client?.name}</td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[q.status]}`}>
