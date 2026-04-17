@@ -16,6 +16,7 @@ import QuotesPage from './pages/quotes/QuotesPage'
 import InvoicesPage from './pages/invoices/InvoicesPage'
 import NotificationsPage from './pages/notifications/NotificationsPage'
 import MembersPage from './pages/members/MembersPage'
+import AcceptInvitePage from './pages/auth/AcceptInvitePage'
 
 const qc = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } }
@@ -40,6 +41,7 @@ export default function App() {
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
               <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
+              <Route path="/accept-invite" element={<AcceptInvitePage />} />
             </Route>
 
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
