@@ -27,7 +27,7 @@ export default function ClientsPage() {
   function handleSearch(val) { setSearch(val); setPage(1) }
 
   return (
-    <div className="p-8">
+    <div className="p-8 min-h-full dark:bg-gray-900">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Clientes</h2>
         <button onClick={openCreate} className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors">

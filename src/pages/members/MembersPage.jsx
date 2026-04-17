@@ -56,7 +56,7 @@ export default function MembersPage() {
   const canManage = myRole === 'owner'
 
   return (
-    <div className="p-8 max-w-3xl mx-auto">
+    <div className="p-8 max-w-3xl mx-auto  min-h-full dark:bg-gray-900">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Equipo</h2>
         {canInvite && (
