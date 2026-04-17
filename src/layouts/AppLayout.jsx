@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import GlobalSearch from '../components/GlobalSearch'
 import OrgSwitcher from '../components/OrgSwitcher'
@@ -50,7 +50,13 @@ export default function AppLayout() {
           ))}
         </nav>
 
-        <div className="px-3 py-4 border-t border-gray-200">
+        <div className="px-3 py-4 border-t border-gray-200 space-y-1">
+          <Link
+            to="/profile"
+            className="block px-3 py-2 rounded-md text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+          >
+            Mi perfil
+          </Link>
           <button
             onClick={handleLogout}
             className="w-full text-left px-3 py-2 rounded-md text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
