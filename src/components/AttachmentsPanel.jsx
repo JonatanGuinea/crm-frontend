@@ -39,7 +39,7 @@ export default function AttachmentsPanel({ entityType, entityId }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Adjuntos</h3>
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">Adjuntos</h3>
         <button
           onClick={() => inputRef.current?.click()}
           disabled={upload.isPending}
@@ -55,15 +55,15 @@ export default function AttachmentsPanel({ entityType, entityId }) {
       )}
 
       {isLoading ? (
-        <p className="text-xs text-gray-400">Cargando...</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500">Cargando...</p>
       ) : data?.length === 0 ? (
-        <p className="text-xs text-gray-400">Sin archivos adjuntos</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500">Sin archivos adjuntos</p>
       ) : (
         <ul className="space-y-2">
           {data?.map(att => (
-            <li key={att.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2 text-sm">
+            <li key={att.id} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-lg px-3 py-2 text-sm">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="text-gray-400 text-base">📎</span>
+                <span className="text-gray-400 dark:text-gray-500 text-base">📎</span>
                 <div className="min-w-0">
                   <a
                     href={`${API_BASE}${att.url}`}
@@ -73,7 +73,7 @@ export default function AttachmentsPanel({ entityType, entityId }) {
                   >
                     {att.filename}
                   </a>
-                  <span className="text-xs text-gray-400">{formatSize(att.size)} · {att.uploadedBy?.name || ''}</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500">{formatSize(att.size)} · {att.uploadedBy?.name || ''}</span>
                 </div>
               </div>
               <button

@@ -26,8 +26,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-      <h2 className="text-xl font-semibold text-gray-900 mb-6">Crear cuenta</h2>
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Crear cuenta</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {[
@@ -37,13 +37,13 @@ export default function RegisterPage() {
           { key: 'organizationName', label: 'Nombre de la organización', type: 'text' },
         ].map(({ key, label, type }) => (
           <div key={key}>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
             <input
               type={type}
               required
               value={form[key]}
               onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
             />
           </div>
         ))}
@@ -59,7 +59,7 @@ export default function RegisterPage() {
         </button>
       </form>
 
-      <p className="mt-4 text-sm text-center text-gray-600">
+      <p className="mt-4 text-sm text-center text-gray-600 dark:text-gray-400">
         ¿Ya tenés cuenta?{' '}
         <Link to="/login" className="text-indigo-600 hover:underline">Iniciar sesión</Link>
       </p>

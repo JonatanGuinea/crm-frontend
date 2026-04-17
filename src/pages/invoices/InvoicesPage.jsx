@@ -39,45 +39,45 @@ export default function InvoicesPage() {
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">Facturas</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Facturas</h2>
         <button onClick={openCreate} className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors">
           + Nueva factura
         </button>
       </div>
 
       <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1) }}
-        className="mb-4 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        className="mb-4 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white">
         <option value="">Todos los estados</option>
         {Object.entries(STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
       </select>
 
-      {isLoading ? <p className="text-sm text-gray-500">Cargando...</p> : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      {isLoading ? <p className="text-sm text-gray-500 dark:text-gray-400">Cargando...</p> : (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
               <tr>
                 {['#', 'Título', 'Cliente', 'Estado', 'Vencimiento', 'Total', ''].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{h}</th>
+                  <th key={h} className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {data?.data?.map(inv => (
-                <tr key={inv.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-gray-500">#{inv.number}</td>
-                  <td className="px-4 py-3 font-medium text-gray-900">
+                <tr key={inv.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400">#{inv.number}</td>
+                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
                     <Link to={`/invoices/${inv.id}`} className="hover:text-indigo-600">{inv.title}</Link>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{inv.client?.name}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{inv.client?.name}</td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[inv.status]}`}>
                       {STATUS_LABELS[inv.status]}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
                     {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('es-AR') : '-'}
                   </td>
-                  <td className="px-4 py-3 text-gray-600">${Number(inv.total).toLocaleString('es-AR')}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">${Number(inv.total).toLocaleString('es-AR')}</td>
                   <td className="px-4 py-3 text-right space-x-2">
                     <button onClick={() => openEdit(inv.id)} className="text-indigo-600 hover:underline text-xs">Editar</button>
                     {inv.status === 'draft' && (
@@ -87,7 +87,7 @@ export default function InvoicesPage() {
                 </tr>
               ))}
               {!data?.data?.length && (
-                <tr><td colSpan={7} className="px-4 py-6 text-center text-gray-400">Sin facturas</td></tr>
+                <tr><td colSpan={7} className="px-4 py-6 text-center text-gray-400 dark:text-gray-500">Sin facturas</td></tr>
               )}
             </tbody>
           </table>

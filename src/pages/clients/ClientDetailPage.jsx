@@ -57,8 +57,8 @@ export default function ClientDetailPage() {
     queryFn: () => getInvoices({ clientId: id, limit: 100 }).then(r => r.data)
   })
 
-  if (isLoading) return <div className="p-8 text-sm text-gray-500">Cargando...</div>
-  if (!clientRes) return <div className="p-8 text-sm text-gray-500">Cliente no encontrado</div>
+  if (isLoading) return <div className="p-8 text-sm text-gray-500 dark:text-gray-400">Cargando...</div>
+  if (!clientRes) return <div className="p-8 text-sm text-gray-500 dark:text-gray-400">Cliente no encontrado</div>
 
   const client = clientRes
   const projects = projectsRes?.data || []
@@ -69,19 +69,19 @@ export default function ClientDetailPage() {
     <div className="p-8 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate('/clients')} className="text-sm text-gray-400 hover:text-gray-700">
+        <button onClick={() => navigate('/clients')} className="text-sm text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
           ← Clientes
         </button>
       </div>
 
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{client.name}</h1>
-          {client.company && <p className="text-gray-500 mt-0.5">{client.company}</p>}
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{client.name}</h1>
+          {client.company && <p className="text-gray-500 dark:text-gray-400 mt-0.5">{client.company}</p>}
         </div>
         <button
           onClick={() => setEditOpen(true)}
-          className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         >
           Editar
         </button>
@@ -91,8 +91,8 @@ export default function ClientDetailPage() {
         {/* Columna izquierda */}
         <div className="space-y-6">
           {/* Info */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Información</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-4">Información</h3>
             <dl className="space-y-3 text-sm">
               {[
                 { label: 'Email', value: client.email },
@@ -100,21 +100,21 @@ export default function ClientDetailPage() {
                 { label: 'Empresa', value: client.company },
               ].map(({ label, value }) => value && (
                 <div key={label}>
-                  <dt className="text-xs text-gray-400 uppercase mb-0.5">{label}</dt>
-                  <dd className="text-gray-800">{value}</dd>
+                  <dt className="text-xs text-gray-400 dark:text-gray-500 uppercase mb-0.5">{label}</dt>
+                  <dd className="text-gray-800 dark:text-gray-100">{value}</dd>
                 </div>
               ))}
               {client.notes && (
                 <div>
-                  <dt className="text-xs text-gray-400 uppercase mb-0.5">Notas</dt>
-                  <dd className="text-gray-800 whitespace-pre-line">{client.notes}</dd>
+                  <dt className="text-xs text-gray-400 dark:text-gray-500 uppercase mb-0.5">Notas</dt>
+                  <dd className="text-gray-800 dark:text-gray-100 whitespace-pre-line">{client.notes}</dd>
                 </div>
               )}
             </dl>
           </div>
 
           {/* Adjuntos */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
             <AttachmentsPanel entityType="client" entityId={id} />
           </div>
         </div>
@@ -122,25 +122,25 @@ export default function ClientDetailPage() {
         {/* Columna derecha */}
         <div className="lg:col-span-2 space-y-6">
           {/* Proyectos */}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                Proyectos <span className="text-gray-400 font-normal">({projects.length})</span>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                Proyectos <span className="text-gray-400 dark:text-gray-500 font-normal">({projects.length})</span>
               </h3>
               <Link to={`/projects?clientId=${id}`} className="text-xs text-indigo-600 hover:underline">Ver todos</Link>
             </div>
             {projects.length === 0 ? (
-              <p className="px-5 py-4 text-sm text-gray-400">Sin proyectos</p>
+              <p className="px-5 py-4 text-sm text-gray-400 dark:text-gray-500">Sin proyectos</p>
             ) : (
-              <ul className="divide-y divide-gray-100">
+              <ul className="divide-y divide-gray-100 dark:divide-gray-700">
                 {projects.slice(0, 5).map(p => (
-                  <li key={p.id} className="flex items-center justify-between px-5 py-3 hover:bg-gray-50">
+                  <li key={p.id} className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
                     <div>
-                      <Link to={`/projects/${p.id}`} className="text-sm font-medium text-gray-900 hover:text-indigo-600">
+                      <Link to={`/projects/${p.id}`} className="text-sm font-medium text-gray-900 dark:text-white hover:text-indigo-600">
                         {p.title}
                       </Link>
                       {p.budget != null && (
-                        <p className="text-xs text-gray-400">${Number(p.budget).toLocaleString('es-AR')}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">${Number(p.budget).toLocaleString('es-AR')}</p>
                       )}
                     </div>
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS_PROJECT[p.status]}`}>
@@ -153,34 +153,34 @@ export default function ClientDetailPage() {
           </div>
 
           {/* Presupuestos */}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                Presupuestos <span className="text-gray-400 font-normal">({quotes.length})</span>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                Presupuestos <span className="text-gray-400 dark:text-gray-500 font-normal">({quotes.length})</span>
               </h3>
               <Link to="/quotes" className="text-xs text-indigo-600 hover:underline">Ver todos</Link>
             </div>
             {quotes.length === 0 ? (
-              <p className="px-5 py-4 text-sm text-gray-400">Sin presupuestos</p>
+              <p className="px-5 py-4 text-sm text-gray-400 dark:text-gray-500">Sin presupuestos</p>
             ) : (
               <table className="w-full text-sm">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
                     {['N°', 'Estado', 'Total'].map(h => (
-                      <th key={h} className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase">{h}</th>
+                      <th key={h} className="text-left px-5 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{h}</th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                   {quotes.slice(0, 5).map(q => (
-                    <tr key={q.id} className="hover:bg-gray-50">
-                      <td className="px-5 py-3 font-medium text-gray-900">{q.number}</td>
+                    <tr key={q.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="px-5 py-3 font-medium text-gray-900 dark:text-white">{q.number}</td>
                       <td className="px-5 py-3">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS_DOC[q.status] || 'bg-gray-100 text-gray-600'}`}>
                           {q.status}
                         </span>
                       </td>
-                      <td className="px-5 py-3 text-gray-700">
+                      <td className="px-5 py-3 text-gray-700 dark:text-gray-300">
                         {q.total != null ? `$${Number(q.total).toLocaleString('es-AR')}` : '-'}
                       </td>
                     </tr>
@@ -191,37 +191,37 @@ export default function ClientDetailPage() {
           </div>
 
           {/* Facturas */}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                Facturas <span className="text-gray-400 font-normal">({invoices.length})</span>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                Facturas <span className="text-gray-400 dark:text-gray-500 font-normal">({invoices.length})</span>
               </h3>
               <Link to="/invoices" className="text-xs text-indigo-600 hover:underline">Ver todos</Link>
             </div>
             {invoices.length === 0 ? (
-              <p className="px-5 py-4 text-sm text-gray-400">Sin facturas</p>
+              <p className="px-5 py-4 text-sm text-gray-400 dark:text-gray-500">Sin facturas</p>
             ) : (
               <table className="w-full text-sm">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
                     {['N°', 'Estado', 'Total', 'Vencimiento'].map(h => (
-                      <th key={h} className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase">{h}</th>
+                      <th key={h} className="text-left px-5 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{h}</th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                   {invoices.slice(0, 5).map(inv => (
-                    <tr key={inv.id} className="hover:bg-gray-50">
-                      <td className="px-5 py-3 font-medium text-gray-900">{inv.number}</td>
+                    <tr key={inv.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="px-5 py-3 font-medium text-gray-900 dark:text-white">{inv.number}</td>
                       <td className="px-5 py-3">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS_DOC[inv.status] || 'bg-gray-100 text-gray-600'}`}>
                           {inv.status}
                         </span>
                       </td>
-                      <td className="px-5 py-3 text-gray-700">
+                      <td className="px-5 py-3 text-gray-700 dark:text-gray-300">
                         {inv.total != null ? `$${Number(inv.total).toLocaleString('es-AR')}` : '-'}
                       </td>
-                      <td className="px-5 py-3 text-gray-500">
+                      <td className="px-5 py-3 text-gray-500 dark:text-gray-400">
                         {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('es-AR') : '-'}
                       </td>
                     </tr>

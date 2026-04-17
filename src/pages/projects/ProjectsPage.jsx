@@ -41,7 +41,7 @@ export default function ProjectsPage() {
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">Proyectos</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Proyectos</h2>
         <button onClick={() => { setEditing(null); setModalOpen(true) }} className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors">
           + Nuevo proyecto
         </button>
@@ -50,46 +50,46 @@ export default function ProjectsPage() {
       <select
         value={statusFilter}
         onChange={e => { setStatusFilter(e.target.value); setPage(1) }}
-        className="mb-4 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="mb-4 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
       >
         <option value="">Todos los estados</option>
         {Object.entries(STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
       </select>
 
       {isLoading ? (
-        <p className="text-sm text-gray-500">Cargando...</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Cargando...</p>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
               <tr>
                 {['Título', 'Cliente', 'Estado', 'Presupuesto', ''].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{h}</th>
+                  <th key={h} className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {data?.data?.map(p => (
-                <tr key={p.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">{p.title}</td>
-                  <td className="px-4 py-3 text-gray-600">{p.client?.name || '-'}</td>
+                <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{p.title}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{p.client?.name || '-'}</td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[p.status]}`}>
                       {STATUS_LABELS[p.status]}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
                     {p.budget != null ? `$${Number(p.budget).toLocaleString('es-AR')}` : '-'}
                   </td>
                   <td className="px-4 py-3 text-right space-x-2">
-                    <Link to={`/projects/${p.id}`} className="text-gray-500 hover:underline text-xs">Ver</Link>
+                    <Link to={`/projects/${p.id}`} className="text-gray-500 dark:text-gray-400 hover:underline text-xs">Ver</Link>
                     <button onClick={() => { setEditing(p); setModalOpen(true) }} className="text-indigo-600 hover:underline text-xs">Editar</button>
                     <button onClick={() => { if (confirm('¿Eliminar proyecto?')) del.mutate(p.id) }} className="text-red-500 hover:underline text-xs">Eliminar</button>
                   </td>
                 </tr>
               ))}
               {!data?.data?.length && (
-                <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-400">Sin proyectos</td></tr>
+                <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-400 dark:text-gray-500">Sin proyectos</td></tr>
               )}
             </tbody>
           </table>

@@ -105,9 +105,12 @@ export default function ProfilePage() {
     )
   }
 
+  const inputCls = "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+  const labelCls = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+
   return (
     <div className="p-8 max-w-lg">
-      <h1 className="text-2xl font-semibold text-gray-900 mb-8">Mi perfil</h1>
+      <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-8">Mi perfil</h1>
 
       {/* Avatar */}
       <div className="mb-8 flex items-center gap-5">
@@ -123,11 +126,11 @@ export default function ProfilePage() {
           <button
             onClick={() => fileInputRef.current.click()}
             disabled={avatarMut.isPending}
-            className="px-3 py-1.5 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+            className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
           >
             {avatarMut.isPending ? 'Subiendo...' : 'Cambiar foto'}
           </button>
-          <p className="mt-1 text-xs text-gray-400">JPG, PNG, GIF o WEBP · máx. 5 MB</p>
+          <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">JPG, PNG, GIF o WEBP · máx. 5 MB</p>
           {avatarMsg && (
             <p className={`mt-1 text-xs ${avatarMsg.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
               {avatarMsg.text}
@@ -137,24 +140,24 @@ export default function ProfilePage() {
       </div>
 
       {/* Info actual */}
-      <div className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200 text-sm text-gray-700 space-y-1">
+      <div className="mb-8 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 space-y-1">
         <p><span className="font-medium">Email:</span> {data?.email}</p>
         <p><span className="font-medium">Nombre actual:</span> {data?.name}</p>
       </div>
 
       {/* Cambiar nombre */}
       <section className="mb-8">
-        <h2 className="text-base font-semibold text-gray-800 mb-4">Cambiar nombre</h2>
+        <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-4">Cambiar nombre</h2>
         <form onSubmit={handleNameSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nuevo nombre</label>
+            <label className={labelCls}>Nuevo nombre</label>
             <input
               type="text"
               required
               value={nameForm.name}
               onChange={e => setNameForm({ name: e.target.value })}
               placeholder={data?.name}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className={inputCls}
             />
           </div>
           {nameMsg && (
@@ -172,40 +175,40 @@ export default function ProfilePage() {
         </form>
       </section>
 
-      <hr className="border-gray-200 mb-8" />
+      <hr className="border-gray-200 dark:border-gray-700 mb-8" />
 
       {/* Cambiar contraseña */}
       <section>
-        <h2 className="text-base font-semibold text-gray-800 mb-4">Cambiar contraseña</h2>
+        <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-4">Cambiar contraseña</h2>
         <form onSubmit={handlePwSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña actual</label>
+            <label className={labelCls}>Contraseña actual</label>
             <input
               type="password"
               required
               value={pwForm.currentPassword}
               onChange={e => setPwForm(f => ({ ...f, currentPassword: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className={inputCls}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nueva contraseña</label>
+            <label className={labelCls}>Nueva contraseña</label>
             <input
               type="password"
               required
               value={pwForm.newPassword}
               onChange={e => setPwForm(f => ({ ...f, newPassword: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className={inputCls}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Confirmar nueva contraseña</label>
+            <label className={labelCls}>Confirmar nueva contraseña</label>
             <input
               type="password"
               required
               value={pwForm.confirm}
               onChange={e => setPwForm(f => ({ ...f, confirm: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className={inputCls}
             />
           </div>
           {pwMsg && (

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
 import SplashScreen from './components/SplashScreen'
 
 import AuthLayout from './layouts/AuthLayout'
@@ -41,6 +42,7 @@ export default function App() {
   const [splashDone, setSplashDone] = useState(false)
 
   return (
+    <ThemeProvider>
     <QueryClientProvider client={qc}>
       {!splashDone && <SplashScreen onDone={() => setSplashDone(true)} />}
       <AuthProvider>
@@ -72,5 +74,6 @@ export default function App() {
         </BrowserRouter>
       </AuthProvider>
     </QueryClientProvider>
+    </ThemeProvider>
   )
 }

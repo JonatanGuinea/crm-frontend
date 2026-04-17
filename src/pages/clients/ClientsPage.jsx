@@ -29,7 +29,7 @@ export default function ClientsPage() {
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">Clientes</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Clientes</h2>
         <button onClick={openCreate} className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors">
           + Nuevo cliente
         </button>
@@ -40,37 +40,37 @@ export default function ClientsPage() {
         placeholder="Buscar por nombre..."
         value={search}
         onChange={e => handleSearch(e.target.value)}
-        className="mb-4 w-full max-w-xs px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="mb-4 w-full max-w-xs px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
       />
 
       {isLoading ? (
-        <p className="text-sm text-gray-500">Cargando...</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Cargando...</p>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
               <tr>
                 {['Nombre', 'Email', 'Empresa', 'Teléfono', ''].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{h}</th>
+                  <th key={h} className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {data?.data?.map(c => (
-                <tr key={c.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">{c.name}</td>
-                  <td className="px-4 py-3 text-gray-600">{c.email || '-'}</td>
-                  <td className="px-4 py-3 text-gray-600">{c.company || '-'}</td>
-                  <td className="px-4 py-3 text-gray-600">{c.phone || '-'}</td>
+                <tr key={c.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{c.name}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{c.email || '-'}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{c.company || '-'}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{c.phone || '-'}</td>
                   <td className="px-4 py-3 text-right space-x-2">
-                    <Link to={`/clients/${c.id}`} className="text-gray-500 hover:underline text-xs">Ver</Link>
+                    <Link to={`/clients/${c.id}`} className="text-gray-500 dark:text-gray-400 hover:underline text-xs">Ver</Link>
                     <button onClick={() => openEdit(c)} className="text-indigo-600 hover:underline text-xs">Editar</button>
                     <button onClick={() => { if (confirm('¿Eliminar cliente?')) del.mutate(c.id) }} className="text-red-500 hover:underline text-xs">Eliminar</button>
                   </td>
                 </tr>
               ))}
               {!data?.data?.length && (
-                <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-400">Sin clientes</td></tr>
+                <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-400 dark:text-gray-500">Sin clientes</td></tr>
               )}
             </tbody>
           </table>

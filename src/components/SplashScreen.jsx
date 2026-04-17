@@ -15,7 +15,7 @@ export default function SplashScreen({ onDone }) {
 
   return (
     <div
-      className={`fixed inset-0 bg-white flex items-center justify-center z-50 transition-opacity duration-500 ${fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+      className={`fixed inset-0 bg-white dark:bg-gray-900 flex items-center justify-center z-50 transition-opacity duration-500 ${fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
     >
       <div className="flex items-center">
         {/* SOF — sale desde el centro hacia la izquierda */}
@@ -32,7 +32,7 @@ export default function SplashScreen({ onDone }) {
 
         {/* IA — aparece primero al centro */}
         <span
-          className="text-5xl font-bold text-gray-900 transition-all duration-500"
+          className="text-5xl font-bold text-gray-900 dark:text-white transition-all duration-500"
           style={{
             opacity: showIA ? 1 : 0,
             transform: showIA ? 'scale(1)' : 'scale(0.8)',

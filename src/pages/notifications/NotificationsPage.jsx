@@ -48,9 +48,9 @@ export default function NotificationsPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Notificaciones</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Notificaciones</h2>
           {data?.unreadCount > 0 && (
-            <p className="text-sm text-gray-500 mt-0.5">{data.unreadCount} sin leer</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{data.unreadCount} sin leer</p>
           )}
         </div>
         {data?.unreadCount > 0 && (
@@ -61,29 +61,29 @@ export default function NotificationsPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-gray-500">Cargando...</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Cargando...</p>
       ) : (
         <div className="space-y-2">
           {data?.notifications?.map(n => (
-            <div key={n.id} className={`flex items-start gap-3 p-4 rounded-xl border ${n.read ? 'bg-white border-gray-200' : 'bg-indigo-50 border-indigo-200'}`}>
+            <div key={n.id} className={`flex items-start gap-3 p-4 rounded-xl border ${n.read ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700' : 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800'}`}>
               <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-medium ${TYPE_COLORS[n.type]}`}>
                 {TYPE_LABELS[n.type]}
               </span>
-              <p className="flex-1 text-sm text-gray-700">{n.message}</p>
+              <p className="flex-1 text-sm text-gray-700 dark:text-gray-300">{n.message}</p>
               <div className="flex items-center gap-2 shrink-0">
                 {!n.read && (
                   <button onClick={() => readOne.mutate(n.id)} className="text-xs text-indigo-600 hover:underline">
                     Leído
                   </button>
                 )}
-                <button onClick={() => del.mutate(n.id)} className="text-xs text-gray-400 hover:text-red-500">
+                <button onClick={() => del.mutate(n.id)} className="text-xs text-gray-400 dark:text-gray-500 hover:text-red-500">
                   ×
                 </button>
               </div>
             </div>
           ))}
           {!data?.notifications?.length && (
-            <p className="text-sm text-gray-400 text-center py-8">Sin notificaciones</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-8">Sin notificaciones</p>
           )}
         </div>
       )}

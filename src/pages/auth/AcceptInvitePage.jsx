@@ -32,11 +32,11 @@ export default function AcceptInvitePage() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
       {status === 'loading' && (
         <>
           <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 text-sm">Procesando invitación...</p>
+          <p className="text-gray-600 dark:text-gray-400 text-sm">Procesando invitación...</p>
         </>
       )}
 
@@ -47,8 +47,8 @@ export default function AcceptInvitePage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-1">¡Invitación aceptada!</h2>
-          <p className="text-sm text-gray-500">Redirigiendo al dashboard...</p>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">¡Invitación aceptada!</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Redirigiendo al dashboard...</p>
         </>
       )}
 
@@ -59,7 +59,7 @@ export default function AcceptInvitePage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-1">No se pudo aceptar la invitación</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">No se pudo aceptar la invitación</h2>
           <p className="text-sm text-red-600 mb-6">{error}</p>
           <Link
             to="/login"
