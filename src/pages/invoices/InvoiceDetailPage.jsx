@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { getInvoiceById } from '../../api/invoices'
+import { getInvoiceById, downloadInvoicePdf } from '../../api/invoices'
 import InvoiceModal from './InvoiceModal'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 
@@ -20,6 +20,22 @@ export default function InvoiceDetailPage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const [editOpen, setEditOpen] = useState(false)
+  const [downloading, setDownloading] = useState(false)
+
+  async function handleDownloadPdf() {
+    setDownloading(true)
+    try {
+      const res = await downloadInvoicePdf(id)
+      const url = URL.createObjectURL(res.data)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `factura-${invoice?.number}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   const { data: invoice, isLoading } = useQuery({
     queryKey: ['invoice', id],
@@ -52,12 +68,21 @@ export default function InvoiceDetailPage() {
           </div>
           <p className="text-gray-400 mt-0.5 text-sm">#{invoice.number}</p>
         </div>
-        <button
-          onClick={() => setEditOpen(true)}
-          className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-        >
-          Editar
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleDownloadPdf}
+            disabled={downloading}
+            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+          >
+            {downloading ? 'Generando...' : 'Descargar PDF'}
+          </button>
+          <button
+            onClick={() => setEditOpen(true)}
+            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            Editar
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

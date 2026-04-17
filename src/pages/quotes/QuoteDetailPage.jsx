@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getQuoteById, createInvoiceFromQuote } from '../../api/quotes'
+import { getQuoteById, createInvoiceFromQuote, downloadQuotePdf } from '../../api/quotes'
 import QuoteModal from './QuoteModal'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 
@@ -20,6 +20,22 @@ export default function QuoteDetailPage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const [editOpen, setEditOpen] = useState(false)
+  const [downloading, setDownloading] = useState(false)
+
+  async function handleDownloadPdf() {
+    setDownloading(true)
+    try {
+      const res = await downloadQuotePdf(id)
+      const url = URL.createObjectURL(res.data)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `presupuesto-${quote?.number}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   const { data: quote, isLoading } = useQuery({
     queryKey: ['quote', id],
@@ -63,6 +79,13 @@ export default function QuoteDetailPage() {
           <p className="text-gray-400 mt-0.5 text-sm">#{quote.number}</p>
         </div>
         <div className="flex gap-2">
+          <button
+            onClick={handleDownloadPdf}
+            disabled={downloading}
+            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+          >
+            {downloading ? 'Generando...' : 'Descargar PDF'}
+          </button>
           {quote.status === 'approved' && (
             <button
               onClick={() => { if (confirm('¿Generar factura desde este presupuesto?')) toInvoice.mutate() }}
