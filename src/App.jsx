@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import SplashScreen from './components/SplashScreen'
 
 import AuthLayout from './layouts/AuthLayout'
 import AppLayout from './layouts/AppLayout'
@@ -36,8 +38,11 @@ function GuestRoute({ children }) {
 }
 
 export default function App() {
+  const [splashDone, setSplashDone] = useState(false)
+
   return (
     <QueryClientProvider client={qc}>
+      {!splashDone && <SplashScreen onDone={() => setSplashDone(true)} />}
       <AuthProvider>
         <BrowserRouter>
           <Routes>

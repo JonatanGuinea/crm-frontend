@@ -1,4 +1,5 @@
 import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom'
+import logo from '../assets/logo.png'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext'
 import GlobalSearch from '../components/GlobalSearch'
@@ -48,7 +49,7 @@ export default function AppLayout() {
       {/* Sidebar */}
       <aside className="w-56 bg-white border-r border-gray-200 flex flex-col">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h1 className="text-lg font-semibold text-gray-900">CRM</h1>
+          <img src={logo} alt="Logo" className="w-4/5" />
         </div>
         <OrgSwitcher />
 
