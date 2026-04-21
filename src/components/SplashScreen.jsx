@@ -15,12 +15,12 @@ export default function SplashScreen({ onDone }) {
 
   return (
     <div
-      className={`fixed inset-0 bg-white dark:bg-gray-900 flex items-center justify-center z-50 transition-opacity duration-500 ${fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+      className={`fixed inset-0 bg-base flex items-center justify-center z-50 transition-opacity duration-500 ${fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
     >
       <div className="flex items-center">
         {/* SOF — sale desde el centro hacia la izquierda */}
         <span
-          className="text-5xl font-bold text-indigo-600 transition-all duration-700"
+          className="text-5xl font-bold text-fg transition-all duration-700"
           style={{
             opacity: showSides ? 1 : 0,
             transform: showSides ? 'translateX(0)' : 'translateX(60px)',
@@ -32,7 +32,7 @@ export default function SplashScreen({ onDone }) {
 
         {/* IA — aparece primero al centro */}
         <span
-          className="text-5xl font-bold text-gray-900 dark:text-white transition-all duration-500"
+          className="text-5xl font-bold text-brand transition-all duration-500"
           style={{
             opacity: showIA ? 1 : 0,
             transform: showIA ? 'scale(1)' : 'scale(0.8)',
@@ -43,7 +43,7 @@ export default function SplashScreen({ onDone }) {
 
         {/* PP — sale desde el centro hacia la derecha */}
         <span
-          className="text-5xl font-bold text-indigo-600 transition-all duration-700"
+          className="text-5xl font-bold text-fg transition-all duration-700"
           style={{
             opacity: showSides ? 1 : 0,
             transform: showSides ? 'translateX(0)' : 'translateX(-60px)',
