@@ -1,17 +1,50 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getProfile, updateProfile, changePassword, uploadAvatar } from '../../api/profile'
 
 const API_BASE = import.meta.env.VITE_API_URL.replace('/api', '')
 
-function AvatarCircle({ avatar, name, size = 'lg' }) {
+function AvatarModal({ src, name, onClose }) {
+  useEffect(() => {
+    function onKey(e) { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+      onClick={onClose}
+    >
+      <div
+        className="relative max-w-sm w-full mx-4"
+        onClick={e => e.stopPropagation()}
+      >
+        <img
+          src={src}
+          alt={name}
+          className="w-full rounded-2xl object-cover shadow-2xl"
+        />
+        <button
+          onClick={onClose}
+          className="absolute -top-3 -right-3 w-8 h-8 bg-surface border border-line rounded-full flex items-center justify-center text-fg-muted hover:text-fg transition-colors shadow"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function AvatarCircle({ avatar, name, size = 'lg', onClick }) {
   const dim = size === 'lg' ? 'w-24 h-24 text-3xl' : 'w-8 h-8 text-sm'
   if (avatar) {
     return (
       <img
         src={`${API_BASE}/uploads/${avatar}`}
         alt={name}
-        className={`${dim} rounded-full object-cover`}
+        onClick={onClick}
+        className={`${dim} rounded-full object-cover ${onClick ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
       />
     )
   }
@@ -39,6 +72,7 @@ export default function ProfilePage() {
   const [pwMsg, setPwMsg] = useState(null)
 
   const [avatarMsg, setAvatarMsg] = useState(null)
+  const [avatarModalOpen, setAvatarModalOpen] = useState(false)
 
   const nameMut = useMutation({
     mutationFn: updateProfile,
@@ -112,9 +146,22 @@ export default function ProfilePage() {
     <div className="p-4 md:p-8 max-w-lg">
       <h1 className="text-2xl font-semibold text-fg mb-8">Mi perfil</h1>
 
+      {avatarModalOpen && data?.avatar && (
+        <AvatarModal
+          src={`${API_BASE}/uploads/${data.avatar}`}
+          name={data.name}
+          onClose={() => setAvatarModalOpen(false)}
+        />
+      )}
+
       {/* Avatar */}
       <div className="mb-8 flex items-center gap-5">
-        <AvatarCircle avatar={data?.avatar} name={data?.name} size="lg" />
+        <AvatarCircle
+          avatar={data?.avatar}
+          name={data?.name}
+          size="lg"
+          onClick={data?.avatar ? () => setAvatarModalOpen(true) : undefined}
+        />
         <div>
           <input
             ref={fileInputRef}
