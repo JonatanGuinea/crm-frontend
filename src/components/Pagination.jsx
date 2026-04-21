@@ -7,24 +7,24 @@ export default function Pagination({ pagination, onPageChange }) {
 
   return (
     <div className="mt-4 flex items-center justify-between">
-      <p className="text-xs text-gray-400 dark:text-gray-500">
+      <p className="text-xs text-fg-muted">
         {from}–{to} de {total}
       </p>
       <div className="flex items-center gap-1">
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
-          className="px-3 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="px-3 py-1.5 text-xs border border-line rounded-md text-fg-soft hover:bg-raised disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           ← Anterior
         </button>
-        <span className="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400">
+        <span className="px-3 py-1.5 text-xs text-fg-muted">
           {page} / {totalPages}
         </span>
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages}
-          className="px-3 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="px-3 py-1.5 text-xs border border-line rounded-md text-fg-soft hover:bg-raised disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           Siguiente →
         </button>

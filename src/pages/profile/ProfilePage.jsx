@@ -17,7 +17,7 @@ function AvatarCircle({ avatar, name, size = 'lg' }) {
   }
   const initials = name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
   return (
-    <div className={`${dim} rounded-full bg-indigo-100 text-indigo-600 font-semibold flex items-center justify-center`}>
+    <div className={`${dim} rounded-full bg-brand-subtle text-brand font-semibold flex items-center justify-center`}>
       {initials}
     </div>
   )
@@ -100,17 +100,17 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className="p-8 flex justify-center">
-        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-brand border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
-  const inputCls = "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-  const labelCls = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+  const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
+  const labelCls = "block text-sm font-medium text-fg-soft mb-1"
 
   return (
-    <div className="p-8 max-w-lg">
-      <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-8">Mi perfil</h1>
+    <div className="p-4 md:p-8 max-w-lg">
+      <h1 className="text-2xl font-semibold text-fg mb-8">Mi perfil</h1>
 
       {/* Avatar */}
       <div className="mb-8 flex items-center gap-5">
@@ -126,13 +126,13 @@ export default function ProfilePage() {
           <button
             onClick={() => fileInputRef.current.click()}
             disabled={avatarMut.isPending}
-            className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
+            className="px-3 py-1.5 border border-line-soft rounded-md text-sm text-fg-soft hover:bg-raised disabled:opacity-50 transition-colors"
           >
             {avatarMut.isPending ? 'Subiendo...' : 'Cambiar foto'}
           </button>
-          <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">JPG, PNG, GIF o WEBP · máx. 5 MB</p>
+          <p className="mt-1 text-xs text-fg-muted">JPG, PNG, GIF o WEBP · máx. 5 MB</p>
           {avatarMsg && (
-            <p className={`mt-1 text-xs ${avatarMsg.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+            <p className={`mt-1 text-xs ${avatarMsg.type === 'success' ? 'text-brand' : 'text-danger'}`}>
               {avatarMsg.text}
             </p>
           )}
@@ -140,14 +140,14 @@ export default function ProfilePage() {
       </div>
 
       {/* Info actual */}
-      <div className="mb-8 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 space-y-1">
-        <p><span className="font-medium">Email:</span> {data?.email}</p>
-        <p><span className="font-medium">Nombre actual:</span> {data?.name}</p>
+      <div className="mb-8 p-4 bg-raised rounded-lg border border-line text-sm text-fg-soft space-y-1">
+        <p><span className="font-medium text-fg">Email:</span> {data?.email}</p>
+        <p><span className="font-medium text-fg">Nombre actual:</span> {data?.name}</p>
       </div>
 
       {/* Cambiar nombre */}
       <section className="mb-8">
-        <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-4">Cambiar nombre</h2>
+        <h2 className="text-base font-semibold text-fg mb-4">Cambiar nombre</h2>
         <form onSubmit={handleNameSubmit} className="space-y-4">
           <div>
             <label className={labelCls}>Nuevo nombre</label>
@@ -161,25 +161,25 @@ export default function ProfilePage() {
             />
           </div>
           {nameMsg && (
-            <p className={`text-sm ${nameMsg.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+            <p className={`text-sm ${nameMsg.type === 'success' ? 'text-brand' : 'text-danger'}`}>
               {nameMsg.text}
             </p>
           )}
           <button
             type="submit"
             disabled={nameMut.isPending}
-            className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+            className="px-4 py-2 bg-brand text-white text-sm font-medium rounded-md hover:bg-brand-hover disabled:opacity-50 transition-colors"
           >
             {nameMut.isPending ? 'Guardando...' : 'Guardar nombre'}
           </button>
         </form>
       </section>
 
-      <hr className="border-gray-200 dark:border-gray-700 mb-8" />
+      <hr className="border-line mb-8" />
 
       {/* Cambiar contraseña */}
       <section>
-        <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-4">Cambiar contraseña</h2>
+        <h2 className="text-base font-semibold text-fg mb-4">Cambiar contraseña</h2>
         <form onSubmit={handlePwSubmit} className="space-y-4">
           <div>
             <label className={labelCls}>Contraseña actual</label>
@@ -212,14 +212,14 @@ export default function ProfilePage() {
             />
           </div>
           {pwMsg && (
-            <p className={`text-sm ${pwMsg.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+            <p className={`text-sm ${pwMsg.type === 'success' ? 'text-brand' : 'text-danger'}`}>
               {pwMsg.text}
             </p>
           )}
           <button
             type="submit"
             disabled={pwMut.isPending}
-            className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+            className="px-4 py-2 bg-brand text-white text-sm font-medium rounded-md hover:bg-brand-hover disabled:opacity-50 transition-colors"
           >
             {pwMut.isPending ? 'Guardando...' : 'Cambiar contraseña'}
           </button>

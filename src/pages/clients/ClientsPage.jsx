@@ -27,10 +27,10 @@ export default function ClientsPage() {
   function handleSearch(val) { setSearch(val); setPage(1) }
 
   return (
-    <div className="p-8 min-h-full dark:bg-gray-900">
+    <div className="p-4 md:p-8 min-h-full bg-base">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Clientes</h2>
-        <button onClick={openCreate} className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors">
+        <h2 className="text-xl font-semibold text-fg">Clientes</h2>
+        <button onClick={openCreate} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition-colors">
           + Nuevo cliente
         </button>
       </div>
@@ -40,40 +40,44 @@ export default function ClientsPage() {
         placeholder="Buscar por nombre..."
         value={search}
         onChange={e => handleSearch(e.target.value)}
-        className="mb-4 w-full max-w-xs px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+        className="mb-4 w-full max-w-xs px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg placeholder:text-fg-muted"
       />
 
       {isLoading ? (
-        <p className="text-sm text-gray-500 dark:text-gray-400">Cargando...</p>
+        <p className="text-sm text-fg-soft">Cargando...</p>
       ) : (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
-              <tr>
-                {['Nombre', 'Email', 'Empresa', 'Teléfono', ''].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {data?.data?.map(c => (
-                <tr key={c.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{c.name}</td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{c.email || '-'}</td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{c.company || '-'}</td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{c.phone || '-'}</td>
-                  <td className="px-4 py-3 text-right space-x-2">
-                    <Link to={`/clients/${c.id}`} className="text-gray-500 dark:text-gray-400 hover:underline text-xs">Ver</Link>
-                    <button onClick={() => openEdit(c)} className="text-indigo-600 hover:underline text-xs">Editar</button>
-                    <button onClick={() => { if (confirm('¿Eliminar cliente?')) del.mutate(c.id) }} className="text-red-500 hover:underline text-xs">Eliminar</button>
-                  </td>
+        <div className="bg-surface rounded-xl border border-line overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-raised border-b border-line">
+                <tr>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Nombre</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Email</th>
+                  <th className="hidden md:table-cell text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Empresa</th>
+                  <th className="hidden md:table-cell text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Teléfono</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide"></th>
                 </tr>
-              ))}
-              {!data?.data?.length && (
-                <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-400 dark:text-gray-500">Sin clientes</td></tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {data?.data?.map(c => (
+                  <tr key={c.id} className="hover:bg-raised">
+                    <td className="px-4 py-3 font-medium text-fg">{c.name}</td>
+                    <td className="px-4 py-3 text-fg-soft">{c.email || '-'}</td>
+                    <td className="hidden md:table-cell px-4 py-3 text-fg-soft">{c.company || '-'}</td>
+                    <td className="hidden md:table-cell px-4 py-3 text-fg-soft">{c.phone || '-'}</td>
+                    <td className="px-4 py-3 text-right space-x-2">
+                      <Link to={`/clients/${c.id}`} className="text-fg-muted hover:underline text-xs">Ver</Link>
+                      <button onClick={() => openEdit(c)} className="text-brand hover:underline text-xs">Editar</button>
+                      <button onClick={() => { if (confirm('¿Eliminar cliente?')) del.mutate(c.id) }} className="text-danger hover:underline text-xs">Eliminar</button>
+                    </td>
+                  </tr>
+                ))}
+                {!data?.data?.length && (
+                  <tr><td colSpan={5} className="px-4 py-6 text-center text-fg-muted">Sin clientes</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

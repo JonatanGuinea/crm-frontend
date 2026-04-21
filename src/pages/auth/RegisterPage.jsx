@@ -26,8 +26,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Crear cuenta</h2>
+    <div className="bg-surface rounded-xl shadow-sm border border-line p-8">
+      <h2 className="text-xl font-semibold text-fg mb-6">Crear cuenta</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {[
@@ -37,31 +37,31 @@ export default function RegisterPage() {
           { key: 'organizationName', label: 'Nombre de la organización', type: 'text' },
         ].map(({ key, label, type }) => (
           <div key={key}>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
+            <label className="block text-sm font-medium text-fg-soft mb-1">{label}</label>
             <input
               type={type}
               required
               value={form[key]}
               onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
             />
           </div>
         ))}
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-danger">{error}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2 px-4 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+          className="w-full py-2 px-4 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50 transition-colors"
         >
           {loading ? 'Registrando...' : 'Registrarse'}
         </button>
       </form>
 
-      <p className="mt-4 text-sm text-center text-gray-600 dark:text-gray-400">
+      <p className="mt-4 text-sm text-center text-fg-soft">
         ¿Ya tenés cuenta?{' '}
-        <Link to="/login" className="text-indigo-600 hover:underline">Iniciar sesión</Link>
+        <Link to="/login" className="text-brand hover:underline">Iniciar sesión</Link>
       </p>
     </div>
   )

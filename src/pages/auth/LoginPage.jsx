@@ -26,45 +26,45 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Iniciar sesión</h2>
+    <div className="bg-surface rounded-xl shadow-sm border border-line p-8">
+      <h2 className="text-xl font-semibold text-fg mb-6">Iniciar sesión</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+          <label className="block text-sm font-medium text-fg-soft mb-1">Email</label>
           <input
             type="email"
             required
             value={form.email}
             onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+            className="w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contraseña</label>
+          <label className="block text-sm font-medium text-fg-soft mb-1">Contraseña</label>
           <input
             type="password"
             required
             value={form.password}
             onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+            className="w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
           />
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-danger">{error}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2 px-4 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+          className="w-full py-2 px-4 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50 transition-colors"
         >
           {loading ? 'Entrando...' : 'Entrar'}
         </button>
       </form>
 
-      <p className="mt-4 text-sm text-center text-gray-600 dark:text-gray-400">
+      <p className="mt-4 text-sm text-center text-fg-soft">
         ¿No tenés cuenta?{' '}
-        <Link to="/register" className="text-indigo-600 hover:underline">Registrarse</Link>
+        <Link to="/register" className="text-brand hover:underline">Registrarse</Link>
       </p>
     </div>
   )

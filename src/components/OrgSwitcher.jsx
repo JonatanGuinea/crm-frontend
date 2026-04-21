@@ -59,7 +59,6 @@ export default function OrgSwitcher() {
       const res = await createOrganization(newName.trim())
       const newOrg = res.data.data
       await qc.invalidateQueries(['organizations'])
-      // switch automático a la nueva org
       const switchRes = await switchOrganization(newOrg.id)
       switchOrg(switchRes.data.data.token)
       qc.clear()
@@ -75,24 +74,24 @@ export default function OrgSwitcher() {
   const hasMultiple = orgs && orgs.length > 1
 
   return (
-    <div ref={ref} className="relative border-b border-gray-200 dark:border-gray-700">
+    <div ref={ref} className="relative border-b border-line">
       <button
         onClick={() => { setOpen(v => !v); setCreating(false); setNewName(''); setCreateError('') }}
-        className="w-full px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        className="w-full px-6 py-4 text-left hover:bg-raised transition-colors"
       >
-        <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Organización</p>
+        <p className="text-xs text-fg-muted uppercase tracking-wide mb-0.5">Organización</p>
         <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{currentOrg?.name || '...'}</p>
-          <span className="text-gray-400 dark:text-gray-500 text-xs ml-1">{open ? '▲' : '▼'}</span>
+          <p className="text-sm font-semibold text-fg truncate">{currentOrg?.name || '...'}</p>
+          <span className="text-fg-muted text-xs ml-1">{open ? '▲' : '▼'}</span>
         </div>
-        <p className="text-xs text-gray-400 dark:text-gray-500 capitalize">{user?.role}</p>
+        <p className="text-xs text-fg-muted capitalize">{user?.role}</p>
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-b-xl shadow-lg z-50">
+        <div className="absolute top-full left-0 w-full bg-surface border border-line rounded-b-xl shadow-lg z-50">
           {hasMultiple && (
             <>
-              <p className="px-4 py-2 text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide border-b border-gray-100 dark:border-gray-700">
+              <p className="px-4 py-2 text-xs text-fg-muted uppercase tracking-wide border-b border-line">
                 Cambiar a...
               </p>
               <ul>
@@ -103,12 +102,12 @@ export default function OrgSwitcher() {
                       disabled={switching || org.id === user?.org}
                       className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
                         org.id === user?.org
-                          ? 'text-indigo-700 dark:text-indigo-400 font-medium bg-indigo-50 dark:bg-indigo-900/30'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                          ? 'text-brand font-medium bg-brand-subtle'
+                          : 'text-fg-soft hover:bg-raised'
                       }`}
                     >
                       <span className="block truncate">{org.name}</span>
-                      <span className="text-xs text-gray-400 dark:text-gray-500 capitalize">{org.role}</span>
+                      <span className="text-xs text-fg-muted capitalize">{org.role}</span>
                     </button>
                   </li>
                 ))}
@@ -116,12 +115,11 @@ export default function OrgSwitcher() {
             </>
           )}
 
-          {/* Crear nueva organización */}
-          <div className="border-t border-gray-100 dark:border-gray-700">
+          <div className="border-t border-line">
             {!creating ? (
               <button
                 onClick={() => setCreating(true)}
-                className="w-full text-left px-4 py-2.5 text-sm text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
+                className="w-full text-left px-4 py-2.5 text-sm text-brand hover:bg-brand-subtle transition-colors"
               >
                 + Nueva organización
               </button>
@@ -133,21 +131,21 @@ export default function OrgSwitcher() {
                   placeholder="Nombre de la organización"
                   value={newName}
                   onChange={e => setNewName(e.target.value)}
-                  className="w-full px-2.5 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-2.5 py-1.5 text-sm border border-line-soft rounded-md focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
                 />
-                {createError && <p className="text-xs text-red-600">{createError}</p>}
+                {createError && <p className="text-xs text-danger">{createError}</p>}
                 <div className="flex gap-2">
                   <button
                     type="submit"
                     disabled={createLoading || !newName.trim()}
-                    className="flex-1 py-1.5 bg-indigo-600 text-white text-xs rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                    className="flex-1 py-1.5 bg-brand text-white text-xs rounded-md hover:bg-brand-hover disabled:opacity-50"
                   >
                     {createLoading ? 'Creando...' : 'Crear'}
                   </button>
                   <button
                     type="button"
                     onClick={() => { setCreating(false); setNewName(''); setCreateError('') }}
-                    className="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                    className="px-3 py-1.5 text-xs text-fg-muted hover:text-fg-soft"
                   >
                     Cancelar
                   </button>

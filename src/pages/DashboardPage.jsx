@@ -6,10 +6,10 @@ import { useAuth } from '../context/AuthContext'
 
 function StatCard({ label, value, sub }) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-      <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
-      <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{value}</p>
-      {sub && <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{sub}</p>}
+    <div className="bg-surface rounded-xl border border-line p-5">
+      <p className="text-sm text-fg-soft">{label}</p>
+      <p className="text-2xl font-semibold text-fg mt-1">{value}</p>
+      {sub && <p className="text-xs text-fg-muted mt-1">{sub}</p>}
     </div>
   )
 }
@@ -37,12 +37,12 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="p-8">
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">Dashboard</h2>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">Bienvenido, {user?.name || 'usuario'}</p>
+    <div className="p-4 md:p-8">
+      <h2 className="text-xl font-semibold text-fg mb-1">Dashboard</h2>
+      <p className="text-sm text-fg-soft mb-8">Bienvenido, {user?.name || 'usuario'}</p>
 
       <section className="mb-8">
-        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Proyectos</h3>
+        <h3 className="text-sm font-medium text-fg-soft uppercase tracking-wide mb-3">Proyectos</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard label="Total proyectos" value={projects?.summary.totalProjects ?? '-'} />
           <StatCard label="Presupuesto total" value={fmt(projects?.summary.totalBudget)} />
@@ -53,7 +53,7 @@ export default function DashboardPage() {
       </section>
 
       <section className="mb-8">
-        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Facturas</h3>
+        <h3 className="text-sm font-medium text-fg-soft uppercase tracking-wide mb-3">Facturas</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard label="Total facturas" value={invoices?.summary.totalInvoices ?? '-'} />
           <StatCard label="Cobrado" value={fmt(invoices?.summary.paid)} />
@@ -63,7 +63,7 @@ export default function DashboardPage() {
       </section>
 
       <section>
-        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Presupuestos</h3>
+        <h3 className="text-sm font-medium text-fg-soft uppercase tracking-wide mb-3">Presupuestos</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard label="Total presupuestos" value={quotes?.summary.totalQuotes ?? '-'} />
           <StatCard label="Valor total" value={fmt(quotes?.summary.totalValue)} />

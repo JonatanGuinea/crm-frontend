@@ -10,9 +10,11 @@ const STATUS_LABELS = {
   rejected: 'Rechazado', expired: 'Vencido'
 }
 const STATUS_COLORS = {
-  draft: 'bg-gray-100 text-gray-600', sent: 'bg-blue-100 text-blue-700',
-  approved: 'bg-green-100 text-green-700', rejected: 'bg-red-100 text-red-700',
-  expired: 'bg-yellow-100 text-yellow-700'
+  draft:    'bg-raised text-fg-soft',
+  sent:     'bg-info-subtle text-info',
+  approved: 'bg-brand-subtle text-brand',
+  rejected: 'bg-danger-subtle text-danger',
+  expired:  'bg-warning-subtle text-warning'
 }
 
 export default function QuotesPage() {
@@ -46,61 +48,66 @@ export default function QuotesPage() {
   function handleSaved() { setModalOpen(false); qc.invalidateQueries(['quotes']) }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Presupuestos</h2>
-        <button onClick={openCreate} className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors">
+        <h2 className="text-xl font-semibold text-fg">Presupuestos</h2>
+        <button onClick={openCreate} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition-colors">
           + Nuevo presupuesto
         </button>
       </div>
 
       <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1) }}
-        className="mb-4 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white">
+        className="mb-4 px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg">
         <option value="">Todos los estados</option>
         {Object.entries(STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
       </select>
 
-      {isLoading ? <p className="text-sm text-gray-500 dark:text-gray-400">Cargando...</p> : (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
-              <tr>
-                {['#', 'Título', 'Cliente', 'Estado', 'Total', ''].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {data?.data?.map(q => (
-                <tr key={q.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400">#{q.number}</td>
-                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
-                    <Link to={`/quotes/${q.id}`} className="hover:text-indigo-600">{q.title}</Link>
-                  </td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{q.client?.name}</td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[q.status]}`}>
-                      {STATUS_LABELS[q.status]}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">${Number(q.total).toLocaleString('es-AR')}</td>
-                  <td className="px-4 py-3 text-right space-x-2">
-                    <button onClick={() => openEdit(q.id)} className="text-indigo-600 hover:underline text-xs">Editar</button>
-                    {q.status === 'approved' && (
-                      <button onClick={() => { if (confirm('¿Generar factura desde este presupuesto?')) toInvoice.mutate(q.id) }}
-                        className="text-green-600 hover:underline text-xs">Facturar</button>
-                    )}
-                    {q.status === 'draft' && (
-                      <button onClick={() => { if (confirm('¿Eliminar?')) del.mutate(q.id) }} className="text-red-500 hover:underline text-xs">Eliminar</button>
-                    )}
-                  </td>
+      {isLoading ? <p className="text-sm text-fg-soft">Cargando...</p> : (
+        <div className="bg-surface rounded-xl border border-line overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-raised border-b border-line">
+                <tr>
+                  <th className="hidden sm:table-cell text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">#</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Título</th>
+                  <th className="hidden sm:table-cell text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Cliente</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Estado</th>
+                  <th className="hidden md:table-cell text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Total</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide"></th>
                 </tr>
-              ))}
-              {!data?.data?.length && (
-                <tr><td colSpan={6} className="px-4 py-6 text-center text-gray-400 dark:text-gray-500">Sin presupuestos</td></tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {data?.data?.map(q => (
+                  <tr key={q.id} className="hover:bg-raised">
+                    <td className="hidden sm:table-cell px-4 py-3 text-fg-muted">#{q.number}</td>
+                    <td className="px-4 py-3 font-medium text-fg">
+                      <Link to={`/quotes/${q.id}`} className="hover:text-brand">{q.title}</Link>
+                    </td>
+                    <td className="hidden sm:table-cell px-4 py-3 text-fg-soft">{q.client?.name}</td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[q.status]}`}>
+                        {STATUS_LABELS[q.status]}
+                      </span>
+                    </td>
+                    <td className="hidden md:table-cell px-4 py-3 text-fg-soft">${Number(q.total).toLocaleString('es-AR')}</td>
+                    <td className="px-4 py-3 text-right space-x-2">
+                      <button onClick={() => openEdit(q.id)} className="text-brand hover:underline text-xs">Editar</button>
+                      {q.status === 'approved' && (
+                        <button onClick={() => { if (confirm('¿Generar factura desde este presupuesto?')) toInvoice.mutate(q.id) }}
+                          className="text-brand hover:underline text-xs">Facturar</button>
+                      )}
+                      {q.status === 'draft' && (
+                        <button onClick={() => { if (confirm('¿Eliminar?')) del.mutate(q.id) }} className="text-danger hover:underline text-xs">Eliminar</button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {!data?.data?.length && (
+                  <tr><td colSpan={6} className="px-4 py-6 text-center text-fg-muted">Sin presupuestos</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

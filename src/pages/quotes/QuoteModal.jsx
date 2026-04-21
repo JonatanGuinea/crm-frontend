@@ -17,6 +17,9 @@ const STATUS_LABELS = {
   rejected: 'Rechazado', expired: 'Vencido'
 }
 
+const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
+const labelCls = "block text-sm font-medium text-fg-soft mb-1"
+
 export default function QuoteModal({ quoteId, onClose, onSaved }) {
   const isEditing = Boolean(quoteId)
 
@@ -104,19 +107,15 @@ export default function QuoteModal({ quoteId, onClose, onSaved }) {
     }
   }
 
-  const inputCls = "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-  const labelCls = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-5">
+      <div className="bg-surface rounded-xl shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+        <h3 className="text-lg font-semibold text-fg mb-5">
           {isEditing ? 'Editar presupuesto' : 'Nuevo presupuesto'}
-          {quoteData && <span className="ml-2 text-sm font-normal text-gray-400 dark:text-gray-500">#{quoteData.number}</span>}
+          {quoteData && <span className="ml-2 text-sm font-normal text-fg-muted">#{quoteData.number}</span>}
         </h3>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Título */}
           <div>
             <label className={labelCls}>Título *</label>
             <input type="text" required value={form.title}
@@ -124,7 +123,6 @@ export default function QuoteModal({ quoteId, onClose, onSaved }) {
               className={inputCls} />
           </div>
 
-          {/* Cliente / Proyecto */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelCls}>Cliente *</label>
@@ -146,7 +144,6 @@ export default function QuoteModal({ quoteId, onClose, onSaved }) {
             </div>
           </div>
 
-          {/* Vencimiento / Moneda / IVA */}
           <div className="grid grid-cols-3 gap-3">
             <div>
               <label className={labelCls}>Válido hasta</label>
@@ -172,24 +169,21 @@ export default function QuoteModal({ quoteId, onClose, onSaved }) {
             </div>
           </div>
 
-          {/* Items */}
           <div>
             <label className={labelCls}>Ítems *</label>
-            <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-700">
+            <div className="border border-line rounded-lg p-3 bg-raised">
               <LineItemsEditor items={items} onChange={setItems} />
             </div>
           </div>
 
-          {/* Total */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 text-sm space-y-1 text-right">
-            <div className="text-gray-500 dark:text-gray-400">Subtotal: <span className="text-gray-900 dark:text-white font-medium">${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span></div>
+          <div className="bg-raised rounded-lg p-3 text-sm space-y-1 text-right">
+            <div className="text-fg-soft">Subtotal: <span className="text-fg font-medium">${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span></div>
             {form.taxRate > 0 && (
-              <div className="text-gray-500 dark:text-gray-400">IVA ({form.taxRate}%): <span className="text-gray-900 dark:text-white font-medium">${taxAmount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span></div>
+              <div className="text-fg-soft">IVA ({form.taxRate}%): <span className="text-fg font-medium">${taxAmount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span></div>
             )}
-            <div className="text-base font-semibold text-gray-900 dark:text-white">Total {form.currency}: ${total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</div>
+            <div className="text-base font-semibold text-fg">Total {form.currency}: ${total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</div>
           </div>
 
-          {/* Cambio de estado (solo edición) */}
           {isEditing && allowedStatuses.length > 0 && (
             <div>
               <label className={labelCls}>Cambiar estado</label>
@@ -202,7 +196,6 @@ export default function QuoteModal({ quoteId, onClose, onSaved }) {
             </div>
           )}
 
-          {/* Notas */}
           <div>
             <label className={labelCls}>Notas</label>
             <textarea rows={2} value={form.notes}
@@ -210,11 +203,11 @@ export default function QuoteModal({ quoteId, onClose, onSaved }) {
               className={inputCls} />
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Cancelar</button>
-            <button type="submit" disabled={loading} className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-fg-soft hover:text-fg">Cancelar</button>
+            <button type="submit" disabled={loading} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50">
               {loading ? 'Guardando...' : 'Guardar'}
             </button>
           </div>

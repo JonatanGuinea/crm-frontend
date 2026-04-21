@@ -58,7 +58,6 @@ export default function GlobalSearch() {
       .finally(() => setLoading(false))
   }, [debouncedQuery])
 
-  // Cerrar al hacer click fuera
   useEffect(() => {
     function handleClick(e) {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
@@ -84,7 +83,7 @@ export default function GlobalSearch() {
   return (
     <div ref={containerRef} className="relative w-72">
       <div className="relative">
-        <span className="absolute inset-y-0 left-3 flex items-center text-gray-400 dark:text-gray-500 text-sm pointer-events-none">
+        <span className="absolute inset-y-0 left-3 flex items-center text-fg-muted text-sm pointer-events-none">
           🔍
         </span>
         <input
@@ -93,32 +92,32 @@ export default function GlobalSearch() {
           value={query}
           onChange={e => setQuery(e.target.value)}
           onFocus={() => results && setOpen(true)}
-          className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white dark:focus:bg-gray-600 transition-colors"
+          className="w-full pl-8 pr-3 py-1.5 text-sm border border-line rounded-lg bg-raised text-fg placeholder:text-fg-muted focus:outline-none focus:ring-2 focus:ring-brand focus:bg-surface transition-colors"
         />
         {loading && (
-          <span className="absolute inset-y-0 right-3 flex items-center text-gray-400 dark:text-gray-500 text-xs">...</span>
+          <span className="absolute inset-y-0 right-3 flex items-center text-fg-muted text-xs">...</span>
         )}
       </div>
 
       {open && (
-        <div className="absolute top-full mt-1 left-0 w-96 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg z-50 max-h-96 overflow-y-auto">
+        <div className="absolute top-full mt-1 left-0 w-96 bg-surface rounded-xl border border-line shadow-lg z-50 max-h-96 overflow-y-auto">
           {!hasResults ? (
-            <p className="px-4 py-3 text-sm text-gray-400 dark:text-gray-500">Sin resultados para "{debouncedQuery}"</p>
+            <p className="px-4 py-3 text-sm text-fg-muted">Sin resultados para "{debouncedQuery}"</p>
           ) : (
             Object.entries(SECTION_LABELS).map(([section, label]) => {
               const items = results[section]
               if (!items?.length) return null
               return (
                 <div key={section}>
-                  <div className="px-4 py-2 bg-gray-50 dark:bg-gray-700 border-b border-gray-100 dark:border-gray-700">
-                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{label}</span>
+                  <div className="px-4 py-2 bg-raised border-b border-line">
+                    <span className="text-xs font-semibold text-fg-soft uppercase tracking-wide">{label}</span>
                   </div>
                   <ul>
                     {items.map(item => (
                       <li key={item.id}>
                         <button
                           onClick={() => handleSelect(section, item)}
-                          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-700 dark:hover:text-indigo-400 transition-colors"
+                          className="w-full text-left px-4 py-2.5 text-sm text-fg-soft hover:bg-brand-subtle hover:text-brand transition-colors"
                         >
                           {itemLabel(section, item)}
                         </button>

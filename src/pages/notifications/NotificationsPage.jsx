@@ -2,23 +2,23 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getNotifications, markAsRead, markAllAsRead, deleteNotification } from '../../api/notifications'
 
 const TYPE_LABELS = {
-  invoice_overdue: 'Factura vencida',
-  invoice_paid: 'Factura pagada',
-  quote_expiring: 'Presupuesto por vencer',
-  quote_approved: 'Presupuesto aprobado',
-  quote_rejected: 'Presupuesto rechazado',
+  invoice_overdue:  'Factura vencida',
+  invoice_paid:     'Factura pagada',
+  quote_expiring:   'Presupuesto por vencer',
+  quote_approved:   'Presupuesto aprobado',
+  quote_rejected:   'Presupuesto rechazado',
   project_deadline: 'Proyecto por vencer',
-  member_joined: 'Nuevo miembro'
+  member_joined:    'Nuevo miembro'
 }
 
 const TYPE_COLORS = {
-  invoice_overdue: 'bg-red-100 text-red-700',
-  invoice_paid: 'bg-green-100 text-green-700',
-  quote_expiring: 'bg-yellow-100 text-yellow-700',
-  quote_approved: 'bg-green-100 text-green-700',
-  quote_rejected: 'bg-red-100 text-red-700',
-  project_deadline: 'bg-orange-100 text-orange-700',
-  member_joined: 'bg-blue-100 text-blue-700'
+  invoice_overdue:  'bg-danger-subtle text-danger',
+  invoice_paid:     'bg-brand-subtle text-brand',
+  quote_expiring:   'bg-warning-subtle text-warning',
+  quote_approved:   'bg-brand-subtle text-brand',
+  quote_rejected:   'bg-danger-subtle text-danger',
+  project_deadline: 'bg-warning-subtle text-warning',
+  member_joined:    'bg-info-subtle text-info'
 }
 
 export default function NotificationsPage() {
@@ -45,45 +45,45 @@ export default function NotificationsPage() {
   })
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Notificaciones</h2>
+          <h2 className="text-xl font-semibold text-fg">Notificaciones</h2>
           {data?.unreadCount > 0 && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{data.unreadCount} sin leer</p>
+            <p className="text-sm text-fg-soft mt-0.5">{data.unreadCount} sin leer</p>
           )}
         </div>
         {data?.unreadCount > 0 && (
-          <button onClick={() => readAll.mutate()} className="text-sm text-indigo-600 hover:underline">
+          <button onClick={() => readAll.mutate()} className="text-sm text-brand hover:underline">
             Marcar todas como leídas
           </button>
         )}
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-gray-500 dark:text-gray-400">Cargando...</p>
+        <p className="text-sm text-fg-soft">Cargando...</p>
       ) : (
         <div className="space-y-2">
           {data?.notifications?.map(n => (
-            <div key={n.id} className={`flex items-start gap-3 p-4 rounded-xl border ${n.read ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700' : 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800'}`}>
+            <div key={n.id} className={`flex items-start gap-3 p-4 rounded-xl border ${n.read ? 'bg-surface border-line' : 'bg-brand-subtle border-brand'}`}>
               <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-medium ${TYPE_COLORS[n.type]}`}>
                 {TYPE_LABELS[n.type]}
               </span>
-              <p className="flex-1 text-sm text-gray-700 dark:text-gray-300">{n.message}</p>
+              <p className="flex-1 text-sm text-fg-soft">{n.message}</p>
               <div className="flex items-center gap-2 shrink-0">
                 {!n.read && (
-                  <button onClick={() => readOne.mutate(n.id)} className="text-xs text-indigo-600 hover:underline">
+                  <button onClick={() => readOne.mutate(n.id)} className="text-xs text-brand hover:underline">
                     Leído
                   </button>
                 )}
-                <button onClick={() => del.mutate(n.id)} className="text-xs text-gray-400 dark:text-gray-500 hover:text-red-500">
+                <button onClick={() => del.mutate(n.id)} className="text-xs text-fg-muted hover:text-danger">
                   ×
                 </button>
               </div>
             </div>
           ))}
           {!data?.notifications?.length && (
-            <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-8">Sin notificaciones</p>
+            <p className="text-sm text-fg-muted text-center py-8">Sin notificaciones</p>
           )}
         </div>
       )}

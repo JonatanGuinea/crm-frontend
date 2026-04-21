@@ -1,2 +1,86 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* ── Design tokens ──────────────────────────────────────── */
+:root {
+  --brand-teal:       #00B2A9;
+  --brand-teal-dark:  #009990;
+  --brand-teal-light: #33C4BE;
+  --brand-teal-muted: rgba(0, 178, 169, 0.08);
+  --brand-teal-glow:  rgba(0, 178, 169, 0.18);
+
+  --brand-blue:       #0072F5;
+  --brand-blue-muted: rgba(0, 114, 245, 0.08);
+
+  --brand-red:        #E64E53;
+  --brand-red-muted:  rgba(230, 78, 83, 0.08);
+
+  --brand-amber:      #F5B841;
+  --brand-amber-muted:rgba(245, 184, 65, 0.10);
+
+  --bg-primary:    #FAFAFA;
+  --bg-surface-1:  #FFFFFF;
+  --bg-surface-2:  #F4F4F5;
+  --bg-surface-3:  #EEEEEF;
+
+  --text-primary:   #09090B;
+  --text-secondary: #52525B;
+  --text-muted:     #A1A1AA;
+
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-medium: rgba(0, 0, 0, 0.10);
+  --border-strong: rgba(0, 0, 0, 0.18);
+}
+
+.dark {
+  --brand-teal-muted: rgba(0, 178, 169, 0.15);
+  --brand-blue-muted: rgba(0, 114, 245, 0.15);
+  --brand-red-muted:  rgba(230, 78, 83, 0.15);
+  --brand-amber-muted:rgba(245, 184, 65, 0.15);
+
+  --bg-primary:   #0C0C0C;
+  --bg-surface-1: #161616;
+  --bg-surface-2: #1E1E20;
+  --bg-surface-3: #27272A;
+
+  --text-primary:   #FAFAFA;
+  --text-secondary: #A1A1AA;
+  --text-muted:     #52525B;
+
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-medium: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.18);
+}
+
+/* ── Tailwind color tokens ──────────────────────────────── */
+@theme inline {
+  /* Brand / action */
+  --color-brand:        var(--brand-teal);
+  --color-brand-hover:  var(--brand-teal-dark);
+  --color-brand-light:  var(--brand-teal-light);
+  --color-brand-subtle: var(--brand-teal-muted);
+
+  /* Semantic states */
+  --color-info:           var(--brand-blue);
+  --color-info-subtle:    var(--brand-blue-muted);
+  --color-danger:         var(--brand-red);
+  --color-danger-subtle:  var(--brand-red-muted);
+  --color-warning:        var(--brand-amber);
+  --color-warning-subtle: var(--brand-amber-muted);
+
+  /* Surfaces */
+  --color-base:    var(--bg-primary);
+  --color-surface: var(--bg-surface-1);
+  --color-raised:  var(--bg-surface-2);
+  --color-overlay: var(--bg-surface-3);
+
+  /* Foreground */
+  --color-fg:      var(--text-primary);
+  --color-fg-soft: var(--text-secondary);
+  --color-fg-muted:var(--text-muted);
+
+  /* Borders */
+  --color-line:        var(--border-subtle);
+  --color-line-soft:   var(--border-medium);
+  --color-line-strong: var(--border-strong);
+}

@@ -19,12 +19,14 @@ export default function LineItemsEditor({ items, onChange }) {
 
   const subtotal = items.reduce((acc, i) => acc + (parseFloat(i.amount) || 0), 0)
 
+  const inputCls = "w-full px-2 py-1.5 border border-line-soft rounded text-sm focus:outline-none focus:ring-1 focus:ring-brand bg-surface text-fg"
+
   return (
     <div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+            <tr className="text-xs text-fg-muted uppercase tracking-wide">
               <th className="text-left pb-2 pr-2 font-medium">Descripción</th>
               <th className="text-right pb-2 pr-2 font-medium w-20">Cant.</th>
               <th className="text-right pb-2 pr-2 font-medium w-28">P. unitario</th>
@@ -32,7 +34,7 @@ export default function LineItemsEditor({ items, onChange }) {
               <th className="w-8" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+          <tbody className="divide-y divide-line">
             {items.map((item, i) => (
               <tr key={i}>
                 <td className="py-1.5 pr-2">
@@ -42,7 +44,7 @@ export default function LineItemsEditor({ items, onChange }) {
                     placeholder="Descripción del ítem"
                     value={item.description}
                     onChange={e => update(i, 'description', e.target.value)}
-                    className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                    className={inputCls}
                   />
                 </td>
                 <td className="py-1.5 pr-2">
@@ -53,7 +55,7 @@ export default function LineItemsEditor({ items, onChange }) {
                     required
                     value={item.quantity}
                     onChange={e => update(i, 'quantity', e.target.value)}
-                    className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm text-right focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                    className={`${inputCls} text-right`}
                   />
                 </td>
                 <td className="py-1.5 pr-2">
@@ -64,10 +66,10 @@ export default function LineItemsEditor({ items, onChange }) {
                     required
                     value={item.unitPrice}
                     onChange={e => update(i, 'unitPrice', e.target.value)}
-                    className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm text-right focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                    className={`${inputCls} text-right`}
                   />
                 </td>
-                <td className="py-1.5 text-right text-gray-700 dark:text-gray-300 font-medium">
+                <td className="py-1.5 text-right text-fg font-medium">
                   ${(parseFloat(item.amount) || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                 </td>
                 <td className="py-1.5 pl-2">
@@ -75,7 +77,7 @@ export default function LineItemsEditor({ items, onChange }) {
                     <button
                       type="button"
                       onClick={() => remove(i)}
-                      className="text-gray-400 dark:text-gray-500 hover:text-red-500 text-lg leading-none"
+                      className="text-fg-muted hover:text-danger text-lg leading-none"
                     >
                       ×
                     </button>
@@ -90,13 +92,13 @@ export default function LineItemsEditor({ items, onChange }) {
       <button
         type="button"
         onClick={add}
-        className="mt-2 text-sm text-indigo-600 hover:underline"
+        className="mt-2 text-sm text-brand hover:underline"
       >
         + Agregar ítem
       </button>
 
-      <div className="mt-3 text-right text-sm text-gray-600 dark:text-gray-400">
-        Subtotal: <span className="font-medium text-gray-900 dark:text-white">
+      <div className="mt-3 text-right text-sm text-fg-soft">
+        Subtotal: <span className="font-medium text-fg">
           ${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
         </span>
       </div>

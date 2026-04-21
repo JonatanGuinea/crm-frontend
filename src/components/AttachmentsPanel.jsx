@@ -39,11 +39,11 @@ export default function AttachmentsPanel({ entityType, entityId }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">Adjuntos</h3>
+        <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide">Adjuntos</h3>
         <button
           onClick={() => inputRef.current?.click()}
           disabled={upload.isPending}
-          className="text-xs px-3 py-1.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+          className="text-xs px-3 py-1.5 bg-brand text-white rounded-md hover:bg-brand-hover disabled:opacity-50 transition-colors"
         >
           {upload.isPending ? 'Subiendo...' : '+ Subir archivo'}
         </button>
@@ -51,34 +51,34 @@ export default function AttachmentsPanel({ entityType, entityId }) {
       </div>
 
       {upload.isError && (
-        <p className="text-xs text-red-600 mb-2">{upload.error?.response?.data?.error || 'Error al subir'}</p>
+        <p className="text-xs text-danger mb-2">{upload.error?.response?.data?.error || 'Error al subir'}</p>
       )}
 
       {isLoading ? (
-        <p className="text-xs text-gray-400 dark:text-gray-500">Cargando...</p>
+        <p className="text-xs text-fg-muted">Cargando...</p>
       ) : data?.length === 0 ? (
-        <p className="text-xs text-gray-400 dark:text-gray-500">Sin archivos adjuntos</p>
+        <p className="text-xs text-fg-muted">Sin archivos adjuntos</p>
       ) : (
         <ul className="space-y-2">
           {data?.map(att => (
-            <li key={att.id} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-lg px-3 py-2 text-sm">
+            <li key={att.id} className="flex items-center justify-between bg-raised rounded-lg px-3 py-2 text-sm">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="text-gray-400 dark:text-gray-500 text-base">📎</span>
+                <span className="text-fg-muted text-base">📎</span>
                 <div className="min-w-0">
                   <a
                     href={`${API_BASE}${att.url}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-indigo-600 hover:underline truncate block max-w-xs"
+                    className="text-brand hover:underline truncate block max-w-xs"
                   >
                     {att.filename}
                   </a>
-                  <span className="text-xs text-gray-400 dark:text-gray-500">{formatSize(att.size)} · {att.uploadedBy?.name || ''}</span>
+                  <span className="text-xs text-fg-muted">{formatSize(att.size)} · {att.uploadedBy?.name || ''}</span>
                 </div>
               </div>
               <button
                 onClick={() => { if (confirm('¿Eliminar archivo?')) del.mutate(att.id) }}
-                className="text-red-400 hover:text-red-600 text-xs ml-3 shrink-0"
+                className="text-danger/60 hover:text-danger text-xs ml-3 shrink-0"
               >
                 Eliminar
               </button>

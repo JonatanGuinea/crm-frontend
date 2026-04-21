@@ -16,6 +16,9 @@ const STATUS_LABELS = {
   finished: 'Finalizado', cancelled: 'Cancelado'
 }
 
+const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
+const labelCls = "block text-sm font-medium text-fg-soft mb-1"
+
 export default function ProjectModal({ project, onClose, onSaved }) {
   const [form, setForm] = useState({
     title: project?.title || '',
@@ -55,13 +58,10 @@ export default function ProjectModal({ project, onClose, onSaved }) {
     }
   }
 
-  const inputCls = "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-  const labelCls = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <div className="bg-surface rounded-xl shadow-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+        <h3 className="text-lg font-semibold text-fg mb-4">
           {project ? 'Editar proyecto' : 'Nuevo proyecto'}
         </h3>
 
@@ -124,11 +124,11 @@ export default function ProjectModal({ project, onClose, onSaved }) {
               className={inputCls} />
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">Cancelar</button>
-            <button type="submit" disabled={loading} className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-fg-soft hover:text-fg">Cancelar</button>
+            <button type="submit" disabled={loading} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50">
               {loading ? 'Guardando...' : 'Guardar'}
             </button>
           </div>

@@ -6,19 +6,15 @@ import ProjectModal from './ProjectModal'
 import Pagination from '../../components/Pagination'
 
 const STATUS_LABELS = {
-  pending: 'Pendiente',
-  approved: 'Aprobado',
-  in_progress: 'En curso',
-  finished: 'Finalizado',
-  cancelled: 'Cancelado'
+  pending: 'Pendiente', approved: 'Aprobado', in_progress: 'En curso',
+  finished: 'Finalizado', cancelled: 'Cancelado'
 }
-
 const STATUS_COLORS = {
-  pending: 'bg-yellow-100 text-yellow-700',
-  approved: 'bg-blue-100 text-blue-700',
-  in_progress: 'bg-indigo-100 text-indigo-700',
-  finished: 'bg-green-100 text-green-700',
-  cancelled: 'bg-gray-100 text-gray-500'
+  pending:     'bg-warning-subtle text-warning',
+  approved:    'bg-info-subtle text-info',
+  in_progress: 'bg-brand-subtle text-brand',
+  finished:    'bg-brand-subtle text-brand',
+  cancelled:   'bg-raised text-fg-muted'
 }
 
 export default function ProjectsPage() {
@@ -39,10 +35,10 @@ export default function ProjectsPage() {
   })
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Proyectos</h2>
-        <button onClick={() => { setEditing(null); setModalOpen(true) }} className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors">
+        <h2 className="text-xl font-semibold text-fg">Proyectos</h2>
+        <button onClick={() => { setEditing(null); setModalOpen(true) }} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition-colors">
           + Nuevo proyecto
         </button>
       </div>
@@ -50,49 +46,53 @@ export default function ProjectsPage() {
       <select
         value={statusFilter}
         onChange={e => { setStatusFilter(e.target.value); setPage(1) }}
-        className="mb-4 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+        className="mb-4 px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
       >
         <option value="">Todos los estados</option>
         {Object.entries(STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
       </select>
 
       {isLoading ? (
-        <p className="text-sm text-gray-500 dark:text-gray-400">Cargando...</p>
+        <p className="text-sm text-fg-soft">Cargando...</p>
       ) : (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
-              <tr>
-                {['Título', 'Cliente', 'Estado', 'Presupuesto', ''].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {data?.data?.map(p => (
-                <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{p.title}</td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{p.client?.name || '-'}</td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[p.status]}`}>
-                      {STATUS_LABELS[p.status]}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
-                    {p.budget != null ? `$${Number(p.budget).toLocaleString('es-AR')}` : '-'}
-                  </td>
-                  <td className="px-4 py-3 text-right space-x-2">
-                    <Link to={`/projects/${p.id}`} className="text-gray-500 dark:text-gray-400 hover:underline text-xs">Ver</Link>
-                    <button onClick={() => { setEditing(p); setModalOpen(true) }} className="text-indigo-600 hover:underline text-xs">Editar</button>
-                    <button onClick={() => { if (confirm('¿Eliminar proyecto?')) del.mutate(p.id) }} className="text-red-500 hover:underline text-xs">Eliminar</button>
-                  </td>
+        <div className="bg-surface rounded-xl border border-line overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-raised border-b border-line">
+                <tr>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Título</th>
+                  <th className="hidden sm:table-cell text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Cliente</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Estado</th>
+                  <th className="hidden md:table-cell text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Presupuesto</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide"></th>
                 </tr>
-              ))}
-              {!data?.data?.length && (
-                <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-400 dark:text-gray-500">Sin proyectos</td></tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {data?.data?.map(p => (
+                  <tr key={p.id} className="hover:bg-raised">
+                    <td className="px-4 py-3 font-medium text-fg">{p.title}</td>
+                    <td className="hidden sm:table-cell px-4 py-3 text-fg-soft">{p.client?.name || '-'}</td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[p.status]}`}>
+                        {STATUS_LABELS[p.status]}
+                      </span>
+                    </td>
+                    <td className="hidden md:table-cell px-4 py-3 text-fg-soft">
+                      {p.budget != null ? `$${Number(p.budget).toLocaleString('es-AR')}` : '-'}
+                    </td>
+                    <td className="px-4 py-3 text-right space-x-2">
+                      <Link to={`/projects/${p.id}`} className="text-fg-muted hover:underline text-xs">Ver</Link>
+                      <button onClick={() => { setEditing(p); setModalOpen(true) }} className="text-brand hover:underline text-xs">Editar</button>
+                      <button onClick={() => { if (confirm('¿Eliminar proyecto?')) del.mutate(p.id) }} className="text-danger hover:underline text-xs">Eliminar</button>
+                    </td>
+                  </tr>
+                ))}
+                {!data?.data?.length && (
+                  <tr><td colSpan={5} className="px-4 py-6 text-center text-fg-muted">Sin proyectos</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
