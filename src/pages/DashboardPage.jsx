@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { getProjectsDashboard } from '../api/projects'
 import { getInvoicesDashboard, getInvoices } from '../api/invoices'
 import { getQuotesDashboard } from '../api/quotes'
+import { getProfile } from '../api/profile'
 import { useAuth } from '../context/AuthContext'
 import {
   BanknotesIcon,
@@ -235,6 +236,11 @@ function RecentInvoices({ invoices }) {
 export default function DashboardPage() {
   const { user } = useAuth()
 
+  const { data: profile } = useQuery({
+    queryKey: ['profile'],
+    queryFn: () => getProfile().then(r => r.data.data),
+  })
+
   const { data: projects } = useQuery({
     queryKey: ['projects-dashboard'],
     queryFn: () => getProjectsDashboard().then(r => r.data.data),
@@ -265,7 +271,7 @@ export default function DashboardPage() {
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-fg">{greeting(user?.name)}</h1>
+        <h1 className="text-2xl font-bold text-fg">{greeting(profile?.name ?? user?.name)}</h1>
         <p className="text-sm text-fg-muted mt-0.5 capitalize">{fmtDate()}</p>
       </div>
 
