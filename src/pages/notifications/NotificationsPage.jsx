@@ -47,10 +47,12 @@ export default function NotificationsPage() {
   return (
     <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
-        <div>
+        <div className="flex items-center gap-2">
           <h2 className="text-xl font-semibold text-fg">Notificaciones</h2>
           {data?.unreadCount > 0 && (
-            <p className="text-sm text-fg-soft mt-0.5">{data.unreadCount} sin leer</p>
+            <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold bg-brand text-white">
+              {data.unreadCount}
+            </span>
           )}
         </div>
         {data?.unreadCount > 0 && (

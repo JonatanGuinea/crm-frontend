@@ -6,7 +6,10 @@ import { useTheme } from '../context/ThemeContext'
 import GlobalSearch from '../components/GlobalSearch'
 import OrgSwitcher from '../components/OrgSwitcher'
 import { getProfile } from '../api/profile'
+import { getNotifications } from '../api/notifications'
 import logo from '../assets/logo.png'
+import logoDark from '../assets/logo-dark-mode.png'
+import favicon from '../assets/favicon.png'
 import {
   HomeIcon,
   UsersIcon,
@@ -48,7 +51,7 @@ function SidebarAvatar({ avatar, name }) {
   )
 }
 
-function SidebarContent({ collapsed, profile, user, onNavClick, onLogout }) {
+function SidebarContent({ collapsed, profile, user, onNavClick, onLogout, unreadCount }) {
   return (
     <div className="flex flex-col h-full">
       {!collapsed && <OrgSwitcher />}
@@ -69,8 +72,20 @@ function SidebarContent({ collapsed, profile, user, onNavClick, onLogout }) {
               } ${collapsed ? 'justify-center' : ''}`
             }
           >
-            <Icon className="w-5 h-5 shrink-0" />
-            {!collapsed && <span className="truncate">{label}</span>}
+            <span className="relative shrink-0">
+              <Icon className="w-5 h-5" />
+              {to === '/notifications' && unreadCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-0.5 rounded-full bg-brand text-white text-[10px] font-bold flex items-center justify-center leading-none">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </span>
+            {!collapsed && <span className="truncate flex-1">{label}</span>}
+            {!collapsed && to === '/notifications' && unreadCount > 0 && (
+              <span className="ml-auto min-w-[20px] h-5 px-1 rounded-full bg-brand text-white text-[10px] font-bold flex items-center justify-center">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>
@@ -110,6 +125,13 @@ export default function AppLayout() {
     queryFn: () => getProfile().then(r => r.data.data)
   })
 
+  const { data: notifData } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: () => getNotifications().then(r => r.data.data),
+    refetchInterval: 60_000,
+  })
+  const unreadCount = notifData?.unreadCount ?? 0
+
   function toggleSidebar() {
     setCollapsed(prev => {
       const next = !prev
@@ -141,7 +163,7 @@ export default function AppLayout() {
         }`}
       >
         <div className="flex items-center justify-between px-4 h-16 border-b border-line shrink-0">
-          <img src={logo} alt="Logo" className="w-4/5 max-h-10 object-contain" />
+          <img src={dark ? logoDark : logo} alt="Logo" className="w-4/5 max-h-10 object-contain" />
           <button
             onClick={() => setMobileOpen(false)}
             className="p-1.5 rounded-md text-fg-muted hover:bg-raised"
@@ -155,6 +177,7 @@ export default function AppLayout() {
           user={user}
           onNavClick={() => setMobileOpen(false)}
           onLogout={handleLogout}
+          unreadCount={unreadCount}
         />
       </aside>
 
@@ -163,9 +186,10 @@ export default function AppLayout() {
         className={`hidden md:flex ${collapsed ? 'w-16' : 'w-56'} bg-surface border-r border-line flex-col transition-all duration-300 ease-in-out overflow-hidden shrink-0`}
       >
         <div className={`flex items-center border-b border-line h-16 shrink-0 ${collapsed ? 'justify-center px-0' : 'px-4 justify-between'}`}>
-          {!collapsed && (
-            <img src={logo} alt="Logo" className="w-4/5 max-h-10 object-contain" />
-          )}
+          {collapsed
+            ? <img src={favicon} alt="Logo" className="w-7 h-7 object-contain" />
+            : <img src={dark ? logoDark : logo} alt="Logo" className="w-4/5 max-h-10 object-contain" />
+          }
           <button
             onClick={toggleSidebar}
             className="p-1.5 rounded-md text-fg-muted hover:bg-raised hover:text-fg-soft transition-colors shrink-0"
@@ -182,6 +206,7 @@ export default function AppLayout() {
           user={user}
           onNavClick={undefined}
           onLogout={handleLogout}
+          unreadCount={unreadCount}
         />
       </aside>
 

@@ -26,7 +26,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="bg-surface rounded-xl shadow-sm border border-line p-8">
+    <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 shadow-xl p-8">
       <h2 className="text-xl font-semibold text-fg mb-6">Crear cuenta</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
