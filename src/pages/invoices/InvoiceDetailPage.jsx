@@ -158,8 +158,8 @@ export default function InvoiceDetailPage() {
                   <tr key={i}>
                     <td className="px-5 py-3 text-fg">{item.description}</td>
                     <td className="px-5 py-3 text-fg-soft">{item.quantity}</td>
-                    <td className="px-5 py-3 text-fg-soft">${Number(item.unitPrice).toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
-                    <td className="px-5 py-3 font-medium text-fg">${Number(item.amount).toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
+                    <td className="px-5 py-3 text-fg-soft">${Number(item.unitPrice).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td className="px-5 py-3 font-medium text-fg">${Number(item.amount).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                   </tr>
                 ))}
               </tbody>
@@ -167,15 +167,15 @@ export default function InvoiceDetailPage() {
 
             <div className="border-t border-line px-5 py-4 space-y-1 text-sm text-right">
               <div className="text-fg-soft">
-                Subtotal: <span className="text-fg font-medium">${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
+                Subtotal: <span className="text-fg font-medium">${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               {invoice.taxRate > 0 && (
                 <div className="text-fg-soft">
-                  IVA ({invoice.taxRate}%): <span className="text-fg font-medium">${taxAmount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
+                  IVA ({invoice.taxRate}%): <span className="text-fg font-medium">${taxAmount.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
               )}
               <div className="text-base font-semibold text-fg">
-                Total {invoice.currency}: ${total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                Total {invoice.currency}: ${total.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             </div>
           </div>

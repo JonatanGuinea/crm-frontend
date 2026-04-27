@@ -74,9 +74,9 @@ export default function MembersPage() {
           <h3 className="text-sm font-semibold text-fg-soft mb-4">Invitar usuario</h3>
           <form
             onSubmit={e => { e.preventDefault(); invite.mutate(inviteForm) }}
-            className="flex gap-3 items-end flex-wrap"
+            className="flex flex-col sm:flex-row gap-3 sm:items-end"
           >
-            <div className="flex-1 min-w-48">
+            <div className="flex-1">
               <label className="block text-xs text-fg-muted mb-1">Email del usuario</label>
               <input
                 type="email"
@@ -92,7 +92,7 @@ export default function MembersPage() {
               <select
                 value={inviteForm.role}
                 onChange={e => setInviteForm(f => ({ ...f, role: e.target.value }))}
-                className="px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
+                className="w-full sm:w-auto px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
               >
                 <option value="member">Miembro</option>
                 {myRole === 'owner' && <option value="admin">Admin</option>}
@@ -131,68 +131,104 @@ export default function MembersPage() {
       {isLoading ? (
         <p className="text-sm text-fg-soft">Cargando...</p>
       ) : (
-        <div className="bg-surface rounded-xl border border-line overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-raised border-b border-line">
-                <tr>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Nombre</th>
-                  <th className="hidden sm:table-cell text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Email</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Rol</th>
-                  <th className="hidden sm:table-cell text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Estado</th>
-                  {canManage && <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide"></th>}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {data?.map(m => (
-                  <tr key={m.userId} className="hover:bg-raised">
-                    <td className="px-4 py-3 font-medium text-fg">
-                      {m.name}
-                      {m.userId === user?.uid && <span className="ml-1 text-xs text-fg-muted">(tú)</span>}
-                    </td>
-                    <td className="hidden sm:table-cell px-4 py-3 text-fg-soft">{m.email}</td>
-                    <td className="px-4 py-3">
-                      {canManage && m.role !== 'owner' && m.status === 'active' ? (
-                        <select
-                          value={m.role}
-                          onChange={e => changeRole.mutate({ userId: m.userId, role: e.target.value })}
-                          className="text-xs px-2 py-1 border border-line rounded-md focus:outline-none focus:ring-1 focus:ring-brand bg-surface text-fg"
-                        >
-                          <option value="admin">Admin</option>
-                          <option value="member">Miembro</option>
-                        </select>
-                      ) : (
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${ROLE_COLORS[m.role]}`}>
-                          {ROLE_LABELS[m.role]}
-                        </span>
-                      )}
-                    </td>
-                    <td className="hidden sm:table-cell px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[m.status]}`}>
-                        {m.status === 'active' ? 'Activo' : 'Invitado'}
-                      </span>
-                    </td>
-                    {canManage && (
-                      <td className="px-4 py-3 text-right">
-                        {m.role !== 'owner' && m.userId !== user?.uid && (
-                          <button
-                            onClick={() => { if (confirm(`¿Remover a ${m.name}?`)) remove.mutate(m.userId) }}
-                            className="text-danger hover:underline text-xs"
+        <>
+          {/* Mobile: cards */}
+          <div className="sm:hidden bg-surface rounded-xl border border-line divide-y divide-line">
+            {data?.map(m => (
+              <div key={m.userId} className="p-4 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-medium text-fg truncate">
+                    {m.name}
+                    {m.userId === user?.uid && <span className="ml-1 text-xs text-fg-muted">(tú)</span>}
+                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${ROLE_COLORS[m.role]}`}>
+                      {ROLE_LABELS[m.role]}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[m.status]}`}>
+                      {m.status === 'active' ? 'Activo' : 'Invitado'}
+                    </span>
+                  </div>
+                </div>
+                {canManage && m.role !== 'owner' && m.userId !== user?.uid && (
+                  <button
+                    onClick={() => { if (confirm(`¿Remover a ${m.name}?`)) remove.mutate(m.userId) }}
+                    className="px-2.5 py-1 rounded-md text-xs bg-danger-subtle text-danger shrink-0"
+                  >
+                    Remover
+                  </button>
+                )}
+              </div>
+            ))}
+            {!data?.length && (
+              <p className="p-6 text-center text-sm text-fg-muted">Sin miembros</p>
+            )}
+          </div>
+
+          {/* Desktop: tabla */}
+          <div className="hidden sm:block bg-surface rounded-xl border border-line overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-raised border-b border-line">
+                  <tr>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Nombre</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Email</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Rol</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Estado</th>
+                    {canManage && <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide"></th>}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {data?.map(m => (
+                    <tr key={m.userId} className="hover:bg-raised">
+                      <td className="px-4 py-3 font-medium text-fg">
+                        {m.name}
+                        {m.userId === user?.uid && <span className="ml-1 text-xs text-fg-muted">(tú)</span>}
+                      </td>
+                      <td className="px-4 py-3 text-fg-soft">{m.email}</td>
+                      <td className="px-4 py-3">
+                        {canManage && m.role !== 'owner' && m.status === 'active' ? (
+                          <select
+                            value={m.role}
+                            onChange={e => changeRole.mutate({ userId: m.userId, role: e.target.value })}
+                            className="text-xs px-2 py-1 border border-line rounded-md focus:outline-none focus:ring-1 focus:ring-brand bg-surface text-fg"
                           >
-                            Remover
-                          </button>
+                            <option value="admin">Admin</option>
+                            <option value="member">Miembro</option>
+                          </select>
+                        ) : (
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${ROLE_COLORS[m.role]}`}>
+                            {ROLE_LABELS[m.role]}
+                          </span>
                         )}
                       </td>
-                    )}
-                  </tr>
-                ))}
-                {!data?.length && (
-                  <tr><td colSpan={5} className="px-4 py-6 text-center text-fg-muted">Sin miembros</td></tr>
-                )}
-              </tbody>
-            </table>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[m.status]}`}>
+                          {m.status === 'active' ? 'Activo' : 'Invitado'}
+                        </span>
+                      </td>
+                      {canManage && (
+                        <td className="px-4 py-3 text-right">
+                          {m.role !== 'owner' && m.userId !== user?.uid && (
+                            <button
+                              onClick={() => { if (confirm(`¿Remover a ${m.name}?`)) remove.mutate(m.userId) }}
+                              className="text-danger hover:underline text-xs"
+                            >
+                              Remover
+                            </button>
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                  {!data?.length && (
+                    <tr><td colSpan={5} className="px-4 py-6 text-center text-fg-muted">Sin miembros</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   )

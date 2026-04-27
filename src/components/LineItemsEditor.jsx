@@ -51,7 +51,7 @@ export default function LineItemsEditor({ items, onChange }) {
                   <input
                     type="number"
                     min="0.01"
-                    step="0.01"
+                    step="1"
                     required
                     value={item.quantity}
                     onChange={e => update(i, 'quantity', e.target.value)}
@@ -62,7 +62,7 @@ export default function LineItemsEditor({ items, onChange }) {
                   <input
                     type="number"
                     min="0"
-                    step="0.01"
+                    step="1"
                     required
                     value={item.unitPrice}
                     onChange={e => update(i, 'unitPrice', e.target.value)}
@@ -70,7 +70,7 @@ export default function LineItemsEditor({ items, onChange }) {
                   />
                 </td>
                 <td className="py-1.5 text-right text-fg font-medium">
-                  ${(parseFloat(item.amount) || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                  ${(parseFloat(item.amount) || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </td>
                 <td className="py-1.5 pl-2">
                   {items.length > 1 && (
@@ -99,7 +99,7 @@ export default function LineItemsEditor({ items, onChange }) {
 
       <div className="mt-3 text-right text-sm text-fg-soft">
         Subtotal: <span className="font-medium text-fg">
-          ${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+          ${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </span>
       </div>
     </div>

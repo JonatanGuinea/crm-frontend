@@ -57,58 +57,92 @@ export default function QuotesPage() {
       </div>
 
       <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1) }}
-        className="mb-4 px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg">
+        className="mb-4 w-full md:w-auto px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg">
         <option value="">Todos los estados</option>
         {Object.entries(STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
       </select>
 
       {isLoading ? <p className="text-sm text-fg-soft">Cargando...</p> : (
-        <div className="bg-surface rounded-xl border border-line overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-raised border-b border-line">
-                <tr>
-                  <th className="hidden sm:table-cell text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">#</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Título</th>
-                  <th className="hidden sm:table-cell text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Cliente</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Estado</th>
-                  <th className="hidden md:table-cell text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Total</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {data?.data?.map(q => (
-                  <tr key={q.id} className="hover:bg-raised">
-                    <td className="hidden sm:table-cell px-4 py-3 text-fg-muted">#{q.number}</td>
-                    <td className="px-4 py-3 font-medium text-fg">
-                      <Link to={`/quotes/${q.id}`} className="hover:text-brand">{q.title}</Link>
-                    </td>
-                    <td className="hidden sm:table-cell px-4 py-3 text-fg-soft">{q.client?.name}</td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[q.status]}`}>
-                        {STATUS_LABELS[q.status]}
-                      </span>
-                    </td>
-                    <td className="hidden md:table-cell px-4 py-3 text-fg-soft">${Number(q.total).toLocaleString('es-AR')}</td>
-                    <td className="px-4 py-3 text-right space-x-2">
-                      <button onClick={() => openEdit(q.id)} className="text-brand hover:underline text-xs">Editar</button>
-                      {q.status === 'approved' && (
-                        <button onClick={() => { if (confirm('¿Generar factura desde este presupuesto?')) toInvoice.mutate(q.id) }}
-                          className="text-brand hover:underline text-xs">Facturar</button>
-                      )}
-                      {q.status === 'draft' && (
-                        <button onClick={() => { if (confirm('¿Eliminar?')) del.mutate(q.id) }} className="text-danger hover:underline text-xs">Eliminar</button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-                {!data?.data?.length && (
-                  <tr><td colSpan={6} className="px-4 py-6 text-center text-fg-muted">Sin presupuestos</td></tr>
-                )}
-              </tbody>
-            </table>
+        <>
+          {/* Mobile: cards */}
+          <div className="md:hidden bg-surface rounded-xl border border-line divide-y divide-line">
+            {data?.data?.map(q => (
+              <div key={q.id} className="p-4 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <Link to={`/quotes/${q.id}`} className="font-medium text-fg truncate block hover:text-brand">
+                    {q.title}
+                  </Link>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[q.status]}`}>
+                      {STATUS_LABELS[q.status]}
+                    </span>
+                    <p className="text-xs text-fg-muted">${Number(q.total).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button onClick={() => openEdit(q.id)} className="px-2.5 py-1 rounded-md text-xs bg-brand-subtle text-brand">Editar</button>
+                  {q.status === 'approved' && (
+                    <button onClick={() => { if (confirm('¿Generar factura?')) toInvoice.mutate(q.id) }} className="px-2.5 py-1 rounded-md text-xs bg-info-subtle text-info">Facturar</button>
+                  )}
+                  {q.status === 'draft' && (
+                    <button onClick={() => { if (confirm('¿Eliminar?')) del.mutate(q.id) }} className="px-2.5 py-1 rounded-md text-xs bg-danger-subtle text-danger">Eliminar</button>
+                  )}
+                </div>
+              </div>
+            ))}
+            {!data?.data?.length && (
+              <p className="p-6 text-center text-sm text-fg-muted">Sin presupuestos</p>
+            )}
           </div>
-        </div>
+
+          {/* Desktop: tabla */}
+          <div className="hidden md:block bg-surface rounded-xl border border-line overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-raised border-b border-line">
+                  <tr>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">#</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Título</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Cliente</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Estado</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Total</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {data?.data?.map(q => (
+                    <tr key={q.id} className="hover:bg-raised">
+                      <td className="px-4 py-3 text-fg-muted">#{q.number}</td>
+                      <td className="px-4 py-3 font-medium text-fg">
+                        <Link to={`/quotes/${q.id}`} className="hover:text-brand">{q.title}</Link>
+                      </td>
+                      <td className="px-4 py-3 text-fg-soft">{q.client?.name}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[q.status]}`}>
+                          {STATUS_LABELS[q.status]}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-fg-soft">${Number(q.total).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td className="px-4 py-3 text-right space-x-2">
+                        <button onClick={() => openEdit(q.id)} className="text-brand hover:underline text-xs">Editar</button>
+                        {q.status === 'approved' && (
+                          <button onClick={() => { if (confirm('¿Generar factura desde este presupuesto?')) toInvoice.mutate(q.id) }}
+                            className="text-brand hover:underline text-xs">Facturar</button>
+                        )}
+                        {q.status === 'draft' && (
+                          <button onClick={() => { if (confirm('¿Eliminar?')) del.mutate(q.id) }} className="text-danger hover:underline text-xs">Eliminar</button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {!data?.data?.length && (
+                    <tr><td colSpan={6} className="px-4 py-6 text-center text-fg-muted">Sin presupuestos</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
       )}
 
       <Pagination pagination={data?.pagination} onPageChange={setPage} />

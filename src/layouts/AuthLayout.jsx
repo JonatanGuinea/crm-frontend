@@ -43,7 +43,7 @@ export default function AuthLayout() {
 
         {/* Logo */}
         <div className="relative">
-          <img src={logo} alt="Sofiapp" className="h-14 w-auto" />
+          <img src={logo} alt="Sofiapp" className="h-24 w-auto" />
         </div>
 
         {/* Texto central — centrado verticalmente */}

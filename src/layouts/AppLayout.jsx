@@ -51,7 +51,7 @@ function SidebarAvatar({ avatar, name }) {
   )
 }
 
-function SidebarContent({ collapsed, profile, user, onNavClick, onLogout, unreadCount }) {
+function SidebarContent({ collapsed, profile, user, onNavClick, onLogout, unreadCount, dark, onToggleTheme }) {
   return (
     <div className="flex flex-col h-full">
       {!collapsed && <OrgSwitcher />}
@@ -91,15 +91,14 @@ function SidebarContent({ collapsed, profile, user, onNavClick, onLogout, unread
       </nav>
 
       <div className="px-2 py-4 border-t border-line space-y-1">
-        <Link
-          to="/profile"
-          onClick={onNavClick}
-          title={collapsed ? 'Mi perfil' : undefined}
-          className={`flex items-center gap-2 px-2 py-2 rounded-md text-sm text-fg-soft hover:bg-raised hover:text-fg transition-colors ${collapsed ? 'justify-center' : ''}`}
+        <button
+          onClick={onToggleTheme}
+          title={collapsed ? (dark ? 'Modo claro' : 'Modo oscuro') : undefined}
+          className={`w-full flex items-center gap-2 px-2 py-2 rounded-md text-sm text-fg-soft hover:bg-raised hover:text-fg transition-colors ${collapsed ? 'justify-center' : ''}`}
         >
-          <SidebarAvatar avatar={profile?.avatar} name={profile?.name || user?.name} />
-          {!collapsed && <span className="truncate">{profile?.name || user?.name || 'Mi perfil'}</span>}
-        </Link>
+          {dark ? <SunIcon className="w-5 h-5 shrink-0" /> : <MoonIcon className="w-5 h-5 shrink-0" />}
+          {!collapsed && <span>{dark ? 'Modo claro' : 'Modo oscuro'}</span>}
+        </button>
         <button
           onClick={onLogout}
           title={collapsed ? 'Cerrar sesión' : undefined}
@@ -178,6 +177,8 @@ export default function AppLayout() {
           onNavClick={() => setMobileOpen(false)}
           onLogout={handleLogout}
           unreadCount={unreadCount}
+          dark={dark}
+          onToggleTheme={toggle}
         />
       </aside>
 
@@ -207,6 +208,8 @@ export default function AppLayout() {
           onNavClick={undefined}
           onLogout={handleLogout}
           unreadCount={unreadCount}
+          dark={dark}
+          onToggleTheme={toggle}
         />
       </aside>
 
@@ -222,9 +225,15 @@ export default function AppLayout() {
           <div className="flex-1">
             <GlobalSearch />
           </div>
-          <button onClick={toggle} className="p-2 rounded-md text-fg-muted hover:bg-raised transition-colors shrink-0">
-            {dark ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
-          </button>
+          <Link
+            to="/profile"
+            className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-raised transition-colors shrink-0"
+          >
+            <SidebarAvatar avatar={profile?.avatar} name={profile?.name || user?.name} />
+            <span className="hidden sm:block text-sm text-fg-soft truncate max-w-[120px]">
+              {profile?.name || user?.name || 'Mi perfil'}
+            </span>
+          </Link>
         </header>
         <main className="flex-1 overflow-auto">
           <Outlet />

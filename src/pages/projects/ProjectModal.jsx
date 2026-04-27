@@ -85,7 +85,7 @@ export default function ProjectModal({ project, onClose, onSaved }) {
 
           <div>
             <label className={labelCls}>Presupuesto</label>
-            <input type="number" min="0" step="0.01" value={form.budget}
+            <input type="number" min="0" step="1" value={form.budget}
               onChange={e => setForm(f => ({ ...f, budget: e.target.value }))}
               className={inputCls} />
           </div>

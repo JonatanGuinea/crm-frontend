@@ -40,45 +40,68 @@ export default function ClientsPage() {
         placeholder="Buscar por nombre..."
         value={search}
         onChange={e => handleSearch(e.target.value)}
-        className="mb-4 w-full max-w-xs px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg placeholder:text-fg-muted"
+        className="mb-4 w-full md:max-w-xs px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg placeholder:text-fg-muted"
       />
 
       {isLoading ? (
         <p className="text-sm text-fg-soft">Cargando...</p>
       ) : (
-        <div className="bg-surface rounded-xl border border-line overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-raised border-b border-line">
-                <tr>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Nombre</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Email</th>
-                  <th className="hidden md:table-cell text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Empresa</th>
-                  <th className="hidden md:table-cell text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Teléfono</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {data?.data?.map(c => (
-                  <tr key={c.id} className="hover:bg-raised">
-                    <td className="px-4 py-3 font-medium text-fg">{c.name}</td>
-                    <td className="px-4 py-3 text-fg-soft">{c.email || '-'}</td>
-                    <td className="hidden md:table-cell px-4 py-3 text-fg-soft">{c.company || '-'}</td>
-                    <td className="hidden md:table-cell px-4 py-3 text-fg-soft">{c.phone || '-'}</td>
-                    <td className="px-4 py-3 text-right space-x-2">
-                      <Link to={`/clients/${c.id}`} className="text-fg-muted hover:underline text-xs">Ver</Link>
-                      <button onClick={() => openEdit(c)} className="text-brand hover:underline text-xs">Editar</button>
-                      <button onClick={() => { if (confirm('¿Eliminar cliente?')) del.mutate(c.id) }} className="text-danger hover:underline text-xs">Eliminar</button>
-                    </td>
-                  </tr>
-                ))}
-                {!data?.data?.length && (
-                  <tr><td colSpan={5} className="px-4 py-6 text-center text-fg-muted">Sin clientes</td></tr>
-                )}
-              </tbody>
-            </table>
+        <>
+          {/* Mobile: cards */}
+          <div className="md:hidden bg-surface rounded-xl border border-line divide-y divide-line">
+            {data?.data?.map(c => (
+              <div key={c.id} className="p-4 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-medium text-fg truncate">{c.name}</p>
+                  <p className="text-xs text-fg-muted truncate">{c.email || c.company || '-'}</p>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Link to={`/clients/${c.id}`} className="px-2.5 py-1 rounded-md text-xs bg-raised text-fg-soft">Ver</Link>
+                  <button onClick={() => openEdit(c)} className="px-2.5 py-1 rounded-md text-xs bg-brand-subtle text-brand">Editar</button>
+                  <button onClick={() => { if (confirm('¿Eliminar cliente?')) del.mutate(c.id) }} className="px-2.5 py-1 rounded-md text-xs bg-danger-subtle text-danger">Eliminar</button>
+                </div>
+              </div>
+            ))}
+            {!data?.data?.length && (
+              <p className="p-6 text-center text-sm text-fg-muted">Sin clientes</p>
+            )}
           </div>
-        </div>
+
+          {/* Desktop: tabla */}
+          <div className="hidden md:block bg-surface rounded-xl border border-line overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-raised border-b border-line">
+                  <tr>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Nombre</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Email</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Empresa</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Teléfono</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {data?.data?.map(c => (
+                    <tr key={c.id} className="hover:bg-raised">
+                      <td className="px-4 py-3 font-medium text-fg">{c.name}</td>
+                      <td className="px-4 py-3 text-fg-soft">{c.email || '-'}</td>
+                      <td className="px-4 py-3 text-fg-soft">{c.company || '-'}</td>
+                      <td className="px-4 py-3 text-fg-soft">{c.phone || '-'}</td>
+                      <td className="px-4 py-3 text-right space-x-2">
+                        <Link to={`/clients/${c.id}`} className="text-fg-muted hover:underline text-xs">Ver</Link>
+                        <button onClick={() => openEdit(c)} className="text-brand hover:underline text-xs">Editar</button>
+                        <button onClick={() => { if (confirm('¿Eliminar cliente?')) del.mutate(c.id) }} className="text-danger hover:underline text-xs">Eliminar</button>
+                      </td>
+                    </tr>
+                  ))}
+                  {!data?.data?.length && (
+                    <tr><td colSpan={5} className="px-4 py-6 text-center text-fg-muted">Sin clientes</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
       )}
 
       <Pagination pagination={data?.pagination} onPageChange={setPage} />

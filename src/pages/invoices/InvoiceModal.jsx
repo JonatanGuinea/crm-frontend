@@ -163,7 +163,7 @@ export default function InvoiceModal({ invoiceId, onClose, onSaved }) {
             </div>
             <div>
               <label className={labelCls}>IVA (%)</label>
-              <input type="number" min="0" max="100" step="0.01" value={form.taxRate}
+              <input type="number" min="0" max="100" step="1" value={form.taxRate}
                 onChange={e => setForm(f => ({ ...f, taxRate: e.target.value }))}
                 className={inputCls} />
             </div>
@@ -177,11 +177,11 @@ export default function InvoiceModal({ invoiceId, onClose, onSaved }) {
           </div>
 
           <div className="bg-raised rounded-lg p-3 text-sm space-y-1 text-right">
-            <div className="text-fg-soft">Subtotal: <span className="text-fg font-medium">${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span></div>
+            <div className="text-fg-soft">Subtotal: <span className="text-fg font-medium">${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
             {form.taxRate > 0 && (
-              <div className="text-fg-soft">IVA ({form.taxRate}%): <span className="text-fg font-medium">${taxAmount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span></div>
+              <div className="text-fg-soft">IVA ({form.taxRate}%): <span className="text-fg font-medium">${taxAmount.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
             )}
-            <div className="text-base font-semibold text-fg">Total {form.currency}: ${total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</div>
+            <div className="text-base font-semibold text-fg">Total {form.currency}: ${total.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           </div>
 
           {isEditing && allowedStatuses.length > 0 && (

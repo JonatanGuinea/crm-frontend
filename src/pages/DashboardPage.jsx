@@ -18,7 +18,7 @@ import {
 
 function fmt(n) {
   if (n == null) return '-'
-  return '$' + Number(n).toLocaleString('es-AR', { minimumFractionDigits: 0 })
+  return '$' + Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 function greeting(name) {
