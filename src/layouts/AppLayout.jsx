@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import GlobalSearch from '../components/GlobalSearch'
 import OrgSwitcher from '../components/OrgSwitcher'
+import InvitationsBanner from '../components/InvitationsBanner'
 import { getProfile } from '../api/profile'
 import { getNotifications } from '../api/notifications'
 import logo from '../assets/logo.png'
@@ -236,6 +237,7 @@ export default function AppLayout() {
           </Link>
         </header>
         <main className="flex-1 overflow-auto">
+          <InvitationsBanner />
           <Outlet />
         </main>
       </div>
