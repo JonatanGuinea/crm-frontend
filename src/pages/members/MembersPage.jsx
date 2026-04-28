@@ -110,19 +110,19 @@ export default function MembersPage() {
 
           {inviteToken && (
             <div className="mt-4 p-3 bg-brand-subtle border border-brand rounded-lg">
-              <p className="text-xs font-medium text-brand mb-1">Invitación creada. Comparte este token:</p>
+              <p className="text-xs font-medium text-brand mb-1">Invitación creada. Comparte este enlace:</p>
               <div className="flex gap-2 items-center">
                 <code className="flex-1 text-xs bg-surface border border-line rounded px-2 py-1.5 break-all text-fg">
-                  {inviteToken}
+                  {`${window.location.origin}/accept-invite?token=${inviteToken}`}
                 </code>
                 <button
-                  onClick={() => navigator.clipboard.writeText(inviteToken)}
+                  onClick={() => navigator.clipboard.writeText(`${window.location.origin}/accept-invite?token=${inviteToken}`)}
                   className="shrink-0 text-xs px-2 py-1.5 border border-brand rounded text-brand hover:bg-brand-subtle"
                 >
                   Copiar
                 </button>
               </div>
-              <p className="text-xs text-fg-soft mt-1">El usuario debe usar este token para aceptar la invitación.</p>
+              <p className="text-xs text-fg-soft mt-1">El usuario solo tiene que abrir este enlace para unirse.</p>
             </div>
           )}
         </div>

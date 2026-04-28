@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useAuth } from '../../context/AuthContext'
 import { getQuoteById, createInvoiceFromQuote, downloadQuotePdf } from '../../api/quotes'
 import QuoteModal from './QuoteModal'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
@@ -20,6 +21,8 @@ const STATUS_COLORS = {
 export default function QuoteDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
   const [editOpen, setEditOpen] = useState(false)
   const [downloading, setDownloading] = useState(false)
@@ -87,7 +90,7 @@ export default function QuoteDetailPage() {
           >
             {downloading ? 'Generando...' : 'Descargar PDF'}
           </button>
-          {quote.status === 'approved' && (
+          {canWrite && quote.status === 'approved' && (
             <button
               onClick={() => { if (confirm('¿Generar factura desde este presupuesto?')) toInvoice.mutate() }}
               disabled={toInvoice.isPending}
@@ -96,12 +99,14 @@ export default function QuoteDetailPage() {
               Facturar
             </button>
           )}
-          <button
-            onClick={() => setEditOpen(true)}
-            className="px-4 py-2 border border-line-soft rounded-md text-sm font-medium text-fg-soft hover:bg-raised transition-colors"
-          >
-            Editar
-          </button>
+          {canWrite && (
+            <button
+              onClick={() => setEditOpen(true)}
+              className="px-4 py-2 border border-line-soft rounded-md text-sm font-medium text-fg-soft hover:bg-raised transition-colors"
+            >
+              Editar
+            </button>
+          )}
         </div>
       </div>
 

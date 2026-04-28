@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getQuotes, deleteQuote, createInvoiceFromQuote } from '../../api/quotes'
 import QuoteModal from './QuoteModal'
 import Pagination from '../../components/Pagination'
+import { useAuth } from '../../context/AuthContext'
 
 const STATUS_LABELS = {
   draft: 'Borrador', sent: 'Enviado', approved: 'Aprobado',
@@ -18,6 +19,8 @@ const STATUS_COLORS = {
 }
 
 export default function QuotesPage() {
+  const { user } = useAuth()
+  const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
   const [statusFilter, setStatusFilter] = useState('')
   const [page, setPage] = useState(1)
@@ -51,9 +54,11 @@ export default function QuotesPage() {
     <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-fg">Presupuestos</h2>
-        <button onClick={openCreate} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition-colors">
-          + Nuevo presupuesto
-        </button>
+        {canWrite && (
+          <button onClick={openCreate} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition-colors">
+            + Nuevo presupuesto
+          </button>
+        )}
       </div>
 
       <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1) }}
@@ -80,11 +85,11 @@ export default function QuotesPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <button onClick={() => openEdit(q.id)} className="px-2.5 py-1 rounded-md text-xs bg-brand-subtle text-brand">Editar</button>
-                  {q.status === 'approved' && (
+                  {canWrite && <button onClick={() => openEdit(q.id)} className="px-2.5 py-1 rounded-md text-xs bg-brand-subtle text-brand">Editar</button>}
+                  {canWrite && q.status === 'approved' && (
                     <button onClick={() => { if (confirm('¿Generar factura?')) toInvoice.mutate(q.id) }} className="px-2.5 py-1 rounded-md text-xs bg-info-subtle text-info">Facturar</button>
                   )}
-                  {q.status === 'draft' && (
+                  {canWrite && q.status === 'draft' && (
                     <button onClick={() => { if (confirm('¿Eliminar?')) del.mutate(q.id) }} className="px-2.5 py-1 rounded-md text-xs bg-danger-subtle text-danger">Eliminar</button>
                   )}
                 </div>
@@ -124,12 +129,12 @@ export default function QuotesPage() {
                       </td>
                       <td className="px-4 py-3 text-fg-soft">${Number(q.total).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                       <td className="px-4 py-3 text-right space-x-2">
-                        <button onClick={() => openEdit(q.id)} className="text-brand hover:underline text-xs">Editar</button>
-                        {q.status === 'approved' && (
+                        {canWrite && <button onClick={() => openEdit(q.id)} className="text-brand hover:underline text-xs">Editar</button>}
+                        {canWrite && q.status === 'approved' && (
                           <button onClick={() => { if (confirm('¿Generar factura desde este presupuesto?')) toInvoice.mutate(q.id) }}
                             className="text-brand hover:underline text-xs">Facturar</button>
                         )}
-                        {q.status === 'draft' && (
+                        {canWrite && q.status === 'draft' && (
                           <button onClick={() => { if (confirm('¿Eliminar?')) del.mutate(q.id) }} className="text-danger hover:underline text-xs">Eliminar</button>
                         )}
                       </td>

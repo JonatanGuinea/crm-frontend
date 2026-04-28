@@ -4,8 +4,11 @@ import { Link } from 'react-router-dom'
 import { getClients, deleteClient } from '../../api/clients'
 import ClientModal from './ClientModal'
 import Pagination from '../../components/Pagination'
+import { useAuth } from '../../context/AuthContext'
 
 export default function ClientsPage() {
+  const { user } = useAuth()
+  const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
@@ -30,9 +33,11 @@ export default function ClientsPage() {
     <div className="p-4 md:p-8 min-h-full bg-base">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-fg">Clientes</h2>
-        <button onClick={openCreate} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition-colors">
-          + Nuevo cliente
-        </button>
+        {canWrite && (
+          <button onClick={openCreate} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition-colors">
+            + Nuevo cliente
+          </button>
+        )}
       </div>
 
       <input
@@ -57,8 +62,8 @@ export default function ClientsPage() {
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <Link to={`/clients/${c.id}`} className="px-2.5 py-1 rounded-md text-xs bg-raised text-fg-soft">Ver</Link>
-                  <button onClick={() => openEdit(c)} className="px-2.5 py-1 rounded-md text-xs bg-brand-subtle text-brand">Editar</button>
-                  <button onClick={() => { if (confirm('¿Eliminar cliente?')) del.mutate(c.id) }} className="px-2.5 py-1 rounded-md text-xs bg-danger-subtle text-danger">Eliminar</button>
+                  {canWrite && <button onClick={() => openEdit(c)} className="px-2.5 py-1 rounded-md text-xs bg-brand-subtle text-brand">Editar</button>}
+                  {canWrite && <button onClick={() => { if (confirm('¿Eliminar cliente?')) del.mutate(c.id) }} className="px-2.5 py-1 rounded-md text-xs bg-danger-subtle text-danger">Eliminar</button>}
                 </div>
               </div>
             ))}
@@ -89,8 +94,8 @@ export default function ClientsPage() {
                       <td className="px-4 py-3 text-fg-soft">{c.phone || '-'}</td>
                       <td className="px-4 py-3 text-right space-x-2">
                         <Link to={`/clients/${c.id}`} className="text-fg-muted hover:underline text-xs">Ver</Link>
-                        <button onClick={() => openEdit(c)} className="text-brand hover:underline text-xs">Editar</button>
-                        <button onClick={() => { if (confirm('¿Eliminar cliente?')) del.mutate(c.id) }} className="text-danger hover:underline text-xs">Eliminar</button>
+                        {canWrite && <button onClick={() => openEdit(c)} className="text-brand hover:underline text-xs">Editar</button>}
+                        {canWrite && <button onClick={() => { if (confirm('¿Eliminar cliente?')) del.mutate(c.id) }} className="text-danger hover:underline text-xs">Eliminar</button>}
                       </td>
                     </tr>
                   ))}

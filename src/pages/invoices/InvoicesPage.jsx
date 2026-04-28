@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getInvoices, deleteInvoice } from '../../api/invoices'
 import InvoiceModal from './InvoiceModal'
 import Pagination from '../../components/Pagination'
+import { useAuth } from '../../context/AuthContext'
 
 const STATUS_LABELS = {
   draft: 'Borrador', sent: 'Enviada', paid: 'Pagada',
@@ -18,6 +19,8 @@ const STATUS_COLORS = {
 }
 
 export default function InvoicesPage() {
+  const { user } = useAuth()
+  const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
   const [statusFilter, setStatusFilter] = useState('')
   const [page, setPage] = useState(1)
@@ -42,9 +45,11 @@ export default function InvoicesPage() {
     <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-fg">Facturas</h2>
-        <button onClick={openCreate} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition-colors">
-          + Nueva factura
-        </button>
+        {canWrite && (
+          <button onClick={openCreate} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition-colors">
+            + Nueva factura
+          </button>
+        )}
       </div>
 
       <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1) }}
@@ -71,8 +76,8 @@ export default function InvoicesPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <button onClick={() => openEdit(inv.id)} className="px-2.5 py-1 rounded-md text-xs bg-brand-subtle text-brand">Editar</button>
-                  {inv.status === 'draft' && (
+                  {canWrite && <button onClick={() => openEdit(inv.id)} className="px-2.5 py-1 rounded-md text-xs bg-brand-subtle text-brand">Editar</button>}
+                  {canWrite && inv.status === 'draft' && (
                     <button onClick={() => { if (confirm('¿Eliminar?')) del.mutate(inv.id) }} className="px-2.5 py-1 rounded-md text-xs bg-danger-subtle text-danger">Eliminar</button>
                   )}
                 </div>
@@ -116,8 +121,8 @@ export default function InvoicesPage() {
                       </td>
                       <td className="px-4 py-3 text-fg-soft">${Number(inv.total).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                       <td className="px-4 py-3 text-right space-x-2">
-                        <button onClick={() => openEdit(inv.id)} className="text-brand hover:underline text-xs">Editar</button>
-                        {inv.status === 'draft' && (
+                        {canWrite && <button onClick={() => openEdit(inv.id)} className="text-brand hover:underline text-xs">Editar</button>}
+                        {canWrite && inv.status === 'draft' && (
                           <button onClick={() => { if (confirm('¿Eliminar?')) del.mutate(inv.id) }} className="text-danger hover:underline text-xs">Eliminar</button>
                         )}
                       </td>

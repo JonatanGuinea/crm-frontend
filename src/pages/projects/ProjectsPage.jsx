@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { getProjects, deleteProject } from '../../api/projects'
 import ProjectModal from './ProjectModal'
 import Pagination from '../../components/Pagination'
+import { useAuth } from '../../context/AuthContext'
 
 const STATUS_LABELS = {
   pending: 'Pendiente', approved: 'Aprobado', in_progress: 'En curso',
@@ -18,6 +19,8 @@ const STATUS_COLORS = {
 }
 
 export default function ProjectsPage() {
+  const { user } = useAuth()
+  const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
   const [statusFilter, setStatusFilter] = useState('')
   const [page, setPage] = useState(1)
@@ -38,9 +41,11 @@ export default function ProjectsPage() {
     <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-fg">Proyectos</h2>
-        <button onClick={() => { setEditing(null); setModalOpen(true) }} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition-colors">
-          + Nuevo proyecto
-        </button>
+        {canWrite && (
+          <button onClick={() => { setEditing(null); setModalOpen(true) }} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition-colors">
+            + Nuevo proyecto
+          </button>
+        )}
       </div>
 
       <select
@@ -71,8 +76,8 @@ export default function ProjectsPage() {
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <Link to={`/projects/${p.id}`} className="px-2.5 py-1 rounded-md text-xs bg-raised text-fg-soft">Ver</Link>
-                  <button onClick={() => { setEditing(p); setModalOpen(true) }} className="px-2.5 py-1 rounded-md text-xs bg-brand-subtle text-brand">Editar</button>
-                  <button onClick={() => { if (confirm('¿Eliminar proyecto?')) del.mutate(p.id) }} className="px-2.5 py-1 rounded-md text-xs bg-danger-subtle text-danger">Eliminar</button>
+                  {canWrite && <button onClick={() => { setEditing(p); setModalOpen(true) }} className="px-2.5 py-1 rounded-md text-xs bg-brand-subtle text-brand">Editar</button>}
+                  {canWrite && <button onClick={() => { if (confirm('¿Eliminar proyecto?')) del.mutate(p.id) }} className="px-2.5 py-1 rounded-md text-xs bg-danger-subtle text-danger">Eliminar</button>}
                 </div>
               </div>
             ))}
@@ -109,8 +114,8 @@ export default function ProjectsPage() {
                       </td>
                       <td className="px-4 py-3 text-right space-x-2">
                         <Link to={`/projects/${p.id}`} className="text-fg-muted hover:underline text-xs">Ver</Link>
-                        <button onClick={() => { setEditing(p); setModalOpen(true) }} className="text-brand hover:underline text-xs">Editar</button>
-                        <button onClick={() => { if (confirm('¿Eliminar proyecto?')) del.mutate(p.id) }} className="text-danger hover:underline text-xs">Eliminar</button>
+                        {canWrite && <button onClick={() => { setEditing(p); setModalOpen(true) }} className="text-brand hover:underline text-xs">Editar</button>}
+                        {canWrite && <button onClick={() => { if (confirm('¿Eliminar proyecto?')) del.mutate(p.id) }} className="text-danger hover:underline text-xs">Eliminar</button>}
                       </td>
                     </tr>
                   ))}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useAuth } from '../../context/AuthContext'
 import { getProjectById } from '../../api/projects'
 import { getQuotes } from '../../api/quotes'
 import { getInvoices } from '../../api/invoices'
@@ -33,6 +34,8 @@ const DOC_STATUS_COLORS = {
 export default function ProjectDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
   const [editOpen, setEditOpen] = useState(false)
 
@@ -79,12 +82,14 @@ export default function ProjectDetailPage() {
             </Link>
           )}
         </div>
-        <button
-          onClick={() => setEditOpen(true)}
-          className="px-4 py-2 border border-line-soft rounded-md text-sm font-medium text-fg-soft hover:bg-raised transition-colors"
-        >
-          Editar
-        </button>
+        {canWrite && (
+          <button
+            onClick={() => setEditOpen(true)}
+            className="px-4 py-2 border border-line-soft rounded-md text-sm font-medium text-fg-soft hover:bg-raised transition-colors"
+          >
+            Editar
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

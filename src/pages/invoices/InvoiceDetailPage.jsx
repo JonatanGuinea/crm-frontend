@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useAuth } from '../../context/AuthContext'
 import { getInvoiceById, downloadInvoicePdf } from '../../api/invoices'
 import InvoiceModal from './InvoiceModal'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
@@ -20,6 +21,8 @@ const STATUS_COLORS = {
 export default function InvoiceDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
   const [editOpen, setEditOpen] = useState(false)
   const [downloading, setDownloading] = useState(false)
@@ -77,12 +80,14 @@ export default function InvoiceDetailPage() {
           >
             {downloading ? 'Generando...' : 'Descargar PDF'}
           </button>
-          <button
-            onClick={() => setEditOpen(true)}
-            className="px-4 py-2 border border-line-soft rounded-md text-sm font-medium text-fg-soft hover:bg-raised transition-colors"
-          >
-            Editar
-          </button>
+          {canWrite && (
+            <button
+              onClick={() => setEditOpen(true)}
+              className="px-4 py-2 border border-line-soft rounded-md text-sm font-medium text-fg-soft hover:bg-raised transition-colors"
+            >
+              Editar
+            </button>
+          )}
         </div>
       </div>
 
