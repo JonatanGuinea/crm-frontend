@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+button, [role="button"] {
+  cursor: pointer;
+}
+
 /* ── Design tokens ──────────────────────────────────────── */
 :root {
   --brand-teal:       #00B2A9;

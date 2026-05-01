@@ -26,6 +26,7 @@ import {
   MoonIcon,
   Bars3Icon,
   XMarkIcon,
+  CalendarDaysIcon,
 } from '@heroicons/react/24/outline'
 
 const API_BASE = import.meta.env.VITE_API_URL.replace('/api', '')
@@ -34,6 +35,7 @@ const navItems = [
   { to: '/',              label: 'Dashboard',      icon: HomeIcon,           exact: true },
   { to: '/clients',       label: 'Clientes',        icon: UsersIcon },
   { to: '/projects',      label: 'Proyectos',       icon: FolderIcon },
+  { to: '/projects/calendar', label: 'Agenda',      icon: CalendarDaysIcon },
   { to: '/quotes',        label: 'Presupuestos',    icon: DocumentTextIcon },
   { to: '/invoices',      label: 'Facturas',        icon: ReceiptRefundIcon },
   { to: '/notifications', label: 'Notificaciones',  icon: BellIcon },

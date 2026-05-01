@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getQuotes, deleteQuote, createInvoiceFromQuote } from '../../api/quotes'
+import { getQuotes, deleteQuote, updateQuote, createInvoiceFromQuote, downloadQuotePdf } from '../../api/quotes'
 import QuoteModal from './QuoteModal'
 import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
+import { ChevronDownIcon, UserIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline'
 
 const STATUS_LABELS = {
   draft: 'Borrador', sent: 'Enviado', approved: 'Aprobado',
@@ -17,6 +18,74 @@ const STATUS_COLORS = {
   rejected: 'bg-danger-subtle text-danger',
   expired:  'bg-warning-subtle text-warning'
 }
+const STATUS_DOT = {
+  draft:    'bg-fg-muted',
+  sent:     'bg-info',
+  approved: 'bg-brand',
+  rejected: 'bg-danger',
+  expired:  'bg-warning',
+}
+const ALLOWED_TRANSITIONS = {
+  draft:    ['sent', 'expired'],
+  sent:     ['approved', 'rejected', 'expired'],
+  approved: [],
+  rejected: [],
+  expired:  [],
+}
+
+function StatusDropdown({ quote, onUpdate }) {
+  const [open, setOpen] = useState(false)
+  const [dropPos, setDropPos] = useState({ top: 0, left: 0 })
+  const btnRef = useRef(null)
+  const allowed = ALLOWED_TRANSITIONS[quote.status] || []
+
+  if (!allowed.length) {
+    return (
+      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[quote.status]}`}>
+        {STATUS_LABELS[quote.status]}
+      </span>
+    )
+  }
+
+  function handleToggle() {
+    if (!open && btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect()
+      setDropPos({ top: r.bottom + 4, left: r.left })
+    }
+    setOpen(o => !o)
+  }
+
+  return (
+    <div className="inline-block">
+      {open && <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />}
+      <button
+        ref={btnRef}
+        onClick={handleToggle}
+        className={`px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 transition-opacity hover:opacity-80 ${STATUS_COLORS[quote.status]}`}
+      >
+        {STATUS_LABELS[quote.status]}
+        <ChevronDownIcon className="w-3 h-3 shrink-0" />
+      </button>
+      {open && (
+        <div
+          style={{ top: dropPos.top, left: dropPos.left }}
+          className="fixed z-50 bg-surface border border-line-soft rounded-lg shadow-lg py-1 min-w-[150px]"
+        >
+          {allowed.map(s => (
+            <button
+              key={s}
+              onClick={() => { onUpdate(s); setOpen(false) }}
+              className="w-full text-left px-3 py-2 text-xs hover:bg-raised text-fg flex items-center gap-2 transition-colors"
+            >
+              <span className={`w-2 h-2 rounded-full shrink-0 ${STATUS_DOT[s]}`} />
+              {STATUS_LABELS[s]}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function QuotesPage() {
   const { user } = useAuth()
@@ -26,6 +95,7 @@ export default function QuotesPage() {
   const [page, setPage] = useState(1)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(null)
+  const [downloading, setDownloading] = useState(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['quotes', statusFilter, page],
@@ -37,6 +107,12 @@ export default function QuotesPage() {
     onSuccess: () => qc.invalidateQueries(['quotes'])
   })
 
+  const changeStatus = useMutation({
+    mutationFn: ({ id, status }) => updateQuote(id, { status }),
+    onSuccess: () => qc.invalidateQueries(['quotes']),
+    onError: (err) => alert(err.response?.data?.error || 'Error al cambiar estado')
+  })
+
   const toInvoice = useMutation({
     mutationFn: (id) => createInvoiceFromQuote(id, {}),
     onSuccess: () => {
@@ -45,6 +121,21 @@ export default function QuotesPage() {
     },
     onError: (err) => alert(err.response?.data?.error || 'Error al generar factura')
   })
+
+  async function handleDownload(id, number) {
+    setDownloading(id)
+    try {
+      const res = await downloadQuotePdf(id)
+      const url = URL.createObjectURL(res.data)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `presupuesto-${number}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } finally {
+      setDownloading(null)
+    }
+  }
 
   function openCreate() { setEditingId(null); setModalOpen(true) }
   function openEdit(id) { setEditingId(id); setModalOpen(true) }
@@ -70,33 +161,57 @@ export default function QuotesPage() {
       {isLoading ? <p className="text-sm text-fg-soft">Cargando...</p> : (
         <>
           {/* Mobile: cards */}
-          <div className="md:hidden bg-surface rounded-xl border border-line divide-y divide-line">
+          <div className="md:hidden grid grid-cols-1 gap-3">
             {data?.data?.map(q => (
-              <div key={q.id} className="p-4 flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <Link to={`/quotes/${q.id}`} className="font-medium text-fg truncate block hover:text-brand">
-                    {q.title}
-                  </Link>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[q.status]}`}>
-                      {STATUS_LABELS[q.status]}
-                    </span>
-                    <p className="text-xs text-fg-muted">${Number(q.total).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                  </div>
+              <div key={q.id} className="bg-surface rounded-xl border border-line p-4">
+                {/* Header: número + estado */}
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <span className="text-xs font-mono font-medium text-fg-muted bg-raised px-2 py-0.5 rounded-md">
+                    #{q.number}
+                  </span>
+                  {canWrite
+                    ? <StatusDropdown quote={q} onUpdate={(status) => changeStatus.mutate({ id: q.id, status })} />
+                    : <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[q.status]}`}>{STATUS_LABELS[q.status]}</span>
+                  }
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  {canWrite && <button onClick={() => openEdit(q.id)} className="px-2.5 py-1 rounded-md text-xs bg-brand-subtle text-brand">Editar</button>}
+                {/* Título */}
+                <Link to={`/quotes/${q.id}`} className="block font-semibold text-fg hover:text-brand leading-snug mb-3">
+                  {q.title}
+                </Link>
+                {/* Meta */}
+                <div className="flex items-center justify-between gap-2 mb-4">
+                  {q.client?.name && (
+                    <p className="text-xs text-fg-soft flex items-center gap-1.5 truncate">
+                      <UserIcon className="w-3.5 h-3.5 shrink-0 text-fg-muted" />
+                      {q.client.name}
+                    </p>
+                  )}
+                  <p className="text-base font-bold text-fg shrink-0">
+                    ${Number(q.total).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                </div>
+                {/* Acciones */}
+                <div className="flex items-center gap-2 pt-3 border-t border-line">
+                  <button
+                    onClick={() => handleDownload(q.id, q.number)}
+                    disabled={downloading === q.id}
+                    className="p-1.5 rounded-lg bg-raised text-fg-muted hover:bg-overlay disabled:opacity-50 transition-colors"
+                    title="Descargar PDF"
+                  >
+                    <ArrowDownTrayIcon className="w-4 h-4" />
+                  </button>
+                  {canWrite && <button onClick={() => openEdit(q.id)} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-brand-subtle text-brand hover:opacity-80 transition-opacity">Editar</button>}
                   {canWrite && q.status === 'approved' && (
-                    <button onClick={() => { if (confirm('¿Generar factura?')) toInvoice.mutate(q.id) }} className="px-2.5 py-1 rounded-md text-xs bg-info-subtle text-info">Facturar</button>
+                    <button onClick={() => { if (confirm('¿Generar factura?')) toInvoice.mutate(q.id) }} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-info-subtle text-info hover:opacity-80 transition-opacity">Facturar</button>
                   )}
                   {canWrite && q.status === 'draft' && (
-                    <button onClick={() => { if (confirm('¿Eliminar?')) del.mutate(q.id) }} className="px-2.5 py-1 rounded-md text-xs bg-danger-subtle text-danger">Eliminar</button>
+                    <button onClick={() => { if (confirm('¿Eliminar?')) del.mutate(q.id) }} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-danger-subtle text-danger hover:opacity-80 transition-opacity">Eliminar</button>
                   )}
                 </div>
               </div>
             ))}
             {!data?.data?.length && (
-              <p className="p-6 text-center text-sm text-fg-muted">Sin presupuestos</p>
+              <p className="py-10 text-center text-sm text-fg-muted">Sin presupuestos</p>
             )}
           </div>
 
@@ -123,16 +238,25 @@ export default function QuotesPage() {
                       </td>
                       <td className="px-4 py-3 text-fg-soft">{q.client?.name}</td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[q.status]}`}>
-                          {STATUS_LABELS[q.status]}
-                        </span>
+                        {canWrite
+                          ? <StatusDropdown quote={q} onUpdate={(status) => changeStatus.mutate({ id: q.id, status })} />
+                          : <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[q.status]}`}>{STATUS_LABELS[q.status]}</span>
+                        }
                       </td>
                       <td className="px-4 py-3 text-fg-soft">${Number(q.total).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                      <td className="px-4 py-3 text-right space-x-2">
+                      <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
+                        <button
+                          onClick={() => handleDownload(q.id, q.number)}
+                          disabled={downloading === q.id}
+                          className="text-fg-muted hover:text-fg disabled:opacity-50 transition-colors"
+                          title="Descargar PDF"
+                        >
+                          <ArrowDownTrayIcon className={`w-4 h-4 ${downloading === q.id ? 'animate-pulse' : ''}`} />
+                        </button>
                         {canWrite && <button onClick={() => openEdit(q.id)} className="text-brand hover:underline text-xs">Editar</button>}
                         {canWrite && q.status === 'approved' && (
                           <button onClick={() => { if (confirm('¿Generar factura desde este presupuesto?')) toInvoice.mutate(q.id) }}
-                            className="text-brand hover:underline text-xs">Facturar</button>
+                            className="text-info hover:underline text-xs">Facturar</button>
                         )}
                         {canWrite && q.status === 'draft' && (
                           <button onClick={() => { if (confirm('¿Eliminar?')) del.mutate(q.id) }} className="text-danger hover:underline text-xs">Eliminar</button>

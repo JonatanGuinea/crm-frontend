@@ -15,6 +15,7 @@ import ClientsPage from './pages/clients/ClientsPage'
 import ClientDetailPage from './pages/clients/ClientDetailPage'
 import ProjectsPage from './pages/projects/ProjectsPage'
 import ProjectDetailPage from './pages/projects/ProjectDetailPage'
+import ProjectCalendarPage from './pages/projects/ProjectCalendarPage'
 import QuotesPage from './pages/quotes/QuotesPage'
 import InvoicesPage from './pages/invoices/InvoicesPage'
 import NotificationsPage from './pages/notifications/NotificationsPage'
@@ -59,6 +60,7 @@ export default function App() {
               <Route path="/clients" element={<ClientsPage />} />
               <Route path="/clients/:id" element={<ClientDetailPage />} />
               <Route path="/projects" element={<ProjectsPage />} />
+              <Route path="/projects/calendar" element={<ProjectCalendarPage />} />
               <Route path="/projects/:id" element={<ProjectDetailPage />} />
               <Route path="/quotes" element={<QuotesPage />} />
               <Route path="/quotes/:id" element={<QuoteDetailPage />} />

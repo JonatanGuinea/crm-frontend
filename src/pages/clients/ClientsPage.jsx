@@ -5,6 +5,7 @@ import { getClients, deleteClient } from '../../api/clients'
 import ClientModal from './ClientModal'
 import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
+import { EnvelopeIcon, PhoneIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline'
 
 export default function ClientsPage() {
   const { user } = useAuth()
@@ -53,22 +54,50 @@ export default function ClientsPage() {
       ) : (
         <>
           {/* Mobile: cards */}
-          <div className="md:hidden bg-surface rounded-xl border border-line divide-y divide-line">
+          <div className="md:hidden grid grid-cols-1 gap-3">
             {data?.data?.map(c => (
-              <div key={c.id} className="p-4 flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="font-medium text-fg truncate">{c.name}</p>
-                  <p className="text-xs text-fg-muted truncate">{c.email || c.company || '-'}</p>
+              <div key={c.id} className="bg-surface rounded-xl border border-line p-4">
+                {/* Avatar + nombre */}
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-11 h-11 rounded-full bg-brand-subtle text-brand font-bold text-sm flex items-center justify-center shrink-0 uppercase">
+                    {c.name?.split(' ').map(w => w[0]).join('').slice(0, 2)}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-fg truncate leading-snug">{c.name}</p>
+                    {c.company && <p className="text-xs text-fg-muted truncate">{c.company}</p>}
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <Link to={`/clients/${c.id}`} className="px-2.5 py-1 rounded-md text-xs bg-raised text-fg-soft">Ver</Link>
-                  {canWrite && <button onClick={() => openEdit(c)} className="px-2.5 py-1 rounded-md text-xs bg-brand-subtle text-brand">Editar</button>}
-                  {canWrite && <button onClick={() => { if (confirm('¿Eliminar cliente?')) del.mutate(c.id) }} className="px-2.5 py-1 rounded-md text-xs bg-danger-subtle text-danger">Eliminar</button>}
+                {/* Meta */}
+                <div className="space-y-1.5 mb-4">
+                  {c.email && (
+                    <p className="text-xs text-fg-soft flex items-center gap-2 truncate">
+                      <EnvelopeIcon className="w-3.5 h-3.5 shrink-0 text-fg-muted" />
+                      {c.email}
+                    </p>
+                  )}
+                  {c.phone && (
+                    <p className="text-xs text-fg-soft flex items-center gap-2">
+                      <PhoneIcon className="w-3.5 h-3.5 shrink-0 text-fg-muted" />
+                      {c.phone}
+                    </p>
+                  )}
+                  {c.company && (
+                    <p className="text-xs text-fg-soft flex items-center gap-2 truncate">
+                      <BuildingOfficeIcon className="w-3.5 h-3.5 shrink-0 text-fg-muted" />
+                      {c.company}
+                    </p>
+                  )}
+                </div>
+                {/* Acciones */}
+                <div className="flex items-center gap-2 pt-3 border-t border-line">
+                  <Link to={`/clients/${c.id}`} className="flex-1 text-center py-1.5 rounded-lg text-xs font-medium bg-raised text-fg-soft hover:bg-overlay transition-colors">Ver</Link>
+                  {canWrite && <button onClick={() => openEdit(c)} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-brand-subtle text-brand hover:opacity-80 transition-opacity">Editar</button>}
+                  {canWrite && <button onClick={() => { if (confirm('¿Eliminar cliente?')) del.mutate(c.id) }} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-danger-subtle text-danger hover:opacity-80 transition-opacity">Eliminar</button>}
                 </div>
               </div>
             ))}
             {!data?.data?.length && (
-              <p className="p-6 text-center text-sm text-fg-muted">Sin clientes</p>
+              <p className="py-10 text-center text-sm text-fg-muted">Sin clientes</p>
             )}
           </div>
 

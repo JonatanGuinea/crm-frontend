@@ -50,7 +50,7 @@ export default function LineItemsEditor({ items, onChange }) {
                 <td className="py-1.5 pr-2">
                   <input
                     type="number"
-                    min="0.01"
+                    min="1"
                     step="1"
                     required
                     value={item.quantity}
