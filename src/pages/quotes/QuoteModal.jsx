@@ -127,7 +127,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved }) {
             <div>
               <label className={labelCls}>Cliente *</label>
               <select required value={form.clientId}
-                onChange={e => setForm(f => ({ ...f, clientId: e.target.value }))}
+                onChange={e => setForm(f => ({ ...f, clientId: e.target.value, projectId: '' }))}
                 className={inputCls}>
                 <option value="">Seleccionar...</option>
                 {clientsData?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -137,9 +137,10 @@ export default function QuoteModal({ quoteId, onClose, onSaved }) {
               <label className={labelCls}>Proyecto</label>
               <select value={form.projectId}
                 onChange={e => setForm(f => ({ ...f, projectId: e.target.value }))}
-                className={inputCls}>
+                className={inputCls}
+                disabled={!form.clientId}>
                 <option value="">Sin proyecto</option>
-                {projectsData?.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+                {projectsData?.filter(p => p.clientId === form.clientId).map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
               </select>
             </div>
           </div>

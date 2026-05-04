@@ -17,6 +17,7 @@ import {
   ExclamationCircleIcon,
   DocumentCurrencyDollarIcon,
   ClipboardDocumentListIcon,
+  CalendarDaysIcon,
 } from '@heroicons/react/24/outline'
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -327,6 +328,56 @@ function ExpiringQuotesPanel({ quotes }) {
   )
 }
 
+const PROJECT_STATUS_LABEL = {
+  approved:    'Aprobado',
+  in_progress: 'En curso',
+}
+
+function UpcomingProjectsPanel({ projects }) {
+  const upcoming = projects?.upcomingProjects ?? []
+
+  return (
+    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-fg">Proyectos por vencer</h3>
+        <Link to="/projects" className="flex items-center gap-1 text-xs text-brand hover:underline">
+          Ver todos <ArrowRightIcon className="w-3 h-3" />
+        </Link>
+      </div>
+
+      {upcoming.length === 0 ? (
+        <p className="text-sm text-fg-muted text-center py-4">Sin proyectos próximos a vencer</p>
+      ) : (
+        <ul className="divide-y divide-line">
+          {upcoming.map(p => {
+            const daysLeft = Math.max(0, Math.ceil((new Date(p.endDate) - new Date()) / (1000 * 60 * 60 * 24)))
+            const urgent = daysLeft <= 2
+            return (
+              <li key={p.id} className="flex items-center gap-3 py-3">
+                <div className={`p-1.5 rounded-lg shrink-0 ${urgent ? 'bg-danger-subtle' : 'bg-warning-subtle'}`}>
+                  <CalendarDaysIcon className={`w-4 h-4 ${urgent ? 'text-danger' : 'text-warning'}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-fg truncate">{p.title}</p>
+                  <p className="text-xs text-fg-muted truncate">
+                    {p.client?.name} · {PROJECT_STATUS_LABEL[p.status] ?? p.status}
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  {p.budget != null && <p className="text-sm font-semibold text-fg">{fmt(p.budget)}</p>}
+                  <p className={`text-xs font-medium ${urgent ? 'text-danger' : 'text-warning'}`}>
+                    {daysLeft === 0 ? 'Vence hoy' : `${daysLeft}d`}
+                  </p>
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 const ACTIVITY_CONFIG = {
   invoice: {
     icon: DocumentCurrencyDollarIcon,
@@ -444,6 +495,12 @@ export default function DashboardPage() {
   })
 
   const activeProjects = projects?.byStatus?.find(s => s._id === 'in_progress')?.totalProjects ?? 0
+
+  const paid    = invoices?.summary?.paid    ?? 0
+  const sent    = invoices?.summary?.sent    ?? 0
+  const overdue = invoices?.summary?.overdue ?? 0
+  const collectionBase = paid + sent + overdue
+  const collectionRate = collectionBase > 0 ? Math.round((paid / collectionBase) * 100) : null
   const openQuotes = quotes?.byStatus
     ?.filter(s => ['draft', 'sent'].includes(s.status))
     ?.reduce((acc, s) => acc + s.count, 0) ?? 0
@@ -465,7 +522,7 @@ export default function DashboardPage() {
           iconColor="text-brand"
           label="Cobrado"
           value={fmt(invoices?.summary?.paid)}
-          sub={`de ${invoices?.summary?.totalInvoices ?? 0} facturas`}
+          sub={collectionRate != null ? `Tasa de cobro: ${collectionRate}%` : `de ${invoices?.summary?.totalInvoices ?? 0} facturas`}
         />
         <KpiCard
           icon={ClockIcon}
@@ -507,8 +564,11 @@ export default function DashboardPage() {
         <ExpiringQuotesPanel quotes={quotes} />
       </div>
 
-      {/* Activity feed */}
-      <ActivityFeed activity={recentActivity} />
+      {/* Upcoming projects + Activity feed */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <UpcomingProjectsPanel projects={projects} />
+        <ActivityFeed activity={recentActivity} />
+      </div>
 
     </div>
   )
