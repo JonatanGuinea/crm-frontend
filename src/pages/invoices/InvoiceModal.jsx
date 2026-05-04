@@ -72,7 +72,7 @@ export default function InvoiceModal({ invoiceId, onClose, onSaved }) {
   const taxAmount = subtotal * (parseFloat(form.taxRate) / 100)
   const total = subtotal + taxAmount
 
-  const allowedStatuses = isEditing && invoiceData ? ALLOWED_TRANSITIONS[invoiceData.status] || [] : []
+  // const allowedStatuses = isEditing && invoiceData ? ALLOWED_TRANSITIONS[invoiceData.status] || [] : []
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -183,7 +183,7 @@ export default function InvoiceModal({ invoiceId, onClose, onSaved }) {
             )}
             <div className="text-base font-semibold text-fg">Total {form.currency}: ${total.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           </div>
-
+{/* 
           {isEditing && allowedStatuses.length > 0 && (
             <div>
               <label className={labelCls}>Cambiar estado</label>
@@ -194,7 +194,7 @@ export default function InvoiceModal({ invoiceId, onClose, onSaved }) {
                 {allowedStatuses.map(s => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
               </select>
             </div>
-          )}
+          )} */}
 
           <div>
             <label className={labelCls}>Notas</label>
