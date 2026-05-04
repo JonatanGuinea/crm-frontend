@@ -87,8 +87,9 @@ export default function OrgSwitcher() {
         <p className="text-xs text-fg-muted capitalize">{user?.role}</p>
       </button>
 
-      {open && (
-        <div className="absolute top-full left-0 w-full bg-surface border border-line rounded-b-xl shadow-lg z-50">
+      <div className={`absolute top-full left-0 w-full bg-overlay border border-line rounded-b-xl shadow-lg z-50 transition-all duration-200 origin-top ${
+        open ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-1 pointer-events-none'
+      }`}>
           {hasMultiple && (
             <>
               <p className="px-4 py-2 text-xs text-fg-muted uppercase tracking-wide border-b border-line">
@@ -154,7 +155,7 @@ export default function OrgSwitcher() {
             )}
           </div>
         </div>
-      )}
-    </div>
+      </div>
+    // </div>
   )
 }

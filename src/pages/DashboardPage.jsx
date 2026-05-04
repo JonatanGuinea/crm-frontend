@@ -258,7 +258,7 @@ export default function DashboardPage() {
 
   const { data: recentInvoices } = useQuery({
     queryKey: ['invoices-recent'],
-    queryFn: () => getInvoices({ limit: 5 }).then(r => r.data.data.data),
+    queryFn: () => getInvoices({ limit: 5 }).then(r => r.data.data),
   })
 
   const activeProjects = projects?.byStatus?.find(s => s._id === 'in_progress')?.totalProjects ?? 0
