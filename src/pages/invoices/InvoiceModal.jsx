@@ -9,7 +9,7 @@ const EMPTY_ITEM = { description: '', quantity: 1, unitPrice: 0, amount: 0 }
 
 const ALLOWED_TRANSITIONS = {
   draft: ['sent', 'cancelled'],
-  sent: ['paid', 'overdue', 'cancelled'],
+  sent: ['paid', 'cancelled'],
   paid: [], overdue: ['paid', 'cancelled'], cancelled: []
 }
 const STATUS_LABELS = {

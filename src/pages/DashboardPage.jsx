@@ -70,12 +70,12 @@ function KpiCard({ icon: Icon, iconBg, iconColor, label, value, sub }) {
 
 function IncomePanel({ invoices }) {
   const paid    = Number(invoices?.summary?.paid    ?? 0)
-  const pending = Number(invoices?.summary?.pending ?? 0)
+  const sent    = Number(invoices?.summary?.sent    ?? 0)
   const overdue = Number(invoices?.summary?.overdue ?? 0)
-  const total   = paid + pending + overdue
+  const total   = paid + sent + overdue
 
   const paidPct    = total ? (paid    / total) * 100 : 0
-  const pendingPct = total ? (pending / total) * 100 : 0
+  const sentPct    = total ? (sent    / total) * 100 : 0
   const overduePct = total ? (overdue / total) * 100 : 0
 
   return (
@@ -94,8 +94,8 @@ function IncomePanel({ invoices }) {
           <p className="text-sm md:text-xl font-bold text-brand truncate">{fmt(paid)}</p>
         </div>
         <div className="min-w-0">
-          <p className="text-xs text-fg-muted mb-1">Pendiente</p>
-          <p className="text-sm md:text-xl font-bold text-warning truncate">{fmt(pending)}</p>
+          <p className="text-xs text-fg-muted mb-1">Enviadas</p>
+          <p className="text-sm md:text-xl font-bold text-info truncate">{fmt(sent)}</p>
         </div>
         <div className="min-w-0">
           <p className="text-xs text-fg-muted mb-1">Vencido</p>
@@ -110,8 +110,8 @@ function IncomePanel({ invoices }) {
             {paidPct > 0 && (
               <div style={{ width: `${paidPct}%` }} className="bg-brand transition-all duration-700" />
             )}
-            {pendingPct > 0 && (
-              <div style={{ width: `${pendingPct}%` }} className="bg-warning transition-all duration-700" />
+            {sentPct > 0 && (
+              <div style={{ width: `${sentPct}%` }} className="bg-info transition-all duration-700" />
             )}
             {overduePct > 0 && (
               <div style={{ width: `${overduePct}%` }} className="bg-danger transition-all duration-700" />
@@ -122,9 +122,9 @@ function IncomePanel({ invoices }) {
         )}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2.5">
           {[
-            { label: 'Cobrado',   color: 'bg-brand',   pct: paidPct },
-            { label: 'Pendiente', color: 'bg-warning',  pct: pendingPct },
-            { label: 'Vencido',   color: 'bg-danger',   pct: overduePct },
+            { label: 'Cobrado',  color: 'bg-brand',  pct: paidPct },
+            { label: 'Enviadas', color: 'bg-info',    pct: sentPct },
+            { label: 'Vencido',  color: 'bg-danger',  pct: overduePct },
           ].map(({ label, color, pct }) => (
             <div key={label} className="flex items-center gap-1.5 text-xs text-fg-muted">
               <span className={`w-2 h-2 rounded-full shrink-0 ${color}`} />
@@ -287,10 +287,10 @@ export default function DashboardPage() {
         />
         <KpiCard
           icon={ClockIcon}
-          iconBg="bg-warning-subtle"
-          iconColor="text-warning"
-          label="Pendiente"
-          value={fmt(invoices?.summary?.pending)}
+          iconBg="bg-info-subtle"
+          iconColor="text-info"
+          label="Enviadas"
+          value={fmt(invoices?.summary?.sent)}
         />
         <KpiCard
           icon={ExclamationTriangleIcon}

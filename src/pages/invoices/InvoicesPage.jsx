@@ -27,7 +27,7 @@ const STATUS_DOT = {
 }
 const ALLOWED_TRANSITIONS = {
   draft:     ['sent', 'cancelled'],
-  sent:      ['paid', 'overdue', 'cancelled'],
+  sent:      ['paid', 'cancelled'],
   paid:      [],
   overdue:   ['paid', 'cancelled'],
   cancelled: [],
