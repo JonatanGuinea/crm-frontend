@@ -12,6 +12,7 @@ import {
   FolderOpenIcon,
   ArrowRightIcon,
   DocumentTextIcon,
+  ExclamationCircleIcon,
 } from '@heroicons/react/24/outline'
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -231,6 +232,49 @@ function RecentInvoices({ invoices }) {
   )
 }
 
+function ExpiringQuotesPanel({ quotes }) {
+  const expiring = quotes?.expiringSoon ?? []
+
+  return (
+    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-fg">Presupuestos por vencer</h3>
+        <Link to="/quotes" className="flex items-center gap-1 text-xs text-brand hover:underline">
+          Ver todos <ArrowRightIcon className="w-3 h-3" />
+        </Link>
+      </div>
+
+      {expiring.length === 0 ? (
+        <p className="text-sm text-fg-muted text-center py-4">Sin presupuestos próximos a vencer</p>
+      ) : (
+        <ul className="divide-y divide-line">
+          {expiring.map(q => {
+            const daysLeft = Math.max(0, Math.ceil((new Date(q.validUntil) - new Date()) / (1000 * 60 * 60 * 24)))
+            const urgent = daysLeft <= 2
+            return (
+              <li key={q.id} className="flex items-center gap-3 py-3">
+                <div className={`p-1.5 rounded-lg shrink-0 ${urgent ? 'bg-danger-subtle' : 'bg-warning-subtle'}`}>
+                  <ExclamationCircleIcon className={`w-4 h-4 ${urgent ? 'text-danger' : 'text-warning'}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-fg truncate">#{q.number} {q.title}</p>
+                  <p className="text-xs text-fg-muted truncate">{q.client?.name}</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-sm font-semibold text-fg">{fmt(q.total)}</p>
+                  <p className={`text-xs font-medium ${urgent ? 'text-danger' : 'text-warning'}`}>
+                    {daysLeft === 0 ? 'Vence hoy' : `${daysLeft}d`}
+                  </p>
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 // ── main ──────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
@@ -317,6 +361,11 @@ export default function DashboardPage() {
         <div className="md:col-span-1">
           <ProjectsPanel projects={projects} />
         </div>
+      </div>
+
+      {/* Expiring quotes */}
+      <div className="mb-6">
+        <ExpiringQuotesPanel quotes={quotes} />
       </div>
 
       {/* Recent invoices */}
