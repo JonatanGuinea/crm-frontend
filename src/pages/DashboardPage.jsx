@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { getProjectsDashboard } from '../api/projects'
 import { getInvoicesDashboard, getInvoices } from '../api/invoices'
 import { getQuotesDashboard } from '../api/quotes'
+import { getTopClients } from '../api/clients'
 import { getProfile } from '../api/profile'
 import { useAuth } from '../context/AuthContext'
 import {
@@ -232,6 +233,54 @@ function RecentInvoices({ invoices }) {
   )
 }
 
+function TopClientsPanel({ clients }) {
+  const list = clients ?? []
+  const max = list[0]?.total ?? 1
+
+  return (
+    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-fg">Top clientes</h3>
+        <Link to="/clients" className="flex items-center gap-1 text-xs text-brand hover:underline">
+          Ver todos <ArrowRightIcon className="w-3 h-3" />
+        </Link>
+      </div>
+
+      {list.length === 0 ? (
+        <p className="text-sm text-fg-muted text-center py-4">Sin datos aún</p>
+      ) : (
+        <ul className="space-y-3">
+          {list.map((entry, i) => {
+            const pct = max ? (entry.total / max) * 100 : 0
+            return (
+              <li key={entry.client.id}>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-xs font-bold text-fg-muted w-4 shrink-0">#{i + 1}</span>
+                    <div className="min-w-0">
+                      <p className="text-sm text-fg font-medium truncate">{entry.client.name}</p>
+                      {entry.client.company && (
+                        <p className="text-xs text-fg-muted truncate">{entry.client.company}</p>
+                      )}
+                    </div>
+                  </div>
+                  <span className="text-sm font-semibold text-fg shrink-0 ml-2">{fmt(entry.total)}</span>
+                </div>
+                <div className="h-1.5 rounded-full bg-raised overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-brand/50 transition-all duration-700"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 function ExpiringQuotesPanel({ quotes }) {
   const expiring = quotes?.expiringSoon ?? []
 
@@ -300,6 +349,11 @@ export default function DashboardPage() {
     queryFn: () => getQuotesDashboard().then(r => r.data.data),
   })
 
+  const { data: topClients } = useQuery({
+    queryKey: ['clients-top'],
+    queryFn: () => getTopClients().then(r => r.data.data),
+  })
+
   const { data: recentInvoices } = useQuery({
     queryKey: ['invoices-recent'],
     queryFn: () => getInvoices({ limit: 5 }).then(r => r.data.data),
@@ -363,8 +417,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Expiring quotes */}
-      <div className="mb-6">
+      {/* Top clients + Expiring quotes */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <TopClientsPanel clients={topClients} />
         <ExpiringQuotesPanel quotes={quotes} />
       </div>
 
