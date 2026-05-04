@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { getProjectsDashboard } from '../api/projects'
-import { getInvoicesDashboard } from '../api/invoices'
+import { getInvoicesDashboard, getInvoicesMonthly } from '../api/invoices'
 import { getQuotesDashboard } from '../api/quotes'
 import { getTopClients } from '../api/clients'
 import { getRecentActivity } from '../api/activity'
@@ -328,6 +328,56 @@ function ExpiringQuotesPanel({ quotes }) {
   )
 }
 
+function MonthlyChart({ data }) {
+  const months = data ?? []
+  const max = Math.max(...months.map(m => m.issued), 1)
+
+  return (
+    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-fg">Facturación últimos 12 meses</h3>
+        <div className="flex items-center gap-3 text-xs text-fg-muted">
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand inline-block" />Cobrado</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand/25 inline-block" />Emitido</span>
+        </div>
+      </div>
+
+      <div className="flex items-end gap-2 h-36">
+        {months.map(m => {
+          const issuedPct = max ? (m.issued / max) * 100 : 0
+          const paidPct   = max ? (m.paid   / max) * 100 : 0
+          return (
+            <div key={m.key} className="flex-1 flex flex-col items-center gap-1">
+              <div className="w-full flex items-end gap-0.5 h-28">
+                {/* Issued bar (fondo) */}
+                <div className="flex-1 rounded-t-md bg-brand/20 transition-all duration-700 relative" style={{ height: `${issuedPct}%` }}>
+                  {/* Paid bar (encima) */}
+                  <div
+                    className="absolute bottom-0 left-0 right-0 rounded-t-md bg-brand transition-all duration-700"
+                    style={{ height: `${m.issued > 0 ? (m.paid / m.issued) * 100 : 0}%` }}
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-fg-muted capitalize">{m.label}</p>
+            </div>
+          )
+        })}
+      </div>
+
+      <div className="pt-4 border-t border-line grid grid-cols-2 gap-4">
+        <div>
+          <p className="text-xs text-fg-muted mb-0.5">Total emitido</p>
+          <p className="text-sm font-semibold text-fg">{fmt(months.reduce((a, m) => a + m.issued, 0))}</p>
+        </div>
+        <div>
+          <p className="text-xs text-fg-muted mb-0.5">Total cobrado</p>
+          <p className="text-sm font-semibold text-brand">{fmt(months.reduce((a, m) => a + m.paid, 0))}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const PROJECT_STATUS_LABEL = {
   approved:    'Aprobado',
   in_progress: 'En curso',
@@ -489,6 +539,11 @@ export default function DashboardPage() {
     queryFn: () => getTopClients().then(r => r.data.data),
   })
 
+  const { data: monthlyData } = useQuery({
+    queryKey: ['invoices-monthly'],
+    queryFn: () => getInvoicesMonthly().then(r => r.data.data),
+  })
+
   const { data: recentActivity } = useQuery({
     queryKey: ['activity-recent'],
     queryFn: () => getRecentActivity().then(r => r.data.data),
@@ -569,6 +624,9 @@ export default function DashboardPage() {
         <UpcomingProjectsPanel projects={projects} />
         <ActivityFeed activity={recentActivity} />
       </div>
+
+      {/* Monthly chart */}
+      <MonthlyChart data={monthlyData} />
 
     </div>
   )
