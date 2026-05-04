@@ -37,7 +37,7 @@ export default function ProjectModal({ project, onClose, onSaved }) {
     queryFn: () => getClients({ limit: 100 }).then(r => r.data.data)
   })
 
-  const allowedStatuses = project ? ALLOWED_TRANSITIONS[project.status] || [] : []
+  // const allowedStatuses = project ? ALLOWED_TRANSITIONS[project.status] || [] : []
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -105,7 +105,7 @@ export default function ProjectModal({ project, onClose, onSaved }) {
             </div>
           </div>
 
-          {project && allowedStatuses.length > 0 && (
+          {/* {project && allowedStatuses.length > 0 && (
             <div>
               <label className={labelCls}>Cambiar estado</label>
               <select value={form.status || ''}
@@ -115,7 +115,7 @@ export default function ProjectModal({ project, onClose, onSaved }) {
                 {allowedStatuses.map(s => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
               </select>
             </div>
-          )}
+          )} */}
 
           <div>
             <label className={labelCls}>Descripción</label>
