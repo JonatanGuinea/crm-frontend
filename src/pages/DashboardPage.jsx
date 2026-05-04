@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { getProjectsDashboard } from '../api/projects'
-import { getInvoicesDashboard, getInvoices } from '../api/invoices'
+import { getInvoicesDashboard } from '../api/invoices'
 import { getQuotesDashboard } from '../api/quotes'
 import { getTopClients } from '../api/clients'
+import { getRecentActivity } from '../api/activity'
 import { getProfile } from '../api/profile'
 import { useAuth } from '../context/AuthContext'
 import {
@@ -14,6 +15,8 @@ import {
   ArrowRightIcon,
   DocumentTextIcon,
   ExclamationCircleIcon,
+  DocumentCurrencyDollarIcon,
+  ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline'
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -324,6 +327,87 @@ function ExpiringQuotesPanel({ quotes }) {
   )
 }
 
+const ACTIVITY_CONFIG = {
+  invoice: {
+    icon: DocumentCurrencyDollarIcon,
+    iconBg: 'bg-brand-subtle',
+    iconColor: 'text-brand',
+    label: 'Factura',
+    to: '/invoices',
+  },
+  quote: {
+    icon: DocumentTextIcon,
+    iconBg: 'bg-info-subtle',
+    iconColor: 'text-info',
+    label: 'Presupuesto',
+    to: '/quotes',
+  },
+  project: {
+    icon: ClipboardDocumentListIcon,
+    iconBg: 'bg-warning-subtle',
+    iconColor: 'text-warning',
+    label: 'Proyecto',
+    to: '/projects',
+  },
+}
+
+function fmtRelative(date) {
+  const diff = Math.floor((new Date() - new Date(date)) / 1000)
+  if (diff < 60) return 'Hace un momento'
+  if (diff < 3600) return `Hace ${Math.floor(diff / 60)}m`
+  if (diff < 86400) return `Hace ${Math.floor(diff / 3600)}h`
+  if (diff < 604800) return `Hace ${Math.floor(diff / 86400)}d`
+  return new Date(date).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
+}
+
+function ActivityFeed({ activity }) {
+  const items = activity ?? []
+
+  return (
+    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
+      <h3 className="text-sm font-semibold text-fg">Actividad reciente</h3>
+
+      {items.length === 0 ? (
+        <p className="text-sm text-fg-muted text-center py-4">Sin actividad reciente</p>
+      ) : (
+        <ul className="divide-y divide-line">
+          {items.map((item, i) => {
+            const cfg = ACTIVITY_CONFIG[item.type]
+            const Icon = cfg.icon
+            const name = item.data.title ?? `#${item.data.number}`
+            return (
+              <li key={i}>
+                <Link
+                  to={cfg.to}
+                  className="flex items-center gap-3 py-3 px-1 rounded-lg hover:bg-raised transition-colors"
+                >
+                  <div className={`p-2 rounded-lg shrink-0 ${cfg.iconBg}`}>
+                    <Icon className={`w-4 h-4 ${cfg.iconColor}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-fg truncate">
+                      {item.data.number ? `#${item.data.number} · ` : ''}{name}
+                    </p>
+                    <p className="text-xs text-fg-muted truncate">
+                      {cfg.label}{item.data.client ? ` · ${item.data.client.name}` : ''}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    {item.data.total != null && (
+                      <p className="text-sm font-semibold text-fg">{fmt(item.data.total)}</p>
+                    )}
+                    <p className="text-xs text-fg-muted">{fmtRelative(item.createdAt)}</p>
+                  </div>
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 // ── main ──────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
@@ -354,9 +438,9 @@ export default function DashboardPage() {
     queryFn: () => getTopClients().then(r => r.data.data),
   })
 
-  const { data: recentInvoices } = useQuery({
-    queryKey: ['invoices-recent'],
-    queryFn: () => getInvoices({ limit: 5 }).then(r => r.data.data),
+  const { data: recentActivity } = useQuery({
+    queryKey: ['activity-recent'],
+    queryFn: () => getRecentActivity().then(r => r.data.data),
   })
 
   const activeProjects = projects?.byStatus?.find(s => s._id === 'in_progress')?.totalProjects ?? 0
@@ -423,16 +507,8 @@ export default function DashboardPage() {
         <ExpiringQuotesPanel quotes={quotes} />
       </div>
 
-      {/* Recent invoices */}
-      <div className="bg-surface border border-line rounded-xl p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-fg">Facturas recientes</h3>
-          <Link to="/invoices" className="flex items-center gap-1 text-xs text-brand hover:underline">
-            Ver todas <ArrowRightIcon className="w-3 h-3" />
-          </Link>
-        </div>
-        <RecentInvoices invoices={recentInvoices} />
-      </div>
+      {/* Activity feed */}
+      <ActivityFeed activity={recentActivity} />
 
     </div>
   )
