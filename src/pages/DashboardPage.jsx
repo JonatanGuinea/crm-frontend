@@ -75,14 +75,16 @@ function KpiCard({ icon: Icon, iconBg, iconColor, label, value, sub }) {
 }
 
 function IncomePanel({ invoices }) {
-  const paid    = Number(invoices?.summary?.paid    ?? 0)
-  const sent    = Number(invoices?.summary?.sent    ?? 0)
-  const overdue = Number(invoices?.summary?.overdue ?? 0)
-  const total   = paid + sent + overdue
+  const paid        = Number(invoices?.summary?.paid               ?? 0)
+  const sent        = Number(invoices?.summary?.sent               ?? 0)
+  const overdue     = Number(invoices?.summary?.overdue            ?? 0)
+  const installments = Number(invoices?.summary?.pendingInstallments ?? 0)
+  const total       = paid + sent + overdue + installments
 
-  const paidPct    = total ? (paid    / total) * 100 : 0
-  const sentPct    = total ? (sent    / total) * 100 : 0
-  const overduePct = total ? (overdue / total) * 100 : 0
+  const paidPct         = total ? (paid         / total) * 100 : 0
+  const sentPct         = total ? (sent         / total) * 100 : 0
+  const overduePct      = total ? (overdue      / total) * 100 : 0
+  const installmentsPct = total ? (installments / total) * 100 : 0
 
   return (
     <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-5">
@@ -94,7 +96,7 @@ function IncomePanel({ invoices }) {
       </div>
 
       {/* Numbers */}
-      <div className="grid grid-cols-3 gap-2 md:gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
         <div className="min-w-0">
           <p className="text-xs text-fg-muted mb-1">Cobrado</p>
           <p className="text-sm md:text-xl font-bold text-brand truncate">{fmt(paid)}</p>
@@ -106,6 +108,10 @@ function IncomePanel({ invoices }) {
         <div className="min-w-0">
           <p className="text-xs text-fg-muted mb-1">Vencido</p>
           <p className="text-sm md:text-xl font-bold text-danger truncate">{fmt(overdue)}</p>
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs text-fg-muted mb-1">En cuotas</p>
+          <p className="text-sm md:text-xl font-bold text-warning truncate">{fmt(installments)}</p>
         </div>
       </div>
 
@@ -122,15 +128,19 @@ function IncomePanel({ invoices }) {
             {overduePct > 0 && (
               <div style={{ width: `${overduePct}%` }} className="bg-danger transition-all duration-700" />
             )}
+            {installmentsPct > 0 && (
+              <div style={{ width: `${installmentsPct}%` }} className="bg-warning transition-all duration-700" />
+            )}
           </div>
         ) : (
           <div className="h-2.5 rounded-full bg-raised" />
         )}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2.5">
           {[
-            { label: 'Cobrado',  color: 'bg-brand',  pct: paidPct },
-            { label: 'Enviadas', color: 'bg-info',    pct: sentPct },
-            { label: 'Vencido',  color: 'bg-danger',  pct: overduePct },
+            { label: 'Cobrado',   color: 'bg-brand',   pct: paidPct },
+            { label: 'Enviadas',  color: 'bg-info',    pct: sentPct },
+            { label: 'Vencido',   color: 'bg-danger',  pct: overduePct },
+            { label: 'En cuotas', color: 'bg-warning', pct: installmentsPct },
           ].map(({ label, color, pct }) => (
             <div key={label} className="flex items-center gap-1.5 text-xs text-fg-muted">
               <span className={`w-2 h-2 rounded-full shrink-0 ${color}`} />
@@ -275,6 +285,60 @@ function TopClientsPanel({ clients }) {
                     className="h-full rounded-full bg-brand/50 transition-all duration-700"
                     style={{ width: `${pct}%` }}
                   />
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+function UpcomingInstallmentsPanel({ invoices }) {
+  const installments = invoices?.upcomingInstallments ?? []
+  const fmt2 = (n) => Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+  return (
+    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-fg">Cuotas a cobrar</h3>
+        <Link to="/invoices?status=partial" className="flex items-center gap-1 text-xs text-brand hover:underline">
+          Ver facturas <ArrowRightIcon className="w-3 h-3" />
+        </Link>
+      </div>
+
+      {installments.length === 0 ? (
+        <p className="text-sm text-fg-muted text-center py-4">Sin cuotas pendientes</p>
+      ) : (
+        <ul className="divide-y divide-line">
+          {installments.map(inst => {
+            const daysLeft = Math.ceil((new Date(inst.dueDate) - new Date()) / (1000 * 60 * 60 * 24))
+            const overdue = daysLeft < 0
+            const urgent = !overdue && daysLeft <= 3
+            return (
+              <li key={inst.id} className="flex items-center gap-3 py-3">
+                <div className={`p-1.5 rounded-lg shrink-0 ${overdue ? 'bg-danger-subtle' : urgent ? 'bg-warning-subtle' : 'bg-raised'}`}>
+                  <BanknotesIcon className={`w-4 h-4 ${overdue ? 'text-danger' : urgent ? 'text-warning' : 'text-fg-muted'}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <Link to={`/invoices/${inst.invoice.id}`} className="text-sm font-medium text-fg hover:text-brand truncate block">
+                    {inst.invoice.client.name}
+                  </Link>
+                  <p className="text-xs text-fg-muted truncate">
+                    Cuota {inst.number} · Fact. #{inst.invoice.number}
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className={`text-sm font-semibold ${overdue ? 'text-danger' : 'text-fg'}`}>
+                    {inst.invoice.currency} ${fmt2(inst.amount)}
+                  </p>
+                  <p className={`text-xs ${overdue ? 'text-danger' : urgent ? 'text-warning' : 'text-fg-muted'}`}>
+                    {overdue
+                      ? `Vencida hace ${Math.abs(daysLeft)}d`
+                      : daysLeft === 0 ? 'Vence hoy'
+                      : `En ${daysLeft}d`}
+                  </p>
                 </div>
               </li>
             )
@@ -617,6 +681,11 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <TopClientsPanel clients={topClients} />
         <ExpiringQuotesPanel quotes={quotes} />
+      </div>
+
+      {/* Upcoming installments */}
+      <div className="mb-6">
+        <UpcomingInstallmentsPanel invoices={invoices} />
       </div>
 
       {/* Upcoming projects + Activity feed */}

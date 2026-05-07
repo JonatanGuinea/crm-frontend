@@ -9,14 +9,15 @@ import { ChevronDownIcon, UserIcon, CalendarDaysIcon, ArrowDownTrayIcon } from '
 
 const STATUS_LABELS = {
   draft: 'Borrador', sent: 'Enviada', paid: 'Pagada',
-  overdue: 'Vencida', cancelled: 'Cancelada'
+  overdue: 'Vencida', cancelled: 'Cancelada', partial: 'Cuotas pendientes'
 }
 const STATUS_COLORS = {
   draft:     'bg-raised text-fg-soft',
   sent:      'bg-info-subtle text-info',
   paid:      'bg-brand-subtle text-brand',
   overdue:   'bg-danger-subtle text-danger',
-  cancelled: 'bg-raised text-fg-muted'
+  cancelled: 'bg-raised text-fg-muted',
+  partial:   'bg-warning-subtle text-warning'
 }
 const STATUS_DOT = {
   draft:     'bg-fg-muted',
@@ -24,10 +25,12 @@ const STATUS_DOT = {
   paid:      'bg-brand',
   overdue:   'bg-danger',
   cancelled: 'bg-fg-muted',
+  partial:   'bg-warning'
 }
 const ALLOWED_TRANSITIONS = {
   draft:     ['sent', 'cancelled'],
   sent:      ['paid', 'cancelled'],
+  partial:   [],
   paid:      [],
   overdue:   ['paid', 'cancelled'],
   cancelled: [],

@@ -23,7 +23,7 @@ const STATUS_DOT = {
   sent:     'bg-info',
   approved: 'bg-brand',
   rejected: 'bg-danger',
-  expired:  'bg-warning',
+  expired:  'bg-warning'
 }
 const ALLOWED_TRANSITIONS = {
   draft:    ['sent', 'expired'],

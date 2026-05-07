@@ -5,17 +5,19 @@ import { useAuth } from '../../context/AuthContext'
 import { getInvoiceById, downloadInvoicePdf } from '../../api/invoices'
 import InvoiceModal from './InvoiceModal'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
+import InstallmentsPanel from '../../components/InstallmentsPanel'
 
 const STATUS_LABELS = {
   draft: 'Borrador', sent: 'Enviada', paid: 'Pagada',
-  overdue: 'Vencida', cancelled: 'Cancelada'
+  overdue: 'Vencida', cancelled: 'Cancelada', partial: 'Cuotas pendientes'
 }
 const STATUS_COLORS = {
   draft:     'bg-raised text-fg-soft',
   sent:      'bg-info-subtle text-info',
   paid:      'bg-brand-subtle text-brand',
   overdue:   'bg-danger-subtle text-danger',
-  cancelled: 'bg-raised text-fg-muted'
+  cancelled: 'bg-raised text-fg-muted',
+  partial:   'bg-warning-subtle text-warning'
 }
 
 export default function InvoiceDetailPage() {
@@ -138,6 +140,16 @@ export default function InvoiceDetailPage() {
                 </div>
               )}
             </dl>
+          </div>
+
+          <div className="bg-surface rounded-xl border border-line p-5">
+            <InstallmentsPanel
+              entityType="invoice"
+              entityId={id}
+              entityStatus={invoice.status}
+              canWrite={canWrite}
+              currency={invoice.currency}
+            />
           </div>
 
           <div className="bg-surface rounded-xl border border-line p-5">

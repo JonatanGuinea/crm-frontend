@@ -10,11 +10,12 @@ const EMPTY_ITEM = { description: '', quantity: 1, unitPrice: 0, amount: 0 }
 const ALLOWED_TRANSITIONS = {
   draft: ['sent', 'cancelled'],
   sent: ['paid', 'cancelled'],
+  partial: [],
   paid: [], overdue: ['paid', 'cancelled'], cancelled: []
 }
 const STATUS_LABELS = {
   draft: 'Borrador', sent: 'Enviada', paid: 'Pagada',
-  overdue: 'Vencida', cancelled: 'Cancelada'
+  overdue: 'Vencida', cancelled: 'Cancelada', partial: 'Cuotas pendientes'
 }
 
 const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"

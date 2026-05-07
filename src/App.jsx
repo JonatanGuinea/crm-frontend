@@ -29,6 +29,18 @@ const qc = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } }
 })
 
+function isTokenValid(token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return payload.exp * 1000 > Date.now()
+  } catch {
+    return false
+  }
+}
+
+const storedToken = localStorage.getItem('token')
+const initiallyAuthenticated = storedToken && isTokenValid(storedToken)
+
 function ProtectedRoute({ children }) {
   const { token } = useAuth()
   return token ? children : <Navigate to="/login" replace />
@@ -40,7 +52,7 @@ function GuestRoute({ children }) {
 }
 
 export default function App() {
-  const [splashDone, setSplashDone] = useState(false)
+  const [splashDone, setSplashDone] = useState(!initiallyAuthenticated)
 
   return (
     <ThemeProvider>
