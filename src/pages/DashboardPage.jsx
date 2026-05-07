@@ -18,6 +18,8 @@ import {
   DocumentCurrencyDollarIcon,
   ClipboardDocumentListIcon,
   CalendarDaysIcon,
+  ArrowTrendingDownIcon,
+  ScaleIcon,
 } from '@heroicons/react/24/outline'
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -394,33 +396,37 @@ function ExpiringQuotesPanel({ quotes }) {
 
 function MonthlyChart({ data }) {
   const months = data ?? []
-  const max = Math.max(...months.map(m => m.issued), 1)
+  const max = Math.max(...months.map(m => Math.max(m.issued, m.expenses ?? 0)), 1)
+  const totalPaid = months.reduce((a, m) => a + m.paid, 0)
+  const totalExpenses = months.reduce((a, m) => a + (m.expenses ?? 0), 0)
 
   return (
     <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <h3 className="text-sm font-semibold text-fg">Facturación últimos 12 meses</h3>
         <div className="flex items-center gap-3 text-xs text-fg-muted">
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand inline-block" />Cobrado</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand/25 inline-block" />Emitido</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-danger inline-block" />Egresos</span>
         </div>
       </div>
 
-      <div className="flex items-end gap-2 h-36">
+      <div className="flex items-end gap-1.5 h-36">
         {months.map(m => {
-          const issuedPct = max ? (m.issued / max) * 100 : 0
-          const paidPct   = max ? (m.paid   / max) * 100 : 0
+          const issuedPct   = max ? (m.issued / max) * 100 : 0
+          const expensesPct = max ? ((m.expenses ?? 0) / max) * 100 : 0
           return (
             <div key={m.key} className="flex-1 flex flex-col items-center gap-1">
               <div className="w-full flex items-end gap-0.5 h-28">
-                {/* Issued bar (fondo) */}
+                {/* Ingresos: emitido (fondo) + cobrado (encima) */}
                 <div className="flex-1 rounded-t-md bg-brand/20 transition-all duration-700 relative" style={{ height: `${issuedPct}%` }}>
-                  {/* Paid bar (encima) */}
                   <div
                     className="absolute bottom-0 left-0 right-0 rounded-t-md bg-brand transition-all duration-700"
                     style={{ height: `${m.issued > 0 ? (m.paid / m.issued) * 100 : 0}%` }}
                   />
                 </div>
+                {/* Egresos */}
+                <div className="flex-1 rounded-t-md bg-danger transition-all duration-700" style={{ height: `${expensesPct}%` }} />
               </div>
               <p className="text-xs text-fg-muted capitalize">{m.label}</p>
             </div>
@@ -428,14 +434,18 @@ function MonthlyChart({ data }) {
         })}
       </div>
 
-      <div className="pt-4 border-t border-line grid grid-cols-2 gap-4">
+      <div className="pt-4 border-t border-line grid grid-cols-3 gap-4">
         <div>
           <p className="text-xs text-fg-muted mb-0.5">Total emitido</p>
           <p className="text-sm font-semibold text-fg">{fmt(months.reduce((a, m) => a + m.issued, 0))}</p>
         </div>
         <div>
           <p className="text-xs text-fg-muted mb-0.5">Total cobrado</p>
-          <p className="text-sm font-semibold text-brand">{fmt(months.reduce((a, m) => a + m.paid, 0))}</p>
+          <p className="text-sm font-semibold text-brand">{fmt(totalPaid)}</p>
+        </div>
+        <div>
+          <p className="text-xs text-fg-muted mb-0.5">Total egresos</p>
+          <p className="text-sm font-semibold text-danger">{fmt(totalExpenses)}</p>
         </div>
       </div>
     </div>
@@ -618,6 +628,8 @@ export default function DashboardPage() {
   const paid    = invoices?.summary?.paid    ?? 0
   const sent    = invoices?.summary?.sent    ?? 0
   const overdue = invoices?.summary?.overdue ?? 0
+  const expensesMonth = invoices?.summary?.expensesMonth ?? 0
+  const balance = paid - expensesMonth
   const collectionBase = paid + sent + overdue
   const collectionRate = collectionBase > 0 ? Math.round((paid / collectionBase) * 100) : null
   const openQuotes = quotes?.byStatus
@@ -634,7 +646,7 @@ export default function DashboardPage() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         <KpiCard
           icon={BanknotesIcon}
           iconBg="bg-brand-subtle"
@@ -656,6 +668,23 @@ export default function DashboardPage() {
           iconColor="text-danger"
           label="Vencido"
           value={fmt(invoices?.summary?.overdue)}
+        />
+      </div>
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <KpiCard
+          icon={ArrowTrendingDownIcon}
+          iconBg="bg-danger-subtle"
+          iconColor="text-danger"
+          label="Egresos del mes"
+          value={fmt(expensesMonth)}
+        />
+        <KpiCard
+          icon={ScaleIcon}
+          iconBg={balance >= 0 ? 'bg-brand-subtle' : 'bg-danger-subtle'}
+          iconColor={balance >= 0 ? 'text-brand' : 'text-danger'}
+          label="Balance mensual"
+          value={`${balance >= 0 ? '' : '-'}${fmt(Math.abs(balance))}`}
+          sub="Cobrado − Egresos del mes"
         />
         <KpiCard
           icon={FolderOpenIcon}

@@ -17,6 +17,7 @@ import {
   FolderIcon,
   DocumentTextIcon,
   ReceiptRefundIcon,
+  ArrowTrendingDownIcon,
   BellIcon,
   UserGroupIcon,
   ArrowRightOnRectangleIcon,
@@ -38,6 +39,7 @@ const navItems = [
   { to: '/projects/calendar', label: 'Agenda',      icon: CalendarDaysIcon },
   { to: '/quotes',        label: 'Presupuestos',    icon: DocumentTextIcon },
   { to: '/invoices',      label: 'Facturas',        icon: ReceiptRefundIcon },
+  { to: '/expenses',      label: 'Egresos',         icon: ArrowTrendingDownIcon },
   { to: '/notifications', label: 'Notificaciones',  icon: BellIcon },
   { to: '/members',       label: 'Equipo',          icon: UserGroupIcon },
 ]
