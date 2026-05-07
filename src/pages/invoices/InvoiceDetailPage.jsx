@@ -143,21 +143,11 @@ export default function InvoiceDetailPage() {
           </div>
 
           <div className="bg-surface rounded-xl border border-line p-5">
-            <InstallmentsPanel
-              entityType="invoice"
-              entityId={id}
-              entityStatus={invoice.status}
-              canWrite={canWrite}
-              currency={invoice.currency}
-            />
-          </div>
-
-          <div className="bg-surface rounded-xl border border-line p-5">
             <AttachmentsPanel entityType="invoice" entityId={id} />
           </div>
         </div>
 
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
           <div className="bg-surface rounded-xl border border-line overflow-hidden">
             <div className="px-5 py-4 border-b border-line">
               <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide">Ítems</h3>
@@ -195,6 +185,16 @@ export default function InvoiceDetailPage() {
                 Total {invoice.currency}: ${total.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             </div>
+          </div>
+
+          <div className="bg-surface rounded-xl border border-line p-5">
+            <InstallmentsPanel
+              entityType="invoice"
+              entityId={id}
+              entityStatus={invoice.status}
+              canWrite={canWrite}
+              currency={invoice.currency}
+            />
           </div>
         </div>
       </div>

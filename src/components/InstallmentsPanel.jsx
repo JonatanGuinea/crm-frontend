@@ -150,42 +150,38 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
           {installments.map((inst) => {
             const isPaid = inst.status === 'paid'
             const isOverdue = !isPaid && new Date(inst.dueDate) < new Date()
+            const accent = isPaid ? 'text-brand' : isOverdue ? 'text-danger' : 'text-fg'
+            const bg = isPaid ? 'border-brand/20 bg-brand-subtle' : isOverdue ? 'border-danger/20 bg-danger-subtle' : 'border-line bg-raised'
             return (
-              <li
-                key={inst.id}
-                className={`flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm border ${
-                  isPaid ? 'border-brand/20 bg-brand-subtle' : isOverdue ? 'border-danger/20 bg-danger-subtle' : 'border-line bg-raised'
-                }`}
-              >
-                <div className="flex items-center gap-2 min-w-0">
-                  {isPaid
-                    ? <CheckCircleIcon className="w-4 h-4 text-brand shrink-0" />
-                    : <ClockIcon className={`w-4 h-4 shrink-0 ${isOverdue ? 'text-danger' : 'text-fg-muted'}`} />
-                  }
-                  <span className={`font-medium ${isPaid ? 'text-brand' : isOverdue ? 'text-danger' : 'text-fg'}`}>
-                    Cuota {inst.number}
-                  </span>
-                  <span className={`text-xs ${isPaid ? 'text-brand' : isOverdue ? 'text-danger' : 'text-fg-muted'}`}>
-                    · {fmtDate(inst.dueDate)}
+              <li key={inst.id} className={`rounded-lg px-3 py-2.5 border ${bg}`}>
+                {/* Fila 1: ícono + label + monto */}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    {isPaid
+                      ? <CheckCircleIcon className="w-4 h-4 text-brand shrink-0" />
+                      : <ClockIcon className={`w-4 h-4 shrink-0 ${isOverdue ? 'text-danger' : 'text-fg-muted'}`} />
+                    }
+                    <span className={`text-sm font-medium ${accent}`}>Cuota {inst.number}</span>
+                  </div>
+                  <span className={`text-sm font-semibold shrink-0 ${accent}`}>
+                    {currency} ${fmt(inst.amount)}
                   </span>
                 </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className={`font-semibold ${isPaid ? 'text-brand' : isOverdue ? 'text-danger' : 'text-fg'}`}>
-                    {currency} ${fmt(inst.amount)}
+                {/* Fila 2: fecha + acción */}
+                <div className="flex items-center justify-between gap-2 mt-1.5 pl-6">
+                  <span className={`text-xs ${isPaid ? 'text-brand' : isOverdue ? 'text-danger' : 'text-fg-muted'}`}>
+                    {isPaid && inst.paidAt
+                      ? `Cobrada ${fmtDate(inst.paidAt)}`
+                      : `Vence ${fmtDate(inst.dueDate)}`}
                   </span>
                   {!isPaid && canWrite && (
                     <button
                       onClick={() => payMut.mutate(inst.id)}
                       disabled={payMut.isPending}
-                      className="text-xs px-2.5 py-1 rounded-md bg-brand text-white hover:bg-brand-hover disabled:opacity-50 transition-colors"
+                      className="text-xs px-2.5 py-1 rounded-md bg-brand text-white hover:bg-brand-hover disabled:opacity-50 transition-colors shrink-0"
                     >
                       Cobrar
                     </button>
-                  )}
-                  {isPaid && inst.paidAt && (
-                    <span className="text-xs text-brand">
-                      Cobrada {fmtDate(inst.paidAt)}
-                    </span>
                   )}
                 </div>
               </li>

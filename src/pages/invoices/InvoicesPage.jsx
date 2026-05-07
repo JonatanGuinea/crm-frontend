@@ -36,6 +36,14 @@ const ALLOWED_TRANSITIONS = {
   cancelled: [],
 }
 
+function statusLabel(invoice) {
+  if (invoice.status === 'partial') {
+    const pending = invoice._count?.installments ?? ''
+    return `Cuotas pendientes${pending ? ` (${pending})` : ''}`
+  }
+  return STATUS_LABELS[invoice.status]
+}
+
 function StatusDropdown({ invoice, onUpdate }) {
   const [open, setOpen] = useState(false)
   const [dropPos, setDropPos] = useState({ top: 0, left: 0 })
@@ -45,7 +53,7 @@ function StatusDropdown({ invoice, onUpdate }) {
   if (!allowed.length) {
     return (
       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[invoice.status]}`}>
-        {STATUS_LABELS[invoice.status]}
+        {statusLabel(invoice)}
       </span>
     )
   }
@@ -165,7 +173,7 @@ export default function InvoicesPage() {
                   </span>
                   {canWrite
                     ? <StatusDropdown invoice={inv} onUpdate={(status) => changeStatus.mutate({ id: inv.id, status })} />
-                    : <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[inv.status]}`}>{STATUS_LABELS[inv.status]}</span>
+                    : <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[inv.status]}`}>{statusLabel(inv)}</span>
                   }
                 </div>
                 {/* Título */}
@@ -239,7 +247,7 @@ export default function InvoicesPage() {
                       <td className="px-4 py-3">
                         {canWrite
                           ? <StatusDropdown invoice={inv} onUpdate={(status) => changeStatus.mutate({ id: inv.id, status })} />
-                          : <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[inv.status]}`}>{STATUS_LABELS[inv.status]}</span>
+                          : <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[inv.status]}`}>{statusLabel(inv)}</span>
                         }
                       </td>
                       <td className="px-4 py-3 text-fg-soft">
