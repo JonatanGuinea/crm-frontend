@@ -10,11 +10,24 @@ function parseToken(token) {
   }
 }
 
+function isTokenValid(token) {
+  const payload = parseToken(token)
+  if (!payload) return false
+  return payload.exp * 1000 > Date.now()
+}
+
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() => localStorage.getItem('token'))
+  const [token, setToken] = useState(() => {
+    const t = localStorage.getItem('token')
+    if (t && !isTokenValid(t)) {
+      localStorage.removeItem('token')
+      return null
+    }
+    return t
+  })
   const [user, setUser] = useState(() => {
     const t = localStorage.getItem('token')
-    return t ? parseToken(t) : null
+    return t && isTokenValid(t) ? parseToken(t) : null
   })
 
   function login(newToken) {
