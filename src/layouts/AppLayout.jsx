@@ -58,10 +58,10 @@ function SidebarAvatar({ avatar, name }) {
 
 function SidebarContent({ collapsed, profile, user, onNavClick, onLogout, unreadCount, dark, onToggleTheme }) {
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col flex-1 min-h-0">
       {!collapsed && <OrgSwitcher />}
 
-      <nav className="flex-1 px-2 py-4 space-y-1 overflow-hidden">
+      <nav className="flex-1 px-2 py-4 space-y-1">
         {navItems.map(({ to, label, icon: Icon, exact }) => (
           <NavLink
             key={to}
@@ -70,7 +70,7 @@ function SidebarContent({ collapsed, profile, user, onNavClick, onLogout, unread
             onClick={onNavClick}
             title={collapsed ? label : undefined}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-2 py-2 rounded-md text-sm font-medium transition-colors ${
+              `flex items-center gap-3 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
                 isActive
                   ? 'bg-brand-subtle text-brand'
                   : 'text-fg-soft hover:bg-raised hover:text-fg'
@@ -95,7 +95,7 @@ function SidebarContent({ collapsed, profile, user, onNavClick, onLogout, unread
         ))}
       </nav>
 
-      <div className="px-2 py-4 border-t border-line space-y-1">
+      <div className="px-2 py-4 border-t border-line space-y-1 shrink-0">
         <button
           onClick={onToggleTheme}
           title={collapsed ? (dark ? 'Modo claro' : 'Modo oscuro') : undefined}
