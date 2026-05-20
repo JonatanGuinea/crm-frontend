@@ -150,7 +150,11 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="flex h-screen bg-base">
+    <div className="flex h-screen bg-slate-950 relative overflow-hidden">
+
+      {/* Glows de fondo */}
+      <div className="absolute top-[-80px] left-[-80px] w-[600px] h-[500px] bg-teal-400/20 rounded-full blur-[130px] pointer-events-none z-0" />
+      <div className="absolute bottom-[-80px] right-[-80px] w-[400px] h-[400px] bg-teal-400/10 rounded-full blur-[100px] pointer-events-none z-0" />
 
       {/* Mobile overlay backdrop */}
       {mobileOpen && (
@@ -189,7 +193,7 @@ export default function AppLayout() {
 
       {/* Desktop sidebar */}
       <aside
-        className={`hidden md:flex ${collapsed ? 'w-16' : 'w-56'} bg-surface border-r border-line flex-col transition-all duration-300 ease-in-out overflow-hidden shrink-0`}
+        className={`relative z-10 hidden md:flex ${collapsed ? 'w-16' : 'w-56'} bg-surface border-r border-line flex-col transition-all duration-300 ease-in-out overflow-hidden shrink-0`}
       >
         <div className={`flex items-center border-b border-line h-16 shrink-0 ${collapsed ? 'justify-center px-0' : 'px-4 justify-between'}`}>
           {collapsed
@@ -219,7 +223,7 @@ export default function AppLayout() {
       </aside>
 
       {/* Main */}
-      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+      <div className="relative z-10 flex-1 flex flex-col overflow-hidden min-w-0">
         <header className="h-14 bg-surface border-b border-line flex items-center px-4 md:px-6 shrink-0 gap-3">
           <button
             onClick={() => setMobileOpen(true)}

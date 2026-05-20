@@ -23,7 +23,7 @@ export default function SplashScreen({ onDone }) {
           className="text-5xl font-bold text-fg transition-all duration-700"
           style={{
             opacity: showSides ? 1 : 0,
-            transform: showSides ? 'translateX(0)' : 'translateX(60px)',
+            transform: showSides ? 'translateX(0px)' : 'translateX(30px)',
             transitionTimingFunction: 'cubic-bezier(0.34, 1.4, 0.64, 1)',
           }}
         >
@@ -46,7 +46,7 @@ export default function SplashScreen({ onDone }) {
           className="text-5xl font-bold text-fg transition-all duration-700"
           style={{
             opacity: showSides ? 1 : 0,
-            transform: showSides ? 'translateX(0)' : 'translateX(-60px)',
+            transform: showSides ? 'translateX(0)' : 'translateX(-31px)',
             transitionTimingFunction: 'cubic-bezier(0.34, 1.4, 0.64, 1)',
           }}
         >
