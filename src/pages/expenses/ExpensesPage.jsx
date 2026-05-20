@@ -83,7 +83,7 @@ export default function ExpensesPage() {
           {/* Mobile cards */}
           <div className="md:hidden grid grid-cols-1 gap-3 mb-4">
             {expenses.map(exp => (
-              <div key={exp.id} className="bg-surface border border-line rounded-xl p-4">
+              <div key={exp.id} className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-4">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div>
                     <p className="text-sm font-medium text-fg">{exp.title}</p>
@@ -113,7 +113,7 @@ export default function ExpensesPage() {
           </div>
 
           {/* Desktop tabla */}
-          <div className="hidden md:block bg-surface border border-line rounded-xl overflow-hidden mb-4">
+          <div className="hidden md:block bg-surface/60 backdrop-blur-xl border border-line rounded-xl overflow-hidden mb-4">
             <table className="w-full text-sm">
               <thead className="bg-raised border-b border-line">
                 <tr>

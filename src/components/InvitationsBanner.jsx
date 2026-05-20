@@ -7,7 +7,7 @@ import { getPendingInvitations, acceptInvitation, declineInvitation } from '../a
 function DeclineModal({ orgName, onConfirm, onCancel, isPending }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-surface rounded-xl border border-line shadow-xl p-6 max-w-sm w-full mx-4">
+      <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line shadow-xl p-6 max-w-sm w-full mx-4">
         <h3 className="text-base font-semibold text-fg mb-2">¿Rechazar invitación?</h3>
         <p className="text-sm text-fg-soft mb-6">
           Vas a rechazar la invitación de <span className="font-semibold text-fg">{orgName}</span>. Esta acción no se puede deshacer.

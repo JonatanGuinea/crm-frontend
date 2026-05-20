@@ -32,7 +32,7 @@ export default function AcceptInvitePage() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="bg-surface rounded-xl shadow-sm border border-line p-8 text-center">
+    <div className="bg-surface/60 backdrop-blur-xl rounded-xl shadow-sm border border-line p-8 text-center">
       {status === 'loading' && (
         <>
           <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin mx-auto mb-4" />

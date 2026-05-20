@@ -56,7 +56,7 @@ export default function MembersPage() {
   const canManage = myRole === 'owner'
 
   return (
-    <div className="p-4 md:p-8 max-w-3xl mx-auto min-h-full bg-base">
+    <div className="p-4 md:p-8 max-w-3xl mx-auto min-h-full">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-fg">Equipo</h2>
         {canInvite && (
@@ -70,7 +70,7 @@ export default function MembersPage() {
       </div>
 
       {showInvite && (
-        <div className="bg-surface rounded-xl border border-line p-5 mb-6">
+        <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-5 mb-6">
           <h3 className="text-sm font-semibold text-fg-soft mb-4">Invitar usuario</h3>
           <form
             onSubmit={e => { e.preventDefault(); invite.mutate(inviteForm) }}
@@ -133,7 +133,7 @@ export default function MembersPage() {
       ) : (
         <>
           {/* Mobile: cards */}
-          <div className="sm:hidden bg-surface rounded-xl border border-line divide-y divide-line">
+          <div className="sm:hidden bg-surface/60 backdrop-blur-xl rounded-xl border border-line divide-y divide-line">
             {data?.map(m => (
               <div key={m.userId} className="p-4 flex items-center justify-between gap-3">
                 <div className="min-w-0">
@@ -166,7 +166,7 @@ export default function MembersPage() {
           </div>
 
           {/* Desktop: tabla */}
-          <div className="hidden sm:block bg-surface rounded-xl border border-line overflow-hidden">
+          <div className="hidden sm:block bg-surface/60 backdrop-blur-xl rounded-xl border border-line overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-raised border-b border-line">

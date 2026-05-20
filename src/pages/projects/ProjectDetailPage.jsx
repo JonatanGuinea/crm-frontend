@@ -94,7 +94,7 @@ export default function ProjectDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="space-y-6">
-          <div className="bg-surface rounded-xl border border-line p-5">
+          <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-5">
             <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide mb-4">Información</h3>
             <dl className="space-y-3 text-sm">
               {project.budget != null && (
@@ -124,14 +124,14 @@ export default function ProjectDetailPage() {
             </dl>
           </div>
 
-          <div className="bg-surface rounded-xl border border-line p-5">
+          <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-5">
             <AttachmentsPanel entityType="project" entityId={id} />
           </div>
         </div>
 
         <div className="lg:col-span-2 space-y-6">
           {/* Presupuestos */}
-          <div className="bg-surface rounded-xl border border-line overflow-hidden">
+          <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-line">
               <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide">
                 Presupuestos <span className="text-fg-muted font-normal">({quotes.length})</span>
@@ -169,7 +169,7 @@ export default function ProjectDetailPage() {
           </div>
 
           {/* Facturas */}
-          <div className="bg-surface rounded-xl border border-line overflow-hidden">
+          <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-line">
               <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide">
                 Facturas <span className="text-fg-muted font-normal">({invoices.length})</span>

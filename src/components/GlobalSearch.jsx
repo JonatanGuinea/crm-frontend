@@ -160,7 +160,7 @@ export default function GlobalSearch() {
 
           {/* Panel */}
           <div
-            className="relative w-full max-w-lg bg-surface rounded-2xl shadow-2xl border border-line overflow-hidden"
+            className="relative w-full max-w-lg bg-surface/60 backdrop-blur-xl rounded-2xl shadow-2xl border border-line overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
             {/* Search input */}

@@ -109,7 +109,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-      <div className="bg-surface rounded-xl shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface/60 backdrop-blur-xl rounded-xl shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
         <h3 className="text-lg font-semibold text-fg mb-5">
           {isEditing ? 'Editar presupuesto' : 'Nuevo presupuesto'}
           {quoteData && <span className="ml-2 text-sm font-normal text-fg-muted">#{quoteData.number}</span>}

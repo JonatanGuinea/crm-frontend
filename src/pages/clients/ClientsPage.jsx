@@ -31,7 +31,7 @@ export default function ClientsPage() {
   function handleSearch(val) { setSearch(val); setPage(1) }
 
   return (
-    <div className="p-4 md:p-8 min-h-full bg-base">
+    <div className="p-4 md:p-8 min-h-full">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-fg">Clientes</h2>
         {canWrite && (
@@ -56,7 +56,7 @@ export default function ClientsPage() {
           {/* Mobile: cards */}
           <div className="md:hidden grid grid-cols-1 gap-3">
             {data?.data?.map(c => (
-              <div key={c.id} className="bg-surface rounded-xl border border-line p-4">
+              <div key={c.id} className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-4">
                 {/* Avatar + nombre */}
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-11 h-11 rounded-full bg-brand-subtle text-brand font-bold text-sm flex items-center justify-center shrink-0 uppercase">
@@ -102,7 +102,7 @@ export default function ClientsPage() {
           </div>
 
           {/* Desktop: tabla */}
-          <div className="hidden md:block bg-surface rounded-xl border border-line overflow-hidden">
+          <div className="hidden md:block bg-surface/60 backdrop-blur-xl rounded-xl border border-line overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-raised border-b border-line">

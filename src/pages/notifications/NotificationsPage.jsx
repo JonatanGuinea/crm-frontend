@@ -57,7 +57,7 @@ export default function NotificationsPage() {
       ) : (
         <div className="space-y-2">
           {data?.notifications?.map(n => (
-            <div key={n.id} className="flex items-start gap-3 p-4 rounded-xl border bg-surface border-line">
+            <div key={n.id} className="flex items-start gap-3 p-4 rounded-xl border bg-surface/60 backdrop-blur-xl border-line">
               <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-medium ${TYPE_COLORS[n.type]}`}>
                 {TYPE_LABELS[n.type]}
               </span>

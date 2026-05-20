@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getQuotes, deleteQuote, updateQuote, createInvoiceFromQuote, downloadQuotePdf } from '../../api/quotes'
@@ -50,14 +51,40 @@ function StatusDropdown({ quote, onUpdate }) {
   function handleToggle() {
     if (!open && btnRef.current) {
       const r = btnRef.current.getBoundingClientRect()
-      setDropPos({ top: r.bottom + 4, left: r.left })
+      const dropW = 160
+      const dropH = allowed.length * 36
+      let top = r.bottom + 4
+      let left = r.left
+      if (left + dropW > window.innerWidth - 8) left = r.right - dropW
+      if (top + dropH > window.innerHeight - 8) top = r.top - dropH - 4
+      setDropPos({ top, left })
     }
     setOpen(o => !o)
   }
 
   return (
     <div className="inline-block">
-      {open && <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />}
+      {open && createPortal(
+        <>
+          <div className="fixed inset-0 z-[9998]" onClick={() => setOpen(false)} />
+          <div
+            style={{ top: dropPos.top, left: dropPos.left }}
+            className="fixed z-[9999] bg-surface/80 backdrop-blur-xl border border-line-soft rounded-lg shadow-lg py-1 min-w-[150px]"
+          >
+            {allowed.map(s => (
+              <button
+                key={s}
+                onClick={() => { onUpdate(s); setOpen(false) }}
+                className="w-full text-left px-3 py-2 text-xs hover:bg-raised text-fg flex items-center gap-2 transition-colors"
+              >
+                <span className={`w-2 h-2 rounded-full shrink-0 ${STATUS_DOT[s]}`} />
+                {STATUS_LABELS[s]}
+              </button>
+            ))}
+          </div>
+        </>,
+        document.body
+      )}
       <button
         ref={btnRef}
         onClick={handleToggle}
@@ -66,23 +93,6 @@ function StatusDropdown({ quote, onUpdate }) {
         {STATUS_LABELS[quote.status]}
         <ChevronDownIcon className="w-3 h-3 shrink-0" />
       </button>
-      {open && (
-        <div
-          style={{ top: dropPos.top, left: dropPos.left }}
-          className="fixed z-50 bg-surface border border-line-soft rounded-lg shadow-lg py-1 min-w-[150px]"
-        >
-          {allowed.map(s => (
-            <button
-              key={s}
-              onClick={() => { onUpdate(s); setOpen(false) }}
-              className="w-full text-left px-3 py-2 text-xs hover:bg-raised text-fg flex items-center gap-2 transition-colors"
-            >
-              <span className={`w-2 h-2 rounded-full shrink-0 ${STATUS_DOT[s]}`} />
-              {STATUS_LABELS[s]}
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   )
 }
@@ -163,7 +173,7 @@ export default function QuotesPage() {
           {/* Mobile: cards */}
           <div className="md:hidden grid grid-cols-1 gap-3">
             {data?.data?.map(q => (
-              <div key={q.id} className="bg-surface rounded-xl border border-line p-4">
+              <div key={q.id} className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-4">
                 {/* Header: número + estado */}
                 <div className="flex items-center justify-between gap-2 mb-3">
                   <span className="text-xs font-mono font-medium text-fg-muted bg-raised px-2 py-0.5 rounded-md">
@@ -216,7 +226,7 @@ export default function QuotesPage() {
           </div>
 
           {/* Desktop: tabla */}
-          <div className="hidden md:block bg-surface rounded-xl border border-line overflow-hidden">
+          <div className="hidden md:block bg-surface/60 backdrop-blur-xl rounded-xl border border-line overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-raised border-b border-line">

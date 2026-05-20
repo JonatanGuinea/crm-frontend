@@ -152,7 +152,7 @@ export default function AppLayout() {
 
       {/* Mobile sidebar (drawer) */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-surface border-r border-line flex flex-col transition-transform duration-300 ease-in-out md:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-surface/60 backdrop-blur-xl border-r border-line flex flex-col transition-transform duration-300 ease-in-out md:hidden ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -178,7 +178,7 @@ export default function AppLayout() {
 
       {/* Desktop sidebar */}
       <aside
-        className={`relative z-10 hidden md:flex ${collapsed ? 'w-16' : 'w-56'} bg-surface border-r border-line flex-col transition-all duration-300 ease-in-out overflow-hidden shrink-0`}
+        className={`relative z-10 hidden md:flex ${collapsed ? 'w-16' : 'w-56'} bg-surface/60 backdrop-blur-xl border-r border-line flex-col transition-all duration-300 ease-in-out overflow-hidden shrink-0`}
       >
         <div className={`flex items-center border-b border-line h-16 shrink-0 ${collapsed ? 'justify-center px-0' : 'px-4 justify-between'}`}>
           {collapsed
@@ -208,7 +208,7 @@ export default function AppLayout() {
 
       {/* Main */}
       <div className="relative z-10 flex-1 flex flex-col overflow-hidden min-w-0">
-        <header className="h-14 bg-surface border-b border-line flex items-center px-4 md:px-6 shrink-0 gap-3">
+        <header className="h-14 bg-surface/60 backdrop-blur-xl border-b border-line flex items-center px-4 md:px-6 shrink-0 gap-3">
           <button
             onClick={() => setMobileOpen(true)}
             className="md:hidden p-2 rounded-md text-fg-muted hover:bg-raised transition-colors shrink-0"

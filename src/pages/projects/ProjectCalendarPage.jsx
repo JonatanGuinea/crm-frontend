@@ -170,7 +170,7 @@ export default function ProjectCalendarPage() {
       {isLoading ? (
         <p className="text-sm text-fg-soft">Cargando...</p>
       ) : (
-        <div className="bg-surface rounded-xl border border-line overflow-hidden">
+        <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line overflow-hidden">
           <div ref={scrollRef} className="overflow-x-auto">
             <div className="flex" style={{ minWidth: LEFT_W + totalW }}>
 

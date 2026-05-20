@@ -35,7 +35,7 @@ export default function ClientModal({ client, onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-      <div className="bg-surface rounded-xl shadow-lg w-full max-w-md p-6">
+      <div className="bg-surface/60 backdrop-blur-xl rounded-xl shadow-lg w-full max-w-md p-6">
         <h3 className="text-lg font-semibold text-fg mb-4">
           {client ? 'Editar cliente' : 'Nuevo cliente'}
         </h3>

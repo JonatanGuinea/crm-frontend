@@ -80,7 +80,7 @@ export default function ExpenseModal({ expense, onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-surface rounded-2xl shadow-xl w-full max-w-md border border-line">
+      <div className="bg-surface/60 backdrop-blur-xl rounded-2xl shadow-xl w-full max-w-md border border-line">
         <div className="flex items-center justify-between px-6 py-4 border-b border-line">
           <h2 className="text-base font-semibold text-fg">{isEditing ? 'Editar egreso' : 'Nuevo egreso'}</h2>
           <button onClick={onClose} className="text-fg-muted hover:text-fg text-lg leading-none">×</button>

@@ -63,7 +63,7 @@ const INV_STATUS = {
 
 function KpiCard({ icon: Icon, iconBg, iconColor, label, value, sub }) {
   return (
-    <div className="bg-surface border border-line rounded-xl p-3 md:p-5 flex items-start gap-2 md:gap-4">
+    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-3 md:p-5 flex items-start gap-2 md:gap-4">
       <div className={`p-2 md:p-2.5 rounded-xl shrink-0 ${iconBg}`}>
         <Icon className={`w-4 h-4 md:w-5 md:h-5 ${iconColor}`} />
       </div>
@@ -89,7 +89,7 @@ function IncomePanel({ invoices }) {
   const installmentsPct = total ? (installments / total) * 100 : 0
 
   return (
-    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-5">
+    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-5">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-fg">Resumen de ingresos</h3>
         <Link to="/invoices" className="flex items-center gap-1 text-xs text-brand hover:underline">
@@ -166,7 +166,7 @@ function ProjectsPanel({ projects }) {
   const total = byStatus.reduce((acc, s) => acc + s.totalProjects, 0)
 
   return (
-    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-5">
+    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-5">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-fg">Proyectos por estado</h3>
         <Link to="/projects" className="flex items-center gap-1 text-xs text-brand hover:underline">
@@ -254,7 +254,7 @@ function TopClientsPanel({ clients }) {
   const max = list[0]?.total ?? 1
 
   return (
-    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
+    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-fg">Top clientes</h3>
         <Link to="/clients" className="flex items-center gap-1 text-xs text-brand hover:underline">
@@ -302,7 +302,7 @@ function UpcomingInstallmentsPanel({ invoices }) {
   const fmt2 = (n) => Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
   return (
-    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
+    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-fg">Cuotas a cobrar</h3>
         <Link to="/invoices?status=partial" className="flex items-center gap-1 text-xs text-brand hover:underline">
@@ -355,7 +355,7 @@ function ExpiringQuotesPanel({ quotes }) {
   const expiring = quotes?.expiringSoon ?? []
 
   return (
-    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
+    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-fg">Presupuestos por vencer</h3>
         <Link to="/quotes" className="flex items-center gap-1 text-xs text-brand hover:underline">
@@ -401,7 +401,7 @@ function MonthlyChart({ data }) {
   const totalExpenses = months.reduce((a, m) => a + (m.expenses ?? 0), 0)
 
   return (
-    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
+    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h3 className="text-sm font-semibold text-fg">Facturación últimos 12 meses</h3>
         <div className="flex items-center gap-3 text-xs text-fg-muted">
@@ -461,7 +461,7 @@ function UpcomingProjectsPanel({ projects }) {
   const upcoming = projects?.upcomingProjects ?? []
 
   return (
-    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
+    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-fg">Proyectos por vencer</h3>
         <Link to="/projects" className="flex items-center gap-1 text-xs text-brand hover:underline">
@@ -539,7 +539,7 @@ function ActivityFeed({ activity }) {
   const items = activity ?? []
 
   return (
-    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
+    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-4">
       <h3 className="text-sm font-semibold text-fg">Actividad reciente</h3>
 
       {items.length === 0 ? (
