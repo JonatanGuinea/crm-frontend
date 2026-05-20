@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getProfile, updateProfile, changePassword, uploadAvatar } from '../../api/profile'
+import { useAuth } from '../../context/AuthContext'
 
 const API_BASE = import.meta.env.VITE_API_URL.replace('/api', '')
 
@@ -59,6 +61,13 @@ function AvatarCircle({ avatar, name, size = 'lg', onClick }) {
 export default function ProfilePage() {
   const qc = useQueryClient()
   const fileInputRef = useRef(null)
+  const { logout } = useAuth()
+  const navigate = useNavigate()
+
+  function handleLogout() {
+    logout()
+    navigate('/login')
+  }
 
   const { data, isLoading } = useQuery({
     queryKey: ['profile'],
@@ -272,6 +281,15 @@ export default function ProfilePage() {
           </button>
         </form>
       </section>
+
+      <hr className="border-line mt-8 mb-6" />
+
+      <button
+        onClick={handleLogout}
+        className="w-full py-2 px-4 border border-danger/40 text-danger text-sm font-medium rounded-md hover:bg-danger/5 transition-colors"
+      >
+        Cerrar sesión
+      </button>
     </div>
   )
 }

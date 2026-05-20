@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Link, Outlet } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
@@ -20,7 +20,6 @@ import {
   ArrowTrendingDownIcon,
   BellIcon,
   UserGroupIcon,
-  ArrowRightOnRectangleIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   SunIcon,
@@ -29,6 +28,7 @@ import {
   XMarkIcon,
   CalendarDaysIcon,
 } from '@heroicons/react/24/outline'
+
 
 const API_BASE = import.meta.env.VITE_API_URL.replace('/api', '')
 
@@ -56,7 +56,7 @@ function SidebarAvatar({ avatar, name }) {
   )
 }
 
-function SidebarContent({ collapsed, profile, user, onNavClick, onLogout, unreadCount, dark, onToggleTheme }) {
+function SidebarContent({ collapsed, profile, user, onNavClick, unreadCount, dark, onToggleTheme }) {
   return (
     <div className="flex flex-col flex-1 min-h-0">
       {!collapsed && <OrgSwitcher />}
@@ -104,23 +104,14 @@ function SidebarContent({ collapsed, profile, user, onNavClick, onLogout, unread
           {dark ? <SunIcon className="w-5 h-5 shrink-0" /> : <MoonIcon className="w-5 h-5 shrink-0" />}
           {!collapsed && <span>{dark ? 'Modo claro' : 'Modo oscuro'}</span>}
         </button>
-        <button
-          onClick={onLogout}
-          title={collapsed ? 'Cerrar sesión' : undefined}
-          className={`w-full flex items-center gap-2 px-2 py-2 rounded-md text-sm text-fg-soft hover:bg-raised hover:text-fg transition-colors ${collapsed ? 'justify-center' : ''}`}
-        >
-          <ArrowRightOnRectangleIcon className="w-5 h-5 shrink-0" />
-          {!collapsed && <span>Cerrar sesión</span>}
-        </button>
       </div>
     </div>
   )
 }
 
 export default function AppLayout() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const { dark, toggle } = useTheme()
-  const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('sidebar') === 'collapsed')
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -144,17 +135,12 @@ export default function AppLayout() {
     })
   }
 
-  function handleLogout() {
-    logout()
-    navigate('/login')
-  }
-
   return (
-    <div className="flex h-screen bg-slate-950 relative overflow-hidden">
+    <div className={`flex h-screen relative overflow-hidden ${dark ? 'bg-slate-950' : 'bg-base'}`}>
 
       {/* Glows de fondo */}
-      <div className="absolute top-[-80px] left-[-80px] w-[600px] h-[500px] bg-teal-400/20 rounded-full blur-[130px] pointer-events-none z-0" />
-      <div className="absolute bottom-[-80px] right-[-80px] w-[400px] h-[400px] bg-teal-400/10 rounded-full blur-[100px] pointer-events-none z-0" />
+      <div className={`absolute top-[-80px] left-[-80px] w-[600px] h-[500px] rounded-full blur-[130px] pointer-events-none z-0 ${dark ? 'bg-teal-400/20' : 'bg-teal-400/[0.07]'}`} />
+      <div className={`absolute bottom-[-80px] right-[-80px] w-[400px] h-[400px] rounded-full blur-[100px] pointer-events-none z-0 ${dark ? 'bg-teal-400/10' : 'bg-teal-400/[0.04]'}`} />
 
       {/* Mobile overlay backdrop */}
       {mobileOpen && (
@@ -184,7 +170,6 @@ export default function AppLayout() {
           profile={profile}
           user={user}
           onNavClick={() => setMobileOpen(false)}
-          onLogout={handleLogout}
           unreadCount={unreadCount}
           dark={dark}
           onToggleTheme={toggle}
@@ -215,7 +200,6 @@ export default function AppLayout() {
           profile={profile}
           user={user}
           onNavClick={undefined}
-          onLogout={handleLogout}
           unreadCount={unreadCount}
           dark={dark}
           onToggleTheme={toggle}

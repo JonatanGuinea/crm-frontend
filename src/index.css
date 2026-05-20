@@ -22,7 +22,7 @@ button, [role="button"] {
   --brand-amber:      #F5B841;
   --brand-amber-muted:rgba(245, 184, 65, 0.10);
 
-  --bg-primary:    #FAFAFA;
+  --bg-primary:    #F5FAFA;
   --bg-surface-1:  #FFFFFF;
   --bg-surface-2:  #F4F4F5;
   --bg-surface-3:  #EEEEEF;
@@ -31,9 +31,9 @@ button, [role="button"] {
   --text-secondary: #52525B;
   --text-muted:     #97979e;
 
-  --border-subtle: rgba(0, 0, 0, 0.06);
-  --border-medium: rgba(0, 0, 0, 0.10);
-  --border-strong: rgba(0, 0, 0, 0.18);
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-medium: rgba(0, 0, 0, 0.13);
+  --border-strong: rgba(0, 0, 0, 0.20);
 }
 
 .dark {
