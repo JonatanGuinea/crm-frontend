@@ -68,24 +68,24 @@ export default function ProjectDetailPage() {
         <button onClick={() => navigate('/projects')} className="hover:text-fg-soft">← Proyectos</button>
       </div>
 
-      <div className="flex items-start justify-between mb-8">
+      <div className="flex items-start justify-between gap-3 mb-8">
         <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl font-bold text-fg">{project.title}</h1>
+          <h1 className="text-2xl font-bold text-fg leading-tight mb-1">{project.title}</h1>
+          <div className="flex items-center gap-2 flex-wrap">
             <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[project.status]}`}>
               {STATUS_LABELS[project.status]}
             </span>
+            {project.client && (
+              <Link to={`/clients/${project.client.id}`} className="text-sm text-brand hover:underline">
+                {project.client.name}
+              </Link>
+            )}
           </div>
-          {project.client && (
-            <Link to={`/clients/${project.client.id}`} className="text-sm text-brand hover:underline">
-              {project.client.name}
-            </Link>
-          )}
         </div>
         {canWrite && (
           <button
             onClick={() => setEditOpen(true)}
-            className="px-4 py-2 border border-line-soft rounded-md text-sm font-medium text-fg-soft hover:bg-raised transition-colors"
+            className="self-start px-4 py-2 border border-line-soft rounded-md text-sm font-medium text-fg-soft hover:bg-raised transition-colors shrink-0"
           >
             Editar
           </button>

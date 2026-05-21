@@ -1,8 +1,8 @@
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { getProjects } from '../../api/projects'
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { ChevronLeftIcon, ChevronRightIcon, CalendarDaysIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline'
 
 const STATUS_LABELS = {
   pending:     'Pendiente',
@@ -10,6 +10,14 @@ const STATUS_LABELS = {
   in_progress: 'En curso',
   finished:    'Finalizado',
   cancelled:   'Cancelado',
+}
+
+const STATUS_COLORS = {
+  pending:     'bg-warning-subtle text-warning',
+  approved:    'bg-info-subtle text-info',
+  in_progress: 'bg-brand-subtle text-brand',
+  finished:    'bg-raised text-fg-soft',
+  cancelled:   'bg-raised text-fg-muted',
 }
 
 const STATUS_BAR_COLORS = {
@@ -74,12 +82,19 @@ export default function ProjectCalendarPage() {
     [days, today]
   )
 
-  // Scroll so today is visible on the left side
-  useEffect(() => {
-    if (scrollRef.current && todayIdx >= 0) {
-      scrollRef.current.scrollLeft = Math.max(0, todayIdx * DAY_W - 60)
-    }
+  // Scroll so today is centered in the viewport (desktop)
+  const centerToday = useCallback(() => {
+    const el = scrollRef.current
+    if (!el || todayIdx < 0) return
+    const containerW  = el.getBoundingClientRect().width
+    const todayCenter = todayIdx * DAY_W + DAY_W / 2
+    el.scrollLeft = Math.max(0, todayCenter - containerW / 2)
   }, [todayIdx])
+
+  useEffect(() => {
+    const raf = requestAnimationFrame(centerToday)
+    return () => cancelAnimationFrame(raf)
+  }, [centerToday])
 
   const { data, isLoading } = useQuery({
     queryKey: ['projects', 'calendar'],
@@ -130,7 +145,7 @@ export default function ProjectCalendarPage() {
               <option key={v} value={v}>{l}</option>
             ))}
           </select>
-          <div className="flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-1">
             <button
               onClick={() => setMonthOffset(m => m - 1)}
               className="p-1.5 rounded-md border border-line-soft text-fg-soft hover:bg-raised transition-colors"
@@ -138,7 +153,7 @@ export default function ProjectCalendarPage() {
               <ChevronLeftIcon className="w-4 h-4" />
             </button>
             <button
-              onClick={() => setMonthOffset(0)}
+              onClick={() => { setMonthOffset(0); requestAnimationFrame(centerToday) }}
               className="px-3 py-1.5 rounded-md border border-line-soft text-sm text-fg-soft hover:bg-raised transition-colors"
             >
               Hoy
@@ -170,7 +185,95 @@ export default function ProjectCalendarPage() {
       {isLoading ? (
         <p className="text-sm text-fg-soft">Cargando...</p>
       ) : (
-        <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line overflow-hidden">
+        <>
+        {/* ── Mobile: lista de proyectos ── */}
+        <div className="md:hidden space-y-3">
+          {projects.length === 0 ? (
+            <p className="text-sm text-fg-muted text-center py-10">Sin proyectos para mostrar</p>
+          ) : (
+            [...projects]
+              .sort((a, b) => {
+                const ea = parseDate(a.endDate), eb = parseDate(b.endDate)
+                if (!ea && !eb) return 0
+                if (!ea) return 1
+                if (!eb) return -1
+                return ea - eb
+              })
+              .map(p => {
+                const start    = parseDate(p.startDate)
+                const end      = parseDate(p.endDate)
+                const isOverdue = end && end < today && p.status !== 'finished' && p.status !== 'cancelled'
+                const daysLeft  = end ? Math.ceil((end - today) / 86400000) : null
+
+                let progress = null
+                if (start && end && end > start) {
+                  const total   = end - start
+                  const elapsed = Math.min(Math.max(today - start, 0), total)
+                  progress = Math.round((elapsed / total) * 100)
+                }
+
+                const fmtDate = d => d
+                  ? d.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
+                  : '—'
+
+                return (
+                  <Link
+                    key={p.id}
+                    to={`/projects/${p.id}`}
+                    className="block bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-4 hover:border-brand/40 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-fg truncate leading-snug">{p.title}</p>
+                        {p.client?.name && (
+                          <p className="text-xs text-fg-muted truncate">{p.client.name}</p>
+                        )}
+                      </div>
+                      <span className={`shrink-0 text-xs font-medium px-2 py-0.5 rounded-full ${
+                        isOverdue ? 'bg-danger-subtle text-danger' : STATUS_COLORS[p.status]
+                      }`}>
+                        {isOverdue ? 'Vencido' : STATUS_LABELS[p.status]}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 text-xs text-fg-muted mb-3">
+                      <CalendarDaysIcon className="w-3.5 h-3.5 shrink-0" />
+                      <span>{fmtDate(start)}</span>
+                      <span>→</span>
+                      <span className={isOverdue ? 'text-danger font-medium' : ''}>{fmtDate(end)}</span>
+                    </div>
+
+                    {progress !== null && (
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[11px] text-fg-muted">Progreso del período</span>
+                          {daysLeft !== null && (
+                            <span className={`text-[11px] font-medium flex items-center gap-1 ${
+                              isOverdue ? 'text-danger' : daysLeft <= 7 ? 'text-warning' : 'text-fg-muted'
+                            }`}>
+                              {isOverdue
+                                ? <><ExclamationCircleIcon className="w-3 h-3" />Vencido hace {Math.abs(daysLeft)}d</>
+                                : daysLeft === 0 ? 'Vence hoy'
+                                : `${daysLeft}d restantes`}
+                            </span>
+                          )}
+                        </div>
+                        <div className="h-1.5 rounded-full bg-raised overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${isOverdue ? 'bg-danger' : 'bg-brand'}`}
+                            style={{ width: `${Math.min(progress, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </Link>
+                )
+              })
+          )}
+        </div>
+
+        {/* ── Desktop: Gantt ── */}
+        <div className="hidden md:block bg-surface/60 backdrop-blur-xl rounded-xl border border-line overflow-hidden">
           <div ref={scrollRef} className="overflow-x-auto">
             <div className="flex" style={{ minWidth: LEFT_W + totalW }}>
 
@@ -226,7 +329,7 @@ export default function ProjectCalendarPage() {
                     <div
                       key={g.key}
                       style={{ width: g.count * DAY_W }}
-                      className="shrink-0 flex items-center px-3 border-r border-line text-xs font-semibold text-fg capitalize overflow-hidden"
+                      className="shrink-0 flex items-center px-3 border-r border-line text-s font-semibold text-fg capitalize overflow-hidden"
                     >
                       <span className="truncate">{g.label}</span>
                     </div>
@@ -371,6 +474,7 @@ export default function ProjectCalendarPage() {
             </div>
           </div>
         </div>
+        </>
       )}
     </div>
   )
