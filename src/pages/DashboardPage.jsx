@@ -394,59 +394,83 @@ function ExpiringQuotesPanel({ quotes }) {
   )
 }
 
-function MonthlyChart({ data }) {
-  const months = data ?? []
+function ChartBars({ months }) {
   const max = Math.max(...months.map(m => Math.max(m.issued, m.expenses ?? 0)), 1)
-  const totalPaid = months.reduce((a, m) => a + m.paid, 0)
-  const totalExpenses = months.reduce((a, m) => a + (m.expenses ?? 0), 0)
+  return (
+    <div className="flex items-end gap-1.5 h-36">
+      {months.map(m => {
+        const issuedPct   = max ? (m.issued / max) * 100 : 0
+        const expensesPct = max ? ((m.expenses ?? 0) / max) * 100 : 0
+        return (
+          <div key={m.key} className="flex-1 flex flex-col items-center gap-1">
+            <div className="w-full flex items-end gap-0.5 h-28">
+              <div className="flex-1 rounded-t-md bg-brand/20 transition-all duration-700 relative" style={{ height: `${issuedPct}%` }}>
+                <div
+                  className="absolute bottom-0 left-0 right-0 rounded-t-md bg-brand transition-all duration-700"
+                  style={{ height: `${m.issued > 0 ? (m.paid / m.issued) * 100 : 0}%` }}
+                />
+              </div>
+              <div className="flex-1 rounded-t-md bg-danger transition-all duration-700" style={{ height: `${expensesPct}%` }} />
+            </div>
+            <p className="text-xs text-fg-muted capitalize">{m.label}</p>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function ChartTotals({ months }) {
+  return (
+    <div className="pt-4 border-t border-line grid grid-cols-3 gap-4">
+      <div>
+        <p className="text-xs text-fg-muted mb-0.5">Total emitido</p>
+        <p className="text-sm font-semibold text-fg">{fmt(months.reduce((a, m) => a + m.issued, 0))}</p>
+      </div>
+      <div>
+        <p className="text-xs text-fg-muted mb-0.5">Total cobrado</p>
+        <p className="text-sm font-semibold text-brand">{fmt(months.reduce((a, m) => a + m.paid, 0))}</p>
+      </div>
+      <div>
+        <p className="text-xs text-fg-muted mb-0.5">Total egresos</p>
+        <p className="text-sm font-semibold text-danger">{fmt(months.reduce((a, m) => a + (m.expenses ?? 0), 0))}</p>
+      </div>
+    </div>
+  )
+}
+
+function MonthlyChart({ data }) {
+  const allMonths = data ?? []
+  const lastSix   = allMonths.slice(-6)
+
+  const legend = (
+    <div className="flex items-center gap-3 text-xs text-fg-muted">
+      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand inline-block" />Cobrado</span>
+      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand/25 inline-block" />Emitido</span>
+      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-danger inline-block" />Egresos</span>
+    </div>
+  )
 
   return (
     <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-4">
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <h3 className="text-sm font-semibold text-fg">Facturación últimos 12 meses</h3>
-        <div className="flex items-center gap-3 text-xs text-fg-muted">
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand inline-block" />Cobrado</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand/25 inline-block" />Emitido</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-danger inline-block" />Egresos</span>
+      {/* Mobile: últimos 6 meses */}
+      <div className="md:hidden flex flex-col gap-4">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <h3 className="text-sm font-semibold text-fg">Facturación últimos 6 meses</h3>
+          {legend}
         </div>
+        <ChartBars months={lastSix} />
+        <ChartTotals months={lastSix} />
       </div>
 
-      <div className="flex items-end gap-1.5 h-36">
-        {months.map(m => {
-          const issuedPct   = max ? (m.issued / max) * 100 : 0
-          const expensesPct = max ? ((m.expenses ?? 0) / max) * 100 : 0
-          return (
-            <div key={m.key} className="flex-1 flex flex-col items-center gap-1">
-              <div className="w-full flex items-end gap-0.5 h-28">
-                {/* Ingresos: emitido (fondo) + cobrado (encima) */}
-                <div className="flex-1 rounded-t-md bg-brand/20 transition-all duration-700 relative" style={{ height: `${issuedPct}%` }}>
-                  <div
-                    className="absolute bottom-0 left-0 right-0 rounded-t-md bg-brand transition-all duration-700"
-                    style={{ height: `${m.issued > 0 ? (m.paid / m.issued) * 100 : 0}%` }}
-                  />
-                </div>
-                {/* Egresos */}
-                <div className="flex-1 rounded-t-md bg-danger transition-all duration-700" style={{ height: `${expensesPct}%` }} />
-              </div>
-              <p className="text-xs text-fg-muted capitalize">{m.label}</p>
-            </div>
-          )
-        })}
-      </div>
-
-      <div className="pt-4 border-t border-line grid grid-cols-3 gap-4">
-        <div>
-          <p className="text-xs text-fg-muted mb-0.5">Total emitido</p>
-          <p className="text-sm font-semibold text-fg">{fmt(months.reduce((a, m) => a + m.issued, 0))}</p>
+      {/* Desktop: 12 meses */}
+      <div className="hidden md:flex flex-col gap-4">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <h3 className="text-sm font-semibold text-fg">Facturación últimos 12 meses</h3>
+          {legend}
         </div>
-        <div>
-          <p className="text-xs text-fg-muted mb-0.5">Total cobrado</p>
-          <p className="text-sm font-semibold text-brand">{fmt(totalPaid)}</p>
-        </div>
-        <div>
-          <p className="text-xs text-fg-muted mb-0.5">Total egresos</p>
-          <p className="text-sm font-semibold text-danger">{fmt(totalExpenses)}</p>
-        </div>
+        <ChartBars months={allMonths} />
+        <ChartTotals months={allMonths} />
       </div>
     </div>
   )
