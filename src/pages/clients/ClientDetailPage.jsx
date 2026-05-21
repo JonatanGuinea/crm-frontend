@@ -29,7 +29,19 @@ const STATUS_COLORS_DOC = {
   pending:   'bg-warning-subtle text-warning',
   paid:      'bg-brand-subtle text-brand',
   overdue:   'bg-danger-subtle text-danger',
-  cancelled: 'bg-raised text-fg-muted'
+  cancelled: 'bg-raised text-fg-muted',
+  partial:   'bg-warning-subtle text-warning',
+}
+const STATUS_LABELS_DOC = {
+  draft:     'Borrador',
+  sent:      'Enviado',
+  approved:  'Aprobado',
+  rejected:  'Rechazado',
+  pending:   'Pendiente',
+  paid:      'Pagado',
+  overdue:   'Vencido',
+  cancelled: 'Cancelado',
+  partial:   'Cuotas pendientes',
 }
 
 export default function ClientDetailPage() {
@@ -177,7 +189,7 @@ export default function ClientDetailPage() {
                       <td className="px-5 py-3 font-medium text-fg">{q.number}</td>
                       <td className="px-5 py-3">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS_DOC[q.status] || 'bg-raised text-fg-soft'}`}>
-                          {q.status}
+                          {STATUS_LABELS_DOC[q.status] || q.status}
                         </span>
                       </td>
                       <td className="px-5 py-3 text-fg-soft">
@@ -215,7 +227,7 @@ export default function ClientDetailPage() {
                       <td className="px-5 py-3 font-medium text-fg">{inv.number}</td>
                       <td className="px-5 py-3">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS_DOC[inv.status] || 'bg-raised text-fg-soft'}`}>
-                          {inv.status}
+                          {STATUS_LABELS_DOC[inv.status] || inv.status}
                         </span>
                       </td>
                       <td className="px-5 py-3 text-fg-soft">
