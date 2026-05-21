@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getClients } from '../../api/clients'
 import { getProjects } from '../../api/projects'
 import { getInvoiceById, createInvoice, updateInvoice } from '../../api/invoices'
+import DatePicker from '../../components/DatePicker'
 import LineItemsEditor from '../../components/LineItemsEditor'
 
 const EMPTY_ITEM = { description: '', quantity: 1, unitPrice: 0, amount: 0 }
@@ -149,7 +150,7 @@ export default function InvoiceModal({ invoiceId, onClose, onSaved }) {
           <div className="grid grid-cols-3 gap-3">
             <div>
               <label className={labelCls}>Fecha de vencimiento</label>
-              <input type="date" value={form.dueDate}
+              <DatePicker value={form.dueDate}
                 onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))}
                 className={inputCls} />
             </div>

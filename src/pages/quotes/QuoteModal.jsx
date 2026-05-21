@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getClients } from '../../api/clients'
 import { getProjects } from '../../api/projects'
 import { getQuoteById, createQuote, updateQuote } from '../../api/quotes'
+import DatePicker from '../../components/DatePicker'
 import LineItemsEditor from '../../components/LineItemsEditor'
 
 const EMPTY_ITEM = { description: '', quantity: 1, unitPrice: 0, amount: 0 }
@@ -148,7 +149,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved }) {
           <div className="grid grid-cols-3 gap-3">
             <div>
               <label className={labelCls}>Válido hasta</label>
-              <input type="date" value={form.validUntil}
+              <DatePicker value={form.validUntil}
                 onChange={e => setForm(f => ({ ...f, validUntil: e.target.value }))}
                 className={inputCls} />
             </div>

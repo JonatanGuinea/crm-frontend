@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getCategories, createCategory } from '../../api/expenses'
+import DatePicker from '../../components/DatePicker'
 
 const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
 const labelCls = "block text-sm font-medium text-fg-soft mb-1"
@@ -113,8 +114,7 @@ export default function ExpenseModal({ expense, onClose, onSaved }) {
             </div>
             <div>
               <label className={labelCls}>Fecha</label>
-              <input
-                type="date"
+              <DatePicker
                 value={form.date}
                 onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
                 className={inputCls}

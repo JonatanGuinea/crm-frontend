@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { createProject, updateProject } from '../../api/projects'
 import { getClients } from '../../api/clients'
+import DatePicker from '../../components/DatePicker'
 
 const ALLOWED_TRANSITIONS = {
   pending: ['approved', 'cancelled'],
@@ -93,13 +94,13 @@ export default function ProjectModal({ project, onClose, onSaved }) {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelCls}>Fecha inicio</label>
-              <input type="date" value={form.startDate}
+              <DatePicker value={form.startDate}
                 onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))}
                 className={inputCls} />
             </div>
             <div>
               <label className={labelCls}>Fecha fin</label>
-              <input type="date" value={form.endDate}
+              <DatePicker value={form.endDate}
                 onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))}
                 className={inputCls} />
             </div>

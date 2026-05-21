@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { CheckCircleIcon, ClockIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { getInstallments, createInstallments, payInstallment, deleteInstallments } from '../api/installments'
+import DatePicker from './DatePicker'
 
 const fmt = (n) => Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const fmtDate = (d) => new Date(d).toLocaleDateString('es-AR')
@@ -113,8 +114,7 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
             </div>
             <div>
               <label className={labelCls}>Vencimiento 1ª cuota</label>
-              <input
-                type="date"
+              <DatePicker
                 value={firstDueDate}
                 onChange={e => setFirstDueDate(e.target.value)}
                 className={inputCls}
