@@ -127,6 +127,7 @@ export default function QuotesPage() {
     mutationFn: (id) => createInvoiceFromQuote(id, {}),
     onSuccess: () => {
       qc.invalidateQueries(['invoices'])
+      qc.invalidateQueries(['quotes'])
       alert('Factura creada correctamente')
     },
     onError: (err) => alert(err.response?.data?.error || 'Error al generar factura')
@@ -211,7 +212,7 @@ export default function QuotesPage() {
                     <ArrowDownTrayIcon className="w-4 h-4" />
                   </button>
                   {canWrite && <button onClick={() => openEdit(q.id)} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-brand-subtle text-brand hover:opacity-80 transition-opacity">Editar</button>}
-                  {canWrite && q.status === 'approved' && (
+                  {canWrite && q.status === 'approved' && !q._count?.invoices && (
                     <button onClick={() => { if (confirm('¿Generar factura?')) toInvoice.mutate(q.id) }} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-info-subtle text-info hover:opacity-80 transition-opacity">Facturar</button>
                   )}
                   {canWrite && q.status === 'draft' && (
@@ -264,7 +265,7 @@ export default function QuotesPage() {
                           <ArrowDownTrayIcon className={`w-4 h-4 ${downloading === q.id ? 'animate-pulse' : ''}`} />
                         </button>
                         {canWrite && <button onClick={() => openEdit(q.id)} className="text-brand hover:underline text-xs">Editar</button>}
-                        {canWrite && q.status === 'approved' && (
+                        {canWrite && q.status === 'approved' && !q._count?.invoices && (
                           <button onClick={() => { if (confirm('¿Generar factura desde este presupuesto?')) toInvoice.mutate(q.id) }}
                             className="text-info hover:underline text-xs">Facturar</button>
                         )}
