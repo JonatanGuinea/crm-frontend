@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { globalSearch } from '../api/search'
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
@@ -149,10 +150,10 @@ export default function GlobalSearch() {
         </span>
       </button>
 
-      {/* Modal overlay */}
-      {open && (
+      {/* Modal overlay — rendered via portal to escape header's stacking context */}
+      {open && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] px-4"
+          className="fixed inset-0 z-[9999] flex items-start justify-center pt-4 sm:pt-[15vh] px-4"
           onClick={closeModal}
         >
           {/* Backdrop */}
@@ -160,7 +161,7 @@ export default function GlobalSearch() {
 
           {/* Panel */}
           <div
-            className="relative w-full max-w-lg bg-surface/60 backdrop-blur-xl rounded-2xl shadow-2xl border border-line overflow-hidden"
+            className="relative w-full max-w-lg bg-surface/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-line overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
             {/* Search input */}
@@ -242,8 +243,9 @@ export default function GlobalSearch() {
                 <span>Esc cerrar</span>
               </div>
             )}
-          </div>
-        </div>
+            </div>
+        </div>,
+        document.body
       )}
     </>
   )

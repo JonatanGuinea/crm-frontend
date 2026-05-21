@@ -40,7 +40,6 @@ const navItems = [
   { to: '/quotes',        label: 'Presupuestos',    icon: DocumentTextIcon },
   { to: '/invoices',      label: 'Facturas',        icon: ReceiptRefundIcon },
   { to: '/expenses',      label: 'Egresos',         icon: ArrowTrendingDownIcon },
-  { to: '/notifications', label: 'Notificaciones',  icon: BellIcon },
   { to: '/members',       label: 'Equipo',          icon: UserGroupIcon },
 ]
 
@@ -56,7 +55,7 @@ function SidebarAvatar({ avatar, name }) {
   )
 }
 
-function SidebarContent({ collapsed, profile, user, onNavClick, unreadCount, dark, onToggleTheme }) {
+function SidebarContent({ collapsed, profile, user, onNavClick, dark, onToggleTheme }) {
   return (
     <div className="flex flex-col flex-1 min-h-0">
       {!collapsed && <OrgSwitcher />}
@@ -77,20 +76,8 @@ function SidebarContent({ collapsed, profile, user, onNavClick, unreadCount, dar
               } ${collapsed ? 'justify-center' : ''}`
             }
           >
-            <span className="relative shrink-0">
-              <Icon className="w-5 h-5" />
-              {to === '/notifications' && unreadCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-0.5 rounded-full bg-brand text-white text-[10px] font-bold flex items-center justify-center leading-none">
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </span>
-              )}
-            </span>
+            <Icon className="w-5 h-5 shrink-0" />
             {!collapsed && <span className="truncate flex-1">{label}</span>}
-            {!collapsed && to === '/notifications' && unreadCount > 0 && (
-              <span className="ml-auto min-w-[20px] h-5 px-1 rounded-full bg-brand text-white text-[10px] font-bold flex items-center justify-center">
-                {unreadCount > 99 ? '99+' : unreadCount}
-              </span>
-            )}
           </NavLink>
         ))}
       </nav>
@@ -170,7 +157,6 @@ export default function AppLayout() {
           profile={profile}
           user={user}
           onNavClick={() => setMobileOpen(false)}
-          unreadCount={unreadCount}
           dark={dark}
           onToggleTheme={toggle}
         />
@@ -200,7 +186,6 @@ export default function AppLayout() {
           profile={profile}
           user={user}
           onNavClick={undefined}
-          unreadCount={unreadCount}
           dark={dark}
           onToggleTheme={toggle}
         />
@@ -218,6 +203,17 @@ export default function AppLayout() {
           <div className="flex-1">
             <GlobalSearch />
           </div>
+          <Link
+            to="/notifications"
+            className="relative p-2 rounded-md text-fg-muted hover:bg-raised hover:text-fg transition-colors shrink-0"
+          >
+            <BellIcon className="w-5 h-5" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 min-w-[16px] h-4 px-0.5 rounded-full bg-brand text-white text-[10px] font-bold flex items-center justify-center leading-none">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </Link>
           <Link
             to="/profile"
             className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-raised transition-colors shrink-0"
