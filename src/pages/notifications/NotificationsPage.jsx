@@ -1,7 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { TrashIcon, BellSlashIcon } from '@heroicons/react/24/outline'
+import { TrashIcon, BellSlashIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline'
 import { getNotifications, markAllAsRead, deleteNotification } from '../../api/notifications'
+import { getPendingInvitations, acceptInvitation, declineInvitation } from '../../api/invitations'
+import { useAuth } from '../../context/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 const TYPE_LABELS = {
   invoice_overdue:  'Factura vencida',
@@ -45,10 +48,35 @@ function timeAgo(dateStr) {
 
 export default function NotificationsPage() {
   const qc = useQueryClient()
+  const { login } = useAuth()
+  const navigate = useNavigate()
+  const [decliningId, setDecliningId] = useState(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['notifications'],
     queryFn: () => getNotifications().then(r => r.data.data)
+  })
+
+  const { data: invitations = [] } = useQuery({
+    queryKey: ['invitations'],
+    queryFn: () => getPendingInvitations().then(r => r.data.data)
+  })
+
+  const accept = useMutation({
+    mutationFn: acceptInvitation,
+    onSuccess: (res) => {
+      login(res.data.data.token)
+      qc.clear()
+      navigate('/')
+    }
+  })
+
+  const decline = useMutation({
+    mutationFn: declineInvitation,
+    onSuccess: () => {
+      setDecliningId(null)
+      qc.invalidateQueries(['invitations'])
+    }
   })
 
   const readAll = useMutation({
@@ -77,13 +105,14 @@ export default function NotificationsPage() {
   useEffect(() => { readAll.mutate() }, [])
 
   const notifications = data?.notifications ?? []
+  const isEmpty = notifications.length === 0 && invitations.length === 0
 
   return (
     <div className="p-4 md:p-8 max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-fg">Notificaciones</h2>
-        {notifications.length > 0 && (
-          <span className="text-xs text-fg-muted">{notifications.length} en total</span>
+        {!isEmpty && (
+          <span className="text-xs text-fg-muted">{notifications.length + invitations.length} en total</span>
         )}
       </div>
 
@@ -91,13 +120,52 @@ export default function NotificationsPage() {
         <div className="flex justify-center py-12">
           <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin" />
         </div>
-      ) : notifications.length === 0 ? (
+      ) : isEmpty ? (
         <div className="flex flex-col items-center justify-center py-16 gap-3 text-fg-muted">
           <BellSlashIcon className="w-10 h-10 opacity-30" />
           <p className="text-sm">Sin notificaciones</p>
         </div>
       ) : (
         <div className="space-y-2">
+          {/* Invitaciones pendientes */}
+          {invitations.map(inv => (
+            <div
+              key={inv.membershipId}
+              className="flex items-start gap-3 p-4 rounded-xl bg-surface/60 backdrop-blur-xl border border-line border-l-2 border-l-info transition-colors"
+            >
+              <BuildingOfficeIcon className="mt-0.5 w-4 h-4 text-info shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-info-subtle text-info">
+                    Invitación
+                  </span>
+                </div>
+                <p className="text-sm text-fg leading-snug mb-3">
+                  <span className="font-semibold">{inv.organization.name}</span>
+                  {' '}te invitó a unirte como{' '}
+                  <span className="font-medium">{inv.role === 'member' ? 'Miembro' : 'Admin'}</span>.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => accept.mutate(inv.membershipId)}
+                    disabled={accept.isPending || decline.isPending}
+                    className="px-3 py-1.5 text-xs rounded-md bg-brand text-white hover:bg-brand-hover disabled:opacity-50 transition-colors"
+                  >
+                    {accept.isPending ? 'Aceptando...' : 'Aceptar'}
+                  </button>
+                  <button
+                    onClick={() => setDecliningId(inv.membershipId)}
+                    disabled={accept.isPending || decline.isPending}
+                    className="px-3 py-1.5 text-xs rounded-md border border-line text-fg-soft hover:bg-raised disabled:opacity-50 transition-colors"
+                  >
+                    Rechazar
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Notificaciones regulares */}
           {notifications.map(n => (
             <div
               key={n.id}
@@ -121,6 +189,34 @@ export default function NotificationsPage() {
               </button>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Modal confirmar rechazo */}
+      {decliningId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line shadow-xl p-6 max-w-sm w-full">
+            <h3 className="text-base font-semibold text-fg mb-2">¿Rechazar invitación?</h3>
+            <p className="text-sm text-fg-soft mb-6">
+              Esta acción no se puede deshacer.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setDecliningId(null)}
+                disabled={decline.isPending}
+                className="px-4 py-2 text-sm rounded-md border border-line text-fg-soft hover:bg-raised disabled:opacity-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => decline.mutate(decliningId)}
+                disabled={decline.isPending}
+                className="px-4 py-2 text-sm rounded-md bg-danger text-white hover:opacity-90 disabled:opacity-50 transition-colors"
+              >
+                {decline.isPending ? 'Rechazando...' : 'Sí, rechazar'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

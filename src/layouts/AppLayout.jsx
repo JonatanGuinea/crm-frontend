@@ -8,6 +8,7 @@ import OrgSwitcher from '../components/OrgSwitcher'
 import InvitationsBanner from '../components/InvitationsBanner'
 import { getProfile } from '../api/profile'
 import { getNotifications } from '../api/notifications'
+import { getPendingInvitations } from '../api/invitations'
 import logo from '../assets/logo.png'
 import logoDark from '../assets/logo-dark-mode.png'
 import favicon from '../assets/favicon.png'
@@ -112,7 +113,12 @@ export default function AppLayout() {
     queryFn: () => getNotifications().then(r => r.data.data),
     refetchInterval: 60_000,
   })
-  const unreadCount = notifData?.unreadCount ?? 0
+  const { data: invitations } = useQuery({
+    queryKey: ['invitations'],
+    queryFn: () => getPendingInvitations().then(r => r.data.data),
+    staleTime: 30_000,
+  })
+  const unreadCount = (notifData?.unreadCount ?? 0) + (invitations?.length ?? 0)
 
   function toggleSidebar() {
     setCollapsed(prev => {

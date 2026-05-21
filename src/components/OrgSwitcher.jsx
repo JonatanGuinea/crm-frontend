@@ -21,6 +21,7 @@ export default function OrgSwitcher() {
     queryFn: () => getOrganizations().then(r => r.data.data)
   })
 
+
   useEffect(() => {
     function handleClick(e) {
       if (ref.current && !ref.current.contains(e.target)) {
