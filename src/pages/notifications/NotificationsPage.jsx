@@ -53,12 +53,25 @@ export default function NotificationsPage() {
 
   const readAll = useMutation({
     mutationFn: markAllAsRead,
-    onSuccess: () => qc.invalidateQueries(['notifications'])
+    onSuccess: () => {
+      qc.setQueryData(['notifications'], (old) => {
+        if (!old) return old
+        const notifications = old.notifications.map(n => ({ ...n, read: true }))
+        return { ...old, notifications, unreadCount: 0 }
+      })
+    }
   })
 
   const del = useMutation({
     mutationFn: deleteNotification,
-    onSuccess: () => qc.invalidateQueries(['notifications'])
+    onSuccess: (_, deletedId) => {
+      qc.setQueryData(['notifications'], (old) => {
+        if (!old) return old
+        const notifications = old.notifications.filter(n => n.id !== deletedId)
+        const unreadCount = notifications.filter(n => !n.read).length
+        return { ...old, notifications, unreadCount }
+      })
+    }
   })
 
   useEffect(() => { readAll.mutate() }, [])
