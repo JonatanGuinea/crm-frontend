@@ -110,14 +110,17 @@ export default function InvoiceModal({ invoiceId, onClose, onSaved }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-      <div className="bg-surface/60 backdrop-blur-xl rounded-xl shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
-        <h3 className="text-lg font-semibold text-fg mb-5">
-          {isEditing ? 'Editar factura' : 'Nueva factura'}
-          {invoiceData && <span className="ml-2 text-sm font-normal text-fg-muted">#{invoiceData.number}</span>}
-        </h3>
+    <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50">
+      <div className="bg-surface/60 backdrop-blur-xl rounded-t-2xl sm:rounded-xl shadow-lg w-full sm:max-w-2xl sm:mx-4 max-h-[92vh] overflow-y-auto">
+        <div className="sticky top-0 z-10 bg-surface/80 backdrop-blur-xl border-b border-line px-5 py-4 flex items-center justify-between">
+          <h3 className="text-base font-semibold text-fg">
+            {isEditing ? 'Editar factura' : 'Nueva factura'}
+            {invoiceData && <span className="ml-2 text-sm font-normal text-fg-muted">#{invoiceData.number}</span>}
+          </h3>
+          <button type="button" onClick={onClose} className="text-fg-muted hover:text-fg text-xl leading-none">×</button>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
             <label className={labelCls}>Título *</label>
             <input type="text" required value={form.title}
@@ -125,7 +128,7 @@ export default function InvoiceModal({ invoiceId, onClose, onSaved }) {
               className={inputCls} />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className={labelCls}>Cliente *</label>
               <select required value={form.clientId}
@@ -147,7 +150,7 @@ export default function InvoiceModal({ invoiceId, onClose, onSaved }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div>
               <label className={labelCls}>Fecha de vencimiento</label>
               <DatePicker value={form.dueDate}
@@ -164,7 +167,7 @@ export default function InvoiceModal({ invoiceId, onClose, onSaved }) {
                 <option value="ARS">ARS</option>
               </select>
             </div>
-            <div>
+            <div className="col-span-2 sm:col-span-1">
               <label className={labelCls}>IVA (%)</label>
               <input type="number" min="0" max="100" step="1" value={form.taxRate}
                 onChange={e => setForm(f => ({ ...f, taxRate: e.target.value }))}
@@ -208,9 +211,9 @@ export default function InvoiceModal({ invoiceId, onClose, onSaved }) {
 
           {error && <p className="text-sm text-danger">{error}</p>}
 
-          <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-fg-soft hover:text-fg">Cancelar</button>
-            <button type="submit" disabled={loading} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50">
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2 pb-1">
+            <button type="button" onClick={onClose} className="px-4 py-2.5 sm:py-2 text-sm text-fg-soft hover:text-fg border border-line-soft rounded-md sm:border-none">Cancelar</button>
+            <button type="submit" disabled={loading} className="px-4 py-2.5 sm:py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50">
               {loading ? 'Guardando...' : 'Guardar'}
             </button>
           </div>
