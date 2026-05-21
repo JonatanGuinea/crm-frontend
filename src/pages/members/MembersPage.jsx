@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../context/AuthContext'
 import { getMembers, inviteMember, updateMemberRole, removeMember } from '../../api/members'
+import { CheckIcon, ClipboardIcon } from '@heroicons/react/24/outline'
 
 const ROLE_LABELS = { owner: 'Owner', admin: 'Admin', member: 'Miembro' }
 const ROLE_COLORS = {
@@ -24,6 +25,15 @@ export default function MembersPage() {
   const [inviteError, setInviteError] = useState('')
   const [inviteToken, setInviteToken] = useState(null)
   const [showInvite, setShowInvite] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const copyTimer = useRef(null)
+
+  function handleCopy(text) {
+    navigator.clipboard.writeText(text)
+    setCopied(true)
+    clearTimeout(copyTimer.current)
+    copyTimer.current = setTimeout(() => setCopied(false), 2000)
+  }
 
   const { data, isLoading } = useQuery({
     queryKey: ['members', orgId],
@@ -116,10 +126,17 @@ export default function MembersPage() {
                   {`${window.location.origin}/accept-invite?token=${inviteToken}`}
                 </code>
                 <button
-                  onClick={() => navigator.clipboard.writeText(`${window.location.origin}/accept-invite?token=${inviteToken}`)}
-                  className="shrink-0 text-xs px-2 py-1.5 border border-brand rounded text-brand hover:bg-brand-subtle"
+                  onClick={() => handleCopy(`${window.location.origin}/accept-invite?token=${inviteToken}`)}
+                  className={`shrink-0 flex items-center gap-1 text-xs px-2 py-1.5 border rounded transition-colors ${
+                    copied
+                      ? 'border-brand bg-brand text-white'
+                      : 'border-brand text-brand hover:bg-brand-subtle'
+                  }`}
                 >
-                  Copiar
+                  {copied
+                    ? <><CheckIcon className="w-3.5 h-3.5" />Copiado</>
+                    : <><ClipboardIcon className="w-3.5 h-3.5" />Copiar</>
+                  }
                 </button>
               </div>
               <p className="text-xs text-fg-soft mt-1">El usuario solo tiene que abrir este enlace para unirse.</p>
