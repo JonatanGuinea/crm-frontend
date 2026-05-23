@@ -21,11 +21,11 @@ const STATUS_LABELS = {
 const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
 const labelCls = "block text-sm font-medium text-fg-soft mb-1"
 
-export default function QuoteModal({ quoteId, onClose, onSaved }) {
+export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId = '', initialProjectId = '' }) {
   const isEditing = Boolean(quoteId)
 
   const [form, setForm] = useState({
-    title: '', clientId: '', projectId: '',
+    title: '', clientId: initialClientId, projectId: initialProjectId,
     validUntil: '', taxRate: 0, currency: 'USD', notes: '', status: ''
   })
   const [items, setItems] = useState([EMPTY_ITEM])

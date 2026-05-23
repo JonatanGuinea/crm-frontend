@@ -6,6 +6,7 @@ import { getProjectById } from '../../api/projects'
 import { getQuotes } from '../../api/quotes'
 import { getInvoices } from '../../api/invoices'
 import ProjectModal from './ProjectModal'
+import QuoteModal from '../quotes/QuoteModal'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 
 const STATUS_COLORS = {
@@ -25,10 +26,18 @@ const DOC_STATUS_COLORS = {
   sent:      'bg-info-subtle text-info',
   approved:  'bg-brand-subtle text-brand',
   rejected:  'bg-danger-subtle text-danger',
+  expired:   'bg-warning-subtle text-warning',
   pending:   'bg-warning-subtle text-warning',
   paid:      'bg-brand-subtle text-brand',
   overdue:   'bg-danger-subtle text-danger',
+  partial:   'bg-warning-subtle text-warning',
   cancelled: 'bg-raised text-fg-muted'
+}
+const DOC_STATUS_LABELS = {
+  draft: 'Borrador', sent: 'Enviado', approved: 'Aprobado',
+  rejected: 'Rechazado', expired: 'Vencido',
+  pending: 'Pendiente', paid: 'Pagado', overdue: 'Vencido',
+  partial: 'Parcial', cancelled: 'Cancelado'
 }
 
 export default function ProjectDetailPage() {
@@ -38,6 +47,7 @@ export default function ProjectDetailPage() {
   const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
   const [editOpen, setEditOpen] = useState(false)
+  const [newQuoteOpen, setNewQuoteOpen] = useState(false)
 
   const { data: project, isLoading } = useQuery({
     queryKey: ['project', id],
@@ -136,7 +146,17 @@ export default function ProjectDetailPage() {
               <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide">
                 Presupuestos <span className="text-fg-muted font-normal">({quotes.length})</span>
               </h3>
-              <Link to="/quotes" className="text-xs text-brand hover:underline">Ver todos</Link>
+              <div className="flex items-center gap-3">
+                {canWrite && (
+                  <button
+                    onClick={() => setNewQuoteOpen(true)}
+                    className="text-xs text-brand hover:underline font-medium"
+                  >
+                    + Nuevo
+                  </button>
+                )}
+                <Link to="/quotes" className="text-xs text-brand hover:underline">Ver todos</Link>
+              </div>
             </div>
             {quotes.length === 0 ? (
               <p className="px-5 py-4 text-sm text-fg-muted">Sin presupuestos asociados</p>
@@ -155,7 +175,7 @@ export default function ProjectDetailPage() {
                       <td className="px-5 py-3 font-medium text-fg">{q.number}</td>
                       <td className="px-5 py-3">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${DOC_STATUS_COLORS[q.status] || 'bg-raised text-fg-soft'}`}>
-                          {q.status}
+                          {DOC_STATUS_LABELS[q.status] || q.status}
                         </span>
                       </td>
                       <td className="px-5 py-3 text-fg-soft">
@@ -193,7 +213,7 @@ export default function ProjectDetailPage() {
                       <td className="px-5 py-3 font-medium text-fg">{inv.number}</td>
                       <td className="px-5 py-3">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${DOC_STATUS_COLORS[inv.status] || 'bg-raised text-fg-soft'}`}>
-                          {inv.status}
+                          {DOC_STATUS_LABELS[inv.status] || inv.status}
                         </span>
                       </td>
                       <td className="px-5 py-3 text-fg-soft">
@@ -219,6 +239,19 @@ export default function ProjectDetailPage() {
             setEditOpen(false)
             qc.invalidateQueries(['project', id])
             qc.invalidateQueries(['projects'])
+          }}
+        />
+      )}
+
+      {newQuoteOpen && (
+        <QuoteModal
+          initialClientId={project.client?.id}
+          initialProjectId={id}
+          onClose={() => setNewQuoteOpen(false)}
+          onSaved={() => {
+            setNewQuoteOpen(false)
+            qc.invalidateQueries(['quotes', { projectId: id }])
+            qc.invalidateQueries(['quotes'])
           }}
         />
       )}

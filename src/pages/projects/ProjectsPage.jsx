@@ -113,7 +113,8 @@ export default function ProjectsPage() {
 
   const del = useMutation({
     mutationFn: deleteProject,
-    onSuccess: () => qc.invalidateQueries(['projects'])
+    onSuccess: () => qc.invalidateQueries(['projects']),
+    onError: (err) => alert(err.response?.data?.error || 'Error al eliminar proyecto')
   })
 
   const changeStatus = useMutation({
