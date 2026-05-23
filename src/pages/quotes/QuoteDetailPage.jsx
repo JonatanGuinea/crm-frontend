@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../context/AuthContext'
+import { useToast } from '../../components/Toast'
 import { getQuoteById, createInvoiceFromQuote, downloadQuotePdf } from '../../api/quotes'
 import QuoteModal from './QuoteModal'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
@@ -22,6 +23,7 @@ export default function QuoteDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const toast = useToast()
   const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
   const [editOpen, setEditOpen] = useState(false)
@@ -51,10 +53,10 @@ export default function QuoteDetailPage() {
     mutationFn: () => createInvoiceFromQuote(id, {}),
     onSuccess: () => {
       qc.invalidateQueries(['invoices'])
-      alert('Factura creada correctamente')
+      toast('Factura creada correctamente', 'success')
       navigate('/invoices')
     },
-    onError: (err) => alert(err.response?.data?.error || 'Error al generar factura')
+    onError: (err) => toast(err.response?.data?.error || 'Error al generar factura')
   })
 
   if (isLoading) return <div className="p-8 text-sm text-fg-soft">Cargando...</div>

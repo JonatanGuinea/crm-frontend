@@ -6,6 +6,7 @@ import { getInvoices, deleteInvoice, updateInvoice, downloadInvoicePdf } from '.
 import InvoiceModal from './InvoiceModal'
 import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
+import { useToast } from '../../components/Toast'
 import { ChevronDownIcon, UserIcon, CalendarDaysIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline'
 
 const STATUS_LABELS = {
@@ -110,6 +111,7 @@ function StatusDropdown({ invoice, onUpdate }) {
 
 export default function InvoicesPage() {
   const { user } = useAuth()
+  const toast = useToast()
   const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
   const [statusFilter, setStatusFilter] = useState('')
@@ -131,7 +133,7 @@ export default function InvoicesPage() {
   const changeStatus = useMutation({
     mutationFn: ({ id, status }) => updateInvoice(id, { status }),
     onSuccess: () => qc.invalidateQueries(['invoices']),
-    onError: (err) => alert(err.response?.data?.error || 'Error al cambiar estado')
+    onError: (err) => toast(err.response?.data?.error || 'Error al cambiar estado')
   })
 
   async function handleDownload(id, number) {

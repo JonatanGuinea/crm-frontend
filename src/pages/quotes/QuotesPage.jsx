@@ -6,6 +6,7 @@ import { getQuotes, deleteQuote, updateQuote, createInvoiceFromQuote, downloadQu
 import QuoteModal from './QuoteModal'
 import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
+import { useToast } from '../../components/Toast'
 import { ChevronDownIcon, UserIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline'
 
 const STATUS_LABELS = {
@@ -99,6 +100,7 @@ function StatusDropdown({ quote, onUpdate }) {
 
 export default function QuotesPage() {
   const { user } = useAuth()
+  const toast = useToast()
   const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
   const [statusFilter, setStatusFilter] = useState('')
@@ -120,7 +122,7 @@ export default function QuotesPage() {
   const changeStatus = useMutation({
     mutationFn: ({ id, status }) => updateQuote(id, { status }),
     onSuccess: () => qc.invalidateQueries(['quotes']),
-    onError: (err) => alert(err.response?.data?.error || 'Error al cambiar estado')
+    onError: (err) => toast(err.response?.data?.error || 'Error al cambiar estado')
   })
 
   const toInvoice = useMutation({
@@ -128,9 +130,9 @@ export default function QuotesPage() {
     onSuccess: () => {
       qc.invalidateQueries(['invoices'])
       qc.invalidateQueries(['quotes'])
-      alert('Factura creada correctamente')
+      toast('Factura creada correctamente', 'success')
     },
-    onError: (err) => alert(err.response?.data?.error || 'Error al generar factura')
+    onError: (err) => toast(err.response?.data?.error || 'Error al generar factura')
   })
 
   async function handleDownload(id, number) {

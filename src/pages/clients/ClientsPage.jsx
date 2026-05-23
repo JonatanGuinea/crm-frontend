@@ -5,6 +5,7 @@ import { getClients, deleteClient } from '../../api/clients'
 import ClientModal from './ClientModal'
 import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
+import { useToast } from '../../components/Toast'
 import { EnvelopeIcon, PhoneIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline'
 
 export default function ClientsPage() {
@@ -21,12 +22,13 @@ export default function ClientsPage() {
     queryFn: () => getClients({ ...(search ? { name: search } : {}), page }).then(r => r.data)
   })
 
+  const toast = useToast()
   const canDelete = user?.role === 'owner'
 
   const del = useMutation({
     mutationFn: deleteClient,
     onSuccess: () => qc.invalidateQueries(['clients']),
-    onError: (err) => alert(err.response?.data?.error || 'Error al eliminar cliente')
+    onError: (err) => toast(err.response?.data?.error || 'Error al eliminar cliente')
   })
 
   function openCreate() { setEditing(null); setModalOpen(true) }

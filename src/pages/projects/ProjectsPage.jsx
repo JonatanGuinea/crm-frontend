@@ -6,6 +6,7 @@ import { getProjects, deleteProject, updateProject } from '../../api/projects'
 import ProjectModal from './ProjectModal'
 import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
+import { useToast } from '../../components/Toast'
 import { ChevronDownIcon, UserIcon, CalendarDaysIcon, BanknotesIcon } from '@heroicons/react/24/outline'
 
 const STATUS_LABELS = {
@@ -99,6 +100,7 @@ function StatusDropdown({ project, onUpdate }) {
 
 export default function ProjectsPage() {
   const { user } = useAuth()
+  const toast = useToast()
   const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
   const [statusFilter, setStatusFilter] = useState('')
@@ -114,13 +116,13 @@ export default function ProjectsPage() {
   const del = useMutation({
     mutationFn: deleteProject,
     onSuccess: () => qc.invalidateQueries(['projects']),
-    onError: (err) => alert(err.response?.data?.error || 'Error al eliminar proyecto')
+    onError: (err) => toast(err.response?.data?.error || 'Error al eliminar proyecto')
   })
 
   const changeStatus = useMutation({
     mutationFn: ({ id, status }) => updateProject(id, { status }),
     onSuccess: () => qc.invalidateQueries(['projects']),
-    onError: (err) => alert(err.response?.data?.error || 'Error al cambiar estado')
+    onError: (err) => toast(err.response?.data?.error || 'Error al cambiar estado')
   })
 
   return (
