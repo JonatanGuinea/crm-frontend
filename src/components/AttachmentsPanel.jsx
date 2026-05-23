@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getAttachments, uploadAttachment, deleteAttachment } from '../api/attachments'
+import { useConfirm } from './ConfirmDialog'
 
 const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'
 
@@ -13,6 +14,7 @@ function formatSize(bytes) {
 export default function AttachmentsPanel({ entityType, entityId }) {
   const qc = useQueryClient()
   const inputRef = useRef()
+  const confirm = useConfirm()
   const queryKey = ['attachments', entityType, entityId]
 
   const { data, isLoading } = useQuery({
@@ -77,7 +79,7 @@ export default function AttachmentsPanel({ entityType, entityId }) {
                 </div>
               </div>
               <button
-                onClick={() => { if (confirm('¿Eliminar archivo?')) del.mutate(att.id) }}
+                onClick={async () => { if (await confirm('¿Eliminar archivo?')) del.mutate(att.id) }}
                 className="text-danger/60 hover:text-danger text-xs ml-3 shrink-0"
               >
                 Eliminar

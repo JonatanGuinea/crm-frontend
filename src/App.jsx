@@ -61,6 +61,7 @@ export default function App() {
     <ThemeProvider>
     <QueryClientProvider client={qc}>
     <ToastProvider>
+    <ConfirmProvider>
       {!splashDone && <SplashScreen onDone={() => setSplashDone(true)} />}
       <AuthProvider>
         <BrowserRouter>
@@ -92,6 +93,7 @@ export default function App() {
           </Routes>
         </BrowserRouter>
       </AuthProvider>
+    </ConfirmProvider>
     </ToastProvider>
     </QueryClientProvider>
     </ThemeProvider>

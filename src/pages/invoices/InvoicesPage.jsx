@@ -7,6 +7,7 @@ import InvoiceModal from './InvoiceModal'
 import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
+import { useConfirm } from '../../components/ConfirmDialog'
 import { ChevronDownIcon, UserIcon, CalendarDaysIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline'
 
 const STATUS_LABELS = {
@@ -112,6 +113,7 @@ function StatusDropdown({ invoice, onUpdate }) {
 export default function InvoicesPage() {
   const { user } = useAuth()
   const toast = useToast()
+  const confirm = useConfirm()
   const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
   const [statusFilter, setStatusFilter] = useState('')
@@ -223,7 +225,7 @@ export default function InvoicesPage() {
                   </button>
                   {canWrite && <button onClick={() => openEdit(inv.id)} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-brand-subtle text-brand hover:opacity-80 transition-opacity">Editar</button>}
                   {canWrite && inv.status === 'draft' && (
-                    <button onClick={() => { if (confirm('¿Eliminar?')) del.mutate(inv.id) }} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-danger-subtle text-danger hover:opacity-80 transition-opacity">Eliminar</button>
+                    <button onClick={async () => { if (await confirm('¿Eliminar?')) del.mutate(inv.id) }} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-danger-subtle text-danger hover:opacity-80 transition-opacity">Eliminar</button>
                   )}
                 </div>
               </div>
@@ -277,7 +279,7 @@ export default function InvoicesPage() {
                         </button>
                         {canWrite && <button onClick={() => openEdit(inv.id)} className="text-brand hover:underline text-xs">Editar</button>}
                         {canWrite && inv.status === 'draft' && (
-                          <button onClick={() => { if (confirm('¿Eliminar?')) del.mutate(inv.id) }} className="text-danger hover:underline text-xs">Eliminar</button>
+                          <button onClick={async () => { if (await confirm('¿Eliminar?')) del.mutate(inv.id) }} className="text-danger hover:underline text-xs">Eliminar</button>
                         )}
                       </td>
                     </tr>

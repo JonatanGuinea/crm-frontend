@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
+import { useConfirm } from '../../components/ConfirmDialog'
 import { getQuoteById, createInvoiceFromQuote, downloadQuotePdf } from '../../api/quotes'
 import QuoteModal from './QuoteModal'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
@@ -24,6 +25,7 @@ export default function QuoteDetailPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const toast = useToast()
+  const confirm = useConfirm()
   const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
   const [editOpen, setEditOpen] = useState(false)
@@ -94,7 +96,7 @@ export default function QuoteDetailPage() {
           </button>
           {canWrite && quote.status === 'approved' && (
             <button
-              onClick={() => { if (confirm('¿Generar factura desde este presupuesto?')) toInvoice.mutate() }}
+              onClick={async () => { if (await confirm('¿Generar factura desde este presupuesto?', { confirmLabel: 'Facturar', danger: false })) toInvoice.mutate() }}
               disabled={toInvoice.isPending}
               className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50 transition-colors"
             >

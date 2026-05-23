@@ -6,10 +6,12 @@ import ClientModal from './ClientModal'
 import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
+import { useConfirm } from '../../components/ConfirmDialog'
 import { EnvelopeIcon, PhoneIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline'
 
 export default function ClientsPage() {
   const { user } = useAuth()
+  const confirm = useConfirm()
   const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
   const [search, setSearch] = useState('')
@@ -97,7 +99,7 @@ export default function ClientsPage() {
                 <div className="flex items-center gap-2 pt-3 border-t border-line">
                   <Link to={`/clients/${c.id}`} className="flex-1 text-center py-1.5 rounded-lg text-xs font-medium bg-raised text-fg-soft hover:bg-overlay transition-colors">Ver</Link>
                   {canWrite && <button onClick={() => openEdit(c)} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-brand-subtle text-brand hover:opacity-80 transition-opacity">Editar</button>}
-                  {canDelete && <button onClick={() => { if (confirm('¿Eliminar cliente?')) del.mutate(c.id) }} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-danger-subtle text-danger hover:opacity-80 transition-opacity">Eliminar</button>}
+                  {canDelete && <button onClick={async () => { if (await confirm('¿Eliminar cliente?')) del.mutate(c.id) }} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-danger-subtle text-danger hover:opacity-80 transition-opacity">Eliminar</button>}
                 </div>
               </div>
             ))}
@@ -129,7 +131,7 @@ export default function ClientsPage() {
                       <td className="px-4 py-3 text-right space-x-2">
                         <Link to={`/clients/${c.id}`} className="text-fg-muted hover:underline text-xs">Ver</Link>
                         {canWrite && <button onClick={() => openEdit(c)} className="text-brand hover:underline text-xs">Editar</button>}
-                        {canDelete && <button onClick={() => { if (confirm('¿Eliminar cliente?')) del.mutate(c.id) }} className="text-danger hover:underline text-xs">Eliminar</button>}
+                        {canDelete && <button onClick={async () => { if (await confirm('¿Eliminar cliente?')) del.mutate(c.id) }} className="text-danger hover:underline text-xs">Eliminar</button>}
                       </td>
                     </tr>
                   ))}

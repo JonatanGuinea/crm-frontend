@@ -7,6 +7,7 @@ import QuoteModal from './QuoteModal'
 import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
+import { useConfirm } from '../../components/ConfirmDialog'
 import { ChevronDownIcon, UserIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline'
 
 const STATUS_LABELS = {
@@ -101,6 +102,7 @@ function StatusDropdown({ quote, onUpdate }) {
 export default function QuotesPage() {
   const { user } = useAuth()
   const toast = useToast()
+  const confirm = useConfirm()
   const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
   const [statusFilter, setStatusFilter] = useState('')
@@ -215,10 +217,10 @@ export default function QuotesPage() {
                   </button>
                   {canWrite && !q._count?.invoices && <button onClick={() => openEdit(q.id)} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-brand-subtle text-brand hover:opacity-80 transition-opacity">Editar</button>}
                   {canWrite && q.status === 'approved' && !q._count?.invoices && (
-                    <button onClick={() => { if (confirm('¿Generar factura?')) toInvoice.mutate(q.id) }} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-info-subtle text-info hover:opacity-80 transition-opacity">Facturar</button>
+                    <button onClick={async () => { if (await confirm('¿Generar factura?', { confirmLabel: 'Facturar', danger: false })) toInvoice.mutate(q.id) }} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-info-subtle text-info hover:opacity-80 transition-opacity">Facturar</button>
                   )}
                   {canWrite && q.status === 'draft' && (
-                    <button onClick={() => { if (confirm('¿Eliminar?')) del.mutate(q.id) }} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-danger-subtle text-danger hover:opacity-80 transition-opacity">Eliminar</button>
+                    <button onClick={async () => { if (await confirm('¿Eliminar?')) del.mutate(q.id) }} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-danger-subtle text-danger hover:opacity-80 transition-opacity">Eliminar</button>
                   )}
                 </div>
               </div>
@@ -268,11 +270,11 @@ export default function QuotesPage() {
                         </button>
                         {canWrite && !q._count?.invoices && <button onClick={() => openEdit(q.id)} className="text-brand hover:underline text-xs">Editar</button>}
                         {canWrite && q.status === 'approved' && !q._count?.invoices && (
-                          <button onClick={() => { if (confirm('¿Generar factura desde este presupuesto?')) toInvoice.mutate(q.id) }}
+                          <button onClick={async () => { if (await confirm('¿Generar factura desde este presupuesto?', { confirmLabel: 'Facturar', danger: false })) toInvoice.mutate(q.id) }}
                             className="text-info hover:underline text-xs">Facturar</button>
                         )}
                         {canWrite && q.status === 'draft' && (
-                          <button onClick={() => { if (confirm('¿Eliminar?')) del.mutate(q.id) }} className="text-danger hover:underline text-xs">Eliminar</button>
+                          <button onClick={async () => { if (await confirm('¿Eliminar?')) del.mutate(q.id) }} className="text-danger hover:underline text-xs">Eliminar</button>
                         )}
                       </td>
                     </tr>

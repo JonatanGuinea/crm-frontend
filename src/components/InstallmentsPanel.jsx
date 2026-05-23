@@ -3,12 +3,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { CheckCircleIcon, ClockIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { getInstallments, createInstallments, payInstallment, deleteInstallments } from '../api/installments'
 import DatePicker from './DatePicker'
+import { useConfirm } from './ConfirmDialog'
 
 const fmt = (n) => Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const fmtDate = (d) => new Date(d).toLocaleDateString('es-AR')
 
 export default function InstallmentsPanel({ entityType, entityId, entityStatus, canWrite, currency }) {
   const qc = useQueryClient()
+  const confirm = useConfirm()
   const queryKey = ['installments', entityType, entityId]
   const entityParam = entityType === 'invoice' ? { invoiceId: entityId } : { quoteId: entityId }
 
@@ -79,7 +81,7 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
           <div className="flex items-center gap-2">
             {totalInstallments > 0 && (
               <button
-                onClick={() => { if (confirm('¿Eliminar el plan de cuotas?')) deleteMut.mutate() }}
+                onClick={async () => { if (await confirm('¿Eliminar el plan de cuotas?')) deleteMut.mutate() }}
                 disabled={deleteMut.isPending}
                 className="p-1.5 rounded-md text-fg-muted hover:text-danger hover:bg-danger-subtle transition-colors"
                 title="Eliminar plan"

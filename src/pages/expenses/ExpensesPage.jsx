@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../context/AuthContext'
+import { useConfirm } from '../../components/ConfirmDialog'
 import { getExpenses, getCategories, createExpense, updateExpense, deleteExpense } from '../../api/expenses'
 import ExpenseModal from './ExpenseModal'
 import Pagination from '../../components/Pagination'
@@ -11,6 +12,7 @@ const fmtDate = (d) => new Date(d).toLocaleDateString('es-AR')
 
 export default function ExpensesPage() {
   const { user } = useAuth()
+  const confirm = useConfirm()
   const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
 
@@ -101,7 +103,7 @@ export default function ExpensesPage() {
                       Editar
                     </button>
                     <button
-                      onClick={() => { if (confirm('¿Eliminar este egreso?')) deleteMut.mutate(exp.id) }}
+                      onClick={async () => { if (await confirm('¿Eliminar este egreso?')) deleteMut.mutate(exp.id) }}
                       className="flex-1 py-1.5 text-xs rounded-md bg-danger-subtle text-danger text-center"
                     >
                       Eliminar
@@ -146,7 +148,7 @@ export default function ExpensesPage() {
                             Editar
                           </button>
                           <button
-                            onClick={() => { if (confirm('¿Eliminar este egreso?')) deleteMut.mutate(exp.id) }}
+                            onClick={async () => { if (await confirm('¿Eliminar este egreso?')) deleteMut.mutate(exp.id) }}
                             className="px-2.5 py-1 text-xs rounded-md bg-danger-subtle text-danger"
                           >
                             Eliminar

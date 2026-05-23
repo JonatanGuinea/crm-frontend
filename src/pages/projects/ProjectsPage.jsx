@@ -7,6 +7,7 @@ import ProjectModal from './ProjectModal'
 import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
+import { useConfirm } from '../../components/ConfirmDialog'
 import { ChevronDownIcon, UserIcon, CalendarDaysIcon, BanknotesIcon } from '@heroicons/react/24/outline'
 
 const STATUS_LABELS = {
@@ -101,6 +102,7 @@ function StatusDropdown({ project, onUpdate }) {
 export default function ProjectsPage() {
   const { user } = useAuth()
   const toast = useToast()
+  const confirm = useConfirm()
   const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
   const [statusFilter, setStatusFilter] = useState('')
@@ -189,7 +191,7 @@ export default function ProjectsPage() {
                 <div className="flex items-center gap-2 pt-3 border-t border-line">
                   <Link to={`/projects/${p.id}`} className="flex-1 text-center py-1.5 rounded-lg text-xs font-medium bg-raised text-fg-soft hover:bg-overlay transition-colors">Ver</Link>
                   {canWrite && <button onClick={() => { setEditing(p); setModalOpen(true) }} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-brand-subtle text-brand hover:opacity-80 transition-opacity">Editar</button>}
-                  {canWrite && <button onClick={() => { if (confirm('¿Eliminar proyecto?')) del.mutate(p.id) }} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-danger-subtle text-danger hover:opacity-80 transition-opacity">Eliminar</button>}
+                  {canWrite && <button onClick={async () => { if (await confirm('¿Eliminar proyecto?')) del.mutate(p.id) }} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-danger-subtle text-danger hover:opacity-80 transition-opacity">Eliminar</button>}
                 </div>
               </div>
             ))}
@@ -228,7 +230,7 @@ export default function ProjectsPage() {
                       <td className="px-4 py-3 text-right space-x-2">
                         <Link to={`/projects/${p.id}`} className="text-fg-muted hover:underline text-xs">Ver</Link>
                         {canWrite && <button onClick={() => { setEditing(p); setModalOpen(true) }} className="text-brand hover:underline text-xs">Editar</button>}
-                        {canWrite && <button onClick={() => { if (confirm('¿Eliminar proyecto?')) del.mutate(p.id) }} className="text-danger hover:underline text-xs">Eliminar</button>}
+                        {canWrite && <button onClick={async () => { if (await confirm('¿Eliminar proyecto?')) del.mutate(p.id) }} className="text-danger hover:underline text-xs">Eliminar</button>}
                       </td>
                     </tr>
                   ))}

@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../context/AuthContext'
+import { useConfirm } from '../../components/ConfirmDialog'
 import { getMembers, inviteMember, updateMemberRole, removeMember } from '../../api/members'
 import { CheckIcon, ClipboardIcon } from '@heroicons/react/24/outline'
 
@@ -17,6 +18,7 @@ const STATUS_COLORS = {
 
 export default function MembersPage() {
   const { user } = useAuth()
+  const confirm = useConfirm()
   const orgId = user?.org
   const myRole = user?.role
   const qc = useQueryClient()
@@ -169,7 +171,7 @@ export default function MembersPage() {
                 </div>
                 {canManage && m.role !== 'owner' && m.userId !== user?.uid && (
                   <button
-                    onClick={() => { if (confirm(`¿Remover a ${m.name}?`)) remove.mutate(m.userId) }}
+                    onClick={async () => { if (await confirm(`¿Remover a ${m.name}?`, { confirmLabel: 'Remover' })) remove.mutate(m.userId) }}
                     className="px-2.5 py-1 rounded-md text-xs bg-danger-subtle text-danger shrink-0"
                   >
                     Remover
@@ -228,7 +230,7 @@ export default function MembersPage() {
                         <td className="px-4 py-3 text-right">
                           {m.role !== 'owner' && m.userId !== user?.uid && (
                             <button
-                              onClick={() => { if (confirm(`¿Remover a ${m.name}?`)) remove.mutate(m.userId) }}
+                              onClick={async () => { if (await confirm(`¿Remover a ${m.name}?`, { confirmLabel: 'Remover' })) remove.mutate(m.userId) }}
                               className="text-danger hover:underline text-xs"
                             >
                               Remover
