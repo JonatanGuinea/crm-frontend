@@ -88,6 +88,16 @@ export default function QuoteDetailPage() {
         </div>
         <div className="flex gap-2 flex-wrap justify-end">
           <button
+            onClick={() => {
+              const url = `${window.location.origin}/p/presupuesto/${id}`
+              navigator.clipboard.writeText(url)
+              toast('Enlace copiado al portapapeles', 'success')
+            }}
+            className="px-4 py-2 border border-line-soft rounded-md text-sm font-medium text-fg-soft hover:bg-raised transition-colors"
+          >
+            Compartir
+          </button>
+          <button
             onClick={handleDownloadPdf}
             disabled={downloading}
             className="px-4 py-2 border border-line-soft rounded-md text-sm font-medium text-fg-soft hover:bg-raised disabled:opacity-50 transition-colors"

@@ -27,6 +27,7 @@ import ProfilePage from './pages/profile/ProfilePage'
 import QuoteDetailPage from './pages/quotes/QuoteDetailPage'
 import InvoiceDetailPage from './pages/invoices/InvoiceDetailPage'
 import ExpensesPage from './pages/expenses/ExpensesPage'
+import QuotePublicPage from './pages/public/QuotePublicPage'
 
 const qc = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } }
@@ -89,6 +90,7 @@ export default function App() {
               <Route path="/profile" element={<ProfilePage />} />
             </Route>
 
+            <Route path="/p/presupuesto/:id" element={<QuotePublicPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
