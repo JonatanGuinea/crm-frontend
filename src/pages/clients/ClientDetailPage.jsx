@@ -112,6 +112,8 @@ export default function ClientDetailPage() {
                 { label: 'Email', value: client.email },
                 { label: 'Teléfono', value: client.phone },
                 { label: 'Empresa', value: client.company },
+                { label: 'CUIL / CUIT', value: client.cuit },
+                { label: 'Dirección', value: client.address },
               ].map(({ label, value }) => value && (
                 <div key={label}>
                   <dt className="text-xs text-fg-muted uppercase mb-0.5">{label}</dt>

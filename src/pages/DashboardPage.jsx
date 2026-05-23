@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { getProjectsDashboard } from '../api/projects'
@@ -24,9 +25,12 @@ import {
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
-function fmt(n) {
+const CURRENCY_SYMBOL = { USD: 'US$', ARS: '$' }
+
+function fmt(n, currency) {
   if (n == null) return '-'
-  return '$' + Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const symbol = currency ? (CURRENCY_SYMBOL[currency] ?? currency + ' ') : '$'
+  return symbol + Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 function greeting(name) {
@@ -76,7 +80,7 @@ function KpiCard({ icon: Icon, iconBg, iconColor, label, value, sub }) {
   )
 }
 
-function IncomePanel({ invoices }) {
+function IncomePanel({ invoices, currency }) {
   const paid        = Number(invoices?.summary?.paid               ?? 0)
   const sent        = Number(invoices?.summary?.sent               ?? 0)
   const overdue     = Number(invoices?.summary?.overdue            ?? 0)
@@ -101,19 +105,19 @@ function IncomePanel({ invoices }) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
         <div className="min-w-0">
           <p className="text-xs text-fg-muted mb-1">Cobrado</p>
-          <p className="text-sm md:text-xl font-bold text-brand truncate">{fmt(paid)}</p>
+          <p className="text-sm md:text-xl font-bold text-brand truncate">{fmt(paid, currency)}</p>
         </div>
         <div className="min-w-0">
           <p className="text-xs text-fg-muted mb-1">Enviadas</p>
-          <p className="text-sm md:text-xl font-bold text-info truncate">{fmt(sent)}</p>
+          <p className="text-sm md:text-xl font-bold text-info truncate">{fmt(sent, currency)}</p>
         </div>
         <div className="min-w-0">
           <p className="text-xs text-fg-muted mb-1">Vencido</p>
-          <p className="text-sm md:text-xl font-bold text-danger truncate">{fmt(overdue)}</p>
+          <p className="text-sm md:text-xl font-bold text-danger truncate">{fmt(overdue, currency)}</p>
         </div>
         <div className="min-w-0">
           <p className="text-xs text-fg-muted mb-1">En cuotas</p>
-          <p className="text-sm md:text-xl font-bold text-warning truncate">{fmt(installments)}</p>
+          <p className="text-sm md:text-xl font-bold text-warning truncate">{fmt(installments, currency)}</p>
         </div>
       </div>
 
@@ -155,7 +159,7 @@ function IncomePanel({ invoices }) {
       {/* Total */}
       <div className="pt-4 border-t border-line flex items-center justify-between">
         <p className="text-xs text-fg-muted">Total facturado</p>
-        <p className="text-sm font-semibold text-fg">{fmt(total)}</p>
+        <p className="text-sm font-semibold text-fg">{fmt(total, currency)}</p>
       </div>
     </div>
   )
@@ -420,16 +424,16 @@ function ChartBars({ months }) {
   )
 }
 
-function ChartTotals({ months }) {
+function ChartTotals({ months, currency }) {
   return (
     <div className="pt-4 border-t border-line grid grid-cols-3 gap-4">
       <div>
         <p className="text-xs text-fg-muted mb-0.5">Total emitido</p>
-        <p className="text-sm font-semibold text-fg">{fmt(months.reduce((a, m) => a + m.issued, 0))}</p>
+        <p className="text-sm font-semibold text-fg">{fmt(months.reduce((a, m) => a + m.issued, 0), currency)}</p>
       </div>
       <div>
         <p className="text-xs text-fg-muted mb-0.5">Total cobrado</p>
-        <p className="text-sm font-semibold text-brand">{fmt(months.reduce((a, m) => a + m.paid, 0))}</p>
+        <p className="text-sm font-semibold text-brand">{fmt(months.reduce((a, m) => a + m.paid, 0), currency)}</p>
       </div>
       <div>
         <p className="text-xs text-fg-muted mb-0.5">Total egresos</p>
@@ -439,7 +443,7 @@ function ChartTotals({ months }) {
   )
 }
 
-function MonthlyChart({ data }) {
+function MonthlyChart({ data, currency }) {
   const allMonths = data ?? []
   const lastSix   = allMonths.slice(-6)
 
@@ -460,7 +464,7 @@ function MonthlyChart({ data }) {
           {legend}
         </div>
         <ChartBars months={lastSix} />
-        <ChartTotals months={lastSix} />
+        <ChartTotals months={lastSix} currency={currency} />
       </div>
 
       {/* Desktop: 12 meses */}
@@ -470,7 +474,7 @@ function MonthlyChart({ data }) {
           {legend}
         </div>
         <ChartBars months={allMonths} />
-        <ChartTotals months={allMonths} />
+        <ChartTotals months={allMonths} currency={currency} />
       </div>
     </div>
   )
@@ -609,8 +613,11 @@ function ActivityFeed({ activity }) {
 
 // ── main ──────────────────────────────────────────────────────────────────────
 
+const CURRENCIES = ['USD', 'ARS']
+
 export default function DashboardPage() {
   const { user } = useAuth()
+  const [currency, setCurrency] = useState('USD')
 
   const { data: profile } = useQuery({
     queryKey: ['profile'],
@@ -623,13 +630,13 @@ export default function DashboardPage() {
   })
 
   const { data: invoices } = useQuery({
-    queryKey: ['invoices-dashboard'],
-    queryFn: () => getInvoicesDashboard().then(r => r.data.data),
+    queryKey: ['invoices-dashboard', currency],
+    queryFn: () => getInvoicesDashboard(currency).then(r => r.data.data),
   })
 
   const { data: quotes } = useQuery({
-    queryKey: ['quotes-dashboard'],
-    queryFn: () => getQuotesDashboard().then(r => r.data.data),
+    queryKey: ['quotes-dashboard', currency],
+    queryFn: () => getQuotesDashboard(currency).then(r => r.data.data),
   })
 
   const { data: topClients } = useQuery({
@@ -638,8 +645,8 @@ export default function DashboardPage() {
   })
 
   const { data: monthlyData } = useQuery({
-    queryKey: ['invoices-monthly'],
-    queryFn: () => getInvoicesMonthly().then(r => r.data.data),
+    queryKey: ['invoices-monthly', currency],
+    queryFn: () => getInvoicesMonthly(currency).then(r => r.data.data),
   })
 
   const { data: recentActivity } = useQuery({
@@ -664,9 +671,27 @@ export default function DashboardPage() {
     <div className="p-4 md:p-8 max-w-5xl">
 
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-fg">{greeting(profile?.name ?? user?.name)}</h1>
-        <p className="text-sm text-fg-muted mt-0.5 capitalize">{fmtDate()}</p>
+      <div className="flex items-start justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-fg">{greeting(profile?.name ?? user?.name)}</h1>
+          <p className="text-sm text-fg-muted mt-0.5 capitalize">{fmtDate()}</p>
+        </div>
+        {/* Selector de moneda */}
+        <div className="flex items-center gap-1 bg-raised rounded-lg p-1 shrink-0">
+          {CURRENCIES.map(c => (
+            <button
+              key={c}
+              onClick={() => setCurrency(c)}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+                currency === c
+                  ? 'bg-brand text-white shadow-sm'
+                  : 'text-fg-muted hover:text-fg'
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* KPIs */}
@@ -676,7 +701,7 @@ export default function DashboardPage() {
           iconBg="bg-brand-subtle"
           iconColor="text-brand"
           label="Cobrado"
-          value={fmt(invoices?.summary?.paid)}
+          value={fmt(invoices?.summary?.paid, currency)}
           sub={collectionRate != null ? `Tasa de cobro: ${collectionRate}%` : `de ${invoices?.summary?.totalInvoices ?? 0} facturas`}
         />
         <KpiCard
@@ -684,14 +709,14 @@ export default function DashboardPage() {
           iconBg="bg-info-subtle"
           iconColor="text-info"
           label="Enviadas"
-          value={fmt(invoices?.summary?.sent)}
+          value={fmt(invoices?.summary?.sent, currency)}
         />
         <KpiCard
           icon={ExclamationTriangleIcon}
           iconBg="bg-danger-subtle"
           iconColor="text-danger"
           label="Vencido"
-          value={fmt(invoices?.summary?.overdue)}
+          value={fmt(invoices?.summary?.overdue, currency)}
         />
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
@@ -701,14 +726,15 @@ export default function DashboardPage() {
           iconColor="text-danger"
           label="Egresos del mes"
           value={fmt(expensesMonth)}
+          sub="Sin filtro de moneda"
         />
         <KpiCard
           icon={ScaleIcon}
           iconBg={balance >= 0 ? 'bg-brand-subtle' : 'bg-danger-subtle'}
           iconColor={balance >= 0 ? 'text-brand' : 'text-danger'}
           label="Balance mensual"
-          value={`${balance >= 0 ? '' : '-'}${fmt(Math.abs(balance))}`}
-          sub="Cobrado − Egresos del mes"
+          value={`${balance >= 0 ? '' : '-'}${fmt(Math.abs(balance), currency)}`}
+          sub={`${currency} cobrado − egresos`}
         />
         <KpiCard
           icon={FolderOpenIcon}
@@ -723,7 +749,7 @@ export default function DashboardPage() {
       {/* Middle panels */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="md:col-span-2">
-          <IncomePanel invoices={invoices} />
+          <IncomePanel invoices={invoices} currency={currency} />
         </div>
         <div className="md:col-span-1">
           <ProjectsPanel projects={projects} />
@@ -748,7 +774,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Monthly chart */}
-      <MonthlyChart data={monthlyData} />
+<MonthlyChart data={monthlyData} currency={currency} />
 
     </div>
   )

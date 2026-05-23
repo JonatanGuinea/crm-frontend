@@ -10,6 +10,8 @@ export default function ClientModal({ client, onClose, onSaved }) {
     email: client?.email || '',
     phone: client?.phone || '',
     company: client?.company || '',
+    address: client?.address || '',
+    cuit: client?.cuit || '',
     notes: client?.notes || ''
   })
   const [error, setError] = useState('')
@@ -58,6 +60,28 @@ export default function ClientModal({ client, onClose, onSaved }) {
               />
             </div>
           ))}
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>CUIL / CUIT</label>
+              <input
+                type="text"
+                value={form.cuit}
+                onChange={e => setForm(f => ({ ...f, cuit: e.target.value }))}
+                placeholder="20-12345678-9"
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className={labelCls}>Dirección</label>
+              <input
+                type="text"
+                value={form.address}
+                onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
+                className={inputCls}
+              />
+            </div>
+          </div>
           <div>
             <label className={labelCls}>Notas</label>
             <textarea

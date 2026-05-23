@@ -162,7 +162,6 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
                 onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}
                 className={inputCls}>
                 <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
                 <option value="ARS">ARS</option>
               </select>
             </div>
