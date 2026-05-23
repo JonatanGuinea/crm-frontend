@@ -12,6 +12,7 @@ export default function ExpenseModal({ expense, onClose, onSaved }) {
   const [form, setForm] = useState({
     title: '',
     amount: '',
+    currency: 'USD',
     date: new Date().toISOString().slice(0, 10),
     categoryId: '',
     notes: ''
@@ -33,6 +34,7 @@ export default function ExpenseModal({ expense, onClose, onSaved }) {
       setForm({
         title: expense.title,
         amount: expense.amount,
+        currency: expense.currency ?? 'USD',
         date: expense.date?.slice(0, 10) ?? '',
         categoryId: expense.categoryId,
         notes: expense.notes ?? ''
@@ -99,7 +101,7 @@ export default function ExpenseModal({ expense, onClose, onSaved }) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div>
               <label className={labelCls}>Monto</label>
               <input
@@ -111,6 +113,17 @@ export default function ExpenseModal({ expense, onClose, onSaved }) {
                 className={inputCls}
                 placeholder="0"
               />
+            </div>
+            <div>
+              <label className={labelCls}>Moneda</label>
+              <select
+                value={form.currency}
+                onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}
+                className={inputCls}
+              >
+                <option value="USD">USD</option>
+                <option value="ARS">ARS</option>
+              </select>
             </div>
             <div>
               <label className={labelCls}>Fecha</label>

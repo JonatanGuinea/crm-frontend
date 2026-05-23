@@ -725,8 +725,7 @@ export default function DashboardPage() {
           iconBg="bg-danger-subtle"
           iconColor="text-danger"
           label="Egresos del mes"
-          value={fmt(expensesMonth)}
-          sub="Sin filtro de moneda"
+          value={fmt(expensesMonth, currency)}
         />
         <KpiCard
           icon={ScaleIcon}
