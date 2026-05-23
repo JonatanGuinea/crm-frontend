@@ -5,6 +5,7 @@ import { getProjects } from '../../api/projects'
 import { getQuoteById, createQuote, updateQuote } from '../../api/quotes'
 import DatePicker from '../../components/DatePicker'
 import LineItemsEditor from '../../components/LineItemsEditor'
+import { useToast } from '../../components/Toast'
 
 const EMPTY_ITEM = { description: '', quantity: 1, unitPrice: 0, amount: 0 }
 
@@ -28,6 +29,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
     title: '', clientId: initialClientId, projectId: initialProjectId,
     validUntil: '', taxRate: 0, currency: 'USD', notes: '', status: ''
   })
+  const toast = useToast()
   const [items, setItems] = useState([EMPTY_ITEM])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -97,8 +99,10 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
       }
       if (isEditing) {
         await updateQuote(quoteId, payload)
+        toast('Presupuesto actualizado', 'success')
       } else {
         await createQuote(payload)
+        toast('Presupuesto creado', 'success')
       }
       onSaved()
     } catch (err) {

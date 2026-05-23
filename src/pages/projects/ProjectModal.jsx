@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { createProject, updateProject } from '../../api/projects'
 import { getClients } from '../../api/clients'
 import DatePicker from '../../components/DatePicker'
+import { useToast } from '../../components/Toast'
 
 const ALLOWED_TRANSITIONS = {
   pending: ['approved', 'cancelled'],
@@ -21,6 +22,7 @@ const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm fo
 const labelCls = "block text-sm font-medium text-fg-soft mb-1"
 
 export default function ProjectModal({ project, onClose, onSaved }) {
+  const toast = useToast()
   const [form, setForm] = useState({
     title: project?.title || '',
     description: project?.description || '',
@@ -48,8 +50,10 @@ export default function ProjectModal({ project, onClose, onSaved }) {
       const payload = { ...form, budget: form.budget !== '' ? parseFloat(form.budget) : undefined }
       if (project) {
         await updateProject(project.id, payload)
+        toast('Proyecto actualizado', 'success')
       } else {
         await createProject(payload)
+        toast('Proyecto creado', 'success')
       }
       onSaved()
     } catch (err) {

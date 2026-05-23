@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../context/AuthContext'
+import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
 import { getExpenses, getCategories, createExpense, updateExpense, deleteExpense } from '../../api/expenses'
 import ExpenseModal from './ExpenseModal'
@@ -12,6 +13,7 @@ const fmtDate = (d) => new Date(d).toLocaleDateString('es-AR')
 
 export default function ExpensesPage() {
   const { user } = useAuth()
+  const toast = useToast()
   const confirm = useConfirm()
   const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
@@ -43,7 +45,7 @@ export default function ExpensesPage() {
 
   const deleteMut = useMutation({
     mutationFn: deleteExpense,
-    onSuccess: () => qc.invalidateQueries(['expenses'])
+    onSuccess: () => { qc.invalidateQueries(['expenses']); toast('Egreso eliminado', 'success') }
   })
 
   const expenses = data?.data ?? []
@@ -189,8 +191,10 @@ export default function ExpensesPage() {
           onSaved={async (data) => {
             if (editing) {
               await updateMut.mutateAsync({ id: editing.id, data })
+              toast('Egreso actualizado', 'success')
             } else {
               await createMut.mutateAsync(data)
+              toast('Egreso creado', 'success')
             }
           }}
         />

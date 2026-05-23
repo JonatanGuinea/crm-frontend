@@ -29,7 +29,7 @@ export default function ClientsPage() {
 
   const del = useMutation({
     mutationFn: deleteClient,
-    onSuccess: () => qc.invalidateQueries(['clients']),
+    onSuccess: () => { qc.invalidateQueries(['clients']); toast('Cliente eliminado', 'success') },
     onError: (err) => toast(err.response?.data?.error || 'Error al eliminar cliente')
   })
 

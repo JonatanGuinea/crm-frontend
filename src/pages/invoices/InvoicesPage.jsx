@@ -129,7 +129,7 @@ export default function InvoicesPage() {
 
   const del = useMutation({
     mutationFn: deleteInvoice,
-    onSuccess: () => qc.invalidateQueries(['invoices'])
+    onSuccess: () => { qc.invalidateQueries(['invoices']); toast('Factura eliminada', 'success') }
   })
 
   const changeStatus = useMutation({

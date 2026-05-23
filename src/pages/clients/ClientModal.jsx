@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { createClient, updateClient } from '../../api/clients'
+import { useToast } from '../../components/Toast'
 
 const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
 const labelCls = "block text-sm font-medium text-fg-soft mb-1"
 
 export default function ClientModal({ client, onClose, onSaved }) {
+  const toast = useToast()
   const [form, setForm] = useState({
     name: client?.name || '',
     email: client?.email || '',
@@ -24,8 +26,10 @@ export default function ClientModal({ client, onClose, onSaved }) {
     try {
       if (client) {
         await updateClient(client.id, form)
+        toast('Cliente actualizado', 'success')
       } else {
         await createClient(form)
+        toast('Cliente creado', 'success')
       }
       onSaved()
     } catch (err) {

@@ -118,7 +118,7 @@ export default function QuotesPage() {
 
   const del = useMutation({
     mutationFn: deleteQuote,
-    onSuccess: () => qc.invalidateQueries(['quotes'])
+    onSuccess: () => { qc.invalidateQueries(['quotes']); toast('Presupuesto eliminado', 'success') }
   })
 
   const changeStatus = useMutation({

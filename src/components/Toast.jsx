@@ -10,12 +10,14 @@ export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([])
 
   const dismiss = useCallback((id) => {
-    setToasts(t => t.filter(x => x.id !== id))
+    // marca como saliendo para disparar animación de salida
+    setToasts(t => t.map(x => x.id === id ? { ...x, exiting: true } : x))
+    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 250)
   }, [])
 
   const addToast = useCallback((message, type = 'error') => {
     const id = ++_id
-    setToasts(t => [...t, { id, message, type }])
+    setToasts(t => [...t, { id, message, type, exiting: false }])
     setTimeout(() => dismiss(id), 4000)
   }, [dismiss])
 
@@ -27,8 +29,8 @@ export function ToastProvider({ children }) {
           {toasts.map(toast => (
             <div
               key={toast.id}
+              style={{ animation: `${toast.exiting ? 'toast-out' : 'toast-in'} 0.25s cubic-bezier(0.4,0,0.2,1) forwards` }}
               className={`flex items-start gap-3 px-4 py-3 rounded-xl border shadow-lg backdrop-blur-xl pointer-events-auto
-                animate-in slide-in-from-top-2 fade-in duration-200
                 ${toast.type === 'success'
                   ? 'bg-surface/90 border-brand/30 text-fg'
                   : 'bg-surface/90 border-danger/30 text-fg'

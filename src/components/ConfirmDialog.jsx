@@ -5,17 +5,21 @@ import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 const ConfirmContext = createContext(null)
 
 export function ConfirmProvider({ children }) {
-  const [dialog, setDialog] = useState(null)
+  const [dialog, setDialog] = useState(null) // { message, confirmLabel, danger, resolve, exiting }
 
   const confirm = useCallback((message, { confirmLabel = 'Eliminar', danger = true } = {}) => {
     return new Promise(resolve => {
-      setDialog({ message, confirmLabel, danger, resolve })
+      setDialog({ message, confirmLabel, danger, resolve, exiting: false })
     })
   }, [])
 
   function handleResolve(value) {
-    dialog?.resolve(value)
-    setDialog(null)
+    // animar salida antes de cerrar
+    setDialog(d => d ? { ...d, exiting: true } : null)
+    setTimeout(() => {
+      dialog?.resolve(value)
+      setDialog(null)
+    }, 200)
   }
 
   return (
@@ -23,8 +27,17 @@ export function ConfirmProvider({ children }) {
       {children}
       {dialog && createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50" onClick={() => handleResolve(false)} />
-          <div className="relative bg-surface/90 backdrop-blur-xl border border-line rounded-2xl shadow-xl w-full max-w-sm p-6 flex flex-col gap-4">
+          {/* Backdrop */}
+          <div
+            style={{ animation: `${dialog.exiting ? 'backdrop-out' : 'backdrop-in'} 0.2s ease forwards` }}
+            className="absolute inset-0 bg-black/50"
+            onClick={() => handleResolve(false)}
+          />
+          {/* Panel */}
+          <div
+            style={{ animation: `${dialog.exiting ? 'dialog-out' : 'dialog-in'} 0.25s cubic-bezier(0.4,0,0.2,1) forwards` }}
+            className="relative bg-surface/90 backdrop-blur-xl border border-line rounded-2xl shadow-xl w-full max-w-sm p-6 flex flex-col gap-4"
+          >
             <div className="flex items-start gap-3">
               <div className="p-2 rounded-xl bg-danger-subtle shrink-0">
                 <ExclamationTriangleIcon className="w-5 h-5 text-danger" />
