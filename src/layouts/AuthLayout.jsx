@@ -33,11 +33,11 @@ const features = [
 
 export default function AuthLayout() {
   return (
-    <div className="dark min-h-screen flex overflow-hidden bg-slate-950 relative">
+    <div className="dark min-h-screen flex overflow-hidden bg-[#050a12] relative">
 
       {/* ── Fondo diagonal: cubre la sección derecha desde el viewport completo ── */}
       <div
-        className="hidden lg:block absolute inset-0 [clip-path:polygon(calc(53%+60vh)_0%,100%_0%,100%_100%,calc(53%-60vh)_100%)] pointer-events-none"
+        className="hidden lg:block absolute inset-0 [clip-path:polygon(calc(43%+60vh)_0%,100%_0%,100%_100%,calc(43%-60vh)_100%)] pointer-events-none"
         style={{
           backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 40 0 L 0 0 0 40' fill='none' stroke='rgba(20,184,166,0.4)' stroke-width='1'/%3E%3C/svg%3E\"), linear-gradient(135deg, #020617 0%, #020617 100%)",
         }}
@@ -46,15 +46,16 @@ export default function AuthLayout() {
       {/* Línea diagonal */}
       <div
         className="hidden lg:block absolute top-0 bottom-0 w-px bg-teal-500/40 pointer-events-none rotate-[50deg] scale-y-[4]"
-        style={{ left: '53%' }}
+        style={{ left: '43%' }}
       />
 
       {/* Glows globales */}
-      <div className="absolute top-[-80px] left-[-80px] w-[600px] h-[500px] bg-teal-400/20 rounded-full blur-[130px] pointer-events-none" />
-      <div className="absolute bottom-[-80px] right-[-80px] w-[400px] h-[400px] bg-teal-400/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-[-80px] left-[-80px] w-[600px] h-[500px] bg-cyan-500/15 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-[-80px] right-[-80px] w-[400px] h-[400px] bg-teal-400/8 rounded-full blur-[110px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/3 w-[300px] h-[300px] bg-cyan-600/5 rounded-full blur-[80px] pointer-events-none" />
 
       {/* ── Panel izquierdo ── */}
-      <div className="hidden lg:flex lg:w-[53%] relative flex-col pl-14 pr-6 py-12 overflow-hidden">
+      <div className="hidden lg:flex lg:w-[43%] relative flex-col pl-14 pr-6 py-12 overflow-hidden">
 
         {/* Logo */}
         <div className="relative">
@@ -90,9 +91,9 @@ export default function AuthLayout() {
       </div>
 
       {/* ── Panel derecho ── */}
-      <div className="w-full lg:w-[47%] flex items-start justify-start pl-8 pr-12 py-12 relative overflow-y-auto">
+      <div className="w-full lg:w-[57%] flex items-start justify-start pl-8 pr-12 py-12 relative overflow-y-auto">
 
-        <div className="w-full max-w-2xl relative my-auto">
+        <div className="w-full max-w-4xl relative my-auto">
           {/* Logo móvil */}
           <div className="flex justify-center mb-8 lg:hidden">
             <img src={logo} alt="Sofiapp" className="h-12 w-auto" />

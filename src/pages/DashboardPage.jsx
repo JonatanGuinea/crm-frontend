@@ -62,6 +62,14 @@ const INV_STATUS = {
   cancelled: { label: 'Cancelada',cls: 'bg-raised text-fg-muted' },
 }
 
+const QUOTE_STATUS = {
+  draft:    { label: 'Borrador',  cls: 'bg-raised text-fg-soft' },
+  sent:     { label: 'Enviado',   cls: 'bg-info-subtle text-info' },
+  approved: { label: 'Aprobado', cls: 'bg-brand-subtle text-brand' },
+  rejected: { label: 'Rechazado',cls: 'bg-danger-subtle text-danger' },
+  expired:  { label: 'Vencido',  cls: 'bg-raised text-fg-muted' },
+}
+
 // ── sub-components ────────────────────────────────────────────────────────────
 
 function KpiCard({ icon: Icon, iconBg, iconColor, label, value, sub }) {
@@ -610,6 +618,244 @@ function ActivityFeed({ activity }) {
   )
 }
 
+function QuotesSummaryPanel({ quotes, currency }) {
+  const draft      = Number(quotes?.summary?.draft      ?? 0)
+  const sent       = Number(quotes?.summary?.sent       ?? 0)
+  const approved   = Number(quotes?.summary?.approved   ?? 0)
+  const rejected   = Number(quotes?.summary?.rejected   ?? 0)
+  const barTotal   = draft + sent + approved + rejected
+  const totalValue = Number(quotes?.summary?.totalValue ?? 0)
+
+  const pct = (v) => barTotal ? (v / barTotal) * 100 : 0
+
+  return (
+    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-5">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-fg">Resumen de presupuestos</h3>
+        <Link to="/quotes" className="flex items-center gap-1 text-xs text-brand hover:underline">
+          Ver presupuestos <ArrowRightIcon className="w-3 h-3" />
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+        <div className="min-w-0">
+          <p className="text-xs text-fg-muted mb-1">Aprobados</p>
+          <p className="text-sm md:text-xl font-bold text-brand truncate">{fmt(approved, currency)}</p>
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs text-fg-muted mb-1">Enviados</p>
+          <p className="text-sm md:text-xl font-bold text-info truncate">{fmt(sent, currency)}</p>
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs text-fg-muted mb-1">Borradores</p>
+          <p className="text-sm md:text-xl font-bold text-fg-soft truncate">{fmt(draft, currency)}</p>
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs text-fg-muted mb-1">Rechazados</p>
+          <p className="text-sm md:text-xl font-bold text-danger truncate">{fmt(rejected, currency)}</p>
+        </div>
+      </div>
+
+      <div>
+        {barTotal > 0 ? (
+          <div className="flex h-2.5 rounded-full overflow-hidden gap-px bg-raised">
+            {pct(approved) > 0 && <div style={{ width: `${pct(approved)}%` }} className="bg-brand transition-all duration-700" />}
+            {pct(sent) > 0     && <div style={{ width: `${pct(sent)}%` }}     className="bg-info transition-all duration-700" />}
+            {pct(draft) > 0    && <div style={{ width: `${pct(draft)}%` }}    className="bg-fg-muted/40 transition-all duration-700" />}
+            {pct(rejected) > 0 && <div style={{ width: `${pct(rejected)}%` }} className="bg-danger transition-all duration-700" />}
+          </div>
+        ) : (
+          <div className="h-2.5 rounded-full bg-raised" />
+        )}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2.5">
+          {[
+            { label: 'Aprobados',  color: 'bg-brand',        val: pct(approved) },
+            { label: 'Enviados',   color: 'bg-info',         val: pct(sent) },
+            { label: 'Borradores', color: 'bg-fg-muted/40',  val: pct(draft) },
+            { label: 'Rechazados', color: 'bg-danger',       val: pct(rejected) },
+          ].map(({ label, color, val }) => (
+            <div key={label} className="flex items-center gap-1.5 text-xs text-fg-muted">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${color}`} />
+              {label} <span className="text-fg-soft font-medium">{val.toFixed(0)}%</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="pt-4 border-t border-line flex items-center justify-between">
+        <p className="text-xs text-fg-muted">Total presupuestado</p>
+        <p className="text-sm font-semibold text-fg">{fmt(totalValue, currency)}</p>
+      </div>
+    </div>
+  )
+}
+
+function RecentQuotes({ quotes }) {
+  const list = quotes?.recent ?? []
+  if (!list.length) {
+    return <p className="text-sm text-fg-muted text-center py-6">Sin presupuestos recientes</p>
+  }
+  return (
+    <ul className="divide-y divide-line">
+      {list.map(q => {
+        const st = QUOTE_STATUS[q.status] ?? { label: q.status, cls: 'bg-raised text-fg-muted' }
+        return (
+          <li key={q.id}>
+            <Link
+              to="/quotes"
+              className="flex items-center gap-3 px-1 py-3 hover:bg-raised rounded-lg transition-colors"
+            >
+              <div className="w-8 h-8 rounded-lg bg-raised flex items-center justify-center shrink-0">
+                <DocumentTextIcon className="w-4 h-4 text-fg-muted" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-fg truncate">
+                  #{q.number}{q.title ? ` · ${q.title}` : ''}
+                </p>
+                <p className="text-xs text-fg-muted truncate">{q.client?.name}</p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <p className="text-sm font-semibold text-fg">{fmt(q.total, q.currency)}</p>
+                <span className={`hidden sm:inline text-xs px-2 py-0.5 rounded-full font-medium ${st.cls}`}>
+                  {st.label}
+                </span>
+              </div>
+            </Link>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
+function QuoteInstallmentsPanel({ quotes }) {
+  const installments = quotes?.upcomingInstallments ?? []
+  const fmt2 = (n) => Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+  return (
+    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-fg">Cuotas de presupuestos</h3>
+        <Link to="/quotes" className="flex items-center gap-1 text-xs text-brand hover:underline">
+          Ver presupuestos <ArrowRightIcon className="w-3 h-3" />
+        </Link>
+      </div>
+
+      {installments.length === 0 ? (
+        <p className="text-sm text-fg-muted text-center py-4">Sin cuotas pendientes</p>
+      ) : (
+        <ul className="divide-y divide-line">
+          {installments.map(inst => {
+            const daysLeft = Math.ceil((new Date(inst.dueDate) - new Date()) / (1000 * 60 * 60 * 24))
+            const overdue = daysLeft < 0
+            const urgent = !overdue && daysLeft <= 3
+            return (
+              <li key={inst.id} className="flex items-center gap-3 py-3">
+                <div className={`p-1.5 rounded-lg shrink-0 ${overdue ? 'bg-danger-subtle' : urgent ? 'bg-warning-subtle' : 'bg-raised'}`}>
+                  <BanknotesIcon className={`w-4 h-4 ${overdue ? 'text-danger' : urgent ? 'text-warning' : 'text-fg-muted'}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-fg truncate">
+                    {inst.quote?.client?.name}
+                  </p>
+                  <p className="text-xs text-fg-muted truncate">
+                    Cuota {inst.number} · Pres. #{inst.quote?.number}
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className={`text-sm font-semibold ${overdue ? 'text-danger' : 'text-fg'}`}>
+                    {inst.quote?.currency} ${fmt2(inst.amount)}
+                  </p>
+                  <p className={`text-xs ${overdue ? 'text-danger' : urgent ? 'text-warning' : 'text-fg-muted'}`}>
+                    {overdue
+                      ? `Vencida hace ${Math.abs(daysLeft)}d`
+                      : daysLeft === 0 ? 'Vence hoy'
+                      : `En ${daysLeft}d`}
+                  </p>
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+function QuotesChartBars({ months }) {
+  const max = Math.max(...months.map(m => Math.max(m.issued ?? 0, m.approved ?? 0, m.expenses ?? 0)), 1)
+  return (
+    <div className="flex items-end gap-1 h-36">
+      {months.map(m => {
+        const issuedPct   = max ? ((m.issued ?? 0)   / max) * 100 : 0
+        const approvedPct = max ? ((m.approved ?? 0) / max) * 100 : 0
+        const expensesPct = max ? ((m.expenses ?? 0) / max) * 100 : 0
+        return (
+          <div key={m.key} className="flex-1 flex flex-col items-center gap-1">
+            <div className="w-full flex items-end gap-px h-28">
+              <div className="flex-1 rounded-t-md bg-info/25 transition-all duration-700" style={{ height: `${issuedPct}%` }} />
+              <div className="flex-1 rounded-t-md bg-brand transition-all duration-700" style={{ height: `${approvedPct}%` }} />
+              <div className="flex-1 rounded-t-md bg-danger transition-all duration-700" style={{ height: `${expensesPct}%` }} />
+            </div>
+            <p className="text-xs text-fg-muted capitalize">{m.label}</p>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function QuotesMonthlyChart({ data, currency }) {
+  const allMonths = data ?? []
+  const lastSix   = allMonths.slice(-6)
+
+  const legend = (
+    <div className="flex items-center gap-3 text-xs text-fg-muted">
+      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand inline-block" />Aprobados</span>
+      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-info/40 inline-block" />Emitidos</span>
+      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-danger inline-block" />Egresos</span>
+    </div>
+  )
+
+  const totals = (months) => (
+    <div className="pt-4 border-t border-line grid grid-cols-3 gap-4">
+      <div>
+        <p className="text-xs text-fg-muted mb-0.5">Total emitido</p>
+        <p className="text-sm font-semibold text-fg">{fmt(months.reduce((a, m) => a + (m.issued ?? 0), 0), currency)}</p>
+      </div>
+      <div>
+        <p className="text-xs text-fg-muted mb-0.5">Total aprobado</p>
+        <p className="text-sm font-semibold text-brand">{fmt(months.reduce((a, m) => a + (m.approved ?? 0), 0), currency)}</p>
+      </div>
+      <div>
+        <p className="text-xs text-fg-muted mb-0.5">Total egresos</p>
+        <p className="text-sm font-semibold text-danger">{fmt(months.reduce((a, m) => a + (m.expenses ?? 0), 0))}</p>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-4">
+      <div className="md:hidden flex flex-col gap-4">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <h3 className="text-sm font-semibold text-fg">Presupuestos últimos 6 meses</h3>
+          {legend}
+        </div>
+        <QuotesChartBars months={lastSix} />
+        {totals(lastSix)}
+      </div>
+      <div className="hidden md:flex flex-col gap-4">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <h3 className="text-sm font-semibold text-fg">Presupuestos últimos 12 meses</h3>
+          {legend}
+        </div>
+        <QuotesChartBars months={allMonths} />
+        {totals(allMonths)}
+      </div>
+    </div>
+  )
+}
+
 // ── main ──────────────────────────────────────────────────────────────────────
 
 const CURRENCIES = ['USD', 'ARS']
@@ -644,7 +890,8 @@ export default function DashboardPage() {
   })
 
   const activeProjects = projects?.byStatus?.find(s => s._id === 'in_progress')?.totalProjects ?? 0
-
+  const approvedQuotesTotal = Number(quotes?.summary?.approved ?? 0)
+  const totalQuotesValue    = Number(quotes?.summary?.totalValue ?? 0)
   const openQuotes = quotes?.byStatus
     ?.filter(s => ['draft', 'sent'].includes(s.status))
     ?.reduce((acc, s) => acc + s.count, 0) ?? 0
@@ -682,31 +929,68 @@ export default function DashboardPage() {
           icon={FolderOpenIcon}
           iconBg="bg-info-subtle"
           iconColor="text-info"
-          label="En curso"
+          label="Proyectos en curso"
           value={activeProjects}
           sub={`${openQuotes} presupuestos abiertos`}
         />
+        <KpiCard
+          icon={DocumentTextIcon}
+          iconBg="bg-brand-subtle"
+          iconColor="text-brand"
+          label="Presupuestos aprobados"
+          value={fmt(approvedQuotesTotal, currency)}
+          sub={`${quotes?.summary?.totalQuotes ?? 0} en total`}
+        />
+        <KpiCard
+          icon={BanknotesIcon}
+          iconBg="bg-warning-subtle"
+          iconColor="text-warning"
+          label="Total presupuestado"
+          value={fmt(totalQuotesValue, currency)}
+          sub={`${currency}`}
+        />
       </div>
 
-      {/* Middle panels */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="md:col-span-3">
-          <ProjectsPanel projects={projects} />
+      {/* Quotes summary panel */}
+      <div className="mb-6">
+        <QuotesSummaryPanel quotes={quotes} currency={currency} />
+      </div>
+
+      {/* Quotes monthly chart */}
+      <div className="mb-6">
+        <QuotesMonthlyChart data={quotes?.monthly} currency={currency} />
+      </div>
+
+      {/* Recent quotes + Quote installments */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-fg">Presupuestos recientes</h3>
+            <Link to="/quotes" className="flex items-center gap-1 text-xs text-brand hover:underline">
+              Ver todos <ArrowRightIcon className="w-3 h-3" />
+            </Link>
+          </div>
+          <RecentQuotes quotes={quotes} />
         </div>
+        <QuoteInstallmentsPanel quotes={quotes} />
       </div>
 
-      {/* Top clients + Expiring quotes */}
+      {/* Expiring quotes + Projects panel */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <ExpiringQuotesPanel quotes={quotes} />
+        <ProjectsPanel projects={projects} />
+      </div>
+
+      {/* Top clients + Upcoming projects */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <TopClientsPanel clients={topClients} />
-        <ExpiringQuotesPanel quotes={quotes} />
+        <UpcomingProjectsPanel projects={projects} />
       </div>
 
-      {/* Upcoming projects + Activity feed */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <UpcomingProjectsPanel projects={projects} />
+      {/* Activity feed */}
+      <div className="mb-6">
         <ActivityFeed activity={recentActivity} />
       </div>
-
 
     </div>
   )
