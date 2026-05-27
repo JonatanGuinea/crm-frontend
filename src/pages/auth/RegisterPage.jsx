@@ -2,11 +2,28 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { register as registerApi } from '../../api/auth'
+import {
+  UserIcon,
+  EnvelopeIcon,
+  LockClosedIcon,
+  BuildingOfficeIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  ExclamationCircleIcon,
+} from '@heroicons/react/24/outline'
+
+const fields = [
+  { key: 'name',             label: 'Nombre',                   type: 'text',     icon: UserIcon,          placeholder: 'Tu nombre' },
+  { key: 'email',            label: 'Email',                    type: 'email',    icon: EnvelopeIcon,      placeholder: 'tu@email.com' },
+  { key: 'password',         label: 'Contraseña',               type: 'password', icon: LockClosedIcon,    placeholder: '••••••••' },
+  { key: 'organizationName', label: 'Nombre de la organización', type: 'text',    icon: BuildingOfficeIcon, placeholder: 'Mi empresa' },
+]
 
 export default function RegisterPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState({ name: '', email: '', password: '', organizationName: '' })
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -26,42 +43,79 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 shadow-xl p-8">
-      <h2 className="text-xl font-semibold text-fg mb-6">Crear cuenta</h2>
+    <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-8">
+      {/* Header */}
+      <div className="mb-7">
+        <h2 className="text-2xl font-bold text-white">Crear cuenta</h2>
+        <p className="text-sm text-slate-400 mt-1">Empezá gratis, sin tarjeta requerida</p>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {[
-          { key: 'name', label: 'Nombre', type: 'text' },
-          { key: 'email', label: 'Email', type: 'email' },
-          { key: 'password', label: 'Contraseña', type: 'password' },
-          { key: 'organizationName', label: 'Nombre de la organización', type: 'text' },
-        ].map(({ key, label, type }) => (
-          <div key={key}>
-            <label className="block text-sm font-medium text-fg-soft mb-1">{label}</label>
-            <input
-              type={type}
-              required
-              value={form[key]}
-              onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
-              className="w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
-            />
+        {fields.map(({ key, label, type, icon: Icon, placeholder }) => {
+          const isPassword = type === 'password'
+          const inputType = isPassword ? (showPassword ? 'text' : 'password') : type
+
+          return (
+            <div key={key}>
+              <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">
+                {label}
+              </label>
+              <div className="relative">
+                <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                <input
+                  type={inputType}
+                  required
+                  value={form[key]}
+                  onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+                  placeholder={placeholder}
+                  className="w-full pl-9 pr-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500/50 transition-all"
+                />
+                {isPassword && (
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                  >
+                    {showPassword
+                      ? <EyeSlashIcon className="w-4 h-4" />
+                      : <EyeIcon className="w-4 h-4" />
+                    }
+                  </button>
+                )}
+              </div>
+            </div>
+          )
+        })}
+
+        {/* Error */}
+        {error && (
+          <div className="flex items-center gap-2 px-3 py-2.5 bg-red-500/10 border border-red-500/20 rounded-lg">
+            <ExclamationCircleIcon className="w-4 h-4 text-red-400 flex-shrink-0" />
+            <p className="text-xs text-red-400">{error}</p>
           </div>
-        ))}
+        )}
 
-        {error && <p className="text-sm text-danger">{error}</p>}
-
+        {/* Submit */}
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2 px-4 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50 transition-colors"
+          className="w-full py-2.5 px-4 bg-teal-500 hover:bg-teal-400 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 mt-2"
         >
-          {loading ? 'Registrando...' : 'Registrarse'}
+          {loading && (
+            <svg className="animate-spin w-4 h-4 text-white/70" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+            </svg>
+          )}
+          {loading ? 'Registrando...' : 'Crear cuenta'}
         </button>
       </form>
 
-      <p className="mt-4 text-sm text-center text-fg-soft">
+      <p className="mt-6 text-sm text-center text-slate-500">
         ¿Ya tenés cuenta?{' '}
-        <Link to="/login" className="text-brand hover:underline">Iniciar sesión</Link>
+        <Link to="/login" className="text-teal-400 hover:text-teal-300 font-medium transition-colors">
+          Iniciar sesión
+        </Link>
       </p>
     </div>
   )

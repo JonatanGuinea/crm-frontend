@@ -53,7 +53,7 @@ export default function AuthLayout() {
               Tu negocio,<br />todo en un lugar.
             </h2>
             <p className="mt-4 text-slate-400 text-sm leading-relaxed max-w-sm">
-              Gestioná clientes, proyectos, presupuestos y facturas desde una sola plataforma diseñada para crecer con vos.
+              Gestioná clientes, emails, proyectos y presupuestos desde una sola plataforma diseñada para crecer con vos.
             </p>
           </div>
 
