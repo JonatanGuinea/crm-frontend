@@ -1,11 +1,13 @@
-import { useState } from 'react'
-import { NavLink, Link, Outlet } from 'react-router-dom'
+import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
+import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import GlobalSearch from '../components/GlobalSearch'
 import OrgSwitcher from '../components/OrgSwitcher'
 import InvitationsBanner from '../components/InvitationsBanner'
+import OrgSettingsModal from '../components/OrgSettingsModal'
 import { getProfile } from '../api/profile'
 import { getNotifications } from '../api/notifications'
 import { getPendingInvitations } from '../api/invitations'
@@ -28,6 +30,10 @@ import {
   Bars3Icon,
   XMarkIcon,
   CalendarDaysIcon,
+  UserCircleIcon,
+  BuildingOffice2Icon,
+  Cog6ToothIcon,
+  ArrowRightStartOnRectangleIcon,
 } from '@heroicons/react/24/outline'
 
 
@@ -39,10 +45,102 @@ const navItems = [
   { to: '/projects',      label: 'Proyectos',       icon: FolderIcon },
   { to: '/projects/calendar', label: 'Agenda',      icon: CalendarDaysIcon },
   { to: '/quotes',        label: 'Presupuestos',    icon: DocumentTextIcon },
-  { to: '/invoices',      label: 'Facturas',        icon: ReceiptRefundIcon },
   { to: '/expenses',      label: 'Egresos',         icon: ArrowTrendingDownIcon },
   { to: '/members',       label: 'Equipo',          icon: UserGroupIcon },
 ]
+
+function ProfileDropdown({ profile, user }) {
+  const { logout } = useAuth()
+  const navigate = useNavigate()
+  const [open, setOpen] = useState(false)
+  const [showOrgModal, setShowOrgModal] = useState(false)
+  const [menuPos, setMenuPos] = useState({ top: 0, right: 0 })
+  const btnRef = useRef()
+  const menuRef = useRef()
+
+  useEffect(() => {
+    function handler(e) {
+      if (
+        btnRef.current && !btnRef.current.contains(e.target) &&
+        menuRef.current && !menuRef.current.contains(e.target)
+      ) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  function handleOpen() {
+    if (!open && btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect()
+      setMenuPos({ top: r.bottom + 6, right: window.innerWidth - r.right })
+    }
+    setOpen(v => !v)
+  }
+
+  function go(path) { setOpen(false); navigate(path) }
+
+  const items = [
+    { label: 'Perfil',        icon: UserCircleIcon,      action: () => go('/profile') },
+    { label: 'Empresa',       icon: BuildingOffice2Icon, action: () => { setOpen(false); setShowOrgModal(true) } },
+    { label: 'Configuración', icon: Cog6ToothIcon,       action: () => go('/members') },
+  ]
+
+  return (
+    <div className="shrink-0">
+      <button
+        ref={btnRef}
+        onClick={handleOpen}
+        className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-raised transition-colors"
+      >
+        <SidebarAvatar avatar={profile?.avatar} name={profile?.name || user?.name} />
+        <span className="hidden sm:block text-sm text-fg-soft truncate max-w-[120px]">
+          {profile?.name || user?.name || 'Mi perfil'}
+        </span>
+      </button>
+
+      {createPortal(
+        <div
+          ref={menuRef}
+          style={{ top: menuPos.top, right: menuPos.right, position: 'fixed' }}
+          className={`w-52 bg-surface border border-line rounded-xl shadow-xl z-[9999] overflow-hidden transition-all duration-150 origin-top-right ${
+            open ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'
+          }`}
+        >
+          <div className="px-4 py-3 border-b border-line">
+            <p className="text-sm font-semibold text-fg truncate">{profile?.name || user?.name}</p>
+            <p className="text-xs text-fg-muted truncate">{profile?.email || user?.email}</p>
+          </div>
+
+          <div className="py-1">
+            {items.map(({ label, icon: Icon, action }) => (
+              <button
+                key={label}
+                onClick={action}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-fg-soft hover:bg-raised hover:text-fg transition-colors"
+              >
+                <Icon className="w-4 h-4 shrink-0" />
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="border-t border-line py-1">
+            <button
+              onClick={() => { setOpen(false); logout() }}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-danger hover:bg-danger-subtle transition-colors"
+            >
+              <ArrowRightStartOnRectangleIcon className="w-4 h-4 shrink-0" />
+              Cerrar sesión
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {showOrgModal && <OrgSettingsModal onClose={() => setShowOrgModal(false)} />}
+    </div>
+  )
+}
 
 function SidebarAvatar({ avatar, name }) {
   if (avatar) {
@@ -220,15 +318,7 @@ export default function AppLayout() {
               </span>
             )}
           </Link>
-          <Link
-            to="/profile"
-            className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-raised transition-colors shrink-0"
-          >
-            <SidebarAvatar avatar={profile?.avatar} name={profile?.name || user?.name} />
-            <span className="hidden sm:block text-sm text-fg-soft truncate max-w-[120px]">
-              {profile?.name || user?.name || 'Mi perfil'}
-            </span>
-          </Link>
+          <ProfileDropdown profile={profile} user={user} />
         </header>
         <main className="flex-1 overflow-auto">
           <InvitationsBanner />

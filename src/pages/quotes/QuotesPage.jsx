@@ -2,13 +2,13 @@ import { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getQuotes, deleteQuote, updateQuote, createInvoiceFromQuote, downloadQuotePdf } from '../../api/quotes'
+import { getQuotes, deleteQuote, updateQuote, sendQuote, createInvoiceFromQuote, downloadQuotePdf } from '../../api/quotes'
 import QuoteModal from './QuoteModal'
 import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
-import { ChevronDownIcon, UserIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline'
+import { ChevronDownIcon, UserIcon, ArrowDownTrayIcon, PaperAirplaneIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline'
 
 const STATUS_LABELS = {
   draft: 'Borrador', sent: 'Enviado', approved: 'Aprobado',
@@ -29,11 +29,56 @@ const STATUS_DOT = {
   expired:  'bg-warning'
 }
 const ALLOWED_TRANSITIONS = {
-  draft:    ['sent', 'expired'],
+  draft:    [],
   sent:     ['approved', 'rejected', 'expired'],
   approved: [],
   rejected: [],
   expired:  [],
+}
+
+function SendConfirmModal({ quote, onClose, onConfirm, onViewPdf, sending, downloading }) {
+  return createPortal(
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+      <div className="bg-surface/60 backdrop-blur-xl rounded-xl shadow-lg w-full max-w-sm p-6 border border-line">
+        <h3 className="text-base font-semibold text-fg mb-1">Confirmar envío de presupuesto</h3>
+        <p className="text-sm text-fg-soft mb-1">
+          Se enviará el presupuesto <span className="font-medium text-fg">#{quote.number} — {quote.title}</span>
+        </p>
+        <p className="text-sm text-fg-soft mb-5">
+          Destinatario: <span className="font-medium text-fg">{quote.client?.name}</span>
+          {quote.client?.email && <span className="text-fg-muted ml-1">({quote.client.email})</span>}
+        </p>
+        <div className="flex gap-2 justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-3 py-2 text-sm text-fg-soft hover:text-fg border border-line-soft rounded-md transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={onViewPdf}
+            disabled={downloading}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-line-soft rounded-md text-fg-soft hover:bg-raised disabled:opacity-50 transition-colors"
+          >
+            <DocumentArrowDownIcon className="w-4 h-4 shrink-0" />
+            {downloading ? 'Generando...' : 'Ver PDF'}
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={sending}
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-brand text-white rounded-md hover:bg-brand-hover disabled:opacity-50 transition-colors"
+          >
+            <PaperAirplaneIcon className="w-4 h-4 shrink-0" />
+            {sending ? 'Enviando...' : 'Enviar'}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  )
 }
 
 function StatusDropdown({ quote, onUpdate }) {
@@ -110,6 +155,7 @@ export default function QuotesPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [downloading, setDownloading] = useState(null)
+  const [confirmSend, setConfirmSend] = useState(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['quotes', statusFilter, page],
@@ -119,6 +165,12 @@ export default function QuotesPage() {
   const del = useMutation({
     mutationFn: deleteQuote,
     onSuccess: () => { qc.invalidateQueries(['quotes']); toast('Presupuesto eliminado', 'success') }
+  })
+
+  const send = useMutation({
+    mutationFn: (id) => sendQuote(id),
+    onSuccess: () => { qc.invalidateQueries(['quotes']); toast('Presupuesto enviado', 'success'); setConfirmSend(null) },
+    onError: (err) => { toast(err.response?.data?.error || 'Error al enviar presupuesto'); setConfirmSend(null) }
   })
 
   const changeStatus = useMutation({
@@ -150,6 +202,24 @@ export default function QuotesPage() {
     } finally {
       setDownloading(null)
     }
+  }
+
+  function renderStatus(q) {
+    if (!canWrite) {
+      return <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[q.status]}`}>{STATUS_LABELS[q.status]}</span>
+    }
+    if (q.status === 'draft') {
+      return (
+        <button
+          onClick={() => setConfirmSend(q)}
+          className="flex items-center gap-1.5 px-3 py-1 bg-brand text-white text-xs font-semibold rounded-lg hover:bg-brand-hover transition-colors"
+        >
+          <PaperAirplaneIcon className="w-3.5 h-3.5 shrink-0" />
+          Enviar presupuesto
+        </button>
+      )
+    }
+    return <StatusDropdown quote={q} onUpdate={(status) => changeStatus.mutate({ id: q.id, status })} />
   }
 
   function openCreate() { setEditingId(null); setModalOpen(true) }
@@ -184,10 +254,7 @@ export default function QuotesPage() {
                   <span className="text-xs font-mono font-medium text-fg-muted bg-raised px-2 py-0.5 rounded-md">
                     #{q.number}
                   </span>
-                  {canWrite
-                    ? <StatusDropdown quote={q} onUpdate={(status) => changeStatus.mutate({ id: q.id, status })} />
-                    : <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[q.status]}`}>{STATUS_LABELS[q.status]}</span>
-                  }
+                  {renderStatus(q)}
                 </div>
                 {/* Título */}
                 <Link to={`/quotes/${q.id}`} className="block font-semibold text-fg hover:text-brand leading-snug mb-3">
@@ -216,9 +283,6 @@ export default function QuotesPage() {
                     <ArrowDownTrayIcon className="w-4 h-4" />
                   </button>
                   {canWrite && !q._count?.invoices && <button onClick={() => openEdit(q.id)} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-brand-subtle text-brand hover:opacity-80 transition-opacity">Editar</button>}
-                  {canWrite && q.status === 'approved' && !q._count?.invoices && (
-                    <button onClick={async () => { if (await confirm('¿Generar factura?', { confirmLabel: 'Facturar', danger: false })) toInvoice.mutate(q.id) }} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-info-subtle text-info hover:opacity-80 transition-opacity">Facturar</button>
-                  )}
                   {canWrite && q.status === 'draft' && (
                     <button onClick={async () => { if (await confirm('¿Eliminar?')) del.mutate(q.id) }} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-danger-subtle text-danger hover:opacity-80 transition-opacity">Eliminar</button>
                   )}
@@ -252,12 +316,7 @@ export default function QuotesPage() {
                         <Link to={`/quotes/${q.id}`} className="hover:text-brand">{q.title}</Link>
                       </td>
                       <td className="px-4 py-3 text-fg-soft">{q.client?.name}</td>
-                      <td className="px-4 py-3">
-                        {canWrite
-                          ? <StatusDropdown quote={q} onUpdate={(status) => changeStatus.mutate({ id: q.id, status })} />
-                          : <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[q.status]}`}>{STATUS_LABELS[q.status]}</span>
-                        }
-                      </td>
+                      <td className="px-4 py-3">{renderStatus(q)}</td>
                       <td className="px-4 py-3 text-fg-soft">${Number(q.total).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                       <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
                         <button
@@ -269,10 +328,6 @@ export default function QuotesPage() {
                           <ArrowDownTrayIcon className={`w-4 h-4 ${downloading === q.id ? 'animate-pulse' : ''}`} />
                         </button>
                         {canWrite && !q._count?.invoices && <button onClick={() => openEdit(q.id)} className="text-brand hover:underline text-xs">Editar</button>}
-                        {canWrite && q.status === 'approved' && !q._count?.invoices && (
-                          <button onClick={async () => { if (await confirm('¿Generar factura desde este presupuesto?', { confirmLabel: 'Facturar', danger: false })) toInvoice.mutate(q.id) }}
-                            className="text-info hover:underline text-xs">Facturar</button>
-                        )}
                         {canWrite && q.status === 'draft' && (
                           <button onClick={async () => { if (await confirm('¿Eliminar?')) del.mutate(q.id) }} className="text-danger hover:underline text-xs">Eliminar</button>
                         )}
@@ -296,6 +351,17 @@ export default function QuotesPage() {
           quoteId={editingId}
           onClose={() => setModalOpen(false)}
           onSaved={handleSaved}
+        />
+      )}
+
+      {confirmSend && (
+        <SendConfirmModal
+          quote={confirmSend}
+          onClose={() => setConfirmSend(null)}
+          onConfirm={() => send.mutate(confirmSend.id)}
+          onViewPdf={() => handleDownload(confirmSend.id, confirmSend.number)}
+          sending={send.isPending}
+          downloading={downloading === confirmSend.id}
         />
       )}
     </div>

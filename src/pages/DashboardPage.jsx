@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { getProjectsDashboard } from '../api/projects'
-import { getInvoicesDashboard, getInvoicesMonthly } from '../api/invoices'
 import { getQuotesDashboard } from '../api/quotes'
 import { getTopClients } from '../api/clients'
 import { getRecentActivity } from '../api/activity'
@@ -629,11 +628,6 @@ export default function DashboardPage() {
     queryFn: () => getProjectsDashboard().then(r => r.data.data),
   })
 
-  const { data: invoices } = useQuery({
-    queryKey: ['invoices-dashboard', currency],
-    queryFn: () => getInvoicesDashboard(currency).then(r => r.data.data),
-  })
-
   const { data: quotes } = useQuery({
     queryKey: ['quotes-dashboard', currency],
     queryFn: () => getQuotesDashboard(currency).then(r => r.data.data),
@@ -644,11 +638,6 @@ export default function DashboardPage() {
     queryFn: () => getTopClients().then(r => r.data.data),
   })
 
-  const { data: monthlyData } = useQuery({
-    queryKey: ['invoices-monthly', currency],
-    queryFn: () => getInvoicesMonthly(currency).then(r => r.data.data),
-  })
-
   const { data: recentActivity } = useQuery({
     queryKey: ['activity-recent'],
     queryFn: () => getRecentActivity().then(r => r.data.data),
@@ -656,13 +645,6 @@ export default function DashboardPage() {
 
   const activeProjects = projects?.byStatus?.find(s => s._id === 'in_progress')?.totalProjects ?? 0
 
-  const paid    = invoices?.summary?.paid    ?? 0
-  const sent    = invoices?.summary?.sent    ?? 0
-  const overdue = invoices?.summary?.overdue ?? 0
-  const expensesMonth = invoices?.summary?.expensesMonth ?? 0
-  const balance = paid - expensesMonth
-  const collectionBase = paid + sent + overdue
-  const collectionRate = collectionBase > 0 ? Math.round((paid / collectionBase) * 100) : null
   const openQuotes = quotes?.byStatus
     ?.filter(s => ['draft', 'sent'].includes(s.status))
     ?.reduce((acc, s) => acc + s.count, 0) ?? 0
@@ -695,46 +677,7 @@ export default function DashboardPage() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-        <KpiCard
-          icon={BanknotesIcon}
-          iconBg="bg-brand-subtle"
-          iconColor="text-brand"
-          label="Cobrado"
-          value={fmt(invoices?.summary?.paid, currency)}
-          sub={collectionRate != null ? `Tasa de cobro: ${collectionRate}%` : `de ${invoices?.summary?.totalInvoices ?? 0} facturas`}
-        />
-        <KpiCard
-          icon={ClockIcon}
-          iconBg="bg-info-subtle"
-          iconColor="text-info"
-          label="Enviadas"
-          value={fmt(invoices?.summary?.sent, currency)}
-        />
-        <KpiCard
-          icon={ExclamationTriangleIcon}
-          iconBg="bg-danger-subtle"
-          iconColor="text-danger"
-          label="Vencido"
-          value={fmt(invoices?.summary?.overdue, currency)}
-        />
-      </div>
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <KpiCard
-          icon={ArrowTrendingDownIcon}
-          iconBg="bg-danger-subtle"
-          iconColor="text-danger"
-          label="Egresos del mes"
-          value={fmt(expensesMonth, currency)}
-        />
-        <KpiCard
-          icon={ScaleIcon}
-          iconBg={balance >= 0 ? 'bg-brand-subtle' : 'bg-danger-subtle'}
-          iconColor={balance >= 0 ? 'text-brand' : 'text-danger'}
-          label="Balance mensual"
-          value={`${balance >= 0 ? '' : '-'}${fmt(Math.abs(balance), currency)}`}
-          sub={`${currency} cobrado − egresos`}
-        />
         <KpiCard
           icon={FolderOpenIcon}
           iconBg="bg-info-subtle"
@@ -747,10 +690,7 @@ export default function DashboardPage() {
 
       {/* Middle panels */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="md:col-span-2">
-          <IncomePanel invoices={invoices} currency={currency} />
-        </div>
-        <div className="md:col-span-1">
+        <div className="md:col-span-3">
           <ProjectsPanel projects={projects} />
         </div>
       </div>
@@ -761,19 +701,12 @@ export default function DashboardPage() {
         <ExpiringQuotesPanel quotes={quotes} />
       </div>
 
-      {/* Upcoming installments */}
-      <div className="mb-6">
-        <UpcomingInstallmentsPanel invoices={invoices} />
-      </div>
-
       {/* Upcoming projects + Activity feed */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <UpcomingProjectsPanel projects={projects} />
         <ActivityFeed activity={recentActivity} />
       </div>
 
-      {/* Monthly chart */}
-<MonthlyChart data={monthlyData} currency={currency} />
 
     </div>
   )

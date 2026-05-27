@@ -34,7 +34,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-8">
+    <div className="bg-slate-800/70 backdrop-blur-xl rounded-2xl border border-teal-500/30 shadow-2xl p-8 max-w-sm mx-auto">
       {/* Header */}
       <div className="mb-7">
         <h2 className="text-2xl font-bold text-white">Bienvenido</h2>

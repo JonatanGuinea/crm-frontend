@@ -144,22 +144,34 @@ export default function ProjectDetailPage() {
           <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-line">
               <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide">
-                Presupuestos <span className="text-fg-muted font-normal">({quotes.length})</span>
+                Presupuesto <span className="text-fg-muted font-normal">({quotes.length})</span>
               </h3>
               <div className="flex items-center gap-3">
                 {canWrite && (
                   <button
                     onClick={() => setNewQuoteOpen(true)}
-                    className="text-xs text-brand hover:underline font-medium"
+                    className="px-3 py-1.5 bg-brand text-white text-xs font-semibold rounded-lg hover:bg-brand-hover transition-colors"
                   >
-                    + Nuevo
+                    Asignar
                   </button>
                 )}
-                <Link to="/quotes" className="text-xs text-brand hover:underline">Ver todos</Link>
+                {quotes.length > 0 && (
+                  <Link to="/quotes" className="text-xs text-brand hover:underline">Ver todos</Link>
+                )}
               </div>
             </div>
             {quotes.length === 0 ? (
-              <p className="px-5 py-4 text-sm text-fg-muted">Sin presupuestos asociados</p>
+              <div className="flex flex-col items-center justify-center py-10 gap-3">
+                <p className="text-sm text-fg-muted">Sin presupuesto asignado</p>
+                {canWrite && (
+                  <button
+                    onClick={() => setNewQuoteOpen(true)}
+                    className="px-4 py-2 bg-brand text-white text-sm font-semibold rounded-lg hover:bg-brand-hover transition-colors"
+                  >
+                    Asignar presupuesto
+                  </button>
+                )}
+              </div>
             ) : (
               <table className="w-full text-sm">
                 <thead className="bg-raised">
@@ -180,47 +192,6 @@ export default function ProjectDetailPage() {
                       </td>
                       <td className="px-5 py-3 text-fg-soft">
                         {q.total != null ? `$${Number(q.total).toLocaleString('es-AR')}` : '-'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-
-          {/* Facturas */}
-          <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-line">
-              <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide">
-                Facturas <span className="text-fg-muted font-normal">({invoices.length})</span>
-              </h3>
-              <Link to="/invoices" className="text-xs text-brand hover:underline">Ver todos</Link>
-            </div>
-            {invoices.length === 0 ? (
-              <p className="px-5 py-4 text-sm text-fg-muted">Sin facturas asociadas</p>
-            ) : (
-              <table className="w-full text-sm">
-                <thead className="bg-raised">
-                  <tr>
-                    {['N°', 'Estado', 'Total', 'Vencimiento'].map(h => (
-                      <th key={h} className="text-left px-5 py-2 text-xs font-medium text-fg-soft uppercase">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-line">
-                  {invoices.map(inv => (
-                    <tr key={inv.id} className="hover:bg-raised">
-                      <td className="px-5 py-3 font-medium text-fg">{inv.number}</td>
-                      <td className="px-5 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${DOC_STATUS_COLORS[inv.status] || 'bg-raised text-fg-soft'}`}>
-                          {DOC_STATUS_LABELS[inv.status] || inv.status}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3 text-fg-soft">
-                        {inv.total != null ? `$${Number(inv.total).toLocaleString('es-AR')}` : '-'}
-                      </td>
-                      <td className="px-5 py-3 text-fg-soft">
-                        {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('es-AR') : '-'}
                       </td>
                     </tr>
                   ))}

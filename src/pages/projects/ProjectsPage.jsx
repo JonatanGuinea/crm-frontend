@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { getProjects, deleteProject, updateProject } from '../../api/projects'
 import ProjectModal from './ProjectModal'
+import QuoteModal from '../quotes/QuoteModal'
 import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
@@ -109,6 +110,7 @@ export default function ProjectsPage() {
   const [page, setPage] = useState(1)
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(null)
+  const [quotingProject, setQuotingProject] = useState(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['projects', statusFilter, page],
@@ -224,8 +226,20 @@ export default function ProjectsPage() {
                           : <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[p.status]}`}>{STATUS_LABELS[p.status]}</span>
                         }
                       </td>
-                      <td className="px-4 py-3 text-fg-soft">
-                        {p.budget != null ? `$${Number(p.budget).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-'}
+                      <td className="px-4 py-3">
+                        {p.quotes?.length > 0
+                          ? <span className="text-fg-soft text-sm">
+                              ${Number(p.quotes.reduce((s, q) => s + (Number(q.total) || 0), 0)).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                          : canWrite && (
+                              <button
+                                onClick={() => setQuotingProject(p)}
+                                className="px-3 py-1 bg-brand text-white text-xs font-semibold rounded-lg hover:bg-brand-hover transition-colors"
+                              >
+                                Asignar
+                              </button>
+                            )
+                        }
                       </td>
                       <td className="px-4 py-3 text-right space-x-2">
                         <Link to={`/projects/${p.id}`} className="text-fg-muted hover:underline text-xs">Ver</Link>
@@ -251,6 +265,18 @@ export default function ProjectsPage() {
           project={editing}
           onClose={() => setModalOpen(false)}
           onSaved={() => { setModalOpen(false); qc.invalidateQueries(['projects']) }}
+        />
+      )}
+
+      {quotingProject && (
+        <QuoteModal
+          initialProjectId={quotingProject.id}
+          initialClientId={quotingProject.clientId || quotingProject.client?.id}
+          onClose={() => setQuotingProject(null)}
+          onSaved={() => {
+            setQuotingProject(null)
+            qc.invalidateQueries(['quotes'])
+          }}
         />
       )}
     </div>

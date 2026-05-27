@@ -7,6 +7,7 @@ import { useConfirm } from '../../components/ConfirmDialog'
 import { getQuoteById, createInvoiceFromQuote, downloadQuotePdf } from '../../api/quotes'
 import QuoteModal from './QuoteModal'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
+import InstallmentsPanel from '../../components/InstallmentsPanel'
 
 const STATUS_LABELS = {
   draft: 'Borrador', sent: 'Enviado', approved: 'Aprobado',
@@ -169,6 +170,16 @@ export default function QuoteDetailPage() {
                 </div>
               )}
             </dl>
+          </div>
+
+          <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-5">
+            <InstallmentsPanel
+              entityType="quote"
+              entityId={id}
+              entityStatus={quote.status}
+              canWrite={canWrite}
+              currency={quote.currency}
+            />
           </div>
 
           <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-5">

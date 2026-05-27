@@ -74,7 +74,7 @@ export default function ProfilePage() {
     queryFn: () => getProfile().then(r => r.data.data)
   })
 
-  const [nameForm, setNameForm] = useState({ name: '' })
+  const [nameForm, setNameForm] = useState({ name: '', phone: '' })
   const [nameMsg, setNameMsg] = useState(null)
 
   const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirm: '' })
@@ -119,7 +119,7 @@ export default function ProfilePage() {
   function handleNameSubmit(e) {
     e.preventDefault()
     setNameMsg(null)
-    nameMut.mutate({ name: nameForm.name })
+    nameMut.mutate({ name: nameForm.name, phone: nameForm.phone })
   }
 
   function handlePwSubmit(e) {
@@ -198,21 +198,32 @@ export default function ProfilePage() {
       {/* Info actual */}
       <div className="mb-8 p-4 bg-raised rounded-lg border border-line text-sm text-fg-soft space-y-1">
         <p><span className="font-medium text-fg">Email:</span> {data?.email}</p>
-        <p><span className="font-medium text-fg">Nombre actual:</span> {data?.name}</p>
+        <p><span className="font-medium text-fg">Nombre:</span> {data?.name}</p>
+        {data?.phone && <p><span className="font-medium text-fg">Teléfono:</span> {data.phone}</p>}
       </div>
 
-      {/* Cambiar nombre */}
+      {/* Información personal */}
       <section className="mb-8">
-        <h2 className="text-base font-semibold text-fg mb-4">Cambiar nombre</h2>
+        <h2 className="text-base font-semibold text-fg mb-4">Información personal</h2>
         <form onSubmit={handleNameSubmit} className="space-y-4">
           <div>
-            <label className={labelCls}>Nuevo nombre</label>
+            <label className={labelCls}>Nombre</label>
             <input
               type="text"
               required
               value={nameForm.name}
-              onChange={e => setNameForm({ name: e.target.value })}
+              onChange={e => setNameForm(f => ({ ...f, name: e.target.value }))}
               placeholder={data?.name}
+              className={inputCls}
+            />
+          </div>
+          <div>
+            <label className={labelCls}>Teléfono</label>
+            <input
+              type="text"
+              value={nameForm.phone}
+              onChange={e => setNameForm(f => ({ ...f, phone: e.target.value }))}
+              placeholder={data?.phone || '+54 11 1234-5678'}
               className={inputCls}
             />
           </div>
@@ -226,7 +237,7 @@ export default function ProfilePage() {
             disabled={nameMut.isPending}
             className="px-4 py-2 bg-brand text-white text-sm font-medium rounded-md hover:bg-brand-hover disabled:opacity-50 transition-colors"
           >
-            {nameMut.isPending ? 'Guardando...' : 'Guardar nombre'}
+            {nameMut.isPending ? 'Guardando...' : 'Guardar cambios'}
           </button>
         </form>
       </section>

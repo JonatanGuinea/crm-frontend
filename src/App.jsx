@@ -19,13 +19,11 @@ import ProjectsPage from './pages/projects/ProjectsPage'
 import ProjectDetailPage from './pages/projects/ProjectDetailPage'
 import ProjectCalendarPage from './pages/projects/ProjectCalendarPage'
 import QuotesPage from './pages/quotes/QuotesPage'
-import InvoicesPage from './pages/invoices/InvoicesPage'
 import NotificationsPage from './pages/notifications/NotificationsPage'
 import MembersPage from './pages/members/MembersPage'
 import AcceptInvitePage from './pages/auth/AcceptInvitePage'
 import ProfilePage from './pages/profile/ProfilePage'
 import QuoteDetailPage from './pages/quotes/QuoteDetailPage'
-import InvoiceDetailPage from './pages/invoices/InvoiceDetailPage'
 import ExpensesPage from './pages/expenses/ExpensesPage'
 import QuotePublicPage from './pages/public/QuotePublicPage'
 
@@ -82,8 +80,6 @@ export default function App() {
               <Route path="/projects/:id" element={<ProjectDetailPage />} />
               <Route path="/quotes" element={<QuotesPage />} />
               <Route path="/quotes/:id" element={<QuoteDetailPage />} />
-              <Route path="/invoices" element={<InvoicesPage />} />
-              <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
               <Route path="/expenses" element={<ExpensesPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/members" element={<MembersPage />} />

@@ -26,7 +26,6 @@ export default function ProjectModal({ project, onClose, onSaved }) {
   const [form, setForm] = useState({
     title: project?.title || '',
     description: project?.description || '',
-    budget: project?.budget ?? '',
     startDate: project?.startDate?.slice(0, 10) || '',
     endDate: project?.endDate?.slice(0, 10) || '',
     client: project?.clientId || project?.client?.id || '',
@@ -47,7 +46,7 @@ export default function ProjectModal({ project, onClose, onSaved }) {
     setError('')
     setLoading(true)
     try {
-      const payload = { ...form, budget: form.budget !== '' ? parseFloat(form.budget) : undefined }
+      const payload = { ...form }
       if (project) {
         await updateProject(project.id, payload)
         toast('Proyecto actualizado', 'success')
@@ -86,13 +85,6 @@ export default function ProjectModal({ project, onClose, onSaved }) {
               <option value="">Seleccionar...</option>
               {clientsData?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
-          </div>
-
-          <div>
-            <label className={labelCls}>Presupuesto</label>
-            <input type="number" min="0" step="1" value={form.budget}
-              onChange={e => setForm(f => ({ ...f, budget: e.target.value }))}
-              className={inputCls} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">

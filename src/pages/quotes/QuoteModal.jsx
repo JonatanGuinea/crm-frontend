@@ -3,27 +3,22 @@ import { useQuery } from '@tanstack/react-query'
 import { getClients } from '../../api/clients'
 import { getProjects } from '../../api/projects'
 import { getQuoteById, createQuote, updateQuote } from '../../api/quotes'
+import { createInstallments } from '../../api/installments'
 import DatePicker from '../../components/DatePicker'
 import LineItemsEditor from '../../components/LineItemsEditor'
+import InstallmentsPanel from '../../components/InstallmentsPanel'
 import { useToast } from '../../components/Toast'
+import { useAuth } from '../../context/AuthContext'
 
 const EMPTY_ITEM = { description: '', quantity: 1, unitPrice: 0, amount: 0 }
-
-const ALLOWED_TRANSITIONS = {
-  draft: ['sent', 'expired'],
-  sent: ['approved', 'rejected', 'expired'],
-  approved: [], rejected: [], expired: []
-}
-const STATUS_LABELS = {
-  draft: 'Borrador', sent: 'Enviado', approved: 'Aprobado',
-  rejected: 'Rechazado', expired: 'Vencido'
-}
 
 const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
 const labelCls = "block text-sm font-medium text-fg-soft mb-1"
 
 export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId = '', initialProjectId = '' }) {
   const isEditing = Boolean(quoteId)
+  const { user } = useAuth()
+  const canWrite = user?.role !== 'member'
 
   const [form, setForm] = useState({
     title: '', clientId: initialClientId, projectId: initialProjectId,
@@ -33,6 +28,11 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
   const [items, setItems] = useState([EMPTY_ITEM])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // Installments config (only for new quotes)
+  const [withInstallments, setWithInstallments] = useState(false)
+  const [installCount, setInstallCount] = useState(2)
+  const [installFirstDate, setInstallFirstDate] = useState('')
 
   const { data: clientsData } = useQuery({
     queryKey: ['clients-all'],
@@ -75,12 +75,14 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
   const taxAmount = subtotal * (parseFloat(form.taxRate) / 100)
   const total = subtotal + taxAmount
 
-  // const allowedStatuses = isEditing && quoteData ? ALLOWED_TRANSITIONS[quoteData.status] || [] : []
-
   async function handleSubmit(e) {
     e.preventDefault()
     if (items.some(i => !i.description.trim())) {
       setError('Todos los ítems deben tener descripción')
+      return
+    }
+    if (withInstallments && !installFirstDate) {
+      setError('Seleccioná la fecha del primer vencimiento')
       return
     }
     setError('')
@@ -101,7 +103,11 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
         await updateQuote(quoteId, payload)
         toast('Presupuesto actualizado', 'success')
       } else {
-        await createQuote(payload)
+        const res = await createQuote(payload)
+        const newId = res.data.data?.id
+        if (newId && withInstallments) {
+          await createInstallments({ quoteId: newId, count: parseInt(installCount), firstDueDate: installFirstDate })
+        }
         toast('Presupuesto creado', 'success')
       }
       onSaved()
@@ -192,24 +198,49 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
             <div className="text-base font-semibold text-fg">Total {form.currency}: ${total.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           </div>
 
-          {/* {isEditing && allowedStatuses.length > 0 && (
-            <div>
-              <label className={labelCls}>Cambiar estado</label>
-              <select value={form.status}
-                onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-                className={inputCls}>
-                <option value="">Sin cambio ({STATUS_LABELS[quoteData?.status]})</option>
-                {allowedStatuses.map(s => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
-              </select>
-            </div>
-          )} */}
-
           <div>
             <label className={labelCls}>Notas</label>
             <textarea rows={2} value={form.notes}
               onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
               className={inputCls} />
           </div>
+
+          {/* Cuotas — solo al crear */}
+          {!isEditing && (
+            <div className="border border-line rounded-lg overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setWithInstallments(v => !v)}
+                className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-fg-soft hover:bg-raised transition-colors"
+              >
+                <span>Configurar cuotas</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium transition-colors ${withInstallments ? 'bg-brand text-white' : 'bg-raised text-fg-muted'}`}>
+                  {withInstallments ? 'Activado' : 'Opcional'}
+                </span>
+              </button>
+              {withInstallments && (
+                <div className="px-4 pb-4 pt-1 grid grid-cols-2 gap-3 border-t border-line bg-raised">
+                  <div>
+                    <label className={labelCls}>Número de cuotas</label>
+                    <input
+                      type="number" min="2" max="60" step="1"
+                      value={installCount}
+                      onChange={e => setInstallCount(e.target.value)}
+                      className={inputCls}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Vencimiento 1ª cuota</label>
+                    <DatePicker
+                      value={installFirstDate}
+                      onChange={e => setInstallFirstDate(e.target.value)}
+                      className={inputCls}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {error && <p className="text-sm text-danger">{error}</p>}
 
@@ -220,6 +251,20 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
             </button>
           </div>
         </form>
+
+        {isEditing && quoteData && (
+          <div className="px-5 pb-5">
+            <div className="border border-line rounded-lg p-4 bg-raised">
+              <InstallmentsPanel
+                entityType="quote"
+                entityId={quoteId}
+                entityStatus={quoteData.status}
+                canWrite={canWrite}
+                currency={form.currency}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

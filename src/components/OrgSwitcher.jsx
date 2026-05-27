@@ -1,8 +1,93 @@
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getOrganizations, switchOrganization, createOrganization } from '../api/auth'
+
+const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg placeholder:text-fg-muted"
+const labelCls = "block text-xs text-fg-muted mb-1"
+
+function NewOrgModal({ onClose, onCreated }) {
+  const [form, setForm] = useState({ name: '', cuit: '', email: '', website: '', phone: '', address: '' })
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    if (!form.name.trim()) return
+    setError('')
+    setLoading(true)
+    try {
+      const res = await createOrganization(form)
+      onCreated(res.data.data)
+    } catch (err) {
+      setError(err.response?.data?.error || 'Error al crear')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return createPortal(
+    <div className="fixed inset-0 bg-black/40 flex items-start justify-center z-50 px-4 py-6 overflow-y-auto">
+      <div className="bg-surface/60 backdrop-blur-xl rounded-xl shadow-lg w-full max-w-md p-6 my-auto">
+        <h3 className="text-lg font-semibold text-fg mb-4">Nueva organización</h3>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="sm:col-span-2">
+              <label className={labelCls}>Nombre *</label>
+              <input autoFocus type="text" required value={form.name}
+                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                className={inputCls} placeholder="Mi empresa S.A." />
+            </div>
+            <div>
+              <label className={labelCls}>CUIT</label>
+              <input type="text" value={form.cuit}
+                onChange={e => setForm(f => ({ ...f, cuit: e.target.value }))}
+                className={inputCls} placeholder="20-12345678-9" />
+            </div>
+            <div>
+              <label className={labelCls}>Teléfono</label>
+              <input type="text" value={form.phone}
+                onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                className={inputCls} placeholder="+54 11 1234-5678" />
+            </div>
+            <div>
+              <label className={labelCls}>Email de contacto</label>
+              <input type="email" value={form.email}
+                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                className={inputCls} placeholder="info@empresa.com" />
+            </div>
+            <div>
+              <label className={labelCls}>Sitio web</label>
+              <input type="url" value={form.website}
+                onChange={e => setForm(f => ({ ...f, website: e.target.value }))}
+                className={inputCls} placeholder="https://empresa.com" />
+            </div>
+            <div className="sm:col-span-2">
+              <label className={labelCls}>Dirección</label>
+              <input type="text" value={form.address}
+                onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
+                className={inputCls} placeholder="Av. Corrientes 1234, CABA" />
+            </div>
+          </div>
+          {error && <p className="text-sm text-danger">{error}</p>}
+          <div className="flex justify-end gap-2 pt-1">
+            <button type="button" onClick={onClose}
+              className="px-4 py-2 text-sm text-fg-soft hover:text-fg">
+              Cancelar
+            </button>
+            <button type="submit" disabled={loading || !form.name.trim()}
+              className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50">
+              {loading ? 'Creando...' : 'Crear organización'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>,
+    document.body
+  )
+}
 
 export default function OrgSwitcher() {
   const { user, switchOrg } = useAuth()
@@ -10,10 +95,7 @@ export default function OrgSwitcher() {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [switching, setSwitching] = useState(false)
-  const [creating, setCreating] = useState(false)
-  const [newName, setNewName] = useState('')
-  const [createError, setCreateError] = useState('')
-  const [createLoading, setCreateLoading] = useState(false)
+  const [showNewOrgModal, setShowNewOrgModal] = useState(false)
   const ref = useRef()
 
   const { data: orgs } = useQuery({
@@ -26,9 +108,6 @@ export default function OrgSwitcher() {
     function handleClick(e) {
       if (ref.current && !ref.current.contains(e.target)) {
         setOpen(false)
-        setCreating(false)
-        setNewName('')
-        setCreateError('')
       }
     }
     document.addEventListener('mousedown', handleClick)
@@ -51,24 +130,13 @@ export default function OrgSwitcher() {
     }
   }
 
-  async function handleCreate(e) {
-    e.preventDefault()
-    if (!newName.trim()) return
-    setCreateError('')
-    setCreateLoading(true)
-    try {
-      const res = await createOrganization(newName.trim())
-      const newOrg = res.data.data
-      await qc.invalidateQueries(['organizations'])
-      const switchRes = await switchOrganization(newOrg.id)
-      switchOrg(switchRes.data.data.token)
-      qc.clear()
-      navigate('/')
-    } catch (err) {
-      setCreateError(err.response?.data?.error || 'Error al crear')
-    } finally {
-      setCreateLoading(false)
-    }
+  async function handleCreated(newOrg) {
+    setShowNewOrgModal(false)
+    await qc.invalidateQueries(['organizations'])
+    const switchRes = await switchOrganization(newOrg.id)
+    switchOrg(switchRes.data.data.token)
+    qc.clear()
+    navigate('/')
   }
 
   const currentOrg = orgs?.find(o => o.id === user?.org)
@@ -77,7 +145,7 @@ export default function OrgSwitcher() {
   return (
     <div ref={ref} className="relative border-b border-line">
       <button
-        onClick={() => { setOpen(v => !v); setCreating(false); setNewName(''); setCreateError('') }}
+        onClick={() => setOpen(v => !v)}
         className="w-full px-6 py-4 text-left hover:bg-raised transition-colors"
       >
         <p className="text-xs text-fg-muted uppercase tracking-wide mb-0.5">Organización</p>
@@ -96,7 +164,7 @@ export default function OrgSwitcher() {
               <p className="px-4 py-2 text-xs text-fg-muted uppercase tracking-wide border-b border-line">
                 Cambiar a...
               </p>
-              <ul>
+              <ul className="max-h-48 overflow-y-auto">
                 {orgs.map(org => (
                   <li key={org.id}>
                     <button
@@ -118,45 +186,21 @@ export default function OrgSwitcher() {
           )}
 
           <div className="border-t border-line">
-            {!creating ? (
-              <button
-                onClick={() => setCreating(true)}
-                className="w-full text-left px-4 py-2.5 text-sm text-brand hover:bg-brand-subtle transition-colors"
-              >
-                + Nueva organización
-              </button>
-            ) : (
-              <form onSubmit={handleCreate} className="px-4 py-3 space-y-2">
-                <input
-                  autoFocus
-                  type="text"
-                  placeholder="Nombre de la organización"
-                  value={newName}
-                  onChange={e => setNewName(e.target.value)}
-                  className="w-full px-2.5 py-1.5 text-sm border border-line-soft rounded-md focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
-                />
-                {createError && <p className="text-xs text-danger">{createError}</p>}
-                <div className="flex gap-2">
-                  <button
-                    type="submit"
-                    disabled={createLoading || !newName.trim()}
-                    className="flex-1 py-1.5 bg-brand text-white text-xs rounded-md hover:bg-brand-hover disabled:opacity-50"
-                  >
-                    {createLoading ? 'Creando...' : 'Crear'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setCreating(false); setNewName(''); setCreateError('') }}
-                    className="px-3 py-1.5 text-xs text-fg-muted hover:text-fg-soft"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </form>
-            )}
+            <button
+              onClick={() => { setOpen(false); setShowNewOrgModal(true) }}
+              className="w-full text-left px-4 py-2.5 text-sm text-brand hover:bg-brand-subtle transition-colors"
+            >
+              + Nueva organización
+            </button>
           </div>
         </div>
-      </div>
-    // </div>
+
+      {showNewOrgModal && (
+        <NewOrgModal
+          onClose={() => setShowNewOrgModal(false)}
+          onCreated={handleCreated}
+        />
+      )}
+    </div>
   )
 }

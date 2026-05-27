@@ -5,7 +5,7 @@ export const login = (data) => api.post('/auth/login', data)
 export const register = (data) => api.post('/auth/register', data)
 export const switchOrganization = (organizationId) => api.post('/auth/switch-organization', { organizationId })
 export const getOrganizations = () => api.get('/organizations')
-export const createOrganization = (name) => api.post('/organizations', { name })
+export const createOrganization = (data) => api.post('/organizations', data)
 
 // Usa axios directo para no interferir con los interceptores (401 no debe hacer logout del usuario actual)
 export const acceptInvite = (inviteToken) =>

@@ -14,6 +14,7 @@ export default function ClientModal({ client, onClose, onSaved }) {
     company: client?.company || '',
     address: client?.address || '',
     cuit: client?.cuit || '',
+    website: client?.website || '',
     notes: client?.notes || ''
   })
   const [error, setError] = useState('')
@@ -40,24 +41,26 @@ export default function ClientModal({ client, onClose, onSaved }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-      <div className="bg-surface/60 backdrop-blur-xl rounded-xl shadow-lg w-full max-w-md p-6">
+    <div className="fixed inset-0 bg-black/40 flex items-start justify-center z-50 px-4 py-6 overflow-y-auto">
+      <div className="bg-surface/60 backdrop-blur-xl rounded-xl shadow-lg w-full max-w-md p-6 my-auto">
         <h3 className="text-lg font-semibold text-fg mb-4">
           {client ? 'Editar cliente' : 'Nuevo cliente'}
         </h3>
 
         <form onSubmit={handleSubmit} className="space-y-3">
           {[
-            { key: 'name', label: 'Nombre *', type: 'text', required: true },
-            { key: 'email', label: 'Email', type: 'email' },
-            { key: 'phone', label: 'Teléfono', type: 'text' },
-            { key: 'company', label: 'Empresa', type: 'text' },
-          ].map(({ key, label, type, required }) => (
+            { key: 'name',    label: 'Nombre *', type: 'text',  required: true },
+            { key: 'email',   label: 'Email',    type: 'email' },
+            { key: 'phone',   label: 'Teléfono', type: 'text' },
+            { key: 'company', label: 'Empresa',  type: 'text' },
+            { key: 'website', label: 'Sitio web', type: 'url', placeholder: 'https://ejemplo.com' },
+          ].map(({ key, label, type, required, placeholder }) => (
             <div key={key}>
               <label className={labelCls}>{label}</label>
               <input
                 type={type}
                 required={required}
+                placeholder={placeholder}
                 value={form[key]}
                 onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
                 className={inputCls}
