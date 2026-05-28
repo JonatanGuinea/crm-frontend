@@ -19,7 +19,8 @@ function NewOrgModal({ onClose, onCreated }) {
     setError('')
     setLoading(true)
     try {
-      const res = await createOrganization(form)
+      const website = form.website && !/^https?:\/\//i.test(form.website) ? `https://${form.website}` : form.website
+      const res = await createOrganization({ ...form, website })
       onCreated(res.data.data)
     } catch (err) {
       setError(err.response?.data?.error || 'Error al crear')
@@ -60,9 +61,9 @@ function NewOrgModal({ onClose, onCreated }) {
             </div>
             <div>
               <label className={labelCls}>Sitio web</label>
-              <input type="url" value={form.website}
+              <input type="text" value={form.website}
                 onChange={e => setForm(f => ({ ...f, website: e.target.value }))}
-                className={inputCls} placeholder="https://empresa.com" />
+                className={inputCls} placeholder="empresa.com" />
             </div>
             <div className="sm:col-span-2">
               <label className={labelCls}>Dirección</label>

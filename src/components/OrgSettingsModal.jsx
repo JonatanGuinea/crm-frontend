@@ -41,7 +41,10 @@ export default function OrgSettingsModal({ onClose }) {
   }, [orgData])
 
   const saveOrg = useMutation({
-    mutationFn: () => updateOrganization(orgId, form),
+    mutationFn: () => updateOrganization(orgId, {
+      ...form,
+      website: form.website && !/^https?:\/\//i.test(form.website) ? `https://${form.website}` : form.website
+    }),
     onSuccess: () => {
       qc.invalidateQueries(['organization', orgId])
       toast('Organización actualizada', 'success')
@@ -133,7 +136,7 @@ export default function OrgSettingsModal({ onClose }) {
             </div>
             <div>
               <label className={labelCls}>Sitio web</label>
-              <input type="url" value={form.website} placeholder="https://empresa.com"
+              <input type="text" value={form.website} placeholder="empresa.com"
                 onChange={e => setForm(f => ({ ...f, website: e.target.value }))}
                 className={inputCls} />
             </div>

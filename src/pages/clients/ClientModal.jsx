@@ -25,11 +25,15 @@ export default function ClientModal({ client, onClose, onSaved }) {
     setError('')
     setLoading(true)
     try {
+      const data = {
+        ...form,
+        website: form.website && !/^https?:\/\//i.test(form.website) ? `https://${form.website}` : form.website
+      }
       if (client) {
-        await updateClient(client.id, form)
+        await updateClient(client.id, data)
         toast('Cliente actualizado', 'success')
       } else {
-        await createClient(form)
+        await createClient(data)
         toast('Cliente creado', 'success')
       }
       onSaved()
@@ -53,7 +57,7 @@ export default function ClientModal({ client, onClose, onSaved }) {
             { key: 'email',   label: 'Email',    type: 'email' },
             { key: 'phone',   label: 'Teléfono', type: 'text' },
             { key: 'company', label: 'Empresa',  type: 'text' },
-            { key: 'website', label: 'Sitio web', type: 'url', placeholder: 'https://ejemplo.com' },
+            { key: 'website', label: 'Sitio web', type: 'text', placeholder: 'ejemplo.com' },
           ].map(({ key, label, type, required, placeholder }) => (
             <div key={key}>
               <label className={labelCls}>{label}</label>

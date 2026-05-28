@@ -105,15 +105,6 @@ export default function QuoteDetailPage() {
           >
             {downloading ? 'Generando...' : 'Descargar PDF'}
           </button>
-          {canWrite && quote.status === 'approved' && (
-            <button
-              onClick={async () => { if (await confirm('¿Generar factura desde este presupuesto?', { confirmLabel: 'Facturar', danger: false })) toInvoice.mutate() }}
-              disabled={toInvoice.isPending}
-              className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50 transition-colors"
-            >
-              Facturar
-            </button>
-          )}
           {canWrite && (
             <button
               onClick={() => setEditOpen(true)}
