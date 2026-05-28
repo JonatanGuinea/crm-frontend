@@ -14,6 +14,12 @@ const STATUS_COLORS = {
   rejected: 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400',
   expired:  'bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400',
 }
+const STATUS_INST = { pending: 'Pendiente', paid: 'Pagado', overdue: 'Vencido' }
+const STATUS_INST_COLORS = {
+  pending: 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400',
+  paid:    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400',
+  overdue: 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400',
+}
 
 const fmt = (n) => Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('es-AR') : '—'
@@ -45,10 +51,15 @@ export default function QuotePublicPage() {
     )
   }
 
-  const subtotal = Number(quote.subtotal)
-  const total    = Number(quote.total)
+  const subtotal  = Number(quote.subtotal)
+  const total     = Number(quote.total)
   const taxAmount = total - subtotal
-  const sym = quote.currency === 'USD' ? 'US$' : '$'
+  const sym       = quote.currency === 'USD' ? 'US$' : '$'
+  const org       = quote.organization || {}
+
+  const validDays = (quote.validUntil && quote.createdAt)
+    ? Math.round((new Date(quote.validUntil) - new Date(quote.createdAt)) / (1000 * 60 * 60 * 24))
+    : null
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-10 px-4">
@@ -56,23 +67,29 @@ export default function QuotePublicPage() {
 
         {/* Header card */}
         <div className="rounded-2xl overflow-hidden shadow-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 mb-4">
+
           {/* Top band */}
-          <div className="bg-slate-800 px-7 py-5 flex items-center justify-between gap-4">
+          <div className="bg-slate-800 px-7 py-5 flex items-start justify-between gap-4">
             <div>
               <p className="text-sm text-slate-400 font-medium uppercase tracking-widest mb-0.5">
-                {quote.organization?.name}
+                Presupuesto
               </p>
               <h1 className="text-white text-xl font-bold leading-snug">{quote.title}</h1>
             </div>
+            {/* Emisor */}
             <div className="text-right shrink-0">
-              <p className="text-slate-400 text-xs uppercase tracking-wide">Presupuesto</p>
-              <p className="text-white text-2xl font-bold">#{quote.number}</p>
+              <p className="text-white font-semibold text-base">{org.name}</p>
+              {org.cuit    && <p className="text-slate-400 text-xs mt-0.5">CUIL/CUIT: {org.cuit}</p>}
+              {org.email   && <p className="text-slate-400 text-xs">{org.email}</p>}
+              {org.phone   && <p className="text-slate-400 text-xs">{org.phone}</p>}
+              {org.address && <p className="text-slate-400 text-xs">{org.address}</p>}
+              {org.website && <p className="text-slate-400 text-xs">{org.website}</p>}
             </div>
           </div>
 
           {/* Info section */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 px-7 py-5 border-b border-zinc-100 dark:border-zinc-800">
-            {/* Client */}
+            {/* Cliente */}
             <div>
               <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Cliente</p>
               <p className="font-semibold text-zinc-800 dark:text-zinc-100 text-base">{quote.client?.name}</p>
@@ -81,14 +98,17 @@ export default function QuotePublicPage() {
               {quote.client?.email   && <p className="text-sm text-zinc-500">{quote.client.email}</p>}
               {quote.client?.phone   && <p className="text-sm text-zinc-500">{quote.client.phone}</p>}
               {quote.client?.address && <p className="text-sm text-zinc-500">{quote.client.address}</p>}
+              {quote.client?.website && <p className="text-sm text-zinc-500">{quote.client.website}</p>}
             </div>
 
-            {/* Doc meta */}
+            {/* Detalle */}
             <div className="space-y-1.5">
               <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Detalle</p>
-              <InfoRow label="Fecha"        value={fmtDate(quote.createdAt)} />
-              <InfoRow label="Moneda"       value={quote.currency} />
-              {quote.project   && <InfoRow label="Proyecto"    value={quote.project.title} />}
+              <InfoRow label="Presupuesto" value={`#${String(quote.number).padStart(3, '0')}`} />
+              <InfoRow label="Fecha"       value={fmtDate(quote.createdAt)} />
+              <InfoRow label="Moneda"      value={quote.currency} />
+              {quote.project    && <InfoRow label="Proyecto"    value={quote.project.title} />}
+              {validDays != null && <InfoRow label="Válido por"  value={`${validDays} día${validDays !== 1 ? 's' : ''}`} />}
               {quote.validUntil && <InfoRow label="Válido hasta" value={fmtDate(quote.validUntil)} />}
               <InfoRow
                 label="Estado"
@@ -125,14 +145,6 @@ export default function QuotePublicPage() {
             </table>
           </div>
 
-          {/* Notes */}
-          {quote.notes && (
-            <div className="px-7 py-5 border-t border-zinc-100 dark:border-zinc-800">
-              <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Alcance / Notas</p>
-              <p className="text-sm text-zinc-600 dark:text-zinc-300 whitespace-pre-line leading-relaxed">{quote.notes}</p>
-            </div>
-          )}
-
           {/* Totals */}
           <div className="px-7 py-5 border-t border-zinc-100 dark:border-zinc-800 flex justify-end">
             <div className="w-full max-w-xs space-y-2">
@@ -152,6 +164,44 @@ export default function QuotePublicPage() {
               </div>
             </div>
           </div>
+
+          {/* Plan de cuotas */}
+          {quote.installments?.length > 0 && (
+            <div className="border-t border-zinc-100 dark:border-zinc-800">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-800 text-white">
+                    <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide">N°</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide">Vencimiento</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide">Estado</th>
+                    <th className="text-right px-5 py-3 text-xs font-semibold uppercase tracking-wide">Importe</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                  {quote.installments.map((inst, i) => (
+                    <tr key={inst.id} className={i % 2 === 1 ? 'bg-zinc-50 dark:bg-zinc-800/40' : ''}>
+                      <td className="px-5 py-3 text-zinc-500">{inst.number}</td>
+                      <td className="px-4 py-3 text-zinc-500">{fmtDate(inst.dueDate)}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_INST_COLORS[inst.status] || STATUS_INST_COLORS.pending}`}>
+                          {STATUS_INST[inst.status] || inst.status}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 text-right font-medium text-zinc-800 dark:text-zinc-100">{sym}{fmt(inst.amount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Notas */}
+          {quote.notes && (
+            <div className="px-7 py-5 border-t border-zinc-100 dark:border-zinc-800">
+              <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Alcance / Notas</p>
+              <p className="text-sm text-zinc-600 dark:text-zinc-300 whitespace-pre-line leading-relaxed">{quote.notes}</p>
+            </div>
+          )}
         </div>
 
         {/* Download PDF */}
@@ -169,7 +219,7 @@ export default function QuotePublicPage() {
 
         {/* Branding footer */}
         <p className="text-center text-xs text-zinc-400 mt-6">
-          Generado con <span className="font-medium text-zinc-500">{quote.organization?.name}</span>
+          Generado con <span className="font-medium text-zinc-500">{org.name}</span>
         </p>
       </div>
     </div>
