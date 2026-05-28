@@ -18,32 +18,41 @@ function isTokenValid(token) {
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => {
-    const t = localStorage.getItem('token')
+    const t = localStorage.getItem('token') ?? sessionStorage.getItem('token')
     if (t && !isTokenValid(t)) {
       localStorage.removeItem('token')
+      sessionStorage.removeItem('token')
       return null
     }
     return t
   })
   const [user, setUser] = useState(() => {
-    const t = localStorage.getItem('token')
+    const t = localStorage.getItem('token') ?? sessionStorage.getItem('token')
     return t && isTokenValid(t) ? parseToken(t) : null
   })
 
-  function login(newToken) {
-    localStorage.setItem('token', newToken)
+  function login(newToken, remember = true) {
+    if (remember) {
+      localStorage.setItem('token', newToken)
+      sessionStorage.removeItem('token')
+    } else {
+      sessionStorage.setItem('token', newToken)
+      localStorage.removeItem('token')
+    }
     setToken(newToken)
     setUser(parseToken(newToken))
   }
 
   function logout() {
     localStorage.removeItem('token')
+    sessionStorage.removeItem('token')
     setToken(null)
     setUser(null)
   }
 
   function switchOrg(newToken) {
-    login(newToken)
+    const persistent = !!localStorage.getItem('token')
+    login(newToken, persistent)
   }
 
   return (

@@ -14,6 +14,7 @@ export default function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState({ email: '', password: '' })
+  const [remember, setRemember] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -24,7 +25,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const res = await loginApi(form)
-      login(res.data.data.token)
+      login(res.data.data.token, remember)
       navigate('/')
     } catch (err) {
       setError(err.response?.data?.error || 'Error al iniciar sesión')
@@ -94,6 +95,28 @@ export default function LoginPage() {
               </button>
             </div>
           </div>
+
+          {/* Recordarme */}
+          <label className="flex items-center gap-2.5 cursor-pointer group">
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={e => setRemember(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-4 h-4 rounded border border-slate-700 bg-slate-950/70 peer-checked:bg-cyan-500 peer-checked:border-cyan-500 transition-all flex items-center justify-center">
+                {remember && (
+                  <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
+            </div>
+            <span className="text-xs text-slate-500 group-hover:text-slate-400 transition-colors select-none">
+              Recordarme
+            </span>
+          </label>
 
           {/* Error */}
           {error && (
