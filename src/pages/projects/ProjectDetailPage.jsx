@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../context/AuthContext'
-import { getProjectById } from '../../api/projects'
+import { useToast } from '../../components/Toast'
+import { useConfirm } from '../../components/ConfirmDialog'
+import { getProjectById, deleteProject } from '../../api/projects'
 import { getQuotes } from '../../api/quotes'
 import { getInvoices } from '../../api/invoices'
 import ProjectModal from './ProjectModal'
@@ -46,8 +48,20 @@ export default function ProjectDetailPage() {
   const { user } = useAuth()
   const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
+  const toast = useToast()
+  const confirm = useConfirm()
   const [editOpen, setEditOpen] = useState(false)
   const [newQuoteOpen, setNewQuoteOpen] = useState(false)
+
+  const del = useMutation({
+    mutationFn: () => deleteProject(id),
+    onSuccess: () => {
+      qc.invalidateQueries(['projects'])
+      toast('Proyecto eliminado', 'success')
+      navigate('/projects')
+    },
+    onError: (err) => toast(err.response?.data?.error || 'Error al eliminar')
+  })
 
   const { data: project, isLoading } = useQuery({
     queryKey: ['project', id],
@@ -93,12 +107,21 @@ export default function ProjectDetailPage() {
           </div>
         </div>
         {canWrite && (
-          <button
-            onClick={() => setEditOpen(true)}
-            className="self-start px-4 py-2 border border-line-soft rounded-md text-sm font-medium text-fg-soft hover:bg-raised transition-colors shrink-0"
-          >
-            Editar
-          </button>
+          <div className="flex gap-2 shrink-0">
+            <button
+              onClick={() => setEditOpen(true)}
+              className="self-start px-4 py-2 border border-line-soft rounded-md text-sm font-medium text-fg-soft hover:bg-raised transition-colors"
+            >
+              Editar
+            </button>
+            <button
+              onClick={async () => { if (await confirm('¿Eliminar este proyecto? Esta acción no se puede deshacer.', { confirmLabel: 'Eliminar', danger: true })) del.mutate() }}
+              disabled={del.isPending}
+              className="self-start px-4 py-2 rounded-md text-sm font-medium bg-danger-subtle text-danger hover:opacity-80 disabled:opacity-50 transition-opacity"
+            >
+              Eliminar
+            </button>
+          </div>
         )}
       </div>
 

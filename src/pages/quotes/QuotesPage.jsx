@@ -8,7 +8,7 @@ import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
-import { ChevronDownIcon, UserIcon, ArrowDownTrayIcon, PaperAirplaneIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline'
+import { ChevronDownIcon, UserIcon, ArrowDownTrayIcon, PaperAirplaneIcon, DocumentArrowDownIcon, EyeIcon } from '@heroicons/react/24/outline'
 
 const STATUS_LABELS = {
   draft: 'Borrador', sent: 'Enviado', approved: 'Aprobado',
@@ -219,7 +219,19 @@ export default function QuotesPage() {
         </button>
       )
     }
-    return <StatusDropdown quote={q} onUpdate={(status) => changeStatus.mutate({ id: q.id, status })} />
+    const hasPendingInstallments = q.status === 'approved' && q.installments?.length > 0
+    return (
+      <div className="flex items-center gap-1.5">
+        <StatusDropdown quote={q} onUpdate={(status) => changeStatus.mutate({ id: q.id, status })} />
+        {hasPendingInstallments && (
+          <span title={`${q.installments.length} cuota${q.installments.length !== 1 ? 's' : ''} pendiente${q.installments.length !== 1 ? 's' : ''}`}
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-warning-subtle text-warning text-xs font-medium">
+            <span>⏱</span>
+            {q.installments.length}
+          </span>
+        )}
+      </div>
+    )
   }
 
   function openCreate() { setEditingId(null); setModalOpen(true) }
@@ -282,10 +294,10 @@ export default function QuotesPage() {
                   >
                     <ArrowDownTrayIcon className="w-4 h-4" />
                   </button>
-                  {canWrite && !q._count?.invoices && <button onClick={() => openEdit(q.id)} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-brand-subtle text-brand hover:opacity-80 transition-opacity">Editar</button>}
-                  {canWrite && q.status === 'draft' && (
-                    <button onClick={async () => { if (await confirm('¿Eliminar?')) del.mutate(q.id) }} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-danger-subtle text-danger hover:opacity-80 transition-opacity">Eliminar</button>
-                  )}
+                  <Link to={`/quotes/${q.id}`} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium bg-brand text-white hover:opacity-90 transition-opacity">
+                    <EyeIcon className="w-3.5 h-3.5" />
+                    Ver
+                  </Link>
                 </div>
               </div>
             ))}
@@ -327,10 +339,10 @@ export default function QuotesPage() {
                         >
                           <ArrowDownTrayIcon className={`w-4 h-4 ${downloading === q.id ? 'animate-pulse' : ''}`} />
                         </button>
-                        {canWrite && !q._count?.invoices && <button onClick={() => openEdit(q.id)} className="text-brand hover:underline text-xs">Editar</button>}
-                        {canWrite && q.status === 'draft' && (
-                          <button onClick={async () => { if (await confirm('¿Eliminar?')) del.mutate(q.id) }} className="text-danger hover:underline text-xs">Eliminar</button>
-                        )}
+                        <Link to={`/quotes/${q.id}`} className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium bg-brand text-white hover:opacity-90 transition-opacity">
+                          <EyeIcon className="w-3.5 h-3.5" />
+                          Ver
+                        </Link>
                       </td>
                     </tr>
                   ))}

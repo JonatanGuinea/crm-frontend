@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
-import { getQuoteById, createInvoiceFromQuote, downloadQuotePdf } from '../../api/quotes'
+import { getQuoteById, createInvoiceFromQuote, downloadQuotePdf, deleteQuote } from '../../api/quotes'
 import QuoteModal from './QuoteModal'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import InstallmentsPanel from '../../components/InstallmentsPanel'
@@ -50,6 +50,16 @@ export default function QuoteDetailPage() {
   const { data: quote, isLoading } = useQuery({
     queryKey: ['quote', id],
     queryFn: () => getQuoteById(id).then(r => r.data.data)
+  })
+
+  const del = useMutation({
+    mutationFn: () => deleteQuote(id),
+    onSuccess: () => {
+      qc.invalidateQueries(['quotes'])
+      toast('Presupuesto eliminado', 'success')
+      navigate('/quotes')
+    },
+    onError: (err) => toast(err.response?.data?.error || 'Error al eliminar')
   })
 
   const toInvoice = useMutation({
@@ -111,6 +121,15 @@ export default function QuoteDetailPage() {
               className="px-4 py-2 border border-line-soft rounded-md text-sm font-medium text-fg-soft hover:bg-raised transition-colors"
             >
               Editar
+            </button>
+          )}
+          {canWrite && quote.status === 'draft' && (
+            <button
+              onClick={async () => { if (await confirm('¿Eliminar este presupuesto? Esta acción no se puede deshacer.', { confirmLabel: 'Eliminar', danger: true })) del.mutate() }}
+              disabled={del.isPending}
+              className="px-4 py-2 rounded-md text-sm font-medium bg-danger-subtle text-danger hover:opacity-80 disabled:opacity-50 transition-opacity"
+            >
+              Eliminar
             </button>
           )}
         </div>

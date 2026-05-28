@@ -9,7 +9,7 @@ import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
-import { ChevronDownIcon, UserIcon, CalendarDaysIcon, BanknotesIcon } from '@heroicons/react/24/outline'
+import { ChevronDownIcon, UserIcon, CalendarDaysIcon, BanknotesIcon, EyeIcon } from '@heroicons/react/24/outline'
 
 const STATUS_LABELS = {
   pending: 'Pendiente', approved: 'Aprobado', in_progress: 'En curso',
@@ -159,10 +159,18 @@ export default function ProjectsPage() {
               <div key={p.id} className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-4">
                 {/* Header: estado */}
                 <div className="flex items-start justify-between gap-2 mb-3">
-                  {canWrite
-                    ? <StatusDropdown project={p} onUpdate={(status) => changeStatus.mutate({ id: p.id, status })} />
-                    : <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[p.status]}`}>{STATUS_LABELS[p.status]}</span>
-                  }
+                  <div className="flex items-center gap-1.5">
+                    {canWrite
+                      ? <StatusDropdown project={p} onUpdate={(status) => changeStatus.mutate({ id: p.id, status })} />
+                      : <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[p.status]}`}>{STATUS_LABELS[p.status]}</span>
+                    }
+                    {(() => { const n = p.quotes?.reduce((acc, q) => acc + (q.installments?.length || 0), 0) || 0; return n > 0 ? (
+                      <span title={`${n} cuota${n !== 1 ? 's' : ''} pendiente${n !== 1 ? 's' : ''}`}
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-warning-subtle text-warning text-xs font-medium">
+                        <span>⏱</span>{n}
+                      </span>
+                    ) : null })()}
+                  </div>
                 </div>
                 {/* Título */}
                 <Link to={`/projects/${p.id}`} className="block font-semibold text-fg hover:text-brand leading-snug mb-3">
@@ -191,9 +199,10 @@ export default function ProjectsPage() {
                 </div>
                 {/* Acciones */}
                 <div className="flex items-center gap-2 pt-3 border-t border-line">
-                  <Link to={`/projects/${p.id}`} className="flex-1 text-center py-1.5 rounded-lg text-xs font-medium bg-raised text-fg-soft hover:bg-overlay transition-colors">Ver</Link>
-                  {canWrite && <button onClick={() => { setEditing(p); setModalOpen(true) }} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-brand-subtle text-brand hover:opacity-80 transition-opacity">Editar</button>}
-                  {canWrite && <button onClick={async () => { if (await confirm('¿Eliminar proyecto?')) del.mutate(p.id) }} className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-danger-subtle text-danger hover:opacity-80 transition-opacity">Eliminar</button>}
+                  <Link to={`/projects/${p.id}`} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium bg-brand text-white hover:opacity-90 transition-opacity">
+                    <EyeIcon className="w-3.5 h-3.5" />
+                    Ver
+                  </Link>
                 </div>
               </div>
             ))}
@@ -221,10 +230,18 @@ export default function ProjectsPage() {
                       <td className="px-4 py-3 font-medium text-fg">{p.title}</td>
                       <td className="px-4 py-3 text-fg-soft">{p.client?.name || '-'}</td>
                       <td className="px-4 py-3">
-                        {canWrite
-                          ? <StatusDropdown project={p} onUpdate={(status) => changeStatus.mutate({ id: p.id, status })} />
-                          : <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[p.status]}`}>{STATUS_LABELS[p.status]}</span>
-                        }
+                        <div className="flex items-center gap-1.5">
+                          {canWrite
+                            ? <StatusDropdown project={p} onUpdate={(status) => changeStatus.mutate({ id: p.id, status })} />
+                            : <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[p.status]}`}>{STATUS_LABELS[p.status]}</span>
+                          }
+                          {(() => { const n = p.quotes?.reduce((acc, q) => acc + (q.installments?.length || 0), 0) || 0; return n > 0 ? (
+                            <span title={`${n} cuota${n !== 1 ? 's' : ''} pendiente${n !== 1 ? 's' : ''}`}
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-warning-subtle text-warning text-xs font-medium">
+                              <span>⏱</span>{n}
+                            </span>
+                          ) : null })()}
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         {p.quotes?.length > 0
@@ -241,10 +258,11 @@ export default function ProjectsPage() {
                             )
                         }
                       </td>
-                      <td className="px-4 py-3 text-right space-x-2">
-                        <Link to={`/projects/${p.id}`} className="text-fg-muted hover:underline text-xs">Ver</Link>
-                        {canWrite && <button onClick={() => { setEditing(p); setModalOpen(true) }} className="text-brand hover:underline text-xs">Editar</button>}
-                        {canWrite && <button onClick={async () => { if (await confirm('¿Eliminar proyecto?')) del.mutate(p.id) }} className="text-danger hover:underline text-xs">Eliminar</button>}
+                      <td className="px-4 py-3 text-right">
+                        <Link to={`/projects/${p.id}`} className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium bg-brand text-white hover:opacity-90 transition-opacity">
+                          <EyeIcon className="w-3.5 h-3.5" />
+                          Ver
+                        </Link>
                       </td>
                     </tr>
                   ))}
