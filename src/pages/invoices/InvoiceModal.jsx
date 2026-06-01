@@ -3,6 +3,8 @@ import { useQuery } from '@tanstack/react-query'
 import { getClients } from '../../api/clients'
 import { getProjects } from '../../api/projects'
 import { getInvoiceById, createInvoice, updateInvoice } from '../../api/invoices'
+import { getOrganizations } from '../../api/organizations'
+import { useAuth } from '../../context/AuthContext'
 import DatePicker from '../../components/DatePicker'
 import LineItemsEditor from '../../components/LineItemsEditor'
 
@@ -24,6 +26,7 @@ const labelCls = "block text-sm font-medium text-fg-soft mb-1"
 
 export default function InvoiceModal({ invoiceId, onClose, onSaved }) {
   const isEditing = Boolean(invoiceId)
+  const { user } = useAuth()
 
   const [form, setForm] = useState({
     title: '', clientId: '', projectId: '',
@@ -32,6 +35,14 @@ export default function InvoiceModal({ invoiceId, onClose, onSaved }) {
   const [items, setItems] = useState([EMPTY_ITEM])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const orgId = user?.org
+  const { data: orgData } = useQuery({
+    queryKey: ['organization', orgId],
+    queryFn: () => getOrganizations().then(r => r.data.data?.find(o => o.id === orgId)),
+    enabled: Boolean(orgId) && !isEditing,
+    staleTime: 5 * 60 * 1000,
+  })
 
   const { data: clientsData } = useQuery({
     queryKey: ['clients-all'],
@@ -48,6 +59,12 @@ export default function InvoiceModal({ invoiceId, onClose, onSaved }) {
     queryFn: () => getInvoiceById(invoiceId).then(r => r.data.data),
     enabled: isEditing
   })
+
+  useEffect(() => {
+    if (!isEditing && orgData?.defaultCurrency) {
+      setForm(f => ({ ...f, currency: orgData.defaultCurrency }))
+    }
+  }, [orgData, isEditing])
 
   useEffect(() => {
     if (invoiceData) {

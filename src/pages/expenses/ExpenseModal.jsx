@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getCategories, createCategory } from '../../api/expenses'
+import { getOrganizations } from '../../api/organizations'
+import { useAuth } from '../../context/AuthContext'
 import DatePicker from '../../components/DatePicker'
 
 const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
@@ -8,6 +10,7 @@ const labelCls = "block text-sm font-medium text-fg-soft mb-1"
 
 export default function ExpenseModal({ expense, onClose, onSaved }) {
   const isEditing = Boolean(expense)
+  const { user } = useAuth()
 
   const [form, setForm] = useState({
     title: '',
@@ -23,11 +26,25 @@ export default function ExpenseModal({ expense, onClose, onSaved }) {
   const [saving, setSaving] = useState(false)
   const [savingCat, setSavingCat] = useState(false)
 
+  const orgId = user?.org
+  const { data: orgData } = useQuery({
+    queryKey: ['organization', orgId],
+    queryFn: () => getOrganizations().then(r => r.data.data?.find(o => o.id === orgId)),
+    enabled: Boolean(orgId) && !isEditing,
+    staleTime: 5 * 60 * 1000,
+  })
+
   const { data: categoriesData, refetch: refetchCats } = useQuery({
     queryKey: ['expense-categories'],
     queryFn: () => getCategories().then(r => r.data.data)
   })
   const categories = categoriesData ?? []
+
+  useEffect(() => {
+    if (!isEditing && orgData?.defaultCurrency) {
+      setForm(f => ({ ...f, currency: orgData.defaultCurrency }))
+    }
+  }, [orgData, isEditing])
 
   useEffect(() => {
     if (expense) {

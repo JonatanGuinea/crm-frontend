@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getClients } from '../../api/clients'
 import { getProjects } from '../../api/projects'
 import { getQuoteById, createQuote, updateQuote } from '../../api/quotes'
+import { getOrganizations } from '../../api/organizations'
 import { createInstallments } from '../../api/installments'
 import DatePicker from '../../components/DatePicker'
 import LineItemsEditor from '../../components/LineItemsEditor'
@@ -34,6 +35,14 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
   const [installCount, setInstallCount] = useState(2)
   const [installFirstDate, setInstallFirstDate] = useState('')
 
+  const orgId = user?.org
+  const { data: orgData } = useQuery({
+    queryKey: ['organization', orgId],
+    queryFn: () => getOrganizations().then(r => r.data.data?.find(o => o.id === orgId)),
+    enabled: Boolean(orgId) && !isEditing,
+    staleTime: 5 * 60 * 1000,
+  })
+
   const { data: clientsData } = useQuery({
     queryKey: ['clients-all'],
     queryFn: () => getClients({ limit: 100 }).then(r => r.data.data)
@@ -49,6 +58,12 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
     queryFn: () => getQuoteById(quoteId).then(r => r.data.data),
     enabled: isEditing
   })
+
+  useEffect(() => {
+    if (!isEditing && orgData?.defaultCurrency) {
+      setForm(f => ({ ...f, currency: orgData.defaultCurrency }))
+    }
+  }, [orgData, isEditing])
 
   useEffect(() => {
     if (quoteData) {

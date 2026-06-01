@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { getProjectsDashboard } from '../api/projects'
@@ -6,6 +6,7 @@ import { getQuotesDashboard } from '../api/quotes'
 import { getTopClients } from '../api/clients'
 import { getRecentActivity } from '../api/activity'
 import { getProfile } from '../api/profile'
+import { getOrganizations } from '../api/organizations'
 import { useAuth } from '../context/AuthContext'
 import {
   BanknotesIcon,
@@ -862,7 +863,20 @@ const CURRENCIES = ['USD', 'ARS']
 
 export default function DashboardPage() {
   const { user } = useAuth()
+  const orgId = user?.org
+
+  const { data: orgData } = useQuery({
+    queryKey: ['organization', orgId],
+    queryFn: () => getOrganizations().then(r => r.data.data?.find(o => o.id === orgId)),
+    enabled: Boolean(orgId),
+    staleTime: 5 * 60 * 1000,
+  })
+
   const [currency, setCurrency] = useState('USD')
+
+  useEffect(() => {
+    if (orgData?.defaultCurrency) setCurrency(orgData.defaultCurrency)
+  }, [orgData])
 
   const { data: profile } = useQuery({
     queryKey: ['profile'],

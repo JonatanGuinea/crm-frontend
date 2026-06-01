@@ -17,7 +17,7 @@ export default function OrgSettingsModal({ onClose }) {
   const orgId = user?.org
   const logoInputRef = useRef(null)
 
-  const [form, setForm] = useState({ name: '', cuit: '', email: '', website: '', phone: '', address: '' })
+  const [form, setForm] = useState({ name: '', cuit: '', email: '', website: '', phone: '', address: '', defaultCurrency: 'USD' })
   const [logoPreview, setLogoPreview] = useState(null)
 
   const { data: orgData } = useQuery({
@@ -29,12 +29,13 @@ export default function OrgSettingsModal({ onClose }) {
   useEffect(() => {
     if (orgData) {
       setForm({
-        name:    orgData.name    || '',
-        cuit:    orgData.cuit    || '',
-        email:   orgData.email   || '',
-        website: orgData.website || '',
-        phone:   orgData.phone   || '',
-        address: orgData.address || '',
+        name:            orgData.name            || '',
+        cuit:            orgData.cuit            || '',
+        email:           orgData.email           || '',
+        website:         orgData.website         || '',
+        phone:           orgData.phone           || '',
+        address:         orgData.address         || '',
+        defaultCurrency: orgData.defaultCurrency || 'USD',
       })
       setLogoPreview(orgData.logo ? `${API_BASE}/uploads/${orgData.logo}` : null)
     }
@@ -145,6 +146,17 @@ export default function OrgSettingsModal({ onClose }) {
               <input type="text" value={form.address} placeholder="Av. Corrientes 1234, CABA"
                 onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
                 className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Moneda predeterminada</label>
+              <select
+                value={form.defaultCurrency}
+                onChange={e => setForm(f => ({ ...f, defaultCurrency: e.target.value }))}
+                className={inputCls}
+              >
+                <option value="USD">USD — Dólar</option>
+                <option value="ARS">ARS — Peso argentino</option>
+              </select>
             </div>
           </div>
 
