@@ -1,9 +1,7 @@
 import { useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getAttachments, uploadAttachment, deleteAttachment } from '../api/attachments'
+import { getAttachments, uploadAttachment, deleteAttachment, downloadAttachment } from '../api/attachments'
 import { useConfirm } from './ConfirmDialog'
-
-const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'
 
 function formatSize(bytes) {
   if (bytes < 1024) return `${bytes} B`
@@ -49,7 +47,7 @@ export default function AttachmentsPanel({ entityType, entityId }) {
         >
           {upload.isPending ? 'Subiendo...' : '+ Subir archivo'}
         </button>
-        <input ref={inputRef} type="file" className="hidden" onChange={handleFileChange} />
+        <input ref={inputRef} type="file" className="hidden" accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx" onChange={handleFileChange} />
       </div>
 
       {upload.isError && (
@@ -67,14 +65,12 @@ export default function AttachmentsPanel({ entityType, entityId }) {
               <div className="flex items-center gap-2 min-w-0">
                 <span className="text-fg-muted text-base">📎</span>
                 <div className="min-w-0">
-                  <a
-                    href={`${API_BASE}${att.url}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-brand hover:underline truncate block max-w-xs"
+                  <button
+                    onClick={() => downloadAttachment(att.storedName, att.filename)}
+                    className="text-brand hover:underline truncate block max-w-xs text-left"
                   >
                     {att.filename}
-                  </a>
+                  </button>
                   <span className="text-xs text-fg-muted">{formatSize(att.size)} · {att.uploadedBy?.name || ''}</span>
                 </div>
               </div>

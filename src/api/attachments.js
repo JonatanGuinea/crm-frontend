@@ -12,3 +12,14 @@ export const uploadAttachment = (entityType, entityId, file) => {
 }
 
 export const deleteAttachment = (id) => api.delete(`/attachments/${id}`)
+
+export const downloadAttachment = (storedName, filename) =>
+  api.get(`/attachments/file/${storedName}`, { responseType: 'blob' }).then(res => {
+    const url = URL.createObjectURL(res.data)
+    const a = document.createElement('a')
+    a.href = url
+    a.target = '_blank'
+    a.rel = 'noreferrer'
+    a.click()
+    setTimeout(() => URL.revokeObjectURL(url), 10000)
+  })
