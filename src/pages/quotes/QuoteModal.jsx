@@ -181,15 +181,6 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
                 onChange={e => setForm(f => ({ ...f, validUntil: e.target.value }))}
                 className={inputCls} />
             </div>
-            <div>
-              <label className={labelCls}>Moneda</label>
-              <select value={form.currency}
-                onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}
-                className={inputCls}>
-                <option value="USD">USD</option>
-                <option value="ARS">ARS</option>
-              </select>
-            </div>
             <div className="col-span-2 sm:col-span-1">
               <label className={labelCls}>IVA (%)</label>
               <input type="number" min="0" max="100" step="1" value={form.taxRate}

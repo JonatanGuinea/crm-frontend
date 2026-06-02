@@ -132,17 +132,6 @@ export default function ExpenseModal({ expense, onClose, onSaved }) {
               />
             </div>
             <div>
-              <label className={labelCls}>Moneda</label>
-              <select
-                value={form.currency}
-                onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}
-                className={inputCls}
-              >
-                <option value="USD">USD</option>
-                <option value="ARS">ARS</option>
-              </select>
-            </div>
-            <div>
               <label className={labelCls}>Fecha</label>
               <DatePicker
                 value={form.date}

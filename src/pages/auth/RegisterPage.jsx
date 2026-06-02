@@ -30,7 +30,7 @@ const companyFields = [
 
 function SectionLabel({ children }) {
   return (
-    <p className="text-[10px] font-mono tracking-[0.25em] text-cyan-400/70 uppercase mt-1 mb-3">
+    <p className="text-xs font-sans tracking-wide text-cyan-300/80 mt-1 mb-3">
       ◈ &nbsp;{children}
     </p>
   )
@@ -42,7 +42,7 @@ export default function RegisterPage() {
   const [step, setStep] = useState(1)
   const [visible, setVisible] = useState(true)
   const [direction, setDirection] = useState(1) // 1 = forward, -1 = backward
-  const [form, setForm] = useState({ name: '', email: '', password: '', address: '', organizationName: '', organizationEmail: '', phone: '', orgAddress: '' })
+  const [form, setForm] = useState({ name: '', email: '', password: '', address: '', organizationName: '', organizationEmail: '', phone: '', orgAddress: '', defaultCurrency: 'USD' })
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -90,7 +90,7 @@ export default function RegisterPage() {
     const isPhoneInvalid = key === 'phone' && form.phone && !PHONE_RE.test(form.phone.trim())
     return (
       <div key={key} className={span ? 'md:col-span-2' : ''}>
-        <label className="block text-[10px] font-mono tracking-[0.2em] text-cyan-400/70 uppercase mb-2">
+        <label className="block text-xs font-sans tracking-wide text-cyan-300/80 mb-2">
           {label}{!required && <span className="ml-1.5 normal-case tracking-normal text-slate-600 font-sans">(opcional)</span>}
         </label>
         <div className="relative group">
@@ -187,6 +187,31 @@ export default function RegisterPage() {
             <SectionLabel>Datos de la empresa</SectionLabel>
             <div className="md:grid md:grid-cols-2 md:gap-4 space-y-4 md:space-y-0">
               {companyFields.map(renderField)}
+            </div>
+
+            <div className="mt-4">
+              <label className="block text-xs font-sans tracking-wide text-cyan-300/80 mb-2">
+                Moneda de trabajo
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                {['USD', 'ARS'].map(c => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, defaultCurrency: c }))}
+                    className={`py-2.5 px-4 rounded-lg text-sm font-semibold border transition-all ${
+                      form.defaultCurrency === c
+                        ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.15)]'
+                        : 'bg-slate-950/70 border-slate-700/50 text-slate-400 hover:border-slate-600 hover:text-slate-300'
+                    }`}
+                  >
+                    {c === 'USD' ? 'USD — Dólar' : 'ARS — Peso'}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-1.5 text-[10px] text-slate-600 font-mono">
+                Esta elección no podrá modificarse después.
+              </p>
             </div>
 
             {error && (

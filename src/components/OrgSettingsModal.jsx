@@ -17,7 +17,7 @@ export default function OrgSettingsModal({ onClose }) {
   const orgId = user?.org
   const logoInputRef = useRef(null)
 
-  const [form, setForm] = useState({ name: '', cuit: '', email: '', website: '', phone: '', address: '', defaultCurrency: 'USD' })
+  const [form, setForm] = useState({ name: '', cuit: '', email: '', website: '', phone: '', address: '' })
   const [logoPreview, setLogoPreview] = useState(null)
 
   const { data: orgData } = useQuery({
@@ -29,13 +29,12 @@ export default function OrgSettingsModal({ onClose }) {
   useEffect(() => {
     if (orgData) {
       setForm({
-        name:            orgData.name            || '',
-        cuit:            orgData.cuit            || '',
-        email:           orgData.email           || '',
-        website:         orgData.website         || '',
-        phone:           orgData.phone           || '',
-        address:         orgData.address         || '',
-        defaultCurrency: orgData.defaultCurrency || 'USD',
+        name:    orgData.name    || '',
+        cuit:    orgData.cuit    || '',
+        email:   orgData.email   || '',
+        website: orgData.website || '',
+        phone:   orgData.phone   || '',
+        address: orgData.address || '',
       })
       setLogoPreview(orgData.logo ? `${API_BASE}/uploads/${orgData.logo}` : null)
     }
@@ -147,16 +146,11 @@ export default function OrgSettingsModal({ onClose }) {
                 onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
                 className={inputCls} />
             </div>
-            <div>
-              <label className={labelCls}>Moneda predeterminada</label>
-              <select
-                value={form.defaultCurrency}
-                onChange={e => setForm(f => ({ ...f, defaultCurrency: e.target.value }))}
-                className={inputCls}
-              >
-                <option value="USD">USD — Dólar</option>
-                <option value="ARS">ARS — Peso argentino</option>
-              </select>
+            <div className="sm:col-span-2 flex items-center justify-between px-3 py-2.5 bg-raised rounded-md border border-line-soft">
+              <span className="text-xs text-fg-muted">Moneda de trabajo</span>
+              <span className="text-xs font-semibold text-fg">
+                {orgData?.defaultCurrency === 'ARS' ? 'ARS — Peso argentino' : 'USD — Dólar'}
+              </span>
             </div>
           </div>
 

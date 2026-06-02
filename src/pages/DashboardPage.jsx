@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { getProjectsDashboard } from '../api/projects'
@@ -859,8 +858,6 @@ function QuotesMonthlyChart({ data, currency }) {
 
 // ── main ──────────────────────────────────────────────────────────────────────
 
-const CURRENCIES = ['USD', 'ARS']
-
 export default function DashboardPage() {
   const { user } = useAuth()
   const orgId = user?.org
@@ -872,11 +869,7 @@ export default function DashboardPage() {
     staleTime: 5 * 60 * 1000,
   })
 
-  const [currency, setCurrency] = useState('USD')
-
-  useEffect(() => {
-    if (orgData?.defaultCurrency) setCurrency(orgData.defaultCurrency)
-  }, [orgData])
+  const currency = orgData?.defaultCurrency ?? 'USD'
 
   const { data: profile } = useQuery({
     queryKey: ['profile'],
@@ -918,22 +911,6 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-2xl font-bold text-fg">{greeting(profile?.name ?? user?.name)}</h1>
           <p className="text-sm text-fg-muted mt-0.5 capitalize">{fmtDate()}</p>
-        </div>
-        {/* Selector de moneda */}
-        <div className="flex items-center gap-1 bg-raised rounded-lg p-1 shrink-0">
-          {CURRENCIES.map(c => (
-            <button
-              key={c}
-              onClick={() => setCurrency(c)}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
-                currency === c
-                  ? 'bg-brand text-white shadow-sm'
-                  : 'text-fg-muted hover:text-fg'
-              }`}
-            >
-              {c}
-            </button>
-          ))}
         </div>
       </div>
 

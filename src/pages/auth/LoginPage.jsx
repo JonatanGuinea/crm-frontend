@@ -55,7 +55,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Email */}
           <div>
-            <label className="block text-[10px] font-mono tracking-[0.2em] text-cyan-400/70 uppercase mb-2">
+            <label className="block text-xs font-sans tracking-wide text-cyan-300/80 mb-2">
               Email
             </label>
             <div className="relative group">
@@ -73,7 +73,7 @@ export default function LoginPage() {
 
           {/* Contraseña */}
           <div>
-            <label className="block text-[10px] font-mono tracking-[0.2em] text-cyan-400/70 uppercase mb-2">
+            <label className="block text-xs font-sans tracking-wide text-cyan-300/80 mb-2">
               Contraseña
             </label>
             <div className="relative group">
