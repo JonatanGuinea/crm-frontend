@@ -69,11 +69,13 @@ export default function DatePicker({ value, onChange, className, placeholder = '
     if (!btnRef.current) return
     const r    = btnRef.current.getBoundingClientRect()
     const calW = 280
-    const calH = 340
+    const calH = 320
     let top  = r.bottom + 4
     let left = r.left
     if (left + calW > window.innerWidth  - 8) left = r.right - calW
     if (top  + calH > window.innerHeight - 8) top  = r.top - calH - 4
+    top  = Math.max(8, Math.min(top,  window.innerHeight - calH - 8))
+    left = Math.max(8, Math.min(left, window.innerWidth  - calW - 8))
     setPos({ top, left })
     setOpen(true)
   }, [])

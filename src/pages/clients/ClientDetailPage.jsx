@@ -5,7 +5,6 @@ import { useAuth } from '../../context/AuthContext'
 import { getClientById } from '../../api/clients'
 import { getProjects } from '../../api/projects'
 import { getQuotes } from '../../api/quotes'
-import { getInvoices } from '../../api/invoices'
 import ClientModal from './ClientModal'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 
@@ -67,10 +66,6 @@ export default function ClientDetailPage() {
     queryFn: () => getQuotes({ clientId: id, limit: 100 }).then(r => r.data)
   })
 
-  const { data: invoicesRes } = useQuery({
-    queryKey: ['invoices', { clientId: id }],
-    queryFn: () => getInvoices({ clientId: id, limit: 100 }).then(r => r.data)
-  })
 
   if (isLoading) return <div className="p-8 text-sm text-fg-soft">Cargando...</div>
   if (!clientRes) return <div className="p-8 text-sm text-fg-soft">Cliente no encontrado</div>
@@ -78,7 +73,6 @@ export default function ClientDetailPage() {
   const client = clientRes
   const projects = projectsRes?.data || []
   const quotes = quotesRes?.data || []
-  const invoices = invoicesRes?.data || []
 
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto">
@@ -204,46 +198,6 @@ export default function ClientDetailPage() {
             )}
           </div>
 
-          {/* Facturas */}
-          <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-line">
-              <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide">
-                Facturas <span className="text-fg-muted font-normal">({invoices.length})</span>
-              </h3>
-              <Link to="/invoices" className="text-xs text-brand hover:underline">Ver todos</Link>
-            </div>
-            {invoices.length === 0 ? (
-              <p className="px-5 py-4 text-sm text-fg-muted">Sin facturas</p>
-            ) : (
-              <table className="w-full text-sm">
-                <thead className="bg-raised">
-                  <tr>
-                    {['N°', 'Estado', 'Total', 'Vencimiento'].map(h => (
-                      <th key={h} className="text-left px-5 py-2 text-xs font-medium text-fg-soft uppercase">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-line">
-                  {invoices.slice(0, 5).map(inv => (
-                    <tr key={inv.id} className="hover:bg-raised">
-                      <td className="px-5 py-3 font-medium text-fg">{inv.number}</td>
-                      <td className="px-5 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS_DOC[inv.status] || 'bg-raised text-fg-soft'}`}>
-                          {STATUS_LABELS_DOC[inv.status] || inv.status}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3 text-fg-soft">
-                        {inv.total != null ? `$${Number(inv.total).toLocaleString('es-AR')}` : '-'}
-                      </td>
-                      <td className="px-5 py-3 text-fg-soft">
-                        {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('es-AR') : '-'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
         </div>
       </div>
 

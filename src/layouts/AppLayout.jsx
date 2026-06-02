@@ -168,7 +168,7 @@ function SidebarContent({ collapsed, profile, user, onNavClick, dark, onToggleTh
             onClick={onNavClick}
             title={collapsed ? label : undefined}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              `flex items-center gap-3 px-2 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 isActive
                   ? 'bg-brand-subtle text-brand'
                   : 'text-fg-soft hover:bg-raised hover:text-fg'
