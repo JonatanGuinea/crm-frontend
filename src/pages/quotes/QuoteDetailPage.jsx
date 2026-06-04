@@ -141,21 +141,48 @@ export default function QuoteDetailPage() {
             <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide mb-4">Información</h3>
             <dl className="space-y-3 text-sm">
               <div>
-                <dt className="text-xs text-fg-muted uppercase mb-0.5">Cliente</dt>
-                <dd>
-                  <Link to={`/clients/${quote.client?.id}`} className="text-brand hover:underline">
-                    {quote.client?.name}
-                  </Link>
-                  {quote.client?.company && <span className="text-fg-muted ml-1">· {quote.client.company}</span>}
+                <dt className="text-xs text-fg-muted uppercase mb-0.5">
+                  Cliente
+                  {!quote.client && quote.potentialClientName && (
+                    <span className="ml-2 normal-case px-1.5 py-0.5 rounded-md bg-warning-subtle text-warning font-medium text-[10px]">Potencial</span>
+                  )}
+                </dt>
+                <dd className="text-fg">
+                  {quote.client ? (
+                    <>
+                      <Link to={`/clients/${quote.client.id}`} className="text-brand hover:underline">
+                        {quote.client.name}
+                      </Link>
+                      {quote.client.company && <span className="text-fg-muted ml-1">· {quote.client.company}</span>}
+                    </>
+                  ) : (
+                    quote.potentialClientName ?? '—'
+                  )}
                 </dd>
               </div>
-              {quote.project && (
+              {!quote.client && quote.potentialClientCompany && (
+                <div>
+                  <dt className="text-xs text-fg-muted uppercase mb-0.5">Empresa</dt>
+                  <dd className="text-fg">{quote.potentialClientCompany}</dd>
+                </div>
+              )}
+              {!quote.client && quote.potentialClientEmail && (
+                <div>
+                  <dt className="text-xs text-fg-muted uppercase mb-0.5">Email</dt>
+                  <dd className="text-fg">{quote.potentialClientEmail}</dd>
+                </div>
+              )}
+              {(quote.project || (!quote.client && quote.potentialProjectTitle)) && (
                 <div>
                   <dt className="text-xs text-fg-muted uppercase mb-0.5">Proyecto</dt>
                   <dd>
-                    <Link to={`/projects/${quote.project.id}`} className="text-brand hover:underline">
-                      {quote.project.title}
-                    </Link>
+                    {quote.project ? (
+                      <Link to={`/projects/${quote.project.id}`} className="text-brand hover:underline">
+                        {quote.project.title}
+                      </Link>
+                    ) : (
+                      <span className="text-fg">{quote.potentialProjectTitle}</span>
+                    )}
                   </dd>
                 </div>
               )}

@@ -4,11 +4,12 @@ import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getQuotes, deleteQuote, updateQuote, sendQuote, createInvoiceFromQuote, downloadQuotePdf } from '../../api/quotes'
 import QuoteModal from './QuoteModal'
+import QuoteModalPotential from './QuoteModalPotential'
 import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
-import { ChevronDownIcon, UserIcon, ArrowDownTrayIcon, PaperAirplaneIcon, DocumentArrowDownIcon, EyeIcon } from '@heroicons/react/24/outline'
+import { ChevronDownIcon, UserIcon, ArrowDownTrayIcon, PaperAirplaneIcon, DocumentArrowDownIcon, EyeIcon, UserPlusIcon, UsersIcon } from '@heroicons/react/24/outline'
 
 const STATUS_LABELS = {
   draft: 'Borrador', sent: 'Enviado', approved: 'Aprobado',
@@ -156,6 +157,10 @@ export default function QuotesPage() {
   const [editingId, setEditingId] = useState(null)
   const [downloading, setDownloading] = useState(null)
   const [confirmSend, setConfirmSend] = useState(null)
+  const [newMenuOpen, setNewMenuOpen] = useState(false)
+  const [newMenuPos, setNewMenuPos] = useState({ top: 0, left: 0 })
+  const [potentialOpen, setPotentialOpen] = useState(false)
+  const newBtnRef = useRef(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['quotes', statusFilter, page],
@@ -234,18 +239,66 @@ export default function QuotesPage() {
     )
   }
 
+  function openNewMenu() {
+    if (newBtnRef.current) {
+      const r = newBtnRef.current.getBoundingClientRect()
+      const menuW = 220
+      let left = r.right - menuW
+      if (left < 8) left = r.left
+      setNewMenuPos({ top: r.bottom + 4, left })
+    }
+    setNewMenuOpen(true)
+  }
   function openCreate() { setEditingId(null); setModalOpen(true) }
   function openEdit(id) { setEditingId(id); setModalOpen(true) }
   function handleSaved() { setModalOpen(false); qc.invalidateQueries(['quotes']) }
+  function handlePotentialSaved() { setPotentialOpen(false); qc.invalidateQueries(['quotes']); qc.invalidateQueries(['clients-all']) }
 
   return (
     <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-fg">Presupuestos</h2>
         {canWrite && (
-          <button onClick={openCreate} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition-colors">
+          <button
+            ref={newBtnRef}
+            onClick={openNewMenu}
+            className="flex items-center gap-1.5 px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition-colors"
+          >
             + Nuevo presupuesto
+            <ChevronDownIcon className="w-4 h-4 shrink-0" />
           </button>
+        )}
+
+        {newMenuOpen && createPortal(
+          <>
+            <div className="fixed inset-0 z-[9998]" onClick={() => setNewMenuOpen(false)} />
+            <div
+              style={{ top: newMenuPos.top, left: newMenuPos.left }}
+              className="fixed z-[9999] bg-surface/90 backdrop-blur-xl border border-line-soft rounded-xl shadow-xl py-1.5 w-56"
+            >
+              <button
+                onClick={() => { setNewMenuOpen(false); openCreate() }}
+                className="w-full flex items-start gap-3 px-4 py-2.5 hover:bg-raised text-left transition-colors"
+              >
+                <UsersIcon className="w-4 h-4 mt-0.5 text-brand shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-fg">Cliente existente</p>
+                  <p className="text-xs text-fg-muted">Elegir de la lista</p>
+                </div>
+              </button>
+              <button
+                onClick={() => { setNewMenuOpen(false); setPotentialOpen(true) }}
+                className="w-full flex items-start gap-3 px-4 py-2.5 hover:bg-raised text-left transition-colors"
+              >
+                <UserPlusIcon className="w-4 h-4 mt-0.5 text-brand shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-fg">Potencial cliente</p>
+                  <p className="text-xs text-fg-muted">Crear cliente y presupuesto</p>
+                </div>
+              </button>
+            </div>
+          </>,
+          document.body
         )}
       </div>
 
@@ -274,10 +327,10 @@ export default function QuotesPage() {
                 </Link>
                 {/* Meta */}
                 <div className="flex items-center justify-between gap-2 mb-4">
-                  {q.client?.name && (
+                  {(q.client?.name || q.potentialClientName) && (
                     <p className="text-xs text-fg-soft flex items-center gap-1.5 truncate">
                       <UserIcon className="w-3.5 h-3.5 shrink-0 text-fg-muted" />
-                      {q.client.name}
+                      {q.client?.name ?? <span className="italic">{q.potentialClientName}</span>}
                     </p>
                   )}
                   <p className="text-base font-bold text-fg shrink-0">
@@ -327,7 +380,13 @@ export default function QuotesPage() {
                       <td className="px-4 py-3 font-medium text-fg">
                         <Link to={`/quotes/${q.id}`} className="hover:text-brand">{q.title}</Link>
                       </td>
-                      <td className="px-4 py-3 text-fg-soft">{q.client?.name}</td>
+                      <td className="px-4 py-3 text-fg-soft">
+                        {q.client?.name ?? (
+                          q.potentialClientName
+                            ? <span className="italic text-fg-muted">{q.potentialClientName}</span>
+                            : '—'
+                        )}
+                      </td>
                       <td className="px-4 py-3">{renderStatus(q)}</td>
                       <td className="px-4 py-3 text-fg-soft">${Number(q.total).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                       <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
@@ -374,6 +433,13 @@ export default function QuotesPage() {
           onViewPdf={() => handleDownload(confirmSend.id, confirmSend.number)}
           sending={send.isPending}
           downloading={downloading === confirmSend.id}
+        />
+      )}
+
+      {potentialOpen && (
+        <QuoteModalPotential
+          onClose={() => setPotentialOpen(false)}
+          onSaved={handlePotentialSaved}
         />
       )}
     </div>
