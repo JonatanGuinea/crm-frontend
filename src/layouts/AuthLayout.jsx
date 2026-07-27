@@ -17,7 +17,7 @@ const features = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25Z" />
       </svg>
     ),
-    title: 'Presupuestos y facturas',
+    title: 'Presupuestos',
     desc: 'Creá y enviá documentos profesionales en segundos.',
   },
   {
@@ -35,19 +35,112 @@ export default function AuthLayout() {
   return (
     <div className="dark min-h-screen flex overflow-hidden bg-[#050a12] relative">
 
-      {/* ── Fondo diagonal: cubre la sección derecha desde el viewport completo ── */}
+      {/* ── CRM Animated Background (panel derecho) ── */}
       <div
-        className="hidden lg:block absolute inset-0 [clip-path:polygon(calc(43%+60vh)_0%,100%_0%,100%_100%,calc(43%-60vh)_100%)] pointer-events-none"
-        style={{
-          backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 40 0 L 0 0 0 40' fill='none' stroke='rgba(20,184,166,0.4)' stroke-width='1'/%3E%3C/svg%3E\"), linear-gradient(135deg, #020617 0%, #020617 100%)",
-        }}
-      />
+        className="hidden lg:block absolute top-0 bottom-0 overflow-hidden pointer-events-none"
+        style={{ left: '43%', right: 0 }}
+      >
+        {/* Trend line + área — esquina superior derecha */}
+        <svg
+          viewBox="0 0 320 100"
+          fill="none"
+          preserveAspectRatio="none"
+          className="absolute"
+          style={{ top: '7%', right: '4%', width: '46%', opacity: 0.22 }}
+        >
+          <defs>
+            <linearGradient id="crmAreaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#14b8a6" stopOpacity="0.45" />
+              <stop offset="100%" stopColor="#14b8a6" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path d="M0,78 C45,68 75,40 115,48 C150,56 168,16 224,24 C262,30 286,12 320,4 L320,100 L0,100 Z" fill="url(#crmAreaGrad)" />
+          <path
+            d="M0,78 C45,68 75,40 115,48 C150,56 168,16 224,24 C262,30 286,12 320,4"
+            stroke="#14b8a6" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="800"
+            style={{ animation: 'crm-draw 3s ease-out 0.4s both' }}
+          />
+          {[[115,48],[168,16],[224,24],[286,12]].map(([x,y],i) => (
+            <circle key={i} cx={x} cy={y} r="3" fill="#14b8a6"
+              style={{ animation: `crm-dot-pulse 2.2s ease-in-out ${i*0.35+3.4}s infinite` }}
+            />
+          ))}
+        </svg>
 
-      {/* Línea diagonal */}
-      <div
-        className="hidden lg:block absolute top-0 bottom-0 w-px bg-teal-500/40 pointer-events-none rotate-[50deg] scale-y-[4]"
-        style={{ left: '43%' }}
-      />
+        {/* Bar chart mensual — inferior izquierda */}
+        <div className="absolute flex items-end gap-1.5" style={{ bottom: '19%', left: '5%', opacity: 0.22 }}>
+          {[42,65,52,82,66,90,74].map((h,i) => (
+            <div key={i} style={{
+              width: '13px', height: `${h}px`,
+              borderRadius: '3px 3px 0 0',
+              background: 'linear-gradient(to top, rgba(20,184,166,0.8), rgba(6,182,212,0.25))',
+              transformOrigin: 'bottom',
+              animation: `crm-bar-pulse 3s ease-in-out ${i*0.22}s infinite`,
+            }} />
+          ))}
+        </div>
+
+        {/* Tarjeta: Clientes */}
+        <div className="absolute rounded-xl border" style={{
+          top: '21%', left: '7%', padding: '10px 14px',
+          background: 'rgba(6,182,212,0.03)', borderColor: 'rgba(20,184,166,0.1)',
+          backdropFilter: 'blur(8px)',
+          animation: 'crm-fade-up 0.9s ease 0.6s both, crm-float-a 5.5s ease-in-out 1.5s infinite',
+        }}>
+          <p style={{ fontSize:'9px', letterSpacing:'0.15em', textTransform:'uppercase', color:'rgba(6,182,212,0.45)', marginBottom:'4px' }}>Clientes</p>
+          <p style={{ fontSize:'22px', fontWeight:700, color:'rgba(255,255,255,0.28)', lineHeight:1 }}>248</p>
+        </div>
+
+        {/* Tarjeta: Proyectos */}
+        <div className="absolute rounded-xl border" style={{
+          top: '46%', right: '9%', padding: '10px 14px',
+          background: 'rgba(6,182,212,0.03)', borderColor: 'rgba(20,184,166,0.1)',
+          backdropFilter: 'blur(8px)',
+          animation: 'crm-fade-up 0.9s ease 1.1s both, crm-float-b 6.5s ease-in-out 2s infinite',
+        }}>
+          <p style={{ fontSize:'9px', letterSpacing:'0.15em', textTransform:'uppercase', color:'rgba(6,182,212,0.45)', marginBottom:'4px' }}>Proyectos</p>
+          <p style={{ fontSize:'22px', fontWeight:700, color:'rgba(255,255,255,0.28)', lineHeight:1 }}>18</p>
+        </div>
+
+        {/* Tarjeta: Ingresos */}
+        <div className="absolute rounded-xl border" style={{
+          bottom: '33%', left: '32%', padding: '10px 14px',
+          background: 'rgba(6,182,212,0.03)', borderColor: 'rgba(20,184,166,0.1)',
+          backdropFilter: 'blur(8px)',
+          animation: 'crm-fade-up 0.9s ease 1.6s both, crm-float-c 4.8s ease-in-out 2.5s infinite',
+        }}>
+          <p style={{ fontSize:'9px', letterSpacing:'0.15em', textTransform:'uppercase', color:'rgba(6,182,212,0.45)', marginBottom:'4px' }}>Ingresos</p>
+          <p style={{ fontSize:'22px', fontWeight:700, color:'rgba(255,255,255,0.28)', lineHeight:1 }}>$45.2k</p>
+        </div>
+
+        {/* Red de nodos — zona media derecha */}
+        <svg viewBox="0 0 200 130" fill="none" className="absolute"
+          style={{ bottom: '35%', right: '4%', width: '20%', opacity: 0.18 }}
+        >
+          <line x1="100" y1="65" x2="35"  y2="22"  stroke="#14b8a6" strokeWidth="0.6" />
+          <line x1="100" y1="65" x2="165" y2="28"  stroke="#14b8a6" strokeWidth="0.6" />
+          <line x1="100" y1="65" x2="45"  y2="108" stroke="#14b8a6" strokeWidth="0.6" />
+          <line x1="100" y1="65" x2="168" y2="102" stroke="#14b8a6" strokeWidth="0.6" />
+          <line x1="35"  y1="22" x2="165" y2="28"  stroke="#14b8a6" strokeWidth="0.4" strokeDasharray="3 3" />
+          {[[100,65,4],[35,22,2.5],[165,28,2.5],[45,108,2.5],[168,102,2.5]].map(([x,y,r],i) => (
+            <circle key={i} cx={x} cy={y} r={r} fill="#14b8a6"
+              style={{ animation: `crm-dot-pulse 2s ease-in-out ${i*0.3}s infinite` }}
+            />
+          ))}
+        </svg>
+
+        {/* Donut chart — esquina inferior derecha */}
+        <svg viewBox="0 0 80 80" className="absolute"
+          style={{ bottom: '9%', right: '8%', width: '68px', animation: 'crm-fade-up 1.2s ease 2.2s both' }}
+        >
+          <circle cx="40" cy="40" r="28" fill="none" stroke="rgba(20,184,166,0.12)" strokeWidth="5" />
+          <circle cx="40" cy="40" r="28" fill="none" stroke="#14b8a6" strokeWidth="5"
+            strokeLinecap="round" strokeDasharray="106 70"
+            transform="rotate(-90 40 40)" style={{ opacity: 0.7 }}
+          />
+          <text x="40" y="44" textAnchor="middle" fill="rgba(255,255,255,0.28)" fontSize="11" fontWeight="600">60%</text>
+        </svg>
+      </div>
 
       {/* Glows globales */}
       <div className="absolute top-[-80px] left-[-80px] w-[600px] h-[500px] bg-cyan-500/15 rounded-full blur-[140px] pointer-events-none" />
