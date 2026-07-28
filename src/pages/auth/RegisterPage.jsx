@@ -10,6 +10,7 @@ import {
   LockClosedIcon,
   BuildingOfficeIcon,
   MapPinIcon,
+  IdentificationIcon,
   EyeIcon,
   EyeSlashIcon,
   ExclamationCircleIcon,
@@ -191,9 +192,10 @@ const personalFields = [
 ]
 
 const companyFields = [
-  { key: 'organizationName',  label: 'Nombre de la empresa',   type: 'text',  icon: BuildingOfficeIcon, placeholder: 'Mi empresa S.A.' },
-  { key: 'organizationEmail', label: 'Email de la empresa',    type: 'email', icon: EnvelopeIcon,       placeholder: 'info@miempresa.com' },
-  { key: 'orgAddress',        label: 'Dirección de la empresa', type: 'text', icon: MapPinIcon,         placeholder: 'Av. Corrientes 1234, CABA', required: false },
+  { key: 'organizationName',  label: 'Nombre de la empresa',   type: 'text',  icon: BuildingOfficeIcon,  placeholder: 'Mi empresa S.A.' },
+  { key: 'organizationEmail', label: 'Email de la empresa',    type: 'email', icon: EnvelopeIcon,        placeholder: 'info@miempresa.com' },
+  { key: 'cuit',              label: 'CUIT / RUT / NIT',       type: 'text',  icon: IdentificationIcon,  placeholder: '30-12345678-9', required: false },
+  { key: 'orgAddress',        label: 'Dirección de la empresa', type: 'text', icon: MapPinIcon,          placeholder: 'Av. Corrientes 1234, CABA', required: false },
 ]
 
 function SectionLabel({ children }) {
@@ -212,7 +214,7 @@ export default function RegisterPage() {
   const [direction, setDirection] = useState(1)
   const [form, setForm] = useState({
     name: '', email: '', password: '', address: '',
-    organizationName: '', organizationEmail: '', orgAddress: '',
+    organizationName: '', organizationEmail: '', orgAddress: '', cuit: '',
     defaultCurrency: 'ARS',
   })
   const [userCountry, setUserCountry] = useState('AR')
