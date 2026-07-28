@@ -39,7 +39,7 @@ export default function LoginPage() {
       {/* Glow detrás de la card */}
       <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-cyan-500/20 via-transparent to-teal-500/10 blur-sm pointer-events-none" />
 
-      <div className="relative bg-[#080e1a]/95 backdrop-blur-xl rounded-2xl border border-cyan-500/20 shadow-[0_0_60px_rgba(6,182,212,0.07),inset_0_1px_0_rgba(6,182,212,0.08)] p-8">
+      <div className="relative bg-[#080e1a]/30 backdrop-blur-xl rounded-2xl border border-cyan-500/20 shadow-[0_0_60px_rgba(6,182,212,0.07),inset_0_1px_0_rgba(6,182,212,0.08)] p-8">
 
         {/* Badge */}
         <p className="text-[10px] font-mono tracking-[0.25em] text-cyan-400 uppercase mb-4">
