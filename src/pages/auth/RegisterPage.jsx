@@ -213,7 +213,7 @@ export default function RegisterPage() {
   const [form, setForm] = useState({
     name: '', email: '', password: '', address: '',
     organizationName: '', organizationEmail: '', orgAddress: '',
-    defaultCurrency: 'USD',
+    defaultCurrency: 'ARS',
   })
   const [userCountry, setUserCountry] = useState('AR')
   const [userPhoneNumber, setUserPhoneNumber] = useState('')
