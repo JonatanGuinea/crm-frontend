@@ -3,6 +3,10 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { acceptInvite } from '../../api/auth'
 
+function decodeJwtPayload(token) {
+  try { return JSON.parse(atob(token.split('.')[1])) } catch { return null }
+}
+
 export default function AcceptInvitePage() {
   const [searchParams] = useSearchParams()
   const { login } = useAuth()
@@ -19,6 +23,15 @@ export default function AcceptInvitePage() {
       return
     }
 
+    const payload = decodeJwtPayload(token)
+
+    // Invitación para usuario sin cuenta → redirigir al registro
+    if (payload?.type === 'pre-invite') {
+      navigate(`/register?inviteToken=${token}`, { replace: true })
+      return
+    }
+
+    // Invitación para usuario existente → aceptar directamente
     acceptInvite(token)
       .then(res => {
         login(res.data.data.token)

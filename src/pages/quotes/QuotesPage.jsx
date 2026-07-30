@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getQuotes, deleteQuote, updateQuote, sendQuote, createInvoiceFromQuote, downloadQuotePdf } from '../../api/quotes'
+import { getQuotes, deleteQuote, updateQuote, sendQuote, downloadQuotePdf } from '../../api/quotes'
 import QuoteModal from './QuoteModal'
 import QuoteModalPotential from './QuoteModalPotential'
 import Pagination from '../../components/Pagination'
@@ -182,16 +182,6 @@ export default function QuotesPage() {
     mutationFn: ({ id, status }) => updateQuote(id, { status }),
     onSuccess: () => qc.invalidateQueries(['quotes']),
     onError: (err) => toast(err.response?.data?.error || 'Error al cambiar estado')
-  })
-
-  const toInvoice = useMutation({
-    mutationFn: (id) => createInvoiceFromQuote(id, {}),
-    onSuccess: () => {
-      qc.invalidateQueries(['invoices'])
-      qc.invalidateQueries(['quotes'])
-      toast('Factura creada correctamente', 'success')
-    },
-    onError: (err) => toast(err.response?.data?.error || 'Error al generar factura')
   })
 
   async function handleDownload(id, number) {

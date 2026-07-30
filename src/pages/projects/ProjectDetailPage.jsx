@@ -6,7 +6,6 @@ import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
 import { getProjectById, deleteProject } from '../../api/projects'
 import { getQuotes } from '../../api/quotes'
-import { getInvoices } from '../../api/invoices'
 import ProjectModal from './ProjectModal'
 import QuoteModal from '../quotes/QuoteModal'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
@@ -74,17 +73,10 @@ export default function ProjectDetailPage() {
     enabled: Boolean(id)
   })
 
-  const { data: invoicesRes } = useQuery({
-    queryKey: ['invoices', { projectId: id }],
-    queryFn: () => getInvoices({ projectId: id, limit: 100 }).then(r => r.data),
-    enabled: Boolean(id)
-  })
-
   if (isLoading) return <div className="p-8 text-sm text-fg-soft">Cargando...</div>
   if (!project) return <div className="p-8 text-sm text-fg-soft">Proyecto no encontrado</div>
 
   const quotes = quotesRes?.data || []
-  const invoices = invoicesRes?.data || []
 
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto">

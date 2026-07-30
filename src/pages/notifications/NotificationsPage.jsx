@@ -7,8 +7,6 @@ import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 
 const TYPE_LABELS = {
-  invoice_overdue:  'Factura vencida',
-  invoice_paid:     'Factura pagada',
   quote_expiring:   'Presupuesto por vencer',
   quote_approved:   'Presupuesto aprobado',
   quote_rejected:   'Presupuesto rechazado',
@@ -17,8 +15,6 @@ const TYPE_LABELS = {
 }
 
 const TYPE_COLORS = {
-  invoice_overdue:  'bg-danger-subtle text-danger',
-  invoice_paid:     'bg-brand-subtle text-brand',
   quote_expiring:   'bg-warning-subtle text-warning',
   quote_approved:   'bg-brand-subtle text-brand',
   quote_rejected:   'bg-danger-subtle text-danger',
@@ -27,8 +23,6 @@ const TYPE_COLORS = {
 }
 
 const TYPE_DOT = {
-  invoice_overdue:  'bg-danger',
-  invoice_paid:     'bg-brand',
   quote_expiring:   'bg-warning',
   quote_approved:   'bg-brand',
   quote_rejected:   'bg-danger',

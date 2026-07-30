@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
-import { getQuoteById, createInvoiceFromQuote, downloadQuotePdf, deleteQuote } from '../../api/quotes'
+import { getQuoteById, downloadQuotePdf, deleteQuote } from '../../api/quotes'
 import QuoteModal from './QuoteModal'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import InstallmentsPanel from '../../components/InstallmentsPanel'
@@ -60,16 +60,6 @@ export default function QuoteDetailPage() {
       navigate('/quotes')
     },
     onError: (err) => toast(err.response?.data?.error || 'Error al eliminar')
-  })
-
-  const toInvoice = useMutation({
-    mutationFn: () => createInvoiceFromQuote(id, {}),
-    onSuccess: () => {
-      qc.invalidateQueries(['invoices'])
-      toast('Factura creada correctamente', 'success')
-      navigate('/invoices')
-    },
-    onError: (err) => toast(err.response?.data?.error || 'Error al generar factura')
   })
 
   if (isLoading) return <div className="p-8 text-sm text-fg-soft">Cargando...</div>

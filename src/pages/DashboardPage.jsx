@@ -9,17 +9,12 @@ import { getOrganizations } from '../api/organizations'
 import { useAuth } from '../context/AuthContext'
 import {
   BanknotesIcon,
-  ClockIcon,
-  ExclamationTriangleIcon,
   FolderOpenIcon,
   ArrowRightIcon,
   DocumentTextIcon,
   ExclamationCircleIcon,
-  DocumentCurrencyDollarIcon,
   ClipboardDocumentListIcon,
   CalendarDaysIcon,
-  ArrowTrendingDownIcon,
-  ScaleIcon,
 } from '@heroicons/react/24/outline'
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -54,14 +49,6 @@ const PROJECT_STATUS = {
   cancelled:  { label: 'Cancelado',  dot: 'bg-fg-muted' },
 }
 
-const INV_STATUS = {
-  draft:     { label: 'Borrador', cls: 'bg-raised text-fg-soft' },
-  sent:      { label: 'Enviada',  cls: 'bg-info-subtle text-info' },
-  paid:      { label: 'Pagada',   cls: 'bg-brand-subtle text-brand' },
-  overdue:   { label: 'Vencida',  cls: 'bg-danger-subtle text-danger' },
-  cancelled: { label: 'Cancelada',cls: 'bg-raised text-fg-muted' },
-}
-
 const QUOTE_STATUS = {
   draft:    { label: 'Borrador',  cls: 'bg-raised text-fg-soft' },
   sent:     { label: 'Enviado',   cls: 'bg-info-subtle text-info' },
@@ -82,91 +69,6 @@ function KpiCard({ icon: Icon, iconBg, iconColor, label, value, sub }) {
         <p className="text-xs text-fg-muted uppercase tracking-wide leading-tight">{label}</p>
         <p className="text-base md:text-2xl font-bold text-fg mt-0.5 truncate">{value}</p>
         {sub != null && <p className="hidden md:block text-xs text-fg-muted mt-0.5">{sub}</p>}
-      </div>
-    </div>
-  )
-}
-
-function IncomePanel({ invoices, currency }) {
-  const paid        = Number(invoices?.summary?.paid               ?? 0)
-  const sent        = Number(invoices?.summary?.sent               ?? 0)
-  const overdue     = Number(invoices?.summary?.overdue            ?? 0)
-  const installments = Number(invoices?.summary?.pendingInstallments ?? 0)
-  const total       = paid + sent + overdue + installments
-
-  const paidPct         = total ? (paid         / total) * 100 : 0
-  const sentPct         = total ? (sent         / total) * 100 : 0
-  const overduePct      = total ? (overdue      / total) * 100 : 0
-  const installmentsPct = total ? (installments / total) * 100 : 0
-
-  return (
-    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-5">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-fg">Resumen de ingresos</h3>
-        <Link to="/invoices" className="flex items-center gap-1 text-xs text-brand hover:underline">
-          Ver facturas <ArrowRightIcon className="w-3 h-3" />
-        </Link>
-      </div>
-
-      {/* Numbers */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-        <div className="min-w-0">
-          <p className="text-xs text-fg-muted mb-1">Cobrado</p>
-          <p className="text-sm md:text-xl font-bold text-brand truncate">{fmt(paid, currency)}</p>
-        </div>
-        <div className="min-w-0">
-          <p className="text-xs text-fg-muted mb-1">Enviadas</p>
-          <p className="text-sm md:text-xl font-bold text-info truncate">{fmt(sent, currency)}</p>
-        </div>
-        <div className="min-w-0">
-          <p className="text-xs text-fg-muted mb-1">Vencido</p>
-          <p className="text-sm md:text-xl font-bold text-danger truncate">{fmt(overdue, currency)}</p>
-        </div>
-        <div className="min-w-0">
-          <p className="text-xs text-fg-muted mb-1">En cuotas</p>
-          <p className="text-sm md:text-xl font-bold text-warning truncate">{fmt(installments, currency)}</p>
-        </div>
-      </div>
-
-      {/* Stacked bar */}
-      <div>
-        {total > 0 ? (
-          <div className="flex h-2.5 rounded-full overflow-hidden gap-px bg-raised">
-            {paidPct > 0 && (
-              <div style={{ width: `${paidPct}%` }} className="bg-brand transition-all duration-700" />
-            )}
-            {sentPct > 0 && (
-              <div style={{ width: `${sentPct}%` }} className="bg-info transition-all duration-700" />
-            )}
-            {overduePct > 0 && (
-              <div style={{ width: `${overduePct}%` }} className="bg-danger transition-all duration-700" />
-            )}
-            {installmentsPct > 0 && (
-              <div style={{ width: `${installmentsPct}%` }} className="bg-warning transition-all duration-700" />
-            )}
-          </div>
-        ) : (
-          <div className="h-2.5 rounded-full bg-raised" />
-        )}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2.5">
-          {[
-            { label: 'Cobrado',   color: 'bg-brand',   pct: paidPct },
-            { label: 'Enviadas',  color: 'bg-info',    pct: sentPct },
-            { label: 'Vencido',   color: 'bg-danger',  pct: overduePct },
-            { label: 'En cuotas', color: 'bg-warning', pct: installmentsPct },
-          ].map(({ label, color, pct }) => (
-            <div key={label} className="flex items-center gap-1.5 text-xs text-fg-muted">
-              <span className={`w-2 h-2 rounded-full shrink-0 ${color}`} />
-              {label} <span className="text-fg-soft font-medium">{pct.toFixed(0)}%</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Total */}
-      <div className="pt-4 border-t border-line flex items-center justify-between">
-        <p className="text-xs text-fg-muted">Total facturado</p>
-        <p className="text-sm font-semibold text-fg">{fmt(total, currency)}</p>
       </div>
     </div>
   )
@@ -221,45 +123,6 @@ function ProjectsPanel({ projects }) {
   )
 }
 
-function RecentInvoices({ invoices }) {
-  if (!invoices?.length) {
-    return (
-      <p className="text-sm text-fg-muted text-center py-6">Sin facturas recientes</p>
-    )
-  }
-  return (
-    <ul className="divide-y divide-line">
-      {invoices.map(inv => {
-        const st = INV_STATUS[inv.status] ?? { label: inv.status, cls: 'bg-raised text-fg-muted' }
-        return (
-          <li key={inv.id}>
-            <Link
-              to={`/invoices`}
-              className="flex items-center gap-3 px-1 py-3 hover:bg-raised rounded-lg transition-colors group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-raised flex items-center justify-center shrink-0">
-                <DocumentTextIcon className="w-4 h-4 text-fg-muted" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-fg truncate">
-                  {inv.number}{inv.title ? ` · ${inv.title}` : ''}
-                </p>
-                <p className="text-xs text-fg-muted truncate">{inv.client?.name}</p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <p className="text-sm font-semibold text-fg">{fmt(inv.total)}</p>
-                <span className={`hidden sm:inline text-xs px-2 py-0.5 rounded-full font-medium ${st.cls}`}>
-                  {st.label}
-                </span>
-              </div>
-            </Link>
-          </li>
-        )
-      })}
-    </ul>
-  )
-}
-
 function TopClientsPanel({ clients }) {
   const list = clients ?? []
   const max = list[0]?.total ?? 1
@@ -298,60 +161,6 @@ function TopClientsPanel({ clients }) {
                     className="h-full rounded-full bg-brand/50 transition-all duration-700"
                     style={{ width: `${pct}%` }}
                   />
-                </div>
-              </li>
-            )
-          })}
-        </ul>
-      )}
-    </div>
-  )
-}
-
-function UpcomingInstallmentsPanel({ invoices }) {
-  const installments = invoices?.upcomingInstallments ?? []
-  const fmt2 = (n) => Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-
-  return (
-    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-fg">Cuotas a cobrar</h3>
-        <Link to="/invoices?status=partial" className="flex items-center gap-1 text-xs text-brand hover:underline">
-          Ver facturas <ArrowRightIcon className="w-3 h-3" />
-        </Link>
-      </div>
-
-      {installments.length === 0 ? (
-        <p className="text-sm text-fg-muted text-center py-4">Sin cuotas pendientes</p>
-      ) : (
-        <ul className="divide-y divide-line">
-          {installments.map(inst => {
-            const daysLeft = Math.ceil((new Date(inst.dueDate) - new Date()) / (1000 * 60 * 60 * 24))
-            const overdue = daysLeft < 0
-            const urgent = !overdue && daysLeft <= 3
-            return (
-              <li key={inst.id} className="flex items-center gap-3 py-3">
-                <div className={`p-1.5 rounded-lg shrink-0 ${overdue ? 'bg-danger-subtle' : urgent ? 'bg-warning-subtle' : 'bg-raised'}`}>
-                  <BanknotesIcon className={`w-4 h-4 ${overdue ? 'text-danger' : urgent ? 'text-warning' : 'text-fg-muted'}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <Link to={`/invoices/${inst.invoice.id}`} className="text-sm font-medium text-fg hover:text-brand truncate block">
-                    {inst.invoice.client.name}
-                  </Link>
-                  <p className="text-xs text-fg-muted truncate">
-                    Cuota {inst.number} · Fact. #{inst.invoice.number}
-                  </p>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className={`text-sm font-semibold ${overdue ? 'text-danger' : 'text-fg'}`}>
-                    {inst.invoice.currency} ${fmt2(inst.amount)}
-                  </p>
-                  <p className={`text-xs ${overdue ? 'text-danger' : urgent ? 'text-warning' : 'text-fg-muted'}`}>
-                    {overdue
-                      ? `Vencida hace ${Math.abs(daysLeft)}d`
-                      : daysLeft === 0 ? 'Vence hoy'
-                      : `En ${daysLeft}d`}
-                  </p>
                 </div>
               </li>
             )
@@ -538,13 +347,6 @@ function UpcomingProjectsPanel({ projects }) {
 }
 
 const ACTIVITY_CONFIG = {
-  invoice: {
-    icon: DocumentCurrencyDollarIcon,
-    iconBg: 'bg-brand-subtle',
-    iconColor: 'text-brand',
-    label: 'Factura',
-    to: '/invoices',
-  },
   quote: {
     icon: DocumentTextIcon,
     iconBg: 'bg-info-subtle',

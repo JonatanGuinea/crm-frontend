@@ -17,28 +17,24 @@ const SECTION_LABELS = {
   clients: 'Clientes',
   projects: 'Proyectos',
   quotes: 'Presupuestos',
-  invoices: 'Facturas',
 }
 
 const SECTION_ICONS = {
   clients: '👤',
   projects: '📁',
   quotes: '📄',
-  invoices: '🧾',
 }
 
 const SECTION_PATHS = {
   clients: (item) => `/clients/${item.id}`,
   projects: (item) => `/projects/${item.id}`,
   quotes: () => '/quotes',
-  invoices: () => '/invoices',
 }
 
 function itemLabel(section, item) {
   if (section === 'clients') return item.name + (item.company ? ` — ${item.company}` : '')
   if (section === 'projects') return item.title + (item.client ? ` · ${item.client.name}` : '')
   if (section === 'quotes') return `${item.number} ${item.title || ''}`.trim() + (item.client ? ` · ${item.client.name}` : '')
-  if (section === 'invoices') return `${item.number} ${item.title || ''}`.trim() + (item.client ? ` · ${item.client.name}` : '')
   return ''
 }
 

@@ -12,7 +12,7 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
   const qc = useQueryClient()
   const confirm = useConfirm()
   const queryKey = ['installments', entityType, entityId]
-  const entityParam = entityType === 'invoice' ? { invoiceId: entityId } : { quoteId: entityId }
+  const entityParam = { quoteId: entityId }
 
   const [showForm, setShowForm] = useState(false)
   const [count, setCount] = useState(2)
@@ -29,7 +29,7 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
     onSuccess: () => {
       qc.invalidateQueries(queryKey)
       qc.invalidateQueries([entityType, entityId])
-      qc.invalidateQueries([entityType === 'invoice' ? 'invoices' : 'quotes'])
+      qc.invalidateQueries(['quotes'])
       setShowForm(false)
       setFormError('')
     },
@@ -41,7 +41,7 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
     onSuccess: () => {
       qc.invalidateQueries(queryKey)
       qc.invalidateQueries([entityType, entityId])
-      qc.invalidateQueries([entityType === 'invoice' ? 'invoices' : 'quotes'])
+      qc.invalidateQueries(['quotes'])
     }
   })
 
@@ -50,7 +50,7 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
     onSuccess: () => {
       qc.invalidateQueries(queryKey)
       qc.invalidateQueries([entityType, entityId])
-      qc.invalidateQueries([entityType === 'invoice' ? 'invoices' : 'quotes'])
+      qc.invalidateQueries(['quotes'])
     }
   })
 
