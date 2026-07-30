@@ -1,16 +1,18 @@
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import GlobalSearch from '../components/GlobalSearch'
 import OrgSwitcher from '../components/OrgSwitcher'
 import InvitationsBanner from '../components/InvitationsBanner'
 import OrgSettingsModal from '../components/OrgSettingsModal'
+import { SetupOrgModal } from '../components/OrgModal'
 import { getProfile } from '../api/profile'
 import { getNotifications } from '../api/notifications'
 import { getPendingInvitations } from '../api/invitations'
+import { getOrganizations, switchOrganization } from '../api/auth'
 import logo from '../assets/logo.png'
 import logoDark from '../assets/logo-dark-mode.png'
 import favicon from '../assets/favicon.png'
@@ -196,10 +198,31 @@ function SidebarContent({ collapsed, profile, user, onNavClick, dark, onToggleTh
 }
 
 export default function AppLayout() {
-  const { user } = useAuth()
+  const { user, switchOrg } = useAuth()
   const { dark, toggle } = useTheme()
+  const qc = useQueryClient()
+  const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('sidebar') === 'collapsed')
   const [mobileOpen, setMobileOpen] = useState(false)
+
+  const { data: orgs } = useQuery({
+    queryKey: ['organizations'],
+    queryFn: () => getOrganizations().then(r => r.data.data)
+  })
+
+  const needsOrg = orgs !== undefined && orgs.length === 0
+
+  async function handleOrgCreated(newOrg) {
+    try {
+      const switchRes = await switchOrganization(newOrg.id)
+      switchOrg(switchRes.data.data.token)
+      qc.clear()
+      navigate('/')
+    } catch {
+      // si el switch falla, invalida la query para que reaparezca el modal
+      await qc.invalidateQueries(['organizations'])
+    }
+  }
 
   const { data: profile } = useQuery({
     queryKey: ['profile'],
@@ -228,6 +251,7 @@ export default function AppLayout() {
 
   return (
     <div className={`flex h-screen relative overflow-hidden ${dark ? 'bg-slate-950' : 'bg-base'}`}>
+      {needsOrg && <SetupOrgModal onCreated={handleOrgCreated} />}
 
       {/* Glows de fondo */}
       <div className={`absolute top-[-80px] left-[-80px] w-[600px] h-[500px] rounded-full blur-[130px] pointer-events-none z-0 ${dark ? 'bg-teal-400/20' : 'bg-teal-400/[0.07]'}`} />

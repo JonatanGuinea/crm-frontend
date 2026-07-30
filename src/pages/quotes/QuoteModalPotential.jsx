@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { createQuote } from '../../api/quotes'
 import { getOrganizations } from '../../api/organizations'
-import { createInstallments } from '../../api/installments'
+import { createInstallments, createCustomInstallments } from '../../api/installments'
 import DatePicker from '../../components/DatePicker'
 import LineItemsEditor from '../../components/LineItemsEditor'
 import { useToast } from '../../components/Toast'
@@ -28,9 +28,18 @@ export default function QuoteModalPotential({ onClose, onSaved }) {
 
   // ── Presupuesto ───────────────────────────────────────────
   const [quote, setQuote] = useState({
-    title: '', validUntil: '', taxRate: 0, notes: '', currency: 'USD'
+    title: '', validUntil: '', taxRate: 21, notes: '', currency: 'USD'
   })
   const [items, setItems] = useState([EMPTY_ITEM])
+
+  // ── Pago inicial ──────────────────────────────────────────
+  const [withDownPayment, setWithDownPayment] = useState(false)
+  const [downPaymentMode, setDownPaymentMode] = useState('amount') // 'amount' | 'percent'
+  const [downPaymentAmount, setDownPaymentAmount] = useState('')
+  const [downPaymentPercent, setDownPaymentPercent] = useState('')
+  const [downPaymentDate, setDownPaymentDate] = useState('')
+  const [remainderType, setRemainderType] = useState('second')
+  const [secondPaymentDate, setSecondPaymentDate] = useState('')
 
   // ── Cuotas ────────────────────────────────────────────────
   const [withInstallments, setWithInstallments] = useState(false)
@@ -58,6 +67,9 @@ export default function QuoteModalPotential({ onClose, onSaved }) {
   const subtotal = items.reduce((acc, i) => acc + (parseFloat(i.amount) || 0), 0)
   const taxAmount = subtotal * (parseFloat(quote.taxRate) / 100)
   const total = subtotal + taxAmount
+  const effectiveDownPayment = downPaymentMode === 'amount'
+    ? parseFloat(downPaymentAmount) || 0
+    : parseFloat((total * (parseFloat(downPaymentPercent) || 0) / 100).toFixed(2))
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -65,7 +77,13 @@ export default function QuoteModalPotential({ onClose, onSaved }) {
     if (!quote.title.trim()) { setError('El título del presupuesto es obligatorio'); return }
     if (withProject && !projectTitle.trim()) { setError('El nombre del proyecto es obligatorio'); return }
     if (items.some(i => !i.description.trim())) { setError('Todos los ítems deben tener descripción'); return }
-    if (withInstallments && !installFirstDate) { setError('Seleccioná la fecha del primer vencimiento'); return }
+    if (withDownPayment) {
+      if (!effectiveDownPayment || effectiveDownPayment <= 0) { setError('Ingresá el monto del pago inicial'); return }
+      if (!downPaymentDate) { setError('Ingresá la fecha del pago inicial'); return }
+      if (effectiveDownPayment >= total) { setError('El pago inicial no puede ser igual o mayor al total'); return }
+      if (remainderType === 'second' && !secondPaymentDate) { setError('Ingresá la fecha del segundo pago'); return }
+      if (remainderType === 'installments' && !installFirstDate) { setError('Seleccioná la fecha del primer vencimiento'); return }
+    } else if (withInstallments && !installFirstDate) { setError('Seleccioná la fecha del primer vencimiento'); return }
 
     setError('')
     setLoading(true)
@@ -84,7 +102,24 @@ export default function QuoteModalPotential({ onClose, onSaved }) {
       })
       const newQuoteId = res.data.data?.id
 
-      if (newQuoteId && withInstallments) {
+      if (newQuoteId && withDownPayment) {
+        const dpAmt = effectiveDownPayment
+        const remaining = parseFloat((total - dpAmt).toFixed(2))
+        const payments = [{ amount: dpAmt, dueDate: downPaymentDate }]
+        if (remainderType === 'second') {
+          payments.push({ amount: remaining, dueDate: secondPaymentDate })
+        } else {
+          const n = parseInt(installCount)
+          const perInstall = parseFloat((remaining / n).toFixed(2))
+          const diff = parseFloat((remaining - perInstall * n).toFixed(2))
+          for (let i = 0; i < n; i++) {
+            const d = new Date(installFirstDate)
+            d.setMonth(d.getMonth() + i)
+            payments.push({ amount: i === n - 1 ? parseFloat((perInstall + diff).toFixed(2)) : perInstall, dueDate: d.toISOString().slice(0, 10) })
+          }
+        }
+        await createCustomInstallments({ quoteId: newQuoteId, payments })
+      } else if (newQuoteId && withInstallments) {
         await createInstallments({
           quoteId: newQuoteId,
           count: parseInt(installCount),
@@ -249,38 +284,173 @@ export default function QuoteModalPotential({ onClose, onSaved }) {
             </div>
           </section>
 
-          {/* ── Cuotas ── */}
+          {/* ── Pagos ── */}
           <div className="border border-line rounded-lg overflow-hidden">
+            {/* Pago inicial */}
             <button
               type="button"
-              onClick={() => setWithInstallments(v => !v)}
+              onClick={() => { setWithDownPayment(v => !v); setWithInstallments(false) }}
               className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-fg-soft hover:bg-raised transition-colors"
             >
-              <span>Configurar cuotas</span>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium transition-colors ${withInstallments ? 'bg-brand text-white' : 'bg-raised text-fg-muted'}`}>
-                {withInstallments ? 'Activado' : 'Opcional'}
+              <span>Pago inicial (anticipo)</span>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-medium transition-colors ${withDownPayment ? 'bg-brand text-white' : 'bg-raised text-fg-muted'}`}>
+                {withDownPayment ? 'Activado' : 'Opcional'}
               </span>
             </button>
-            {withInstallments && (
-              <div className="px-4 pb-4 pt-1 grid grid-cols-2 gap-3 border-t border-line bg-raised">
-                <div>
-                  <label className={labelCls}>Número de cuotas</label>
-                  <input
-                    type="number" min="2" max="60" step="1"
-                    value={installCount}
-                    onChange={e => setInstallCount(e.target.value)}
-                    className={inputCls}
-                  />
+
+            {withDownPayment && (
+              <div className="border-t border-line bg-raised px-4 pt-3 pb-4 space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className={labelCls + ' mb-0'}>Anticipo</label>
+                      <div className="flex rounded-md overflow-hidden border border-line text-xs">
+                        <button type="button" onClick={() => setDownPaymentMode('amount')}
+                          className={`px-2 py-0.5 font-medium transition-colors ${downPaymentMode === 'amount' ? 'bg-brand text-white' : 'bg-surface text-fg-soft hover:bg-raised'}`}>
+                          Monto
+                        </button>
+                        <button type="button" onClick={() => setDownPaymentMode('percent')}
+                          className={`px-2 py-0.5 font-medium transition-colors ${downPaymentMode === 'percent' ? 'bg-brand text-white' : 'bg-surface text-fg-soft hover:bg-raised'}`}>
+                          %
+                        </button>
+                      </div>
+                    </div>
+                    {downPaymentMode === 'amount' ? (
+                      <input
+                        type="number" min="0" step="0.01"
+                        value={downPaymentAmount}
+                        onChange={e => setDownPaymentAmount(e.target.value)}
+                        className={inputCls}
+                        placeholder="0.00"
+                      />
+                    ) : (
+                      <div>
+                        <div className="relative">
+                          <input
+                            type="number" min="0" max="100" step="1"
+                            value={downPaymentPercent}
+                            onChange={e => setDownPaymentPercent(e.target.value)}
+                            className={inputCls + ' pr-7'}
+                            placeholder="0"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-fg-muted pointer-events-none">%</span>
+                        </div>
+                        {parseFloat(downPaymentPercent) > 0 && total > 0 && (
+                          <p className="text-xs text-fg-muted mt-1">
+                            = {quote.currency} {effectiveDownPayment.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <label className={labelCls}>Fecha de pago</label>
+                    <DatePicker
+                      value={downPaymentDate}
+                      onChange={e => setDownPaymentDate(e.target.value)}
+                      className={inputCls}
+                    />
+                  </div>
                 </div>
+
+                {effectiveDownPayment > 0 && effectiveDownPayment < total && (
+                  <p className="text-xs text-fg-muted">
+                    Saldo restante: <span className="font-semibold text-fg">
+                      {quote.currency} {(total - effectiveDownPayment).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </p>
+                )}
+
                 <div>
-                  <label className={labelCls}>Vencimiento 1ª cuota</label>
-                  <DatePicker
-                    value={installFirstDate}
-                    onChange={e => setInstallFirstDate(e.target.value)}
-                    className={inputCls}
-                  />
+                  <p className="text-xs font-medium text-fg-soft mb-2">Saldo restante</p>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setRemainderType('second')}
+                      className={`flex-1 py-2 text-xs font-medium rounded-md border transition-colors ${remainderType === 'second' ? 'border-brand bg-brand-subtle text-brand' : 'border-line text-fg-soft hover:bg-raised'}`}
+                    >
+                      Segundo pago
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRemainderType('installments')}
+                      className={`flex-1 py-2 text-xs font-medium rounded-md border transition-colors ${remainderType === 'installments' ? 'border-brand bg-brand-subtle text-brand' : 'border-line text-fg-soft hover:bg-raised'}`}
+                    >
+                      En cuotas
+                    </button>
+                  </div>
                 </div>
+
+                {remainderType === 'second' && (
+                  <div>
+                    <label className={labelCls}>Fecha del segundo pago</label>
+                    <DatePicker
+                      value={secondPaymentDate}
+                      onChange={e => setSecondPaymentDate(e.target.value)}
+                      className={inputCls}
+                    />
+                  </div>
+                )}
+
+                {remainderType === 'installments' && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={labelCls}>Número de cuotas</label>
+                      <input
+                        type="number" min="2" max="60" step="1"
+                        value={installCount}
+                        onChange={e => setInstallCount(e.target.value)}
+                        className={inputCls}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Vencimiento 1ª cuota</label>
+                      <DatePicker
+                        value={installFirstDate}
+                        onChange={e => setInstallFirstDate(e.target.value)}
+                        className={inputCls}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
+            )}
+
+            {/* Cuotas simples — solo si no hay pago inicial */}
+            {!withDownPayment && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setWithInstallments(v => !v)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-fg-soft hover:bg-raised transition-colors border-t border-line"
+                >
+                  <span>Configurar cuotas</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium transition-colors ${withInstallments ? 'bg-brand text-white' : 'bg-raised text-fg-muted'}`}>
+                    {withInstallments ? 'Activado' : 'Opcional'}
+                  </span>
+                </button>
+                {withInstallments && (
+                  <div className="px-4 pb-4 pt-1 grid grid-cols-2 gap-3 border-t border-line bg-raised">
+                    <div>
+                      <label className={labelCls}>Número de cuotas</label>
+                      <input
+                        type="number" min="2" max="60" step="1"
+                        value={installCount}
+                        onChange={e => setInstallCount(e.target.value)}
+                        className={inputCls}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Vencimiento 1ª cuota</label>
+                      <DatePicker
+                        value={installFirstDate}
+                        onChange={e => setInstallFirstDate(e.target.value)}
+                        className={inputCls}
+                      />
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
