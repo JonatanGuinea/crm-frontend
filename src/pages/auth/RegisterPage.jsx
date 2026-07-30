@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { register as registerApi } from '../../api/auth'
 import { isValidPhoneNumber } from 'libphonenumber-js'
@@ -173,6 +173,10 @@ function PhoneInputField({ countryCode, phoneNumber, onChangeCountry, onChangeNu
   )
 }
 
+function decodeJwtPayload(token) {
+  try { return JSON.parse(atob(token.split('.')[1])) } catch { return null }
+}
+
 const fields = [
   { key: 'name',            label: 'Tu nombre',           type: 'text',     icon: UserIcon,       placeholder: 'Juan García' },
   { key: 'email',           label: 'Tu email',            type: 'email',    icon: EnvelopeIcon,   placeholder: 'tu@email.com' },
@@ -183,7 +187,11 @@ const fields = [
 export default function RegisterPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
-  const [form, setForm] = useState({ name: '', email: '', password: '', passwordConfirm: '' })
+  const [searchParams] = useSearchParams()
+  const inviteToken = searchParams.get('inviteToken')
+  const invitePayload = inviteToken ? decodeJwtPayload(inviteToken) : null
+
+  const [form, setForm] = useState({ name: '', email: invitePayload?.email || '', password: '', passwordConfirm: '' })
   const [userCountry, setUserCountry] = useState('AR')
   const [userPhoneNumber, setUserPhoneNumber] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -212,7 +220,7 @@ export default function RegisterPage() {
       const userCountryData = COUNTRIES.find(c => c.code === userCountry)
       const userPhone = `${userCountryData.dial} ${userPhoneNumber.trim()}`
       const { passwordConfirm: _, ...formData } = form
-      const res = await registerApi({ ...formData, userPhone })
+      const res = await registerApi({ ...formData, userPhone, ...(inviteToken ? { inviteToken } : {}) })
       login(res.data.data.token)
       navigate('/')
     } catch (err) {
@@ -225,6 +233,7 @@ export default function RegisterPage() {
   function renderField({ key, label, type, icon: Icon, placeholder }) {
     const isPassword = type === 'password'
     const isConfirm = key === 'passwordConfirm'
+    const isEmailLocked = key === 'email' && Boolean(invitePayload)
     const visible = isConfirm ? showPasswordConfirm : showPassword
     const inputType = isPassword ? (visible ? 'text' : 'password') : type
     const mismatch = isConfirm && form.passwordConfirm.length > 0 && form.password !== form.passwordConfirm
@@ -234,21 +243,25 @@ export default function RegisterPage() {
       <div key={key}>
         <label className="block text-xs font-sans tracking-wide text-cyan-300/80 mb-2">
           {label}
+          {isEmailLocked && <span className="ml-2 text-cyan-500/60">(pre-completado)</span>}
         </label>
         <div className="relative group">
           <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-500/40 group-focus-within:text-cyan-400/70 pointer-events-none transition-colors" />
           <input
             type={inputType}
             required
+            readOnly={isEmailLocked}
             value={form[key]}
-            onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+            onChange={isEmailLocked ? undefined : e => setForm(f => ({ ...f, [key]: e.target.value }))}
             placeholder={placeholder}
-            className={`w-full pl-9 pr-9 py-2.5 bg-slate-950/70 border rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-1 transition-all ${
-              mismatch
-                ? 'border-red-500/60 focus:border-red-500/80 focus:ring-red-500/20'
-                : matched
-                  ? 'border-teal-500/50 focus:border-teal-500/70 focus:ring-teal-500/20'
-                  : 'border-slate-700/50 focus:border-cyan-500/50 focus:ring-cyan-500/20'
+            className={`w-full pl-9 pr-9 py-2.5 bg-slate-950/70 border rounded-lg text-sm placeholder-slate-600 focus:outline-none focus:ring-1 transition-all ${
+              isEmailLocked
+                ? 'border-teal-500/30 text-teal-300/80 cursor-default select-none'
+                : mismatch
+                  ? 'border-red-500/60 focus:border-red-500/80 focus:ring-red-500/20 text-white'
+                  : matched
+                    ? 'border-teal-500/50 focus:border-teal-500/70 focus:ring-teal-500/20 text-white'
+                    : 'border-slate-700/50 focus:border-cyan-500/50 focus:ring-cyan-500/20 text-white'
             }`}
           />
           {isPassword && (
@@ -289,10 +302,26 @@ export default function RegisterPage() {
           ◈ &nbsp;Nuevo registro
         </p>
 
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-white leading-tight">Crear cuenta</h2>
-          <p className="text-sm text-slate-500 mt-1">Empezá gratis, sin tarjeta requerida</p>
-        </div>
+        {invitePayload ? (
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-white leading-tight">Crear cuenta</h2>
+            <div className="mt-3 px-3 py-2.5 rounded-lg bg-teal-500/10 border border-teal-500/25 flex items-start gap-2">
+              <svg className="w-4 h-4 text-teal-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <div>
+                <p className="text-xs font-medium text-teal-300">Fuiste invitado a unirte a</p>
+                <p className="text-sm font-bold text-white mt-0.5">{invitePayload.orgName}</p>
+                <p className="text-[11px] text-teal-400/70 mt-0.5">Rol: {invitePayload.role === 'admin' ? 'Administrador' : 'Miembro'}</p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-white leading-tight">Crear cuenta</h2>
+            <p className="text-sm text-slate-500 mt-1">Empezá gratis, sin tarjeta requerida</p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {fields.map(renderField)}
@@ -322,7 +351,7 @@ export default function RegisterPage() {
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
               </svg>
             )}
-            {loading ? 'Registrando...' : 'Crear cuenta'}
+            {loading ? 'Registrando...' : invitePayload ? 'Crear cuenta y unirme' : 'Crear cuenta'}
           </button>
         </form>
 
