@@ -138,10 +138,10 @@ export default function QuoteModalPotential({ onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50">
-      <div className="bg-surface/60 backdrop-blur-xl rounded-t-2xl sm:rounded-xl shadow-lg w-full sm:max-w-2xl sm:mx-4 max-h-[92vh] overflow-y-auto">
+      <div className="bg-surface/60 backdrop-blur-xl rounded-t-2xl sm:rounded-xl shadow-lg w-full sm:max-w-2xl sm:mx-4 max-h-[92vh] flex flex-col">
 
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-surface/80 backdrop-blur-xl border-b border-line px-5 py-4 flex items-center justify-between">
+        <div className="shrink-0 bg-surface/80 backdrop-blur-xl border-b border-line px-5 py-4 flex items-center justify-between">
           <div>
             <h3 className="text-base font-semibold text-fg">Nuevo presupuesto</h3>
             <p className="text-xs text-fg-muted mt-0.5">El cliente y proyecto se crearán al aprobar el presupuesto</p>
@@ -149,7 +149,9 @@ export default function QuoteModalPotential({ onClose, onSaved }) {
           <button type="button" onClick={onClose} className="text-fg-muted hover:text-fg text-xl leading-none">×</button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-6">
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto">
+        <form id="quote-potential-form" onSubmit={handleSubmit} className="p-5 space-y-6">
 
           {/* ── Sección: Cliente potencial ── */}
           <section>
@@ -455,22 +457,20 @@ export default function QuoteModalPotential({ onClose, onSaved }) {
           </div>
 
           {error && <p className="text-sm text-danger">{error}</p>}
-
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2 pb-1">
-            <button
-              type="button" onClick={onClose}
-              className="px-4 py-2.5 sm:py-2 text-sm text-fg-soft hover:text-fg border border-line-soft rounded-md sm:border-none"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit" disabled={loading}
-              className="px-4 py-2.5 sm:py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50"
-            >
-              {loading ? 'Guardando...' : 'Crear presupuesto'}
-            </button>
-          </div>
         </form>
+        </div>{/* end scrollable body */}
+
+        {/* Footer */}
+        <div className="shrink-0 border-t border-line px-5 py-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+          <button type="button" onClick={onClose}
+            className="px-4 py-2.5 sm:py-2 text-sm text-fg-soft hover:text-fg border border-line-soft rounded-md sm:border-none">
+            Cancelar
+          </button>
+          <button type="submit" form="quote-potential-form" disabled={loading}
+            className="px-4 py-2.5 sm:py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50">
+            {loading ? 'Guardando...' : 'Crear presupuesto'}
+          </button>
+        </div>
       </div>
     </div>
   )

@@ -113,7 +113,9 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
       if (!downPaymentDate) { setError('Ingresá la fecha del pago inicial'); return }
       if (effectiveDownPayment >= total) { setError('El pago inicial no puede ser igual o mayor al total'); return }
       if (remainderType === 'second' && !secondPaymentDate) { setError('Ingresá la fecha del segundo pago'); return }
+      if (remainderType === 'second' && secondPaymentDate && downPaymentDate >= secondPaymentDate) { setError('La fecha del segundo pago debe ser posterior al pago inicial'); return }
       if (remainderType === 'installments' && !installFirstDate) { setError('Seleccioná la fecha del primer vencimiento'); return }
+      if (remainderType === 'installments' && installFirstDate && downPaymentDate >= installFirstDate) { setError('La fecha de la primera cuota debe ser posterior al pago inicial'); return }
     } else if (withInstallments && !installFirstDate) {
       setError('Seleccioná la fecha del primer vencimiento')
       return
@@ -170,8 +172,9 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50">
-      <div className="bg-surface/60 backdrop-blur-xl rounded-t-2xl sm:rounded-xl shadow-lg w-full sm:max-w-2xl sm:mx-4 max-h-[92vh] overflow-y-auto">
-        <div className="sticky top-0 z-10 bg-surface/80 backdrop-blur-xl border-b border-line px-5 py-4 flex items-center justify-between">
+      <div className="bg-surface/60 backdrop-blur-xl rounded-t-2xl sm:rounded-xl shadow-lg w-full sm:max-w-2xl sm:mx-4 max-h-[92vh] flex flex-col">
+        {/* Header */}
+        <div className="shrink-0 bg-surface/80 backdrop-blur-xl border-b border-line px-5 py-4 flex items-center justify-between">
           <h3 className="text-base font-semibold text-fg">
             {isEditing ? 'Editar presupuesto' : 'Nuevo presupuesto'}
             {quoteData && <span className="ml-2 text-sm font-normal text-fg-muted">#{quoteData.number}</span>}
@@ -179,14 +182,9 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
           <button type="button" onClick={onClose} className="text-fg-muted hover:text-fg text-xl leading-none">×</button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          <div>
-            <label className={labelCls}>Título *</label>
-            <input type="text" required value={form.title}
-              onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-              className={inputCls} />
-          </div>
-
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto">
+        <form id="quote-form" onSubmit={handleSubmit} className="p-5 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className={labelCls}>Cliente *</label>
@@ -207,6 +205,13 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
                 {projectsData?.filter(p => p.clientId === form.clientId).map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
               </select>
             </div>
+          </div>
+
+          <div>
+            <label className={labelCls}>Título *</label>
+            <input type="text" required value={form.title}
+              onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+              className={inputCls} />
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -353,6 +358,9 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
                         onChange={e => setSecondPaymentDate(e.target.value)}
                         className={inputCls}
                       />
+                      {secondPaymentDate && downPaymentDate && downPaymentDate >= secondPaymentDate && (
+                        <p className="text-xs text-danger mt-1">Debe ser posterior al pago inicial</p>
+                      )}
                     </div>
                   )}
 
@@ -374,6 +382,9 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
                           onChange={e => setInstallFirstDate(e.target.value)}
                           className={inputCls}
                         />
+                        {installFirstDate && downPaymentDate && downPaymentDate >= installFirstDate && (
+                          <p className="text-xs text-danger mt-1">Debe ser posterior al pago inicial</p>
+                        )}
                       </div>
                     </div>
                   )}
@@ -420,13 +431,6 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
           )}
 
           {error && <p className="text-sm text-danger">{error}</p>}
-
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2 pb-1">
-            <button type="button" onClick={onClose} className="px-4 py-2.5 sm:py-2 text-sm text-fg-soft hover:text-fg border border-line-soft rounded-md sm:border-none">Cancelar</button>
-            <button type="submit" disabled={loading} className="px-4 py-2.5 sm:py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50">
-              {loading ? 'Guardando...' : 'Guardar'}
-            </button>
-          </div>
         </form>
 
         {isEditing && quoteData && (
@@ -438,10 +442,20 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
                 entityStatus={quoteData.status}
                 canWrite={canWrite}
                 currency={form.currency}
+                total={total}
               />
             </div>
           </div>
         )}
+        </div>{/* end scrollable body */}
+
+        {/* Footer fijo */}
+        <div className="shrink-0 border-t border-line px-5 py-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+          <button type="button" onClick={onClose} className="px-4 py-2.5 sm:py-2 text-sm text-fg-soft hover:text-fg border border-line-soft rounded-md sm:border-none">Cancelar</button>
+          <button type="submit" form="quote-form" disabled={loading} className="px-4 py-2.5 sm:py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50">
+            {loading ? 'Guardando...' : 'Guardar'}
+          </button>
+        </div>
       </div>
     </div>
   )

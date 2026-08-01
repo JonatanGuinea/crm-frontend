@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getAttachments, uploadAttachment, deleteAttachment, downloadAttachment } from '../api/attachments'
 import { useConfirm } from './ConfirmDialog'
+import { PaperClipIcon, TrashIcon, ArrowUpTrayIcon, FolderIcon } from '@heroicons/react/24/outline'
 
 function formatSize(bytes) {
   if (bytes < 1024) return `${bytes} B`
@@ -74,8 +75,26 @@ export default function AttachmentsPanel({ entityType, entityId }) {
     e.target.value = ''
   }
 
+  const files = data ?? []
+
+  // Agrupar: null = archivos propios, string = nombre del proyecto
+  const grouped = files.reduce((acc, att) => {
+    const key = att.sourceLabel ?? '__own__'
+    if (!acc[key]) acc[key] = []
+    acc[key].push(att)
+    return acc
+  }, {})
+
+  const ownFiles = grouped['__own__'] ?? []
+  const projectGroups = Object.entries(grouped)
+    .filter(([k]) => k !== '__own__')
+    .sort(([a], [b]) => a.localeCompare(b))
+
+  const isGrouped = projectGroups.length > 0
+
   return (
     <div>
+      {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-1.5">
           <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide">Adjuntos</h3>
@@ -84,47 +103,119 @@ export default function AttachmentsPanel({ entityType, entityId }) {
         <button
           onClick={() => inputRef.current?.click()}
           disabled={upload.isPending}
-          className="text-xs px-3 py-1.5 bg-brand text-white rounded-md hover:bg-brand-hover disabled:opacity-50 transition-colors"
+          className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 bg-brand text-white rounded-lg hover:bg-brand-hover disabled:opacity-50 transition-colors"
         >
-          {upload.isPending ? 'Subiendo...' : '+ Subir archivo'}
+          <ArrowUpTrayIcon className="w-3.5 h-3.5 shrink-0" />
+          {upload.isPending ? 'Subiendo...' : 'Subir'}
         </button>
-        <input ref={inputRef} type="file" className="hidden" accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx" onChange={handleFileChange} />
+        <input
+          ref={inputRef}
+          type="file"
+          className="hidden"
+          accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx"
+          onChange={handleFileChange}
+        />
       </div>
 
       {upload.isError && (
-        <p className="text-xs text-danger mb-2">{upload.error?.response?.data?.error || 'Error al subir'}</p>
+        <p className="text-xs text-danger mb-2">
+          {upload.error?.response?.data?.error || 'Error al subir'}
+        </p>
       )}
 
+      {/* List */}
       {isLoading ? (
         <p className="text-xs text-fg-muted">Cargando...</p>
-      ) : data?.length === 0 ? (
-        <p className="text-xs text-fg-muted">Sin archivos adjuntos</p>
+      ) : files.length === 0 ? (
+        <button
+          onClick={() => inputRef.current?.click()}
+          disabled={upload.isPending}
+          className="w-full flex flex-col items-center justify-center gap-2 py-6 rounded-xl border border-dashed border-line hover:border-brand hover:bg-brand-subtle/30 transition-colors group"
+        >
+          <PaperClipIcon className="w-5 h-5 text-fg-muted group-hover:text-brand transition-colors" />
+          <span className="text-xs text-fg-muted group-hover:text-brand transition-colors">
+            + Agregar archivo
+          </span>
+        </button>
       ) : (
-        <ul className="space-y-2">
-          {data?.map(att => (
-            <li key={att.id} className="flex items-center justify-between bg-raised rounded-lg px-3 py-2 text-sm">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="text-fg-muted text-base">📎</span>
-                <div className="min-w-0">
-                  <button
-                    onClick={() => downloadAttachment(att.storedName, att.filename)}
-                    className="text-brand hover:underline truncate block max-w-xs text-left"
-                  >
-                    {att.filename}
-                  </button>
-                  <span className="text-xs text-fg-muted">{formatSize(att.size)} · {att.uploadedBy?.name || ''}</span>
-                </div>
-              </div>
-              <button
-                onClick={async () => { if (await confirm('¿Eliminar archivo?')) del.mutate(att.id) }}
-                className="text-danger/60 hover:text-danger text-xs ml-3 shrink-0"
-              >
-                Eliminar
-              </button>
-            </li>
+        <div className="space-y-4">
+          {/* Archivos propios del cliente */}
+          {(ownFiles.length > 0 || !isGrouped) && (
+            <FileGroup
+              label={isGrouped ? 'Del cliente' : null}
+              files={ownFiles}
+              onDownload={(att) => downloadAttachment(att.storedName, att.filename)}
+              onDelete={async (att) => {
+                if (await confirm('¿Eliminar archivo?')) del.mutate(att.id)
+              }}
+            />
+          )}
+
+          {/* Archivos por proyecto */}
+          {projectGroups.map(([label, groupFiles]) => (
+            <FileGroup
+              key={label}
+              label={label}
+              icon={<FolderIcon className="w-3 h-3 shrink-0" />}
+              files={groupFiles}
+              onDownload={(att) => downloadAttachment(att.storedName, att.filename)}
+              onDelete={async (att) => {
+                if (await confirm('¿Eliminar archivo?')) del.mutate(att.id)
+              }}
+            />
           ))}
-        </ul>
+        </div>
       )}
+    </div>
+  )
+}
+
+function FileGroup({ label, icon, files, onDownload, onDelete }) {
+  return (
+    <div>
+      {label && (
+        <div className="flex items-center gap-1.5 mb-1.5 px-1">
+          {icon && <span className="text-fg-muted">{icon}</span>}
+          <span className="text-[11px] font-semibold text-fg-muted uppercase tracking-wide truncate">
+            {label}
+          </span>
+          <span className="text-[10px] text-fg-muted ml-auto shrink-0">{files.length}</span>
+        </div>
+      )}
+      <ul className="space-y-1.5">
+        {files.map(att => (
+          <li
+            key={att.id}
+            className="group flex items-start gap-2.5 rounded-lg px-3 py-2.5 bg-raised hover:bg-raised/80 transition-colors"
+          >
+            <PaperClipIcon className="w-4 h-4 shrink-0 text-fg-muted mt-0.5" />
+
+            <div className="flex-1 min-w-0">
+              <button
+                onClick={() => onDownload(att)}
+                className="w-full text-left text-sm text-brand hover:underline leading-snug block truncate"
+                title={att.filename}
+              >
+                {att.filename}
+              </button>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="text-[11px] text-fg-muted">{formatSize(att.size)}</span>
+                {att.uploadedBy?.name && (
+                  <span className="text-[11px] text-fg-muted">· {att.uploadedBy.name}</span>
+                )}
+              </div>
+            </div>
+
+            <button
+              onClick={() => onDelete(att)}
+              className="shrink-0 p-1 rounded-md opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:bg-danger-subtle text-fg-muted hover:text-danger transition-all"
+              title="Eliminar"
+            >
+              <TrashIcon className="w-3.5 h-3.5" />
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

@@ -5,19 +5,6 @@ import { getClients } from '../../api/clients'
 import DatePicker from '../../components/DatePicker'
 import { useToast } from '../../components/Toast'
 
-const ALLOWED_TRANSITIONS = {
-  pending: ['approved', 'cancelled'],
-  approved: ['in_progress', 'cancelled'],
-  in_progress: ['finished'],
-  finished: [],
-  cancelled: []
-}
-
-const STATUS_LABELS = {
-  pending: 'Pendiente', approved: 'Aprobado', in_progress: 'En curso',
-  finished: 'Finalizado', cancelled: 'Cancelado'
-}
-
 const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
 const labelCls = "block text-sm font-medium text-fg-soft mb-1"
 
@@ -38,8 +25,6 @@ export default function ProjectModal({ project, onClose, onSaved }) {
     queryKey: ['clients-all'],
     queryFn: () => getClients({ limit: 100 }).then(r => r.data.data)
   })
-
-  // const allowedStatuses = project ? ALLOWED_TRANSITIONS[project.status] || [] : []
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -64,12 +49,17 @@ export default function ProjectModal({ project, onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-      <div className="bg-surface/60 backdrop-blur-xl rounded-xl shadow-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
-        <h3 className="text-lg font-semibold text-fg mb-4">
-          {project ? 'Editar proyecto' : 'Nuevo proyecto'}
-        </h3>
+      <div className="bg-surface/60 backdrop-blur-xl rounded-xl shadow-lg w-full max-w-md max-h-[90vh] flex flex-col">
 
-        <form onSubmit={handleSubmit} className="space-y-3">
+        {/* Header */}
+        <div className="shrink-0 px-6 py-4 border-b border-line">
+          <h3 className="text-lg font-semibold text-fg">
+            {project ? 'Editar proyecto' : 'Nuevo proyecto'}
+          </h3>
+        </div>
+
+        {/* Scrollable body */}
+        <form id="project-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
           <div>
             <label className={labelCls}>Cliente *</label>
             <select required value={form.client}
@@ -102,18 +92,6 @@ export default function ProjectModal({ project, onClose, onSaved }) {
             </div>
           </div>
 
-          {/* {project && allowedStatuses.length > 0 && (
-            <div>
-              <label className={labelCls}>Cambiar estado</label>
-              <select value={form.status || ''}
-                onChange={e => setForm(f => ({ ...f, status: e.target.value || undefined }))}
-                className={inputCls}>
-                <option value="">Sin cambio ({STATUS_LABELS[project.status]})</option>
-                {allowedStatuses.map(s => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
-              </select>
-            </div>
-          )} */}
-
           <div>
             <label className={labelCls}>Descripción</label>
             <textarea rows={2} value={form.description}
@@ -122,14 +100,16 @@ export default function ProjectModal({ project, onClose, onSaved }) {
           </div>
 
           {error && <p className="text-sm text-danger">{error}</p>}
-
-          <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-fg-soft hover:text-fg">Cancelar</button>
-            <button type="submit" disabled={loading} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50">
-              {loading ? 'Guardando...' : 'Guardar'}
-            </button>
-          </div>
         </form>
+
+        {/* Footer */}
+        <div className="shrink-0 px-6 py-4 border-t border-line flex justify-end gap-2">
+          <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-fg-soft hover:text-fg">Cancelar</button>
+          <button type="submit" form="project-form" disabled={loading} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50">
+            {loading ? 'Guardando...' : 'Guardar'}
+          </button>
+        </div>
+
       </div>
     </div>
   )

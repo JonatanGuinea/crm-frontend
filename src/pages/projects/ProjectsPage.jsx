@@ -9,7 +9,8 @@ import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
-import { ChevronDownIcon, UserIcon, CalendarDaysIcon, BanknotesIcon, EyeIcon } from '@heroicons/react/24/outline'
+import { ChevronDownIcon, UserIcon, CalendarDaysIcon, BanknotesIcon, EyeIcon, PaperClipIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import AttachmentsPanel from '../../components/AttachmentsPanel'
 
 const STATUS_LABELS = {
   pending: 'Pendiente', approved: 'Aprobado', in_progress: 'En curso',
@@ -111,6 +112,7 @@ export default function ProjectsPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [quotingProject, setQuotingProject] = useState(null)
+  const [attachingProject, setAttachingProject] = useState(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['projects', statusFilter, page],
@@ -203,6 +205,13 @@ export default function ProjectsPage() {
                     <EyeIcon className="w-3.5 h-3.5" />
                     Ver
                   </Link>
+                  <button
+                    onClick={() => setAttachingProject(p)}
+                    className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-line text-fg-soft hover:bg-raised transition-colors"
+                  >
+                    <PaperClipIcon className="w-3.5 h-3.5" />
+                    {p.attachmentCount > 0 ? p.attachmentCount : '+'}
+                  </button>
                 </div>
               </div>
             ))}
@@ -221,6 +230,7 @@ export default function ProjectsPage() {
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Cliente</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Estado</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Presupuesto</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Archivos</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide"></th>
                   </tr>
                 </thead>
@@ -258,6 +268,19 @@ export default function ProjectsPage() {
                             )
                         }
                       </td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => setAttachingProject(p)}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors border ${
+                            p.attachmentCount > 0
+                              ? 'border-line bg-raised text-fg-soft hover:text-fg'
+                              : 'border-dashed border-line text-fg-muted hover:border-brand hover:text-brand'
+                          }`}
+                        >
+                          <PaperClipIcon className="w-3.5 h-3.5 shrink-0" />
+                          {p.attachmentCount > 0 ? p.attachmentCount : '+'}
+                        </button>
+                      </td>
                       <td className="px-4 py-3 text-right">
                         <Link to={`/projects/${p.id}`} className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium bg-brand text-white hover:opacity-90 transition-opacity">
                           <EyeIcon className="w-3.5 h-3.5" />
@@ -267,7 +290,7 @@ export default function ProjectsPage() {
                     </tr>
                   ))}
                   {!data?.data?.length && (
-                    <tr><td colSpan={5} className="px-4 py-6 text-center text-fg-muted">Sin proyectos</td></tr>
+                    <tr><td colSpan={6} className="px-4 py-6 text-center text-fg-muted">Sin proyectos</td></tr>
                   )}
                 </tbody>
               </table>
@@ -296,6 +319,29 @@ export default function ProjectsPage() {
             qc.invalidateQueries(['quotes'])
           }}
         />
+      )}
+
+      {attachingProject && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setAttachingProject(null)} />
+          <div className="relative z-10 w-full max-w-md bg-surface border border-line rounded-2xl shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-line">
+              <div>
+                <h3 className="text-sm font-semibold text-fg">Archivos adjuntos</h3>
+                <p className="text-xs text-fg-muted mt-0.5 truncate max-w-[280px]">{attachingProject.title}</p>
+              </div>
+              <button
+                onClick={() => setAttachingProject(null)}
+                className="p-1.5 rounded-lg hover:bg-raised text-fg-muted hover:text-fg transition-colors"
+              >
+                <XMarkIcon className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-5">
+              <AttachmentsPanel entityType="project" entityId={attachingProject.id} />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

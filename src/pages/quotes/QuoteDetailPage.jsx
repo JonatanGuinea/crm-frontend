@@ -206,6 +206,7 @@ export default function QuoteDetailPage() {
               entityStatus={quote.status}
               canWrite={canWrite}
               currency={quote.currency}
+              total={total}
             />
           </div>
 
