@@ -4,6 +4,7 @@ import { createTask, updateTask } from '../../api/tasks'
 import { getProjects } from '../../api/projects'
 import { getMembers } from '../../api/members'
 import { useToast } from '../../components/Toast'
+import { useAuth } from '../../context/AuthContext'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 
 const STATUS_OPTIONS = [
@@ -21,6 +22,8 @@ const PRIORITY_OPTIONS = [
 export default function TaskModal({ task, defaultStatus = 'todo', onClose }) {
   const qc    = useQueryClient()
   const toast = useToast()
+  const { user } = useAuth()
+  const orgId  = user?.org
   const isEdit = Boolean(task)
 
   const [form, setForm] = useState({
@@ -41,8 +44,9 @@ export default function TaskModal({ task, defaultStatus = 'todo', onClose }) {
   })
 
   const { data: membersData } = useQuery({
-    queryKey: ['members'],
-    queryFn: () => getMembers().then(r => r.data.data),
+    queryKey: ['members', orgId],
+    queryFn: () => getMembers(orgId).then(r => r.data.data),
+    enabled: Boolean(orgId),
     staleTime: 60_000,
   })
   const members = membersData?.members ?? []

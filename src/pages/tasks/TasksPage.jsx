@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getTasks, updateTask, deleteTask } from '../../api/tasks'
 import { getMembers } from '../../api/members'
 import { useToast } from '../../components/Toast'
+import { useAuth } from '../../context/AuthContext'
 import { useConfirm } from '../../components/ConfirmDialog'
 import TaskModal from './TaskModal'
 import {
@@ -119,6 +120,12 @@ function TaskCard({ task, onEdit, onDelete, onMove }) {
         )}
       </div>
 
+      {task.createdBy && (
+        <p className="text-[11px] text-fg-muted">
+          Creada por <span className="font-medium text-fg-soft">{task.createdBy.name.split(' ')[0]}</span>
+        </p>
+      )}
+
       {/* Move buttons */}
       <div className="flex items-center gap-1.5 pt-1 border-t border-line opacity-0 group-hover:opacity-100 transition-opacity">
         <button
@@ -149,6 +156,8 @@ export default function TasksPage() {
   const qc      = useQueryClient()
   const toast   = useToast()
   const confirm = useConfirm()
+  const { user } = useAuth()
+  const orgId   = user?.org
 
   const [modal, setModal]           = useState(null) // null | { task?, defaultStatus? }
   const [filterPriority, setFilterPriority] = useState('')
@@ -160,8 +169,9 @@ export default function TasksPage() {
   })
 
   const { data: membersData } = useQuery({
-    queryKey: ['members'],
-    queryFn: () => getMembers().then(r => r.data.data),
+    queryKey: ['members', orgId],
+    queryFn: () => getMembers(orgId).then(r => r.data.data),
+    enabled: Boolean(orgId),
     staleTime: 60_000,
   })
   const members = membersData?.members ?? []

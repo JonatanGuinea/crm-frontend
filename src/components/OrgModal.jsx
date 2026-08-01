@@ -195,7 +195,7 @@ export function SetupOrgModal({ onCreated, onClose }) {
 
   const phoneDigits = phoneNumber.replace(/\D/g, '')
   const phoneValid = checkPhone(phoneDigits, orgCountry)
-  const allFilled = form.name.trim() && form.cuit.trim() && phoneDigits && phoneValid && form.email.trim() && form.address.trim()
+  const allFilled = form.name.trim() && form.cuit.trim() && phoneDigits && phoneValid && form.email.trim() && form.address.trim() && form.province
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -272,7 +272,7 @@ export function SetupOrgModal({ onCreated, onClose }) {
               />
             </div>
             <div className="sm:col-span-2">
-              <label className={labelCls}>CUIT / RUT *</label>
+              <label className={labelCls}>CUIT *</label>
               <input
                 type="text"
                 required
