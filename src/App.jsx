@@ -25,6 +25,7 @@ import AcceptInvitePage from './pages/auth/AcceptInvitePage'
 import ProfilePage from './pages/profile/ProfilePage'
 import QuoteDetailPage from './pages/quotes/QuoteDetailPage'
 import ExpensesPage from './pages/expenses/ExpensesPage'
+import TasksPage from './pages/tasks/TasksPage'
 import QuotePublicPage from './pages/public/QuotePublicPage'
 
 const qc = new QueryClient({
@@ -81,6 +82,7 @@ export default function App() {
               <Route path="/quotes" element={<QuotesPage />} />
               <Route path="/quotes/:id" element={<QuoteDetailPage />} />
               <Route path="/expenses" element={<ExpensesPage />} />
+              <Route path="/tasks" element={<TasksPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/members" element={<MembersPage />} />
               <Route path="/profile" element={<ProfilePage />} />

@@ -107,6 +107,9 @@ input:-webkit-autofill:active {
   --brand-amber:      #F5B841;
   --brand-amber-muted:rgba(245, 184, 65, 0.10);
 
+  --brand-green:      #22C55E;
+  --brand-green-muted:rgba(34, 197, 94, 0.10);
+
   --bg-primary:    #F5FAFA;
   --bg-surface-1:  #FFFFFF;
   --bg-surface-2:  #F4F4F5;
@@ -126,6 +129,7 @@ input:-webkit-autofill:active {
   --brand-blue-muted: rgba(0, 114, 245, 0.15);
   --brand-red-muted:  rgba(230, 78, 83, 0.15);
   --brand-amber-muted:rgba(245, 184, 65, 0.15);
+  --brand-green-muted:rgba(34, 197, 94, 0.15);
 
   --bg-primary:   #0C0C0C;
   --bg-surface-1: #161616;
@@ -156,6 +160,8 @@ input:-webkit-autofill:active {
   --color-danger-subtle:  var(--brand-red-muted);
   --color-warning:        var(--brand-amber);
   --color-warning-subtle: var(--brand-amber-muted);
+  --color-success:        var(--brand-green);
+  --color-success-subtle: var(--brand-green-muted);
 
   /* Surfaces */
   --color-base:    var(--bg-primary);

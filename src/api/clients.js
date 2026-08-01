@@ -1,6 +1,7 @@
 import api from './client'
 
 export const getClients = (params) => api.get('/clients', { params })
+export const getClientsDashboard = () => api.get('/clients/dashboard')
 export const getTopClients = () => api.get('/clients/top')
 export const getClientById = (id) => api.get(`/clients/${id}`)
 export const createClient = (data) => api.post('/clients', data)

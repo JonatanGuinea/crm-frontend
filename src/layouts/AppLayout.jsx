@@ -32,6 +32,7 @@ import {
   Bars3Icon,
   XMarkIcon,
   CalendarDaysIcon,
+  ClipboardDocumentListIcon,
   UserCircleIcon,
   BuildingOffice2Icon,
   Cog6ToothIcon,
@@ -47,6 +48,7 @@ const navItems = [
   { to: '/projects',      label: 'Proyectos',       icon: FolderIcon },
   { to: '/projects/calendar', label: 'Agenda',      icon: CalendarDaysIcon },
   { to: '/quotes',        label: 'Presupuestos',    icon: DocumentTextIcon },
+  { to: '/tasks',         label: 'Tareas',           icon: ClipboardDocumentListIcon },
   { to: '/expenses',      label: 'Egresos',         icon: ArrowTrendingDownIcon },
   { to: '/members',       label: 'Equipo',          icon: UserGroupIcon },
 ]
