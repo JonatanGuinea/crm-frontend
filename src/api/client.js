@@ -13,8 +13,18 @@ api.interceptors.request.use(config => {
 })
 
 api.interceptors.response.use(
-  res => res,
+  res => {
+    window.dispatchEvent(new CustomEvent('api-connection-ok'))
+    return res
+  },
   err => {
+    if (!err.response) {
+      // Sin respuesta del servidor — backend o DB caído
+      window.dispatchEvent(new CustomEvent('api-connection-error'))
+    } else if (err.response.status === 503) {
+      window.dispatchEvent(new CustomEvent('api-connection-error'))
+    }
+
     if (err.response?.status === 401) {
       const authPaths = ['/login', '/register', '/accept-invite']
       const isAuthPage = authPaths.some(p => window.location.pathname.startsWith(p))

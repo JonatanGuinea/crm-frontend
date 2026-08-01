@@ -7,6 +7,7 @@ import { useTheme } from '../context/ThemeContext'
 import GlobalSearch from '../components/GlobalSearch'
 import OrgSwitcher from '../components/OrgSwitcher'
 import InvitationsBanner from '../components/InvitationsBanner'
+import DBStatusBanner from '../components/DBStatusBanner'
 import OrgSettingsModal from '../components/OrgSettingsModal'
 import { SetupOrgModal } from '../components/OrgModal'
 import { getProfile } from '../api/profile'
@@ -346,9 +347,12 @@ export default function AppLayout() {
           </Link>
           <ProfileDropdown profile={profile} user={user} />
         </header>
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto flex flex-col">
+          <DBStatusBanner />
           <InvitationsBanner />
-          <Outlet />
+          <div className="flex-1">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
