@@ -5,17 +5,6 @@ import { ArrowDownTrayIcon } from '@heroicons/react/24/outline'
 
 const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '')
 
-const STATUS_LABELS = {
-  draft: 'Borrador', sent: 'Enviado', approved: 'Aprobado',
-  rejected: 'Rechazado', expired: 'Vencido'
-}
-const STATUS_COLORS = {
-  draft:    'bg-white/10 text-zinc-200',
-  sent:     'bg-sky-400/20 text-sky-200 ring-1 ring-sky-400/30',
-  approved: 'bg-emerald-400/20 text-emerald-200 ring-1 ring-emerald-400/30',
-  rejected: 'bg-red-400/20 text-red-200 ring-1 ring-red-400/30',
-  expired:  'bg-amber-400/20 text-amber-200 ring-1 ring-amber-400/30',
-}
 const STATUS_INST = { pending: 'Pendiente', paid: 'Pagado', overdue: 'Vencido' }
 const STATUS_INST_COLORS = {
   pending: 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400',
@@ -90,11 +79,8 @@ export default function QuotePublicPage() {
 
               {/* Right: number + status + contact */}
               <div className="text-right shrink-0">
-                <p className="text-white font-bold text-3xl leading-none tabular-nums mb-2">#{numStr}</p>
-                <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[quote.status] || STATUS_COLORS.draft}`}>
-                  {STATUS_LABELS[quote.status] || quote.status}
-                </span>
-                <div className="mt-3 space-y-0.5">
+                <p className="text-white font-bold text-3xl leading-none tabular-nums mb-3">#{numStr}</p>
+                <div className="space-y-0.5">
                   {orgLogoUrl && <p className="text-slate-300 text-xs font-medium">{org.name}</p>}
                   {org.cuit    && <p className="text-slate-400 text-xs">CUIL/CUIT: {org.cuit}</p>}
                   {org.email   && <p className="text-slate-400 text-xs">{org.email}</p>}
