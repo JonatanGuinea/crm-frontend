@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getAttachments, uploadAttachment, deleteAttachment, downloadAttachment } from '../api/attachments'
 import { useConfirm } from './ConfirmDialog'
@@ -7,6 +7,44 @@ function formatSize(bytes) {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+const ALLOWED_INFO = [
+  { ext: 'JPG, PNG, GIF, WEBP', desc: 'Imágenes' },
+  { ext: 'PDF',                  desc: 'Documentos' },
+  { ext: 'DOC, DOCX',            desc: 'Word' },
+  { ext: 'XLS, XLSX',            desc: 'Excel' },
+]
+
+function FileInfoTooltip() {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="relative flex items-center">
+      <button
+        type="button"
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        onClick={() => setOpen(v => !v)}
+        className="w-4 h-4 rounded-full border border-fg-muted text-fg-muted text-[10px] font-bold flex items-center justify-center hover:border-brand hover:text-brand transition-colors"
+      >
+        ?
+      </button>
+      {open && (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-20 w-48 bg-overlay border border-line rounded-xl p-3 shadow-xl pointer-events-none">
+          <p className="text-xs font-semibold text-fg mb-2">Archivos permitidos</p>
+          <ul className="space-y-1.5">
+            {ALLOWED_INFO.map(({ ext, desc }) => (
+              <li key={ext} className="flex items-center justify-between gap-2">
+                <span className="text-xs text-fg-muted">{desc}</span>
+                <span className="text-[11px] font-mono text-fg-soft">{ext}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-[11px] text-fg-muted mt-2 pt-2 border-t border-line">Máx. 10 MB por archivo</p>
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default function AttachmentsPanel({ entityType, entityId }) {
@@ -39,7 +77,10 @@ export default function AttachmentsPanel({ entityType, entityId }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide">Adjuntos</h3>
+        <div className="flex items-center gap-1.5">
+          <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide">Adjuntos</h3>
+          <FileInfoTooltip />
+        </div>
         <button
           onClick={() => inputRef.current?.click()}
           disabled={upload.isPending}

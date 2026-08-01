@@ -71,13 +71,6 @@ export default function ProjectModal({ project, onClose, onSaved }) {
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className={labelCls}>Título *</label>
-            <input type="text" required value={form.title}
-              onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-              className={inputCls} />
-          </div>
-
-          <div>
             <label className={labelCls}>Cliente *</label>
             <select required value={form.client}
               onChange={e => setForm(f => ({ ...f, client: e.target.value }))}
@@ -85,6 +78,13 @@ export default function ProjectModal({ project, onClose, onSaved }) {
               <option value="">Seleccionar...</option>
               {clientsData?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
+          </div>
+
+          <div>
+            <label className={labelCls}>Título *</label>
+            <input type="text" required value={form.title}
+              onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+              className={inputCls} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
