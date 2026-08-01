@@ -7,6 +7,33 @@ import { getOrganizations, updateOrganization, uploadOrgLogo } from '../api/orga
 import { PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
+
+const AR_PROVINCES = [
+  'Buenos Aires',
+  'Catamarca',
+  'Chaco',
+  'Chubut',
+  'Córdoba',
+  'Corrientes',
+  'Entre Ríos',
+  'Formosa',
+  'Jujuy',
+  'La Pampa',
+  'La Rioja',
+  'Mendoza',
+  'Misiones',
+  'Neuquén',
+  'Río Negro',
+  'Salta',
+  'San Juan',
+  'San Luis',
+  'Santa Cruz',
+  'Santa Fe',
+  'Santiago del Estero',
+  'Tierra del Fuego',
+  'Tucumán',
+  'Ciudad Autónoma de Buenos Aires',
+]
 const labelCls = "block text-xs text-fg-muted mb-1"
 const API_BASE  = import.meta.env.VITE_API_URL?.replace('/api', '')
 
@@ -17,7 +44,7 @@ export default function OrgSettingsModal({ onClose }) {
   const orgId = user?.org
   const logoInputRef = useRef(null)
 
-  const [form, setForm] = useState({ name: '', cuit: '', email: '', website: '', phone: '', address: '' })
+  const [form, setForm] = useState({ name: '', cuit: '', email: '', website: '', phone: '', address: '', province: '', city: '', postalCode: '' })
   const [logoPreview, setLogoPreview] = useState(null)
 
   const { data: orgData } = useQuery({
@@ -29,12 +56,15 @@ export default function OrgSettingsModal({ onClose }) {
   useEffect(() => {
     if (orgData) {
       setForm({
-        name:    orgData.name    || '',
-        cuit:    orgData.cuit    || '',
-        email:   orgData.email   || '',
-        website: orgData.website || '',
-        phone:   orgData.phone   || '',
-        address: orgData.address || '',
+        name:       orgData.name       || '',
+        cuit:       orgData.cuit       || '',
+        email:      orgData.email      || '',
+        website:    orgData.website    || '',
+        phone:      orgData.phone      || '',
+        address:    orgData.address    || '',
+        province:   orgData.province   || '',
+        city:       orgData.city       || '',
+        postalCode: orgData.postalCode || '',
       })
       setLogoPreview(orgData.logo ? `${API_BASE}/uploads/${orgData.logo}` : null)
     }
@@ -142,8 +172,33 @@ export default function OrgSettingsModal({ onClose }) {
             </div>
             <div className="sm:col-span-2">
               <label className={labelCls}>Dirección</label>
-              <input type="text" value={form.address} placeholder="Av. Corrientes 1234, CABA"
+              <input type="text" value={form.address} placeholder="Av. Corrientes 1234"
                 onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
+                className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Provincia</label>
+              <select
+                value={form.province}
+                onChange={e => setForm(f => ({ ...f, province: e.target.value }))}
+                className={inputCls}
+              >
+                <option value="">Seleccionar provincia</option>
+                {AR_PROVINCES.map(p => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Ciudad</label>
+              <input type="text" value={form.city} placeholder="Rosario"
+                onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
+                className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Código postal</label>
+              <input type="text" value={form.postalCode} placeholder="2000"
+                onChange={e => setForm(f => ({ ...f, postalCode: e.target.value }))}
                 className={inputCls} />
             </div>
             <div className="sm:col-span-2 flex items-center justify-between px-3 py-2.5 bg-raised rounded-md border border-line-soft">

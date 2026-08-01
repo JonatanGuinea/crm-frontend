@@ -11,6 +11,33 @@ import {
   ArrowRightStartOnRectangleIcon,
 } from '@heroicons/react/24/outline'
 
+const AR_PROVINCES = [
+  'Buenos Aires',
+  'Catamarca',
+  'Chaco',
+  'Chubut',
+  'Córdoba',
+  'Corrientes',
+  'Entre Ríos',
+  'Formosa',
+  'Jujuy',
+  'La Pampa',
+  'La Rioja',
+  'Mendoza',
+  'Misiones',
+  'Neuquén',
+  'Río Negro',
+  'Salta',
+  'San Juan',
+  'San Luis',
+  'Santa Cruz',
+  'Santa Fe',
+  'Santiago del Estero',
+  'Tierra del Fuego',
+  'Tucumán',
+  'Ciudad Autónoma de Buenos Aires',
+]
+
 const COUNTRIES = [
   { code: 'AR', name: 'Argentina',      dial: '+54',  flag: '🇦🇷' },
   { code: 'UY', name: 'Uruguay',        dial: '+598', flag: '🇺🇾' },
@@ -160,7 +187,7 @@ const labelCls = "block text-xs text-fg-muted mb-1.5"
 
 export function SetupOrgModal({ onCreated, onClose }) {
   const { logout } = useAuth()
-  const [form, setForm] = useState({ name: '', cuit: '', email: '', address: '', defaultCurrency: 'ARS' })
+  const [form, setForm] = useState({ name: '', cuit: '', email: '', address: '', province: 'Santa Fe', city: '', postalCode: '', defaultCurrency: 'ARS' })
   const [orgCountry, setOrgCountry] = useState('AR')
   const [phoneNumber, setPhoneNumber] = useState('')
   const [error, setError] = useState('')
@@ -221,7 +248,7 @@ export function SetupOrgModal({ onCreated, onClose }) {
               </button>
             )}
           </div>
-          <h2 className="text-xl font-bold text-fg">Creá tu empresa</h2>
+          <h2 className="text-xl font-bold text-fg">Agregá tu empresa</h2>
           <p className="text-sm text-fg-muted mt-1">
             {onClose
               ? 'Completá los datos de la nueva organización.'
@@ -283,7 +310,40 @@ export function SetupOrgModal({ onCreated, onClose }) {
                 value={form.address}
                 onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
                 className={inputCls}
-                placeholder="Av. Corrientes 1234, CABA"
+                placeholder="Av. Corrientes 1234"
+              />
+            </div>
+            <div>
+              <label className={labelCls}>Provincia</label>
+              <select
+                value={form.province}
+                onChange={e => setForm(f => ({ ...f, province: e.target.value }))}
+                className={inputCls}
+              >
+                <option value="">Seleccionar provincia</option>
+                {AR_PROVINCES.map(p => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Ciudad</label>
+              <input
+                type="text"
+                value={form.city}
+                onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
+                className={inputCls}
+                placeholder="Rosario"
+              />
+            </div>
+            <div>
+              <label className={labelCls}>Código postal</label>
+              <input
+                type="text"
+                value={form.postalCode}
+                onChange={e => setForm(f => ({ ...f, postalCode: e.target.value }))}
+                className={inputCls}
+                placeholder="2000"
               />
             </div>
             <div className="sm:col-span-2">
