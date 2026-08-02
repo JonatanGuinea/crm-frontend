@@ -12,12 +12,13 @@ import InstallmentsPanel from '../../components/InstallmentsPanel'
 
 const STATUS_LABELS = {
   draft: 'Borrador', sent: 'Enviado', approved: 'Aprobado',
-  rejected: 'Rechazado', expired: 'Vencido'
+  signed: 'Firmado', rejected: 'Rechazado', expired: 'Vencido'
 }
 const STATUS_COLORS = {
   draft:    'bg-raised text-fg-soft',
   sent:     'bg-info-subtle text-info',
   approved: 'bg-brand-subtle text-brand',
+  signed:   'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
   rejected: 'bg-danger-subtle text-danger',
   expired:  'bg-warning-subtle text-warning'
 }
@@ -66,7 +67,7 @@ export default function QuoteDetailPage() {
   if (isLoading) return <div className="p-8 text-sm text-fg-soft">Cargando...</div>
   if (!quote) return <div className="p-8 text-sm text-fg-soft">Presupuesto no encontrado</div>
 
-  const isSigned = !!quote.clientSignature
+  const isSigned = quote.status === 'signed'
 
   const subtotal = Number(quote.subtotal)
   const total    = Number(quote.total)
@@ -90,11 +91,6 @@ export default function QuoteDetailPage() {
             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[quote.status]}`}>
               {STATUS_LABELS[quote.status]}
             </span>
-            {isSigned && (
-              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                Firmado
-              </span>
-            )}
           </div>
           <p className="text-fg-muted mt-0.5 text-sm">#{quote.number}</p>
         </div>

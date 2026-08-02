@@ -13,12 +13,13 @@ import { ChevronDownIcon, UserIcon, ArrowDownTrayIcon, PaperAirplaneIcon, Docume
 
 const STATUS_LABELS = {
   draft: 'Borrador', sent: 'Enviado', approved: 'Aprobado',
-  rejected: 'Rechazado', expired: 'Vencido'
+  signed: 'Firmado', rejected: 'Rechazado', expired: 'Vencido'
 }
 const STATUS_COLORS = {
   draft:    'bg-raised text-fg-soft',
   sent:     'bg-info-subtle text-info',
   approved: 'bg-brand-subtle text-brand',
+  signed:   'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
   rejected: 'bg-danger-subtle text-danger',
   expired:  'bg-warning-subtle text-warning'
 }
@@ -26,6 +27,7 @@ const STATUS_DOT = {
   draft:    'bg-fg-muted',
   sent:     'bg-info',
   approved: 'bg-brand',
+  signed:   'bg-emerald-500',
   rejected: 'bg-danger',
   expired:  'bg-warning'
 }
@@ -33,6 +35,7 @@ const ALLOWED_TRANSITIONS = {
   draft:    [],
   sent:     ['approved', 'rejected', 'expired'],
   approved: [],
+  signed:   [],
   rejected: [],
   expired:  [],
 }
@@ -218,7 +221,7 @@ export default function QuotesPage() {
         </button>
       )
     }
-    const hasPendingInstallments = q.status === 'approved' && q.installments?.length > 0
+    const hasPendingInstallments = (q.status === 'approved' || q.status === 'signed') && q.installments?.length > 0
     return (
       <div className="flex items-center gap-1.5">
         <StatusDropdown quote={q} onUpdate={(status) => changeStatus.mutate({ id: q.id, status })} />
