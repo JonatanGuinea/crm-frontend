@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getPublicQuote, getPublicQuotePdfUrl, confirmQuote } from '../../api/public'
-import { ArrowDownTrayIcon, CheckCircleIcon, CheckIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
+import { ArrowDownTrayIcon, CheckCircleIcon, CheckIcon, ArrowLeftIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { AR_PROVINCES } from '../../utils/arProvinces'
 
 const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '')
@@ -30,6 +30,7 @@ export default function QuotePublicPage() {
   })
   const [confirmLoading, setConfirmLoading] = useState(false)
   const [confirmError, setConfirmError]     = useState('')
+  const [signatureImg, setSignatureImg]     = useState(null)
 
   const { data: quote, isLoading, isError } = useQuery({
     queryKey: ['public-quote', id],
@@ -104,29 +105,29 @@ export default function QuotePublicPage() {
     return (e) => setClientForm(f => ({ ...f, [key]: e.target.value }))
   }
 
-  async function handleConfirmStep1() {
+  // Desde el modal: si es potencial va al form, si es real va directo a firma
+  function handleConfirmStep1() {
     setConfirmError('')
-    if (isPotential) {
-      setConfirmStep('form')
-    } else {
-      setConfirmLoading(true)
-      try {
-        await confirmQuote(id, {})
-        setConfirmStep('success')
-      } catch (err) {
-        setConfirmError(err.response?.data?.error || 'Error al confirmar')
-      } finally {
-        setConfirmLoading(false)
-      }
-    }
+    setConfirmStep(isPotential ? 'form' : 'signature')
   }
 
-  async function handleFormSubmit(e) {
+  // Desde el form: avanza a firma (sin llamar la API todavía)
+  function handleFormNext(e) {
     e.preventDefault()
+    setConfirmError('')
+    setConfirmStep('signature')
+  }
+
+  // Desde la firma: llama a la API con todos los datos + firma
+  async function handleSignatureConfirm(signatureDataUrl) {
     setConfirmLoading(true)
     setConfirmError('')
     try {
-      await confirmQuote(id, clientForm)
+      const payload = isPotential
+        ? { ...clientForm, signature: signatureDataUrl }
+        : { signature: signatureDataUrl }
+      await confirmQuote(id, payload)
+      setSignatureImg(signatureDataUrl)
       setConfirmStep('success')
     } catch (err) {
       setConfirmError(err.response?.data?.error || 'Error al confirmar')
@@ -161,6 +162,12 @@ export default function QuotePublicPage() {
                   <p className="text-xs text-zinc-400 uppercase tracking-wider font-semibold mb-1">Cliente registrado</p>
                   <p className="text-zinc-800 dark:text-zinc-100 font-semibold">{clientForm.company || clientForm.name}</p>
                   {clientForm.company && <p className="text-zinc-500 text-sm">{clientForm.name}</p>}
+                </div>
+              )}
+              {signatureImg && (
+                <div className="bg-zinc-50 dark:bg-zinc-800 rounded-xl px-4 py-3">
+                  <p className="text-xs text-zinc-400 uppercase tracking-wider font-semibold mb-2">Firma del cliente</p>
+                  <img src={signatureImg} alt="Firma" className="max-h-16 object-contain" />
                 </div>
               )}
               <p className="text-sm text-zinc-500 text-center pt-1">
@@ -208,7 +215,7 @@ export default function QuotePublicPage() {
             Para confirmar el presupuesto <span className="font-medium text-zinc-600 dark:text-zinc-300">«{quote.title}»</span> necesitamos algunos datos adicionales.
           </p>
 
-          <form onSubmit={handleFormSubmit} className="space-y-4">
+          <form onSubmit={handleFormNext} className="space-y-4">
             <div>
               <label className={labelCls}>Nombre *</label>
               <input required value={clientForm.name} onChange={setField('name')} className={inputCls} placeholder="Tu nombre completo" />
@@ -275,10 +282,9 @@ export default function QuotePublicPage() {
 
             <button
               type="submit"
-              disabled={confirmLoading}
-              className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-semibold text-sm transition-colors disabled:opacity-60 mt-2"
+              className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-semibold text-sm transition-colors mt-2"
             >
-              {confirmLoading ? 'Confirmando...' : 'Confirmar presupuesto'}
+              Continuar a firma →
             </button>
           </form>
 
@@ -290,6 +296,24 @@ export default function QuotePublicPage() {
           </p>
         </div>
       </div>
+    )
+  }
+
+  // ── Paso de firma ─────────────────────────────────────────────────────────
+  if (confirmStep === 'signature') {
+    return (
+      <SignatureStep
+        quote={quote}
+        numStr={numStr}
+        sym={sym}
+        total={total}
+        fmt={fmt}
+        clientName={isPotential ? (clientForm.company || clientForm.name) : (clientCompany || clientName)}
+        onBack={() => { setConfirmError(''); setConfirmStep(isPotential ? 'form' : 'modal') }}
+        onConfirm={handleSignatureConfirm}
+        loading={confirmLoading}
+        error={confirmError}
+      />
     )
   }
 
@@ -571,6 +595,142 @@ export default function QuotePublicPage() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function SignatureStep({ quote, numStr, sym, total, fmt, clientName, onBack, onConfirm, loading, error }) {
+  const canvasRef  = useRef(null)
+  const drawing    = useRef(false)
+  const [isEmpty, setIsEmpty] = useState(true)
+
+  function getXY(e) {
+    const canvas = canvasRef.current
+    const rect   = canvas.getBoundingClientRect()
+    const scaleX = canvas.width  / rect.width
+    const scaleY = canvas.height / rect.height
+    const src    = e.touches ? e.touches[0] : e
+    return {
+      x: (src.clientX - rect.left) * scaleX,
+      y: (src.clientY - rect.top)  * scaleY,
+    }
+  }
+
+  function onStart(e) {
+    e.preventDefault()
+    const ctx = canvasRef.current.getContext('2d')
+    const { x, y } = getXY(e)
+    ctx.beginPath()
+    ctx.moveTo(x, y)
+    drawing.current = true
+    setIsEmpty(false)
+  }
+
+  function onMove(e) {
+    if (!drawing.current) return
+    e.preventDefault()
+    const ctx = canvasRef.current.getContext('2d')
+    const { x, y } = getXY(e)
+    ctx.lineTo(x, y)
+    ctx.strokeStyle = '#0f172a'
+    ctx.lineWidth   = 2.5
+    ctx.lineCap     = 'round'
+    ctx.lineJoin    = 'round'
+    ctx.stroke()
+  }
+
+  function onEnd(e) {
+    e.preventDefault()
+    drawing.current = false
+  }
+
+  function clearCanvas() {
+    const canvas = canvasRef.current
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
+    setIsEmpty(true)
+  }
+
+  function handleConfirm() {
+    onConfirm(canvasRef.current.toDataURL('image/png'))
+  }
+
+  return (
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 overflow-y-auto">
+      <div className="max-w-lg mx-auto py-8 px-4">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 mb-6 transition-colors"
+        >
+          <ArrowLeftIcon className="w-4 h-4" />
+          Volver
+        </button>
+
+        <h2 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100 mb-1">Firma del presupuesto</h2>
+        <p className="text-sm text-zinc-500 mb-6">
+          Firmá en el recuadro para confirmar el presupuesto.
+        </p>
+
+        {/* Resumen del presupuesto */}
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 mb-6 flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="font-semibold text-zinc-800 dark:text-zinc-100 truncate">{quote.title}</p>
+            <p className="text-xs text-zinc-400 mt-0.5">#{numStr}{clientName ? ` · ${clientName}` : ''}</p>
+          </div>
+          <p className="font-bold text-zinc-800 dark:text-zinc-100 text-lg tabular-nums shrink-0">{sym}{fmt(total)}</p>
+        </div>
+
+        {/* Canvas de firma */}
+        <div className="relative rounded-2xl overflow-hidden border-2 border-zinc-200 dark:border-zinc-700 bg-white">
+          <canvas
+            ref={canvasRef}
+            width={640}
+            height={240}
+            className="w-full touch-none cursor-crosshair block"
+            onMouseDown={onStart}
+            onMouseMove={onMove}
+            onMouseUp={onEnd}
+            onMouseLeave={onEnd}
+            onTouchStart={onStart}
+            onTouchMove={onMove}
+            onTouchEnd={onEnd}
+          />
+          {/* Línea de firma */}
+          <div className="absolute bottom-10 left-8 right-8 h-px bg-zinc-200" />
+          {/* Placeholder */}
+          {isEmpty && (
+            <p className="absolute inset-0 flex items-center justify-center text-sm text-zinc-300 pointer-events-none select-none">
+              Firmá aquí usando el mouse o el dedo
+            </p>
+          )}
+        </div>
+
+        <div className="flex gap-3 mt-3 mb-6">
+          <button
+            onClick={clearCanvas}
+            disabled={isEmpty}
+            className="flex items-center gap-1.5 px-4 py-2 text-sm text-zinc-500 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-40"
+          >
+            <TrashIcon className="w-4 h-4" />
+            Limpiar
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={isEmpty || loading}
+            className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-60"
+          >
+            {loading ? 'Confirmando...' : 'Confirmar presupuesto'}
+          </button>
+        </div>
+
+        {error && <p className="text-sm text-red-500 mb-4">{error}</p>}
+
+        <p className="text-center text-xs text-zinc-400 mt-6">
+          Presupuesto generado por{' '}
+          <a href="https://sofiapp.dev" target="_blank" rel="noopener noreferrer" className="font-medium text-zinc-500 underline underline-offset-2">
+            sofiapp.dev
+          </a>
+        </p>
+      </div>
     </div>
   )
 }
