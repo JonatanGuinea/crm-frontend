@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { getPublicQuote, getPublicQuotePdfUrl, confirmQuote } from '../../api/public'
+import { getPublicQuote, getPublicQuotePdfUrl, confirmQuote, rejectQuote } from '../../api/public'
 import { ArrowDownTrayIcon, CheckCircleIcon, CheckIcon, ArrowLeftIcon, TrashIcon } from '@heroicons/react/24/outline'
 import ProvinceSelect from '../../components/ProvinceSelect'
 import PhoneInput, { PHONE_COUNTRIES, checkPhone } from '../../components/PhoneInput'
@@ -35,6 +35,11 @@ export default function QuotePublicPage() {
   const [confirmLoading, setConfirmLoading] = useState(false)
   const [confirmError, setConfirmError]     = useState('')
   const [signatureImg, setSignatureImg]     = useState(null)
+  const [showRejectForm, setShowRejectForm] = useState(false)
+  const [rejectOption, setRejectOption]     = useState('')
+  const [rejectOther, setRejectOther]       = useState('')
+  const [rejectLoading, setRejectLoading]   = useState(false)
+  const [rejectError, setRejectError]       = useState('')
 
   const { data: quote, isLoading, isError } = useQuery({
     queryKey: ['public-quote', id],
@@ -104,6 +109,9 @@ export default function QuotePublicPage() {
 
   const isPotential   = !quote.client && !!quote.potentialClientName
   const isConfirmable = quote.status === 'draft' || quote.status === 'sent'
+  const isExpired     = quote.status === 'expired'
+  const isRejected    = quote.status === 'rejected'
+  const isSigned      = quote.status === 'signed'
 
   function setField(key) {
     return (e) => setClientForm(f => ({ ...f, [key]: e.target.value }))
@@ -147,6 +155,26 @@ export default function QuotePublicPage() {
       setConfirmError(err.response?.data?.error || 'Error al confirmar')
     } finally {
       setConfirmLoading(false)
+    }
+  }
+
+  async function handleRejectSubmit(e) {
+    e.preventDefault()
+    if (!rejectOption) { setRejectError('Seleccioná un motivo.'); return }
+    const reason = rejectOption === '__other__'
+      ? (rejectOther.trim() || 'Otro motivo')
+      : rejectOption
+    setRejectLoading(true)
+    setRejectError('')
+    try {
+      await rejectQuote(id, reason)
+      setShowRejectForm(false)
+      // Recargar los datos del presupuesto para mostrar el banner de rechazado
+      window.location.reload()
+    } catch (err) {
+      setRejectError(err.response?.data?.error || 'Error al enviar la respuesta')
+    } finally {
+      setRejectLoading(false)
     }
   }
 
@@ -546,7 +574,7 @@ export default function QuotePublicPage() {
           )}
 
           {/* ── Firmas ──────────────────────────────────────────── */}
-          {(quote.clientSignature || org.signature) && (
+          {quote.clientSignature && (
             <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 px-5 py-6 sm:px-10 sm:py-7">
               <p className="text-sm text-slate-400 leading-relaxed mb-5 border-b border-slate-700 pb-5">
                 Las partes declaran haber leído y aceptado el presente presupuesto en todas sus condiciones.
@@ -601,6 +629,32 @@ export default function QuotePublicPage() {
           )}
         </div>
 
+        {/* ── Banner de estado no confirmable ─────────────────── */}
+        {(isExpired || isRejected || isSigned) && (
+          <div className={`rounded-2xl border px-5 py-5 sm:px-7 mb-4 sm:mb-5 ${
+            isSigned
+              ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800'
+              : isExpired
+              ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800'
+              : 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'
+          }`}>
+            <p className={`text-sm font-semibold mb-1 ${
+              isSigned ? 'text-emerald-700 dark:text-emerald-400'
+              : isExpired ? 'text-amber-700 dark:text-amber-400'
+              : 'text-red-700 dark:text-red-400'
+            }`}>
+              {isSigned  && '✓ Presupuesto confirmado y firmado'}
+              {isExpired && '⏱ Este presupuesto ha vencido'}
+              {isRejected && '✕ Este presupuesto fue rechazado'}
+            </p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              {isSigned  && 'El presupuesto fue aceptado. Podés descargar el PDF con la firma.'}
+              {isExpired && `El plazo de validez venció el ${fmtDate(quote.validUntil)}. Contactá a ${org.name} para solicitar un nuevo presupuesto.`}
+              {isRejected && `Contactá a ${org.name} si querés revisar las condiciones del presupuesto.`}
+            </p>
+          </div>
+        )}
+
         {/* ── Footer ──────────────────────────────────────────── */}
         <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3">
           <p className="text-xs text-zinc-400 text-center sm:text-left">
@@ -611,13 +665,21 @@ export default function QuotePublicPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-2">
             {isConfirmable && (
-              <button
-                onClick={() => setConfirmStep('modal')}
-                className="flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-medium transition-colors shadow"
-              >
-                <CheckIcon className="w-4 h-4" />
-                Confirmar presupuesto
-              </button>
+              <>
+                <button
+                  onClick={() => setConfirmStep('modal')}
+                  className="flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-medium transition-colors shadow"
+                >
+                  <CheckIcon className="w-4 h-4" />
+                  Confirmar presupuesto
+                </button>
+                <button
+                  onClick={() => { setShowRejectForm(true); setRejectOption(''); setRejectOther(''); setRejectError('') }}
+                  className="flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-700 rounded-xl text-sm font-medium transition-colors shadow"
+                >
+                  Rechazar presupuesto
+                </button>
+              </>
             )}
             <a
               href={getPublicQuotePdfUrl(id)}
@@ -632,6 +694,79 @@ export default function QuotePublicPage() {
         </div>
 
       </div>
+
+      {/* ── Modal de rechazo ─────────────────────────────────────── */}
+      {showRejectForm && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 px-0 sm:px-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md overflow-hidden">
+            <div className="px-6 pt-6 pb-3 border-b border-zinc-100 dark:border-zinc-800">
+              <h2 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-1">Rechazar presupuesto</h2>
+              <p className="text-sm text-zinc-500">Contanos por qué no podés avanzar con este presupuesto.</p>
+            </div>
+            <form onSubmit={handleRejectSubmit} className="px-6 py-5 space-y-3">
+              {[
+                'Los montos superan lo esperado',
+                'El plazo de entrega es muy largo',
+                'El alcance del servicio no es el adecuado',
+                'Decidí contratar otro proveedor',
+                'El proyecto fue cancelado o postergado',
+              ].map(option => (
+                <label key={option} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${rejectOption === option ? 'border-red-400 bg-red-50 dark:bg-red-950/30 dark:border-red-700' : 'border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800'}`}>
+                  <input
+                    type="radio"
+                    name="rejectOption"
+                    value={option}
+                    checked={rejectOption === option}
+                    onChange={() => setRejectOption(option)}
+                    className="accent-red-500 shrink-0"
+                  />
+                  <span className="text-sm text-zinc-700 dark:text-zinc-200">{option}</span>
+                </label>
+              ))}
+              <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${rejectOption === '__other__' ? 'border-red-400 bg-red-50 dark:bg-red-950/30 dark:border-red-700' : 'border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800'}`}>
+                <input
+                  type="radio"
+                  name="rejectOption"
+                  value="__other__"
+                  checked={rejectOption === '__other__'}
+                  onChange={() => setRejectOption('__other__')}
+                  className="accent-red-500 shrink-0 mt-0.5"
+                />
+                <div className="flex-1">
+                  <span className="text-sm text-zinc-700 dark:text-zinc-200">Otro motivo</span>
+                  {rejectOption === '__other__' && (
+                    <textarea
+                      value={rejectOther}
+                      onChange={e => setRejectOther(e.target.value)}
+                      placeholder="Describí el motivo..."
+                      rows={3}
+                      className="mt-2 w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm text-zinc-800 dark:text-zinc-100 resize-none focus:outline-none focus:ring-2 focus:ring-red-400 placeholder:text-zinc-400"
+                      autoFocus
+                    />
+                  )}
+                </div>
+              </label>
+              {rejectError && <p className="text-sm text-red-500">{rejectError}</p>}
+              <div className="flex gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowRejectForm(false)}
+                  className="flex-1 px-4 py-2.5 text-sm text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={rejectLoading}
+                  className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-60"
+                >
+                  {rejectLoading ? 'Enviando...' : 'Enviar respuesta'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ── Modal de confirmación ────────────────────────────────── */}
       {confirmStep === 'modal' && (

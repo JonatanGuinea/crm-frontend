@@ -209,6 +209,14 @@ export default function QuoteDetailPage() {
                   <dd className="text-fg">{new Date(quote.clientSignedAt).toLocaleDateString('es-AR')}</dd>
                 </div>
               )}
+              {quote.status === 'rejected' && quote.rejectionReason && (
+                <div className="pt-1">
+                  <dt className="text-xs text-fg-muted uppercase mb-1.5">Motivo de rechazo</dt>
+                  <dd className="px-3 py-2.5 rounded-lg bg-danger-subtle border border-danger/20 text-sm text-danger leading-snug">
+                    {quote.rejectionReason}
+                  </dd>
+                </div>
+              )}
               {quote.notes && (
                 <div>
                   <dt className="text-xs text-fg-muted uppercase mb-0.5">Notas</dt>
