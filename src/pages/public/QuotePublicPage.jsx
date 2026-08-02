@@ -114,6 +114,7 @@ export default function QuotePublicPage() {
               {(quote.client?.city || quote.client?.province) && (
                 <p className="text-sm text-zinc-500">
                   {[quote.client.city, quote.client.province].filter(Boolean).join(', ')}
+                  {quote.client.postalCode ? ` (${quote.client.postalCode})` : ''}
                 </p>
               )}
             </div>

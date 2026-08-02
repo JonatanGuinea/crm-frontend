@@ -10,33 +10,7 @@ import {
   XMarkIcon,
   ArrowRightStartOnRectangleIcon,
 } from '@heroicons/react/24/outline'
-
-const AR_PROVINCES = [
-  'Buenos Aires',
-  'Catamarca',
-  'Chaco',
-  'Chubut',
-  'Córdoba',
-  'Corrientes',
-  'Entre Ríos',
-  'Formosa',
-  'Jujuy',
-  'La Pampa',
-  'La Rioja',
-  'Mendoza',
-  'Misiones',
-  'Neuquén',
-  'Río Negro',
-  'Salta',
-  'San Juan',
-  'San Luis',
-  'Santa Cruz',
-  'Santa Fe',
-  'Santiago del Estero',
-  'Tierra del Fuego',
-  'Tucumán',
-  'Ciudad Autónoma de Buenos Aires',
-]
+import { AR_PROVINCES } from '../utils/arProvinces'
 
 const COUNTRIES = [
   { code: 'AR', name: 'Argentina',      dial: '+54',  flag: '🇦🇷' },

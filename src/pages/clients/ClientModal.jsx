@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { createClient, updateClient } from '../../api/clients'
 import { useToast } from '../../components/Toast'
+import { AR_PROVINCES } from '../../utils/arProvinces'
 
 const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
 const labelCls = "block text-sm font-medium text-fg-soft mb-1"
@@ -8,16 +9,17 @@ const labelCls = "block text-sm font-medium text-fg-soft mb-1"
 export default function ClientModal({ client, onClose, onSaved }) {
   const toast = useToast()
   const [form, setForm] = useState({
-    name: client?.name || '',
-    email: client?.email || '',
-    phone: client?.phone || '',
-    company: client?.company || '',
-    address: client?.address || '',
-    city: client?.city || '',
-    province: client?.province || '',
-    cuit: client?.cuit || '',
-    website: client?.website || '',
-    notes: client?.notes || ''
+    name:       client?.name       || '',
+    company:    client?.company    || '',
+    email:      client?.email      || '',
+    phone:      client?.phone      || '',
+    website:    client?.website    || '',
+    cuit:       client?.cuit       || '',
+    address:    client?.address    || '',
+    province:   client?.province   || '',
+    city:       client?.city       || '',
+    postalCode: client?.postalCode || '',
+    notes:      client?.notes      || '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -60,11 +62,11 @@ export default function ClientModal({ client, onClose, onSaved }) {
         {/* Scrollable body */}
         <form id="client-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
           {[
-            { key: 'name',    label: 'Nombre *',   type: 'text',  required: true },
-            { key: 'email',   label: 'Email',       type: 'email' },
-            { key: 'phone',   label: 'Teléfono',    type: 'text' },
-            { key: 'company', label: 'Empresa',     type: 'text' },
-            { key: 'website', label: 'Sitio web',   type: 'text', placeholder: 'ejemplo.com' },
+            { key: 'name',    label: 'Nombre *', type: 'text',  required: true },
+            { key: 'company', label: 'Empresa',  type: 'text' },
+            { key: 'email',   label: 'Email',    type: 'email' },
+            { key: 'phone',   label: 'Teléfono', type: 'text' },
+            { key: 'website', label: 'Sitio web', type: 'text', placeholder: 'ejemplo.com' },
           ].map(({ key, label, type, required, placeholder }) => (
             <div key={key}>
               <label className={labelCls}>{label}</label>
@@ -94,6 +96,16 @@ export default function ClientModal({ client, onClose, onSaved }) {
             </div>
           </div>
 
+          <div>
+            <label className={labelCls}>Provincia</label>
+            <select value={form.province}
+              onChange={e => setForm(f => ({ ...f, province: e.target.value }))}
+              className={inputCls}>
+              <option value="">Seleccionar...</option>
+              {AR_PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelCls}>Ciudad</label>
@@ -102,10 +114,10 @@ export default function ClientModal({ client, onClose, onSaved }) {
                 className={inputCls} placeholder="Ej: Rosario" />
             </div>
             <div>
-              <label className={labelCls}>Provincia</label>
-              <input type="text" value={form.province}
-                onChange={e => setForm(f => ({ ...f, province: e.target.value }))}
-                className={inputCls} placeholder="Ej: Santa Fe" />
+              <label className={labelCls}>Código postal</label>
+              <input type="text" value={form.postalCode}
+                onChange={e => setForm(f => ({ ...f, postalCode: e.target.value }))}
+                className={inputCls} placeholder="Ej: 2000" />
             </div>
           </div>
 
