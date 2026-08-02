@@ -72,7 +72,7 @@ export default function QuotePublicPage() {
               <div className="min-w-0 flex-1">
                 <div className="mb-3">
                   {orgLogoUrl
-                    ? <img src={orgLogoUrl} alt={org.name} className="h-7 object-contain" />
+                    ? <img src={orgLogoUrl} alt={org.name} className="h-14 object-contain" />
                     : <p className="text-slate-300 font-semibold text-sm">{org.name}</p>
                   }
                 </div>
