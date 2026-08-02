@@ -206,7 +206,7 @@ export default function TasksPage() {
     moveMutation.mutate({ id: task.id, status: newStatus })
   }
 
-  const myId = user?.id
+  const myId = user?.uid
   const filtered = tasks.filter(t => {
     if (onlyMine      && t.assignedToId !== myId)          return false
     if (filterPriority && t.priority !== filterPriority)   return false
