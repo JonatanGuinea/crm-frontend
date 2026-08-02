@@ -5,6 +5,7 @@ import { getProjects } from '../../api/projects'
 import { getMembers } from '../../api/members'
 import { useToast } from '../../components/Toast'
 import { useAuth } from '../../context/AuthContext'
+import DatePicker from '../../components/DatePicker'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 
 const STATUS_OPTIONS = [
@@ -19,7 +20,7 @@ const PRIORITY_OPTIONS = [
   { value: 'high',   label: 'Alta' },
 ]
 
-export default function TaskModal({ task, defaultStatus = 'todo', onClose }) {
+export default function TaskModal({ task, defaultStatus = 'todo', defaultProjectId = '', onClose }) {
   const qc    = useQueryClient()
   const toast = useToast()
   const { user } = useAuth()
@@ -33,7 +34,7 @@ export default function TaskModal({ task, defaultStatus = 'todo', onClose }) {
     priority:     task?.priority     ?? 'medium',
     dueDate:      task?.dueDate      ? task.dueDate.slice(0, 10) : '',
     assignedToId: task?.assignedToId ?? '',
-    projectId:    task?.projectId    ?? '',
+    projectId:    task?.projectId    ?? defaultProjectId,
   })
   const [errors, setErrors] = useState({})
 
@@ -49,16 +50,16 @@ export default function TaskModal({ task, defaultStatus = 'todo', onClose }) {
     enabled: Boolean(orgId),
     staleTime: 60_000,
   })
-  const members = membersData?.members ?? []
+  const members = (membersData ?? []).filter(m => m.status === 'active')
 
   const mutation = useMutation({
     mutationFn: (data) => isEdit ? updateTask(task.id, data) : createTask(data),
     onSuccess: () => {
       qc.invalidateQueries(['tasks'])
-      toast.success(isEdit ? 'Tarea actualizada' : 'Tarea creada')
+      toast(isEdit ? 'Tarea actualizada' : 'Tarea creada', 'success')
       onClose()
     },
-    onError: (err) => toast.error(err.response?.data?.message ?? 'Error al guardar'),
+    onError: (err) => toast(err.response?.data?.message ?? 'Error al guardar', 'error'),
   })
 
   function set(field, value) {
@@ -169,11 +170,11 @@ export default function TaskModal({ task, defaultStatus = 'todo', onClose }) {
             {/* Fecha límite */}
             <div>
               <label className="block text-xs font-medium text-fg-muted mb-1.5">Fecha límite</label>
-              <input
-                type="date"
+              <DatePicker
                 value={form.dueDate}
                 onChange={e => set('dueDate', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-raised border border-line text-sm text-fg focus:outline-none focus:border-brand transition-colors"
+                placeholder="Sin fecha límite"
+                className="w-full px-3 py-2 rounded-lg bg-raised border border-line text-sm focus:outline-none transition-colors"
               />
             </div>
 
@@ -187,7 +188,7 @@ export default function TaskModal({ task, defaultStatus = 'todo', onClose }) {
               >
                 <option value="">Sin asignar</option>
                 {members.map(m => (
-                  <option key={m.user.id} value={m.user.id}>{m.user.name}</option>
+                  <option key={m.userId} value={m.userId}>{m.name}</option>
                 ))}
               </select>
             </div>

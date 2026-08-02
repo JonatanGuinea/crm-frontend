@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getTasks, updateTask, deleteTask } from '../../api/tasks'
 import { getMembers } from '../../api/members'
+import { getProjects } from '../../api/projects'
 import { useToast } from '../../components/Toast'
 import { useAuth } from '../../context/AuthContext'
 import { useConfirm } from '../../components/ConfirmDialog'
@@ -11,7 +12,6 @@ import {
   PencilIcon,
   TrashIcon,
   CalendarDaysIcon,
-  UserCircleIcon,
   FolderIcon,
   ChevronRightIcon,
 } from '@heroicons/react/24/outline'
@@ -159,9 +159,11 @@ export default function TasksPage() {
   const { user } = useAuth()
   const orgId   = user?.org
 
-  const [modal, setModal]           = useState(null) // null | { task?, defaultStatus? }
+  const [modal, setModal]                   = useState(null)
   const [filterPriority, setFilterPriority] = useState('')
   const [filterMember, setFilterMember]     = useState('')
+  const [filterProject, setFilterProject]   = useState('')
+  const [onlyMine, setOnlyMine]             = useState(false)
 
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ['tasks'],
@@ -174,7 +176,14 @@ export default function TasksPage() {
     enabled: Boolean(orgId),
     staleTime: 60_000,
   })
-  const members = membersData?.members ?? []
+  const members = (membersData ?? []).filter(m => m.status === 'active')
+
+  const { data: projectsData } = useQuery({
+    queryKey: ['projects'],
+    queryFn: () => getProjects().then(r => r.data.data?.items ?? r.data.data ?? []),
+    staleTime: 60_000,
+  })
+  const projects = projectsData ?? []
 
   const moveMutation = useMutation({
     mutationFn: ({ id, status }) => updateTask(id, { status }),
@@ -197,14 +206,18 @@ export default function TasksPage() {
     moveMutation.mutate({ id: task.id, status: newStatus })
   }
 
-  // Filtrar
+  const myId = user?.id
   const filtered = tasks.filter(t => {
-    if (filterPriority && t.priority !== filterPriority) return false
-    if (filterMember   && t.assignedToId !== filterMember)  return false
+    if (onlyMine      && t.assignedToId !== myId)          return false
+    if (filterPriority && t.priority !== filterPriority)   return false
+    if (filterMember   && t.assignedToId !== filterMember) return false
+    if (filterProject  && t.projectId  !== filterProject)  return false
     return true
   })
 
   const byStatus = (status) => filtered.filter(t => t.status === status)
+
+  const hasFilters = filterPriority || filterMember || filterProject || onlyMine
 
   return (
     <div className="p-4 md:p-8 flex flex-col gap-6 min-h-full">
@@ -213,7 +226,7 @@ export default function TasksPage() {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-fg">Tareas</h1>
-          <p className="text-sm text-fg-muted mt-0.5">{tasks.length} tarea{tasks.length !== 1 ? 's' : ''} en total</p>
+          <p className="text-sm text-fg-muted mt-0.5">{filtered.length} tarea{filtered.length !== 1 ? 's' : ''}{hasFilters ? ' (filtradas)' : ' en total'}</p>
         </div>
         <button
           onClick={() => setModal({ defaultStatus: 'todo' })}
@@ -225,7 +238,19 @@ export default function TasksPage() {
       </div>
 
       {/* Filtros */}
-      <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex items-center gap-2 flex-wrap">
+        {/* Mis tareas toggle */}
+        <button
+          onClick={() => setOnlyMine(v => !v)}
+          className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${
+            onlyMine
+              ? 'bg-brand text-white border-brand'
+              : 'bg-raised border-line text-fg-soft hover:border-brand hover:text-brand'
+          }`}
+        >
+          Mis tareas
+        </button>
+
         <select
           value={filterPriority}
           onChange={e => setFilterPriority(e.target.value)}
@@ -245,14 +270,27 @@ export default function TasksPage() {
           >
             <option value="">Todos los responsables</option>
             {members.map(m => (
-              <option key={m.user.id} value={m.user.id}>{m.user.name}</option>
+              <option key={m.userId} value={m.userId}>{m.name}</option>
             ))}
           </select>
         )}
 
-        {(filterPriority || filterMember) && (
+        {projects.length > 0 && (
+          <select
+            value={filterProject}
+            onChange={e => setFilterProject(e.target.value)}
+            className="px-3 py-1.5 rounded-lg bg-raised border border-line text-sm text-fg-soft focus:outline-none focus:border-brand transition-colors"
+          >
+            <option value="">Todos los proyectos</option>
+            {projects.map(p => (
+              <option key={p.id} value={p.id}>{p.title}</option>
+            ))}
+          </select>
+        )}
+
+        {hasFilters && (
           <button
-            onClick={() => { setFilterPriority(''); setFilterMember('') }}
+            onClick={() => { setFilterPriority(''); setFilterMember(''); setFilterProject(''); setOnlyMine(false) }}
             className="text-xs text-fg-muted hover:text-fg underline transition-colors"
           >
             Limpiar filtros
@@ -316,6 +354,7 @@ export default function TasksPage() {
         <TaskModal
           task={modal.task}
           defaultStatus={modal.defaultStatus}
+          defaultProjectId={modal.defaultProjectId}
           onClose={() => setModal(null)}
         />
       )}
