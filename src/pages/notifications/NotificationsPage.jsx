@@ -193,11 +193,15 @@ export default function NotificationsPage() {
                     </div>
                   )}
 
-                  {isRejection && (
+                  {(isRejection || n.type === 'quote_approved') && meta && (
                     <div className="flex items-center gap-2 flex-wrap">
-                      {meta?.phone && (
+                      {meta.phone && (
                         <a
-                          href={`https://wa.me/${meta.phone}?text=${encodeURIComponent(`Hola ${meta.clientName}, recibimos tu respuesta sobre el presupuesto #${meta.quoteNumber} — ${meta.quoteTitle}. ¿Podemos hablar para ver cómo seguimos?`)}`}
+                          href={`https://wa.me/${meta.phone}?text=${encodeURIComponent(
+                            isRejection
+                              ? `Hola ${meta.clientName}, recibimos tu respuesta sobre el presupuesto #${meta.quoteNumber} — ${meta.quoteTitle}. ¿Podemos hablar para ver cómo seguimos?`
+                              : `Hola ${meta.clientName}, ¡gracias por confirmar el presupuesto #${meta.quoteNumber} — ${meta.quoteTitle}! Nos ponemos en contacto para coordinar los próximos pasos.`
+                          )}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors border border-[#25D366]/20"

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
@@ -107,6 +107,12 @@ export default function ProjectsPage() {
   const confirm = useConfirm()
   const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
+
+  useEffect(() => {
+    const now = new Date().toISOString()
+    localStorage.setItem('projectsLastSeen', now)
+    qc.invalidateQueries(['new-projects-count'])
+  }, [])
   const [statusFilter, setStatusFilter] = useState('')
   const [page, setPage] = useState(1)
   const [modalOpen, setModalOpen] = useState(false)
@@ -200,18 +206,28 @@ export default function ProjectsPage() {
                   )}
                 </div>
                 {/* Acciones */}
-                <div className="flex items-center gap-2 pt-3 border-t border-line">
-                  <Link to={`/projects/${p.id}`} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium bg-brand text-white hover:opacity-90 transition-opacity">
-                    <EyeIcon className="w-3.5 h-3.5" />
-                    Ver
-                  </Link>
-                  <button
-                    onClick={() => setAttachingProject(p)}
-                    className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-line text-fg-soft hover:bg-raised transition-colors"
-                  >
-                    <PaperClipIcon className="w-3.5 h-3.5" />
-                    {p.attachmentCount > 0 ? p.attachmentCount : '+'}
-                  </button>
+                <div className="flex flex-col gap-2 pt-3 border-t border-line">
+                  {canWrite && !p.startDate && (
+                    <button
+                      onClick={() => { setEditing(p); setModalOpen(true) }}
+                      className="w-full flex items-center justify-center py-1.5 rounded-lg text-xs font-medium bg-warning-subtle text-warning border border-warning/20 hover:opacity-80 transition-opacity"
+                    >
+                      Completar proyecto
+                    </button>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Link to={`/projects/${p.id}`} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium bg-brand text-white hover:opacity-90 transition-opacity">
+                      <EyeIcon className="w-3.5 h-3.5" />
+                      Ver
+                    </Link>
+                    <button
+                      onClick={() => setAttachingProject(p)}
+                      className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-line text-fg-soft hover:bg-raised transition-colors"
+                    >
+                      <PaperClipIcon className="w-3.5 h-3.5" />
+                      {p.attachmentCount > 0 ? p.attachmentCount : '+'}
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -281,11 +297,21 @@ export default function ProjectsPage() {
                           {p.attachmentCount > 0 ? p.attachmentCount : '+'}
                         </button>
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        <Link to={`/projects/${p.id}`} className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium bg-brand text-white hover:opacity-90 transition-opacity">
-                          <EyeIcon className="w-3.5 h-3.5" />
-                          Ver
-                        </Link>
+                      <td className="px-4 py-3 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-2">
+                          {canWrite && !p.startDate && (
+                            <button
+                              onClick={() => { setEditing(p); setModalOpen(true) }}
+                              className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium bg-warning-subtle text-warning border border-warning/20 hover:opacity-80 transition-opacity"
+                            >
+                              Completar proyecto
+                            </button>
+                          )}
+                          <Link to={`/projects/${p.id}`} className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium bg-brand text-white hover:opacity-90 transition-opacity">
+                            <EyeIcon className="w-3.5 h-3.5" />
+                            Ver
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   ))}

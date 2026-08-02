@@ -14,6 +14,7 @@ import { getProfile } from '../api/profile'
 import { getNotifications } from '../api/notifications'
 import { getPendingInvitations } from '../api/invitations'
 import { getOrganizations, switchOrganization } from '../api/auth'
+import { getNewProjectsCount } from '../api/projects'
 import logo from '../assets/logo.png'
 import logoDark from '../assets/logo-dark-mode.png'
 import favicon from '../assets/favicon.png'
@@ -159,31 +160,47 @@ function SidebarAvatar({ avatar, name }) {
   )
 }
 
-function SidebarContent({ collapsed, profile, user, onNavClick, dark, onToggleTheme }) {
+function SidebarContent({ collapsed, profile, user, onNavClick, dark, onToggleTheme, newProjectsCount }) {
   return (
     <div className="flex flex-col flex-1 min-h-0">
       {!collapsed && <OrgSwitcher />}
 
       <nav className="flex-1 px-2 py-4 space-y-1">
-        {navItems.map(({ to, label, icon: Icon, exact }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={exact}
-            onClick={onNavClick}
-            title={collapsed ? label : undefined}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-2 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-brand-subtle text-brand'
-                  : 'text-fg-soft hover:bg-raised hover:text-fg'
-              } ${collapsed ? 'justify-center' : ''}`
-            }
-          >
-            <Icon className="w-5 h-5 shrink-0" />
-            {!collapsed && <span className="truncate flex-1">{label}</span>}
-          </NavLink>
-        ))}
+        {navItems.map(({ to, label, icon: Icon, exact }) => {
+          const isProjects = to === '/projects'
+          const badge = isProjects && newProjectsCount > 0 ? newProjectsCount : 0
+          return (
+            <NavLink
+              key={to}
+              to={to}
+              end={exact}
+              onClick={onNavClick}
+              title={collapsed ? label : undefined}
+              className={({ isActive }) =>
+                `relative flex items-center gap-3 px-2 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-brand-subtle text-brand'
+                    : 'text-fg-soft hover:bg-raised hover:text-fg'
+                } ${collapsed ? 'justify-center' : ''}`
+              }
+            >
+              <div className="relative shrink-0">
+                <Icon className="w-5 h-5" />
+                {badge > 0 && collapsed && (
+                  <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none">
+                    {badge > 99 ? '99+' : badge}
+                  </span>
+                )}
+              </div>
+              {!collapsed && <span className="truncate flex-1">{label}</span>}
+              {!collapsed && badge > 0 && (
+                <span className="ml-auto min-w-[18px] h-4.5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
+                  {badge > 99 ? '99+' : badge}
+                </span>
+              )}
+            </NavLink>
+          )
+        })}
       </nav>
 
       <div className="px-2 py-4 border-t border-line space-y-1 shrink-0">
@@ -244,6 +261,14 @@ export default function AppLayout() {
   })
   const unreadCount = (notifData?.unreadCount ?? 0) + (invitations?.length ?? 0)
 
+  const projectsLastSeen = localStorage.getItem('projectsLastSeen') ?? new Date(0).toISOString()
+  const { data: newProjectsData } = useQuery({
+    queryKey: ['new-projects-count', projectsLastSeen],
+    queryFn: () => getNewProjectsCount(projectsLastSeen).then(r => r.data.data.count),
+    refetchInterval: 60_000,
+  })
+  const newProjectsCount = newProjectsData ?? 0
+
   function toggleSidebar() {
     setCollapsed(prev => {
       const next = !prev
@@ -290,6 +315,7 @@ export default function AppLayout() {
           onNavClick={() => setMobileOpen(false)}
           dark={dark}
           onToggleTheme={toggle}
+          newProjectsCount={newProjectsCount}
         />
       </aside>
 
@@ -319,6 +345,7 @@ export default function AppLayout() {
           onNavClick={undefined}
           dark={dark}
           onToggleTheme={toggle}
+          newProjectsCount={newProjectsCount}
         />
       </aside>
 
@@ -340,7 +367,7 @@ export default function AppLayout() {
           >
             <BellIcon className="w-5 h-5" />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 min-w-[16px] h-4 px-0.5 rounded-full bg-brand text-white text-[10px] font-bold flex items-center justify-center leading-none">
+              <span className="absolute top-1 right-1 min-w-[16px] h-4 px-0.5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}
