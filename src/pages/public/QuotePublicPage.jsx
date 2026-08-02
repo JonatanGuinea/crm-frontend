@@ -105,10 +105,16 @@ export default function QuotePublicPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 border-b border-zinc-100 dark:border-zinc-800">
             <div className="px-7 py-5 sm:border-r border-zinc-100 dark:border-zinc-800">
               <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Cliente</p>
-              <p className="font-semibold text-zinc-800 dark:text-zinc-100 text-base">{quote.client?.name}</p>
-              {quote.client?.company && <p className="text-sm text-zinc-500 mt-0.5">{quote.client.company}</p>}
+              <p className="font-semibold text-zinc-800 dark:text-zinc-100 text-base">
+                {quote.client?.name || quote.potentialClientName}
+              </p>
+              {(quote.client?.company || quote.potentialClientCompany) && (
+                <p className="text-sm text-zinc-500 mt-0.5">{quote.client?.company || quote.potentialClientCompany}</p>
+              )}
               {quote.client?.cuit    && <p className="text-sm text-zinc-500">CUIL/CUIT: {quote.client.cuit}</p>}
-              {quote.client?.email   && <p className="text-sm text-zinc-500">{quote.client.email}</p>}
+              {(quote.client?.email  || quote.potentialClientEmail) && (
+                <p className="text-sm text-zinc-500">{quote.client?.email || quote.potentialClientEmail}</p>
+              )}
               {quote.client?.phone   && <p className="text-sm text-zinc-500">{quote.client.phone}</p>}
               {quote.client?.address && <p className="text-sm text-zinc-500">{quote.client.address}</p>}
               {(quote.client?.city || quote.client?.province) && (
