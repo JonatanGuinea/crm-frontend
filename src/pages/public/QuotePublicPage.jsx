@@ -3,7 +3,8 @@ import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getPublicQuote, getPublicQuotePdfUrl, confirmQuote } from '../../api/public'
 import { ArrowDownTrayIcon, CheckCircleIcon, CheckIcon, ArrowLeftIcon, TrashIcon } from '@heroicons/react/24/outline'
-import { AR_PROVINCES } from '../../utils/arProvinces'
+import ProvinceSelect from '../../components/ProvinceSelect'
+import PhoneInput, { PHONE_COUNTRIES, checkPhone } from '../../components/PhoneInput'
 
 const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '')
 
@@ -23,11 +24,14 @@ const labelCls = "block text-xs font-semibold text-zinc-500 mb-1"
 export default function QuotePublicPage() {
   const { id } = useParams()
 
-  const [confirmStep, setConfirmStep] = useState(null) // null | 'modal' | 'form' | 'success'
+  const [confirmStep, setConfirmStep] = useState(null) // null | 'modal' | 'form' | 'signature' | 'success'
   const [clientForm, setClientForm] = useState({
-    name: '', company: '', email: '', phone: '', website: '',
+    name: '', company: '', email: '', website: '',
     cuit: '', address: '', province: '', city: '', postalCode: '', notes: ''
   })
+  const [phoneCountry, setPhoneCountry] = useState('AR')
+  const [phoneNumber, setPhoneNumber]   = useState('')
+  const [phoneValid, setPhoneValid]     = useState(false)
   const [confirmLoading, setConfirmLoading] = useState(false)
   const [confirmError, setConfirmError]     = useState('')
   const [signatureImg, setSignatureImg]     = useState(null)
@@ -111,9 +115,17 @@ export default function QuotePublicPage() {
     setConfirmStep(isPotential ? 'form' : 'signature')
   }
 
-  // Desde el form: avanza a firma (sin llamar la API todavía)
+  // Desde el form: valida y avanza a firma (sin llamar la API todavía)
   function handleFormNext(e) {
     e.preventDefault()
+    if (!clientForm.province) {
+      setConfirmError('Seleccioná una provincia.')
+      return
+    }
+    if (!phoneValid) {
+      setConfirmError('Ingresá un número de teléfono válido.')
+      return
+    }
     setConfirmError('')
     setConfirmStep('signature')
   }
@@ -123,8 +135,10 @@ export default function QuotePublicPage() {
     setConfirmLoading(true)
     setConfirmError('')
     try {
-      const payload = isPotential
-        ? { ...clientForm, signature: signatureDataUrl }
+      const dialCode  = PHONE_COUNTRIES.find(c => c.code === phoneCountry)?.dial || ''
+      const fullPhone = phoneNumber.trim() ? `${dialCode} ${phoneNumber.trim()}` : ''
+      const payload   = isPotential
+        ? { ...clientForm, phone: fullPhone || undefined, signature: signatureDataUrl }
         : { signature: signatureDataUrl }
       await confirmQuote(id, payload)
       setSignatureImg(signatureDataUrl)
@@ -222,19 +236,23 @@ export default function QuotePublicPage() {
             </div>
 
             <div>
-              <label className={labelCls}>Empresa</label>
-              <input value={clientForm.company} onChange={setField('company')} className={inputCls} placeholder="Nombre de tu empresa" />
+              <label className={labelCls}>Empresa *</label>
+              <input required value={clientForm.company} onChange={setField('company')} className={inputCls} placeholder="Nombre de tu empresa" />
             </div>
 
             <div>
-              <label className={labelCls}>Email</label>
-              <input type="email" value={clientForm.email} onChange={setField('email')} className={inputCls} placeholder="tu@email.com" />
+              <label className={labelCls}>Email *</label>
+              <input required type="email" value={clientForm.email} onChange={setField('email')} className={inputCls} placeholder="tu@email.com" />
             </div>
 
-            <div>
-              <label className={labelCls}>Teléfono</label>
-              <input type="tel" value={clientForm.phone} onChange={setField('phone')} className={inputCls} placeholder="+54 11 1234-5678" />
-            </div>
+            <PhoneInput
+              countryCode={phoneCountry}
+              phoneNumber={phoneNumber}
+              onChangeCountry={setPhoneCountry}
+              onChangeNumber={setPhoneNumber}
+              onValidChange={setPhoneValid}
+              label="Teléfono *"
+            />
 
             <div>
               <label className={labelCls}>Sitio web</label>
@@ -243,37 +261,33 @@ export default function QuotePublicPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>CUIL / CUIT</label>
-                <input value={clientForm.cuit} onChange={setField('cuit')} className={inputCls} placeholder="20-12345678-9" />
+                <label className={labelCls}>CUIL / CUIT *</label>
+                <input required value={clientForm.cuit} onChange={setField('cuit')} className={inputCls} placeholder="20-12345678-9" />
               </div>
               <div>
-                <label className={labelCls}>Dirección</label>
-                <input value={clientForm.address} onChange={setField('address')} className={inputCls} placeholder="Calle 123" />
+                <label className={labelCls}>Dirección *</label>
+                <input required value={clientForm.address} onChange={setField('address')} className={inputCls} placeholder="Calle 123" />
               </div>
             </div>
 
             <div>
-              <label className={labelCls}>Provincia</label>
-              <select value={clientForm.province} onChange={setField('province')} className={inputCls}>
-                <option value="">Seleccionar...</option>
-                {AR_PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
-              </select>
+              <label className={labelCls}>Provincia *</label>
+              <ProvinceSelect
+                value={clientForm.province}
+                onChange={v => setClientForm(f => ({ ...f, province: v }))}
+                className={inputCls}
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>Ciudad</label>
-                <input value={clientForm.city} onChange={setField('city')} className={inputCls} placeholder="Ej: Rosario" />
+                <label className={labelCls}>Ciudad *</label>
+                <input required value={clientForm.city} onChange={setField('city')} className={inputCls} placeholder="Ej: Rosario" />
               </div>
               <div>
-                <label className={labelCls}>Código postal</label>
-                <input value={clientForm.postalCode} onChange={setField('postalCode')} className={inputCls} placeholder="Ej: 2000" />
+                <label className={labelCls}>Código postal *</label>
+                <input required value={clientForm.postalCode} onChange={setField('postalCode')} className={inputCls} placeholder="Ej: 2000" />
               </div>
-            </div>
-
-            <div>
-              <label className={labelCls}>Notas</label>
-              <textarea rows={3} value={clientForm.notes} onChange={setField('notes')} className={inputCls} placeholder="Información adicional..." />
             </div>
 
             {confirmError && (

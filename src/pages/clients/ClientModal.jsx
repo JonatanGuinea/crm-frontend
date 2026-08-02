@@ -1,18 +1,31 @@
 import { useState } from 'react'
 import { createClient, updateClient } from '../../api/clients'
 import { useToast } from '../../components/Toast'
-import { AR_PROVINCES } from '../../utils/arProvinces'
+import ProvinceSelect from '../../components/ProvinceSelect'
+import PhoneInput, { PHONE_COUNTRIES, formatPhoneNumber } from '../../components/PhoneInput'
 
 const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
 const labelCls = "block text-sm font-medium text-fg-soft mb-1"
 
+function parseExistingPhone(phone) {
+  if (!phone) return { code: 'AR', number: '' }
+  for (const c of PHONE_COUNTRIES) {
+    if (phone.startsWith(c.dial + ' ')) {
+      return { code: c.code, number: phone.slice(c.dial.length + 1) }
+    }
+  }
+  return { code: 'AR', number: phone }
+}
+
 export default function ClientModal({ client, onClose, onSaved }) {
   const toast = useToast()
+
+  const parsedPhone = parseExistingPhone(client?.phone)
+
   const [form, setForm] = useState({
     name:       client?.name       || '',
     company:    client?.company    || '',
     email:      client?.email      || '',
-    phone:      client?.phone      || '',
     website:    client?.website    || '',
     cuit:       client?.cuit       || '',
     address:    client?.address    || '',
@@ -21,7 +34,10 @@ export default function ClientModal({ client, onClose, onSaved }) {
     postalCode: client?.postalCode || '',
     notes:      client?.notes      || '',
   })
-  const [error, setError] = useState('')
+  const [phoneCountry, setPhoneCountry] = useState(parsedPhone.code)
+  const [phoneNumber, setPhoneNumber]   = useState(formatPhoneNumber(parsedPhone.number))
+
+  const [error, setError]   = useState('')
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e) {
@@ -29,8 +45,12 @@ export default function ClientModal({ client, onClose, onSaved }) {
     setError('')
     setLoading(true)
     try {
+      const dialCode = PHONE_COUNTRIES.find(c => c.code === phoneCountry)?.dial || ''
+      const fullPhone = phoneNumber.trim() ? `${dialCode} ${phoneNumber.trim()}` : ''
+
       const data = {
         ...form,
+        phone: fullPhone || undefined,
         website: form.website && !/^https?:\/\//i.test(form.website) ? `https://${form.website}` : form.website
       }
       if (client) {
@@ -62,10 +82,9 @@ export default function ClientModal({ client, onClose, onSaved }) {
         {/* Scrollable body */}
         <form id="client-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
           {[
-            { key: 'name',    label: 'Nombre *', type: 'text',  required: true },
-            { key: 'company', label: 'Empresa',  type: 'text' },
-            { key: 'email',   label: 'Email',    type: 'email' },
-            { key: 'phone',   label: 'Teléfono', type: 'text' },
+            { key: 'name',    label: 'Nombre *',  type: 'text',  required: true },
+            { key: 'company', label: 'Empresa',   type: 'text' },
+            { key: 'email',   label: 'Email',     type: 'email' },
             { key: 'website', label: 'Sitio web', type: 'text', placeholder: 'ejemplo.com' },
           ].map(({ key, label, type, required, placeholder }) => (
             <div key={key}>
@@ -80,6 +99,17 @@ export default function ClientModal({ client, onClose, onSaved }) {
               />
             </div>
           ))}
+
+          {/* Teléfono con código de área */}
+          <div>
+            <label className={labelCls}>Teléfono</label>
+            <PhoneInput
+              countryCode={phoneCountry}
+              phoneNumber={phoneNumber}
+              onChangeCountry={setPhoneCountry}
+              onChangeNumber={setPhoneNumber}
+            />
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -98,12 +128,11 @@ export default function ClientModal({ client, onClose, onSaved }) {
 
           <div>
             <label className={labelCls}>Provincia</label>
-            <select value={form.province}
-              onChange={e => setForm(f => ({ ...f, province: e.target.value }))}
-              className={inputCls}>
-              <option value="">Seleccionar...</option>
-              {AR_PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
-            </select>
+            <ProvinceSelect
+              value={form.province}
+              onChange={v => setForm(f => ({ ...f, province: v }))}
+              className={inputCls}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">

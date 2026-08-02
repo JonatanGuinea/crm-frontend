@@ -10,7 +10,7 @@ import {
   XMarkIcon,
   ArrowRightStartOnRectangleIcon,
 } from '@heroicons/react/24/outline'
-import { AR_PROVINCES } from '../utils/arProvinces'
+import ProvinceSelect from './ProvinceSelect'
 
 const COUNTRIES = [
   { code: 'AR', name: 'Argentina',      dial: '+54',  flag: '🇦🇷' },
@@ -289,16 +289,12 @@ export function SetupOrgModal({ onCreated, onClose }) {
             </div>
             <div>
               <label className={labelCls}>Provincia</label>
-              <select
+              <ProvinceSelect
                 value={form.province}
-                onChange={e => setForm(f => ({ ...f, province: e.target.value }))}
+                onChange={v => setForm(f => ({ ...f, province: v }))}
                 className={inputCls}
-              >
-                <option value="">Seleccionar provincia</option>
-                {AR_PROVINCES.map(p => (
-                  <option key={p} value={p}>{p}</option>
-                ))}
-              </select>
+                placeholder="Seleccionar provincia"
+              />
             </div>
             <div>
               <label className={labelCls}>Ciudad</label>
