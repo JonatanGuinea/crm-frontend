@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { createQuote } from '../../api/quotes'
+import { createQuote, updateQuote, getQuoteById } from '../../api/quotes'
 import { getOrganizations } from '../../api/organizations'
 import { createInstallments, createCustomInstallments } from '../../api/installments'
 import DatePicker from '../../components/DatePicker'
@@ -13,7 +13,8 @@ const EMPTY_ITEM = { description: '', quantity: 1, unitPrice: 0, amount: 0 }
 const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
 const labelCls = "block text-sm font-medium text-fg-soft mb-1"
 
-export default function QuoteModalPotential({ onClose, onSaved }) {
+export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
+  const isEditing = Boolean(quoteId)
   const { user } = useAuth()
   const toast = useToast()
 
@@ -49,20 +50,53 @@ export default function QuoteModalPotential({ onClose, onSaved }) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // Moneda de la org
+  // Moneda de la org (solo al crear)
   const orgId = user?.org
   const { data: orgData } = useQuery({
     queryKey: ['organization', orgId],
     queryFn: () => getOrganizations().then(r => r.data.data?.find(o => o.id === orgId)),
-    enabled: Boolean(orgId),
+    enabled: Boolean(orgId) && !isEditing,
     staleTime: 5 * 60 * 1000,
   })
 
   useEffect(() => {
-    if (orgData?.defaultCurrency) {
+    if (!isEditing && orgData?.defaultCurrency) {
       setQuote(q => ({ ...q, currency: orgData.defaultCurrency }))
     }
-  }, [orgData])
+  }, [orgData, isEditing])
+
+  // Cargar datos del presupuesto en modo edición
+  const { data: quoteData } = useQuery({
+    queryKey: ['quote', quoteId],
+    queryFn: () => getQuoteById(quoteId).then(r => r.data.data),
+    enabled: isEditing,
+  })
+
+  useEffect(() => {
+    if (!quoteData || !isEditing) return
+    setClient({
+      name:    quoteData.potentialClientName    || '',
+      email:   quoteData.potentialClientEmail   || '',
+      company: quoteData.potentialClientCompany || '',
+    })
+    setWithProject(Boolean(quoteData.potentialProjectTitle))
+    setProjectTitle(quoteData.potentialProjectTitle || '')
+    setQuote({
+      title:      quoteData.title,
+      validUntil: quoteData.validUntil ? quoteData.validUntil.slice(0, 10) : '',
+      taxRate:    quoteData.taxRate,
+      notes:      quoteData.notes || '',
+      currency:   quoteData.currency,
+    })
+    setItems(
+      quoteData.items?.map(i => ({
+        description: i.description,
+        quantity:    Number(i.quantity),
+        unitPrice:   Number(i.unitPrice),
+        amount:      Number(i.amount),
+      })) || [EMPTY_ITEM]
+    )
+  }, [quoteData, isEditing])
 
   const subtotal = items.reduce((acc, i) => acc + (parseFloat(i.amount) || 0), 0)
   const taxAmount = subtotal * (parseFloat(quote.taxRate) / 100)
@@ -88,7 +122,7 @@ export default function QuoteModalPotential({ onClose, onSaved }) {
     setError('')
     setLoading(true)
     try {
-      const res = await createQuote({
+      const payload = {
         title: quote.title.trim(),
         validUntil: quote.validUntil || undefined,
         taxRate: parseFloat(quote.taxRate) || 0,
@@ -98,8 +132,17 @@ export default function QuoteModalPotential({ onClose, onSaved }) {
         potentialClientName: client.name.trim(),
         potentialClientEmail: client.email.trim() || undefined,
         potentialClientCompany: client.company.trim() || undefined,
-        potentialProjectTitle: withProject ? projectTitle.trim() : undefined,
-      })
+        potentialProjectTitle: withProject ? projectTitle.trim() : null,
+      }
+
+      if (isEditing) {
+        await updateQuote(quoteId, payload)
+        toast('Presupuesto actualizado', 'success')
+        onSaved()
+        return
+      }
+
+      const res = await createQuote(payload)
       const newQuoteId = res.data.data?.id
 
       if (newQuoteId && withDownPayment) {
@@ -143,8 +186,12 @@ export default function QuoteModalPotential({ onClose, onSaved }) {
         {/* Header */}
         <div className="shrink-0 bg-surface/80 backdrop-blur-xl border-b border-line px-5 py-4 flex items-center justify-between">
           <div>
-            <h3 className="text-base font-semibold text-fg">Nuevo presupuesto</h3>
-            <p className="text-xs text-fg-muted mt-0.5">El cliente y proyecto se crearán al aprobar el presupuesto</p>
+            <h3 className="text-base font-semibold text-fg">
+              {isEditing ? 'Editar presupuesto' : 'Nuevo presupuesto'}
+            </h3>
+            {!isEditing && (
+              <p className="text-xs text-fg-muted mt-0.5">El cliente y proyecto se crearán al aprobar el presupuesto</p>
+            )}
           </div>
           <button type="button" onClick={onClose} className="text-fg-muted hover:text-fg text-xl leading-none">×</button>
         </div>
@@ -286,8 +333,8 @@ export default function QuoteModalPotential({ onClose, onSaved }) {
             </div>
           </section>
 
-          {/* ── Pagos ── */}
-          <div className="border border-line rounded-lg overflow-hidden">
+          {/* ── Pagos (solo al crear) ── */}
+          {!isEditing && <div className="border border-line rounded-lg overflow-hidden">
             {/* Pago inicial */}
             <button
               type="button"
@@ -454,7 +501,7 @@ export default function QuoteModalPotential({ onClose, onSaved }) {
                 )}
               </>
             )}
-          </div>
+          </div>}
 
           {error && <p className="text-sm text-danger">{error}</p>}
         </form>
@@ -468,7 +515,7 @@ export default function QuoteModalPotential({ onClose, onSaved }) {
           </button>
           <button type="submit" form="quote-potential-form" disabled={loading}
             className="px-4 py-2.5 sm:py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50">
-            {loading ? 'Guardando...' : 'Crear presupuesto'}
+            {loading ? 'Guardando...' : isEditing ? 'Guardar cambios' : 'Crear presupuesto'}
           </button>
         </div>
       </div>

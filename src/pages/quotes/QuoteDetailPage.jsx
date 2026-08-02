@@ -6,6 +6,7 @@ import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
 import { getQuoteById, downloadQuotePdf, deleteQuote } from '../../api/quotes'
 import QuoteModal from './QuoteModal'
+import QuoteModalPotential from './QuoteModalPotential'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import InstallmentsPanel from '../../components/InstallmentsPanel'
 
@@ -258,15 +259,27 @@ export default function QuoteDetailPage() {
       </div>
 
       {editOpen && (
-        <QuoteModal
-          quoteId={id}
-          onClose={() => setEditOpen(false)}
-          onSaved={() => {
-            setEditOpen(false)
-            qc.invalidateQueries(['quote', id])
-            qc.invalidateQueries(['quotes'])
-          }}
-        />
+        quote.potentialClientName && !quote.client ? (
+          <QuoteModalPotential
+            quoteId={id}
+            onClose={() => setEditOpen(false)}
+            onSaved={() => {
+              setEditOpen(false)
+              qc.invalidateQueries(['quote', id])
+              qc.invalidateQueries(['quotes'])
+            }}
+          />
+        ) : (
+          <QuoteModal
+            quoteId={id}
+            onClose={() => setEditOpen(false)}
+            onSaved={() => {
+              setEditOpen(false)
+              qc.invalidateQueries(['quote', id])
+              qc.invalidateQueries(['quotes'])
+            }}
+          />
+        )
       )}
     </div>
   )

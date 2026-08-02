@@ -46,8 +46,12 @@ function SendConfirmModal({ quote, onClose, onConfirm, onViewPdf, sending, downl
           Se enviará el presupuesto <span className="font-medium text-fg">#{quote.number} — {quote.title}</span>
         </p>
         <p className="text-sm text-fg-soft mb-5">
-          Destinatario: <span className="font-medium text-fg">{quote.client?.name}</span>
-          {quote.client?.email && <span className="text-fg-muted ml-1">({quote.client.email})</span>}
+          Destinatario: <span className="font-medium text-fg">
+            {quote.client?.name || quote.potentialClientName}
+          </span>
+          {(quote.client?.email || quote.potentialClientEmail) && (
+            <span className="text-fg-muted ml-1">({quote.client?.email || quote.potentialClientEmail})</span>
+          )}
         </p>
         <div className="flex gap-2 justify-end">
           <button
