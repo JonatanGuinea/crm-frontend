@@ -545,6 +545,10 @@ export default function QuotePublicPage() {
           {/* ── Firmas ──────────────────────────────────────────── */}
           {(quote.clientSignature || org.signature) && (
             <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 px-5 py-6 sm:px-10 sm:py-7">
+              <p className="text-base text-slate-400 leading-relaxed mb-5 border-b border-slate-700 pb-5">
+                Las partes declaran haber leído y aceptado el presente presupuesto en todas sus condiciones.
+                La firma a continuación implica conformidad con los servicios, plazos y valores detallados en este documento.
+              </p>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-5">Firmas</p>
               <div className="grid grid-cols-2 gap-6">
                 {/* Cliente */}
