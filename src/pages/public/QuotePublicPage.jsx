@@ -1,7 +1,9 @@
+import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { getPublicQuote, getPublicQuotePdfUrl } from '../../api/public'
-import { ArrowDownTrayIcon } from '@heroicons/react/24/outline'
+import { getPublicQuote, getPublicQuotePdfUrl, confirmQuote } from '../../api/public'
+import { ArrowDownTrayIcon, CheckCircleIcon, CheckIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
+import { AR_PROVINCES } from '../../utils/arProvinces'
 
 const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '')
 
@@ -15,14 +17,36 @@ const STATUS_INST_COLORS = {
 const fmt     = (n) => Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('es-AR') : '—'
 
+const inputCls = "w-full px-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500 placeholder:text-zinc-400"
+const labelCls = "block text-xs font-semibold text-zinc-500 mb-1"
+
 export default function QuotePublicPage() {
   const { id } = useParams()
+
+  const [confirmStep, setConfirmStep] = useState(null) // null | 'modal' | 'form' | 'success'
+  const [clientForm, setClientForm] = useState({
+    name: '', company: '', email: '', phone: '', website: '',
+    cuit: '', address: '', province: '', city: '', postalCode: '', notes: ''
+  })
+  const [confirmLoading, setConfirmLoading] = useState(false)
+  const [confirmError, setConfirmError]     = useState('')
 
   const { data: quote, isLoading, isError } = useQuery({
     queryKey: ['public-quote', id],
     queryFn: () => getPublicQuote(id).then(r => r.data.data),
     retry: false
   })
+
+  useEffect(() => {
+    if (quote) {
+      setClientForm(f => ({
+        ...f,
+        name:    quote.potentialClientName    || '',
+        email:   quote.potentialClientEmail   || '',
+        company: quote.potentialClientCompany || '',
+      }))
+    }
+  }, [quote])
 
   if (isLoading) {
     return (
@@ -73,6 +97,203 @@ export default function QuotePublicPage() {
     org.website,
   ].filter(Boolean)
 
+  const isPotential   = !quote.client && !!quote.potentialClientName
+  const isConfirmable = quote.status === 'draft' || quote.status === 'sent'
+
+  function setField(key) {
+    return (e) => setClientForm(f => ({ ...f, [key]: e.target.value }))
+  }
+
+  async function handleConfirmStep1() {
+    setConfirmError('')
+    if (isPotential) {
+      setConfirmStep('form')
+    } else {
+      setConfirmLoading(true)
+      try {
+        await confirmQuote(id, {})
+        setConfirmStep('success')
+      } catch (err) {
+        setConfirmError(err.response?.data?.error || 'Error al confirmar')
+      } finally {
+        setConfirmLoading(false)
+      }
+    }
+  }
+
+  async function handleFormSubmit(e) {
+    e.preventDefault()
+    setConfirmLoading(true)
+    setConfirmError('')
+    try {
+      await confirmQuote(id, clientForm)
+      setConfirmStep('success')
+    } catch (err) {
+      setConfirmError(err.response?.data?.error || 'Error al confirmar')
+    } finally {
+      setConfirmLoading(false)
+    }
+  }
+
+  // ── Pantalla de éxito ─────────────────────────────────────────────────────
+  if (confirmStep === 'success') {
+    return (
+      <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 flex items-center justify-center py-10 px-4">
+        <div className="max-w-md w-full">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+            <div className="bg-gradient-to-br from-emerald-600 to-emerald-500 px-7 py-8 text-center">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                  <CheckCircleIcon className="w-9 h-9 text-white" />
+                </div>
+              </div>
+              <h1 className="text-white text-2xl font-bold mb-1">¡Presupuesto confirmado!</h1>
+              <p className="text-emerald-100 text-sm">Tu confirmación fue recibida exitosamente</p>
+            </div>
+            <div className="px-7 py-6 space-y-3">
+              <div className="bg-zinc-50 dark:bg-zinc-800 rounded-xl px-4 py-3 space-y-1">
+                <p className="text-xs text-zinc-400 uppercase tracking-wider font-semibold">Presupuesto</p>
+                <p className="text-zinc-800 dark:text-zinc-100 font-semibold">{quote.title}</p>
+                <p className="text-zinc-500 text-sm">#{numStr} · {sym}{fmt(total)}</p>
+              </div>
+              {isPotential && clientForm.name && (
+                <div className="bg-zinc-50 dark:bg-zinc-800 rounded-xl px-4 py-3 space-y-0.5">
+                  <p className="text-xs text-zinc-400 uppercase tracking-wider font-semibold mb-1">Cliente registrado</p>
+                  <p className="text-zinc-800 dark:text-zinc-100 font-semibold">{clientForm.company || clientForm.name}</p>
+                  {clientForm.company && <p className="text-zinc-500 text-sm">{clientForm.name}</p>}
+                </div>
+              )}
+              <p className="text-sm text-zinc-500 text-center pt-1">
+                {org.name} se pondrá en contacto con vos a la brevedad.
+              </p>
+            </div>
+            <div className="px-7 pb-7">
+              <a
+                href={getPublicQuotePdfUrl(id)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full px-5 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-medium transition-colors"
+              >
+                <ArrowDownTrayIcon className="w-4 h-4" />
+                Descargar PDF del presupuesto
+              </a>
+            </div>
+          </div>
+          <p className="text-center text-xs text-zinc-400 mt-4">
+            Presupuesto generado por{' '}
+            <a href="https://sofiapp.dev" target="_blank" rel="noopener noreferrer" className="font-medium text-zinc-500 hover:text-zinc-700 underline underline-offset-2">
+              sofiapp.dev
+            </a>
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Formulario de datos del cliente (pantalla completa) ───────────────────
+  if (confirmStep === 'form') {
+    return (
+      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 overflow-y-auto">
+        <div className="max-w-lg mx-auto py-8 px-4">
+          <button
+            onClick={() => { setConfirmStep('modal'); setConfirmError('') }}
+            className="flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 mb-6 transition-colors"
+          >
+            <ArrowLeftIcon className="w-4 h-4" />
+            Volver
+          </button>
+
+          <h2 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100 mb-1">Completá tus datos</h2>
+          <p className="text-sm text-zinc-500 mb-6">
+            Para confirmar el presupuesto <span className="font-medium text-zinc-600 dark:text-zinc-300">«{quote.title}»</span> necesitamos algunos datos adicionales.
+          </p>
+
+          <form onSubmit={handleFormSubmit} className="space-y-4">
+            <div>
+              <label className={labelCls}>Nombre *</label>
+              <input required value={clientForm.name} onChange={setField('name')} className={inputCls} placeholder="Tu nombre completo" />
+            </div>
+
+            <div>
+              <label className={labelCls}>Empresa</label>
+              <input value={clientForm.company} onChange={setField('company')} className={inputCls} placeholder="Nombre de tu empresa" />
+            </div>
+
+            <div>
+              <label className={labelCls}>Email</label>
+              <input type="email" value={clientForm.email} onChange={setField('email')} className={inputCls} placeholder="tu@email.com" />
+            </div>
+
+            <div>
+              <label className={labelCls}>Teléfono</label>
+              <input type="tel" value={clientForm.phone} onChange={setField('phone')} className={inputCls} placeholder="+54 11 1234-5678" />
+            </div>
+
+            <div>
+              <label className={labelCls}>Sitio web</label>
+              <input value={clientForm.website} onChange={setField('website')} className={inputCls} placeholder="ejemplo.com" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelCls}>CUIL / CUIT</label>
+                <input value={clientForm.cuit} onChange={setField('cuit')} className={inputCls} placeholder="20-12345678-9" />
+              </div>
+              <div>
+                <label className={labelCls}>Dirección</label>
+                <input value={clientForm.address} onChange={setField('address')} className={inputCls} placeholder="Calle 123" />
+              </div>
+            </div>
+
+            <div>
+              <label className={labelCls}>Provincia</label>
+              <select value={clientForm.province} onChange={setField('province')} className={inputCls}>
+                <option value="">Seleccionar...</option>
+                {AR_PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelCls}>Ciudad</label>
+                <input value={clientForm.city} onChange={setField('city')} className={inputCls} placeholder="Ej: Rosario" />
+              </div>
+              <div>
+                <label className={labelCls}>Código postal</label>
+                <input value={clientForm.postalCode} onChange={setField('postalCode')} className={inputCls} placeholder="Ej: 2000" />
+              </div>
+            </div>
+
+            <div>
+              <label className={labelCls}>Notas</label>
+              <textarea rows={3} value={clientForm.notes} onChange={setField('notes')} className={inputCls} placeholder="Información adicional..." />
+            </div>
+
+            {confirmError && (
+              <p className="text-sm text-red-500">{confirmError}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={confirmLoading}
+              className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-semibold text-sm transition-colors disabled:opacity-60 mt-2"
+            >
+              {confirmLoading ? 'Confirmando...' : 'Confirmar presupuesto'}
+            </button>
+          </form>
+
+          <p className="text-center text-xs text-zinc-400 mt-8">
+            Presupuesto generado por{' '}
+            <a href="https://sofiapp.dev" target="_blank" rel="noopener noreferrer" className="font-medium text-zinc-500 underline underline-offset-2">
+              sofiapp.dev
+            </a>
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Vista principal del presupuesto ───────────────────────────────────────
   return (
     <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 py-4 px-3 sm:py-10 sm:px-4">
       <div className="max-w-3xl mx-auto">
@@ -83,7 +304,7 @@ export default function QuotePublicPage() {
           {/* ── Header ─────────────────────────────────────────── */}
           <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 px-5 py-5 sm:px-7 sm:py-6">
 
-            {/* Mobile: logo + número en fila, luego label+título, luego org info */}
+            {/* Mobile */}
             <div className="sm:hidden">
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="min-w-0">
@@ -105,7 +326,7 @@ export default function QuotePublicPage() {
               )}
             </div>
 
-            {/* Desktop: izquierda logo+título | derecha número+contacto */}
+            {/* Desktop */}
             <div className="hidden sm:flex items-start justify-between gap-6">
               <div className="min-w-0">
                 {orgLogoUrl
@@ -129,7 +350,7 @@ export default function QuotePublicPage() {
             <div className="px-5 py-4 sm:px-7 sm:py-5 sm:border-r border-zinc-100 dark:border-zinc-800 border-b sm:border-b-0">
               <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Cliente</p>
               {clientCompany && <p className="font-semibold text-zinc-800 dark:text-zinc-100 text-base leading-snug">{clientCompany}</p>}
-              <p className={`${clientCompany ? 'text-sm text-zinc-500 mt-0.5' : 'font-semibold text-zinc-800 dark:text-zinc-100 text-base leading-snug'}`}>{clientName}</p>
+              <p className={clientCompany ? 'text-sm text-zinc-500 mt-0.5' : 'font-semibold text-zinc-800 dark:text-zinc-100 text-base leading-snug'}>{clientName}</p>
               {quote.client?.cuit    && <p className="text-sm text-zinc-500 mt-0.5">CUIL/CUIT: {quote.client.cuit}</p>}
               {clientEmail           && <p className="text-sm text-zinc-500 mt-0.5">{clientEmail}</p>}
               {quote.client?.phone   && <p className="text-sm text-zinc-500 mt-0.5">{quote.client.phone}</p>}
@@ -161,14 +382,10 @@ export default function QuotePublicPage() {
           <div className="sm:hidden divide-y divide-zinc-100 dark:divide-zinc-800">
             {quote.items?.map((item) => (
               <div key={item.id} className="px-5 py-3">
-                <p className="text-sm font-medium text-zinc-800 dark:text-zinc-100 mb-1 leading-snug">
-                  {item.description}
-                </p>
+                <p className="text-sm font-medium text-zinc-800 dark:text-zinc-100 mb-1 leading-snug">{item.description}</p>
                 <div className="flex items-center justify-between text-xs text-zinc-500">
                   <span>{Number(item.quantity)} × {sym}{fmt(item.unitPrice)}</span>
-                  <span className="font-semibold text-zinc-700 dark:text-zinc-200 text-sm">
-                    {sym}{fmt(item.amount)}
-                  </span>
+                  <span className="font-semibold text-zinc-700 dark:text-zinc-200 text-sm">{sym}{fmt(item.amount)}</span>
                 </div>
               </div>
             ))}
@@ -237,16 +454,12 @@ export default function QuotePublicPage() {
                 {quote.installments.map((inst) => (
                   <div key={inst.id} className="px-5 py-3 flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-xs text-zinc-400 mb-1">
-                        Cuota {inst.number} · {fmtDate(inst.dueDate)}
-                      </p>
+                      <p className="text-xs text-zinc-400 mb-1">Cuota {inst.number} · {fmtDate(inst.dueDate)}</p>
                       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_INST_COLORS[inst.status] || STATUS_INST_COLORS.pending}`}>
                         {STATUS_INST[inst.status] || inst.status}
                       </span>
                     </div>
-                    <p className="font-semibold text-zinc-800 dark:text-zinc-100 text-sm shrink-0">
-                      {sym}{fmt(inst.amount)}
-                    </p>
+                    <p className="font-semibold text-zinc-800 dark:text-zinc-100 text-sm shrink-0">{sym}{fmt(inst.amount)}</p>
                   </div>
                 ))}
               </div>
@@ -300,18 +513,64 @@ export default function QuotePublicPage() {
               sofiapp.dev
             </a>
           </p>
-          <a
-            href={getPublicQuotePdfUrl(id)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-medium transition-colors shadow"
-          >
-            <ArrowDownTrayIcon className="w-4 h-4" />
-            Descargar PDF
-          </a>
+          <div className="flex flex-col sm:flex-row gap-2">
+            {isConfirmable && (
+              <button
+                onClick={() => setConfirmStep('modal')}
+                className="flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-medium transition-colors shadow"
+              >
+                <CheckIcon className="w-4 h-4" />
+                Confirmar presupuesto
+              </button>
+            )}
+            <a
+              href={getPublicQuotePdfUrl(id)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-medium transition-colors shadow"
+            >
+              <ArrowDownTrayIcon className="w-4 h-4" />
+              Descargar PDF
+            </a>
+          </div>
         </div>
 
       </div>
+
+      {/* ── Modal de confirmación ────────────────────────────────── */}
+      {confirmStep === 'modal' && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 px-0 sm:px-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm overflow-hidden">
+            <div className="px-6 pt-6 pb-2">
+              <h2 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-1">Confirmar presupuesto</h2>
+              <p className="text-sm text-zinc-500">¿Estás de acuerdo con el siguiente presupuesto?</p>
+            </div>
+            <div className="px-6 py-4">
+              <div className="bg-zinc-50 dark:bg-zinc-800 rounded-xl px-4 py-3 space-y-1">
+                <p className="font-semibold text-zinc-800 dark:text-zinc-100">{quote.title}</p>
+                <p className="text-zinc-500 text-sm">#{numStr}</p>
+                <p className="text-zinc-800 dark:text-zinc-100 font-bold text-xl tabular-nums">{sym}{fmt(total)}</p>
+              </div>
+              {confirmError && <p className="text-sm text-red-500 mt-3">{confirmError}</p>}
+            </div>
+            <div className="px-6 pb-6 flex gap-3">
+              <button
+                onClick={() => { setConfirmStep(null); setConfirmError('') }}
+                className="flex-1 px-4 py-2.5 text-sm text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmStep1}
+                disabled={confirmLoading}
+                className="flex-1 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-60"
+              >
+                {confirmLoading ? 'Procesando...' : isPotential ? 'Sí, continuar' : 'Sí, confirmar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
