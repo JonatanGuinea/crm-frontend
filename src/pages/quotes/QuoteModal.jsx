@@ -23,7 +23,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
 
   const [form, setForm] = useState({
     title: '', clientId: initialClientId, projectId: initialProjectId,
-    validUntil: '', taxRate: 21, currency: 'USD', notes: '', status: ''
+    validUntil: '', deliveryDate: '', taxRate: 21, currency: 'USD', notes: '', status: ''
   })
   const toast = useToast()
   const [items, setItems] = useState([EMPTY_ITEM])
@@ -84,7 +84,8 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
         title: quoteData.title,
         clientId: quoteData.clientId,
         projectId: quoteData.projectId || '',
-        validUntil: quoteData.validUntil?.slice(0, 10) || '',
+        validUntil:   quoteData.validUntil?.slice(0, 10)   || '',
+        deliveryDate: quoteData.deliveryDate?.slice(0, 10) || '',
         taxRate: quoteData.taxRate,
         currency: quoteData.currency,
         notes: quoteData.notes || '',
@@ -140,7 +141,8 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
         title: form.title,
         clientId: form.clientId,
         projectId: form.projectId || undefined,
-        validUntil: form.validUntil || undefined,
+        validUntil:   form.validUntil   || undefined,
+        deliveryDate: form.deliveryDate || undefined,
         taxRate: parseFloat(form.taxRate) || 0,
         currency: form.currency,
         notes: form.notes || undefined,
@@ -234,6 +236,12 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
               <label className={labelCls}>Válido hasta</label>
               <DatePicker value={form.validUntil}
                 onChange={e => setForm(f => ({ ...f, validUntil: e.target.value }))}
+                className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Fecha de entrega</label>
+              <DatePicker value={form.deliveryDate}
+                onChange={e => setForm(f => ({ ...f, deliveryDate: e.target.value }))}
                 className={inputCls} />
             </div>
             <div className="col-span-2 sm:col-span-1">

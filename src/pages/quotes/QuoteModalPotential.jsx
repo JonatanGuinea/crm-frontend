@@ -29,7 +29,7 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
 
   // ── Presupuesto ───────────────────────────────────────────
   const [quote, setQuote] = useState({
-    title: '', validUntil: '', taxRate: 21, notes: '', currency: 'USD'
+    title: '', validUntil: '', deliveryDate: '', taxRate: 21, notes: '', currency: 'USD'
   })
   const [items, setItems] = useState([EMPTY_ITEM])
 
@@ -87,8 +87,9 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
     setProjectTitle(quoteData.potentialProjectTitle || '')
     setQuote({
       title:      quoteData.title,
-      validUntil: quoteData.validUntil ? quoteData.validUntil.slice(0, 10) : '',
-      taxRate:    quoteData.taxRate,
+      validUntil:   quoteData.validUntil   ? quoteData.validUntil.slice(0, 10)   : '',
+      deliveryDate: quoteData.deliveryDate ? quoteData.deliveryDate.slice(0, 10) : '',
+      taxRate:      quoteData.taxRate,
       notes:      quoteData.notes || '',
       currency:   quoteData.currency,
     })
@@ -137,7 +138,8 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
       const hasDiscount = Boolean(discountValue) && parseFloat(discountValue) > 0
       const payload = {
         title: quote.title.trim(),
-        validUntil: quote.validUntil || undefined,
+        validUntil:   quote.validUntil   || undefined,
+        deliveryDate: quote.deliveryDate || undefined,
         taxRate: parseFloat(quote.taxRate) || 0,
         currency: quote.currency,
         notes: quote.notes.trim() || undefined,
@@ -291,7 +293,7 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div>
                   <label className={labelCls}>Válido hasta</label>
                   <DatePicker
@@ -301,6 +303,14 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
                   />
                 </div>
                 <div>
+                  <label className={labelCls}>Fecha de entrega</label>
+                  <DatePicker
+                    value={quote.deliveryDate}
+                    onChange={e => setQuote(q => ({ ...q, deliveryDate: e.target.value }))}
+                    className={inputCls}
+                  />
+                </div>
+                <div className="col-span-2 sm:col-span-1">
                   <label className={labelCls}>IVA (%)</label>
                   <input
                     type="number" min="0" max="100" step="1"

@@ -406,9 +406,10 @@ export default function QuotePublicPage() {
                 <InfoRow label="Número"      value={`#${numStr}`} />
                 <InfoRow label="Fecha"       value={fmtDate(quote.createdAt)} />
                 <InfoRow label="Moneda"      value={quote.currency} />
-                {quote.project    && <InfoRow label="Proyecto"    value={quote.project.title} />}
-                {validDays != null && <InfoRow label="Válido por"  value={`${validDays} día${validDays !== 1 ? 's' : ''}`} />}
-                {quote.validUntil && <InfoRow label="Válido hasta" value={fmtDate(quote.validUntil)} />}
+                {quote.project      && <InfoRow label="Proyecto"       value={quote.project.title} />}
+                {validDays != null  && <InfoRow label="Válido por"     value={`${validDays} día${validDays !== 1 ? 's' : ''}`} />}
+                {quote.validUntil   && <InfoRow label="Válido hasta"   value={fmtDate(quote.validUntil)} />}
+                {quote.deliveryDate && <InfoRow label="Fecha de entrega" value={fmtDate(quote.deliveryDate)} />}
               </div>
             </div>
           </div>
