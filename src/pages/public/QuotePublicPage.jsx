@@ -541,6 +541,49 @@ export default function QuotePublicPage() {
               </div>
             </>
           )}
+
+          {/* ── Firmas ──────────────────────────────────────────── */}
+          {(quote.clientSignature || org.signature) && (
+            <>
+              <SectionLabel label="Firmas" />
+              <div className="grid grid-cols-2 gap-6 px-5 py-5 sm:px-10 sm:py-6">
+                {/* Cliente */}
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-full min-h-[48px] flex items-end justify-center">
+                    {quote.clientSignature && (
+                      <img src={quote.clientSignature} alt="Firma del cliente" className="max-h-12 object-contain" />
+                    )}
+                  </div>
+                  <div className="w-full h-px bg-zinc-200 dark:bg-zinc-700" />
+                  <div className="text-center">
+                    <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-200">
+                      {quote.client?.name || quote.potentialClientName || 'Cliente'}
+                    </p>
+                    {(quote.client?.company || quote.potentialClientCompany) && (
+                      <p className="text-xs text-zinc-400 mt-0.5">
+                        {quote.client?.company || quote.potentialClientCompany}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {/* Organización */}
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-full min-h-[48px] flex items-end justify-center">
+                    {org.signature && (
+                      <img src={org.signature} alt="Firma de la empresa" className="max-h-12 object-contain" />
+                    )}
+                  </div>
+                  <div className="w-full h-px bg-zinc-200 dark:bg-zinc-700" />
+                  <div className="text-center">
+                    {org.signatureOwnerName && (
+                      <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-200">{org.signatureOwnerName}</p>
+                    )}
+                    <p className="text-xs text-zinc-400 mt-0.5">{org.name}</p>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* ── Footer ──────────────────────────────────────────── */}
