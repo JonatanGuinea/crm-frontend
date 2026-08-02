@@ -66,6 +66,8 @@ export default function QuoteDetailPage() {
   if (isLoading) return <div className="p-8 text-sm text-fg-soft">Cargando...</div>
   if (!quote) return <div className="p-8 text-sm text-fg-soft">Presupuesto no encontrado</div>
 
+  const isSigned = !!quote.clientSignature
+
   const subtotal = Number(quote.subtotal)
   const total    = Number(quote.total)
   const discountAmt = quote.discountType === 'percent'
@@ -83,11 +85,16 @@ export default function QuoteDetailPage() {
 
       <div className="flex items-start justify-between mb-8">
         <div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-2xl font-bold text-fg">{quote.title}</h1>
             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[quote.status]}`}>
               {STATUS_LABELS[quote.status]}
             </span>
+            {isSigned && (
+              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                Firmado
+              </span>
+            )}
           </div>
           <p className="text-fg-muted mt-0.5 text-sm">#{quote.number}</p>
         </div>
@@ -111,7 +118,7 @@ export default function QuoteDetailPage() {
           </button>
           {canWrite && (
             <button
-              onClick={() => setEditOpen(true)}
+              onClick={() => isSigned ? toast('El presupuesto fue firmado, no se puede modificar') : setEditOpen(true)}
               className="px-4 py-2 border border-line-soft rounded-md text-sm font-medium text-fg-soft hover:bg-raised transition-colors"
             >
               Editar
@@ -190,10 +197,22 @@ export default function QuoteDetailPage() {
                   <dd className="text-fg">{new Date(quote.validUntil).toLocaleDateString('es-AR')}</dd>
                 </div>
               )}
+              {quote.deliveryDate && (
+                <div>
+                  <dt className="text-xs text-fg-muted uppercase mb-0.5">Fecha de entrega</dt>
+                  <dd className="text-fg">{new Date(quote.deliveryDate).toLocaleDateString('es-AR')}</dd>
+                </div>
+              )}
               <div>
                 <dt className="text-xs text-fg-muted uppercase mb-0.5">Creado</dt>
                 <dd className="text-fg">{new Date(quote.createdAt).toLocaleDateString('es-AR')}</dd>
               </div>
+              {isSigned && quote.clientSignedAt && (
+                <div>
+                  <dt className="text-xs text-fg-muted uppercase mb-0.5">Firmado el</dt>
+                  <dd className="text-fg">{new Date(quote.clientSignedAt).toLocaleDateString('es-AR')}</dd>
+                </div>
+              )}
               {quote.notes && (
                 <div>
                   <dt className="text-xs text-fg-muted uppercase mb-0.5">Notas</dt>
