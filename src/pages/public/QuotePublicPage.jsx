@@ -42,9 +42,12 @@ export default function QuotePublicPage() {
     )
   }
 
-  const subtotal   = Number(quote.subtotal)
-  const total      = Number(quote.total)
-  const taxAmount  = total - subtotal
+  const subtotal    = Number(quote.subtotal)
+  const total       = Number(quote.total)
+  const discountAmt = quote.discountType === 'percent'
+    ? subtotal * (Number(quote.discountValue) / 100)
+    : Number(quote.discountValue) || 0
+  const taxAmount   = (subtotal - discountAmt) * (Number(quote.taxRate) / 100)
   const sym        = quote.currency === 'USD' ? 'US$' : '$'
   const org        = quote.organization || {}
   const numStr     = String(quote.number).padStart(3, '0')
@@ -86,6 +89,12 @@ export default function QuotePublicPage() {
                   {org.email   && <p className="text-slate-400 text-xs">{org.email}</p>}
                   {org.phone   && <p className="text-slate-400 text-xs">{org.phone}</p>}
                   {org.address && <p className="text-slate-400 text-xs">{org.address}</p>}
+                  {(org.city || org.province) && (
+                    <p className="text-slate-400 text-xs">
+                      {[org.city, org.province].filter(Boolean).join(', ')}
+                      {org.postalCode ? ` (${org.postalCode})` : ''}
+                    </p>
+                  )}
                   {org.website && <p className="text-slate-400 text-xs">{org.website}</p>}
                 </div>
               </div>
@@ -102,6 +111,11 @@ export default function QuotePublicPage() {
               {quote.client?.email   && <p className="text-sm text-zinc-500">{quote.client.email}</p>}
               {quote.client?.phone   && <p className="text-sm text-zinc-500">{quote.client.phone}</p>}
               {quote.client?.address && <p className="text-sm text-zinc-500">{quote.client.address}</p>}
+              {(quote.client?.city || quote.client?.province) && (
+                <p className="text-sm text-zinc-500">
+                  {[quote.client.city, quote.client.province].filter(Boolean).join(', ')}
+                </p>
+              )}
             </div>
             <div className="px-7 py-5">
               <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Detalle</p>
@@ -148,6 +162,12 @@ export default function QuotePublicPage() {
                 <span>Subtotal</span>
                 <span className="font-medium">{sym}{fmt(subtotal)}</span>
               </div>
+              {discountAmt > 0 && (
+                <div className="flex justify-between text-sm text-zinc-500">
+                  <span>Descuento{quote.discountType === 'percent' ? ` (${quote.discountValue}%)` : ''}</span>
+                  <span className="font-medium text-emerald-600">-{sym}{fmt(discountAmt)}</span>
+                </div>
+              )}
               {quote.taxRate > 0 && (
                 <div className="flex justify-between text-sm text-zinc-500">
                   <span>IVA ({quote.taxRate}%)</span>

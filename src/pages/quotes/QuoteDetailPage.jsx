@@ -67,8 +67,11 @@ export default function QuoteDetailPage() {
   if (!quote) return <div className="p-8 text-sm text-fg-soft">Presupuesto no encontrado</div>
 
   const subtotal = Number(quote.subtotal)
-  const total = Number(quote.total)
-  const taxAmount = total - subtotal
+  const total    = Number(quote.total)
+  const discountAmt = quote.discountType === 'percent'
+    ? subtotal * (Number(quote.discountValue) / 100)
+    : Number(quote.discountValue) || 0
+  const taxAmount = (subtotal - discountAmt) * (Number(quote.taxRate) / 100)
 
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto">
@@ -245,6 +248,14 @@ export default function QuoteDetailPage() {
               <div className="text-fg-soft">
                 Subtotal: <span className="text-fg font-medium">${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
+              {discountAmt > 0 && (
+                <div className="text-fg-soft">
+                  Descuento{quote.discountType === 'percent' ? ` (${quote.discountValue}%)` : ''}:
+                  <span className="text-emerald-600 font-medium ml-1">
+                    -${discountAmt.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+              )}
               {quote.taxRate > 0 && (
                 <div className="text-fg-soft">
                   IVA ({quote.taxRate}%): <span className="text-fg font-medium">${taxAmount.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>

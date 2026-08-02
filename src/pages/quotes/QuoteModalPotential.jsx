@@ -33,6 +33,10 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
   })
   const [items, setItems] = useState([EMPTY_ITEM])
 
+  // ── Descuento ─────────────────────────────────────────────
+  const [discountMode, setDiscountMode] = useState('percent') // 'amount' | 'percent'
+  const [discountValue, setDiscountValue] = useState('')
+
   // ── Pago inicial ──────────────────────────────────────────
   const [withDownPayment, setWithDownPayment] = useState(false)
   const [downPaymentMode, setDownPaymentMode] = useState('amount') // 'amount' | 'percent'
@@ -96,11 +100,19 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
         amount:      Number(i.amount),
       })) || [EMPTY_ITEM]
     )
+    if (quoteData.discountType) {
+      setDiscountMode(quoteData.discountType)
+      setDiscountValue(String(quoteData.discountValue ?? ''))
+    }
   }, [quoteData, isEditing])
 
   const subtotal = items.reduce((acc, i) => acc + (parseFloat(i.amount) || 0), 0)
-  const taxAmount = subtotal * (parseFloat(quote.taxRate) / 100)
-  const total = subtotal + taxAmount
+  const discountAmt = discountMode === 'percent'
+    ? subtotal * ((parseFloat(discountValue) || 0) / 100)
+    : parseFloat(discountValue) || 0
+  const discountedSubtotal = subtotal - discountAmt
+  const taxAmount = discountedSubtotal * (parseFloat(quote.taxRate) / 100)
+  const total = discountedSubtotal + taxAmount
   const effectiveDownPayment = downPaymentMode === 'amount'
     ? parseFloat(downPaymentAmount) || 0
     : parseFloat((total * (parseFloat(downPaymentPercent) || 0) / 100).toFixed(2))
@@ -122,6 +134,7 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
     setError('')
     setLoading(true)
     try {
+      const hasDiscount = Boolean(discountValue) && parseFloat(discountValue) > 0
       const payload = {
         title: quote.title.trim(),
         validUntil: quote.validUntil || undefined,
@@ -129,6 +142,8 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
         currency: quote.currency,
         notes: quote.notes.trim() || undefined,
         items,
+        discountType:  hasDiscount ? discountMode : null,
+        discountValue: hasDiscount ? parseFloat(discountValue) : 0,
         potentialClientName: client.name.trim(),
         potentialClientEmail: client.email.trim() || undefined,
         potentialClientCompany: client.company.trim() || undefined,
@@ -303,6 +318,35 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
                 </div>
               </div>
 
+              {/* Descuento */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className={labelCls + ' mb-0'}>Descuento</label>
+                  <div className="flex rounded-md overflow-hidden border border-line text-xs">
+                    <button type="button" onClick={() => setDiscountMode('percent')}
+                      className={`px-2 py-0.5 font-medium transition-colors ${discountMode === 'percent' ? 'bg-brand text-white' : 'bg-surface text-fg-soft hover:bg-raised'}`}>
+                      %
+                    </button>
+                    <button type="button" onClick={() => setDiscountMode('amount')}
+                      className={`px-2 py-0.5 font-medium transition-colors ${discountMode === 'amount' ? 'bg-brand text-white' : 'bg-surface text-fg-soft hover:bg-raised'}`}>
+                      Monto
+                    </button>
+                  </div>
+                </div>
+                <div className="relative">
+                  <input
+                    type="number" min="0" step="0.01"
+                    value={discountValue}
+                    onChange={e => setDiscountValue(e.target.value)}
+                    className={inputCls + (discountMode === 'percent' ? ' pr-7' : '')}
+                    placeholder="0"
+                  />
+                  {discountMode === 'percent' && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-fg-muted pointer-events-none">%</span>
+                  )}
+                </div>
+              </div>
+
               {/* Totales */}
               <div className="bg-raised rounded-lg p-3 text-sm space-y-1 text-right">
                 <div className="text-fg-soft">
@@ -310,6 +354,14 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
                     ${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
+                {discountAmt > 0 && (
+                  <div className="text-fg-soft">
+                    Descuento{discountMode === 'percent' ? ` (${discountValue}%)` : ''}:
+                    <span className="text-emerald-600 font-medium ml-1">
+                      -${discountAmt.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                )}
                 {quote.taxRate > 0 && (
                   <div className="text-fg-soft">
                     IVA ({quote.taxRate}%): <span className="text-fg font-medium">

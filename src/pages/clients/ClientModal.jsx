@@ -13,6 +13,8 @@ export default function ClientModal({ client, onClose, onSaved }) {
     phone: client?.phone || '',
     company: client?.company || '',
     address: client?.address || '',
+    city: client?.city || '',
+    province: client?.province || '',
     cuit: client?.cuit || '',
     website: client?.website || '',
     notes: client?.notes || ''
@@ -89,6 +91,21 @@ export default function ClientModal({ client, onClose, onSaved }) {
               <input type="text" value={form.address}
                 onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
                 className={inputCls} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Ciudad</label>
+              <input type="text" value={form.city}
+                onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
+                className={inputCls} placeholder="Ej: Rosario" />
+            </div>
+            <div>
+              <label className={labelCls}>Provincia</label>
+              <input type="text" value={form.province}
+                onChange={e => setForm(f => ({ ...f, province: e.target.value }))}
+                className={inputCls} placeholder="Ej: Santa Fe" />
             </div>
           </div>
 
