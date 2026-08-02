@@ -181,7 +181,9 @@ export default function QuotePublicPage() {
               {signatureImg && (
                 <div className="bg-zinc-50 dark:bg-zinc-800 rounded-xl px-4 py-3">
                   <p className="text-xs text-zinc-400 uppercase tracking-wider font-semibold mb-2">Firma del cliente</p>
-                  <img src={signatureImg} alt="Firma" className="max-h-16 object-contain" />
+                  <div className="bg-white rounded-lg p-2">
+                    <img src={signatureImg} alt="Firma" className="max-h-16 w-full object-contain" />
+                  </div>
                 </div>
               )}
               <p className="text-sm text-zinc-500 text-center pt-1">
@@ -546,21 +548,20 @@ export default function QuotePublicPage() {
           {/* ── Firmas ──────────────────────────────────────────── */}
           {(quote.clientSignature || org.signature) && (
             <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 px-5 py-6 sm:px-10 sm:py-7">
-              <p className="text-base text-slate-400 leading-relaxed mb-5 border-b border-slate-700 pb-5">
+              <p className="text-sm text-slate-400 leading-relaxed mb-5 border-b border-slate-700 pb-5">
                 Las partes declaran haber leído y aceptado el presente presupuesto en todas sus condiciones.
                 La firma a continuación implica conformidad con los servicios, plazos y valores detallados en este documento.
               </p>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-5">Firmas</p>
-              <div className="grid grid-cols-2 gap-6">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Firmas</p>
+              <div className="grid grid-cols-2 gap-4 sm:gap-6">
                 {/* Cliente */}
                 <div className="flex flex-col items-center gap-3">
-                  <div className="w-full min-h-[52px] flex items-end justify-center">
+                  <div className="w-full bg-white rounded-xl p-3 min-h-[68px] flex items-center justify-center">
                     {quote.clientSignature && (
                       <img
                         src={quote.clientSignature}
                         alt="Firma del cliente"
-                        className="max-h-12 object-contain"
-                        style={{ filter: 'brightness(0) invert(1)' }}
+                        className="max-h-14 w-full object-contain"
                       />
                     )}
                   </div>
@@ -578,13 +579,12 @@ export default function QuotePublicPage() {
                 </div>
                 {/* Organización */}
                 <div className="flex flex-col items-center gap-3">
-                  <div className="w-full min-h-[52px] flex items-end justify-center">
+                  <div className="w-full bg-white rounded-xl p-3 min-h-[68px] flex items-center justify-center">
                     {org.signature && (
                       <img
                         src={org.signature}
                         alt="Firma de la empresa"
-                        className="max-h-12 object-contain"
-                        style={{ filter: 'brightness(0) invert(1)' }}
+                        className="max-h-14 w-full object-contain"
                       />
                     )}
                   </div>

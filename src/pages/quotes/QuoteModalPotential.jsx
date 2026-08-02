@@ -5,6 +5,7 @@ import { getOrganizations } from '../../api/organizations'
 import { createInstallments, createCustomInstallments } from '../../api/installments'
 import DatePicker from '../../components/DatePicker'
 import LineItemsEditor from '../../components/LineItemsEditor'
+import PhoneInput, { PHONE_COUNTRIES, formatPhoneNumber } from '../../components/PhoneInput'
 import { useToast } from '../../components/Toast'
 import { useAuth } from '../../context/AuthContext'
 
@@ -12,6 +13,16 @@ const EMPTY_ITEM = { description: '', quantity: 1, unitPrice: 0, amount: 0 }
 
 const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
 const labelCls = "block text-sm font-medium text-fg-soft mb-1"
+
+function parseExistingPhone(phone) {
+  if (!phone) return { code: 'AR', number: '' }
+  for (const c of PHONE_COUNTRIES) {
+    if (phone.startsWith(c.dial + ' ')) {
+      return { code: c.code, number: phone.slice(c.dial.length + 1) }
+    }
+  }
+  return { code: 'AR', number: phone }
+}
 
 export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
   const isEditing = Boolean(quoteId)
@@ -22,6 +33,8 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
   const [client, setClient] = useState({
     name: '', email: '', company: ''
   })
+  const [phoneCountry, setPhoneCountry] = useState('AR')
+  const [phoneNumber, setPhoneNumber]   = useState('')
 
   // ── Proyecto (opcional) ───────────────────────────────────
   const [withProject, setWithProject] = useState(false)
@@ -83,6 +96,9 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
       email:   quoteData.potentialClientEmail   || '',
       company: quoteData.potentialClientCompany || '',
     })
+    const parsedPhone = parseExistingPhone(quoteData.potentialClientPhone)
+    setPhoneCountry(parsedPhone.code)
+    setPhoneNumber(formatPhoneNumber(parsedPhone.number))
     setWithProject(Boolean(quoteData.potentialProjectTitle))
     setProjectTitle(quoteData.potentialProjectTitle || '')
     setQuote({
@@ -121,6 +137,7 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
   async function handleSubmit(e) {
     e.preventDefault()
     if (!client.name.trim()) { setError('El nombre del cliente es obligatorio'); return }
+    if (!client.email.trim()) { setError('El email del cliente es obligatorio'); return }
     if (!quote.title.trim()) { setError('El título del presupuesto es obligatorio'); return }
     if (withProject && !projectTitle.trim()) { setError('El nombre del proyecto es obligatorio'); return }
     if (items.some(i => !i.description.trim())) { setError('Todos los ítems deben tener descripción'); return }
@@ -136,6 +153,8 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
     setLoading(true)
     try {
       const hasDiscount = Boolean(discountValue) && parseFloat(discountValue) > 0
+      const dialCode = PHONE_COUNTRIES.find(c => c.code === phoneCountry)?.dial || ''
+      const fullPhone = phoneNumber.trim() ? `${dialCode} ${phoneNumber.trim()}` : null
       const payload = {
         title: quote.title.trim(),
         validUntil:   quote.validUntil   || undefined,
@@ -147,8 +166,9 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
         discountType:  hasDiscount ? discountMode : null,
         discountValue: hasDiscount ? parseFloat(discountValue) : 0,
         potentialClientName: client.name.trim(),
-        potentialClientEmail: client.email.trim() || undefined,
-        potentialClientCompany: client.company.trim() || undefined,
+        potentialClientEmail: client.email.trim() || null,
+        potentialClientPhone: fullPhone,
+        potentialClientCompany: client.company.trim() || null,
         potentialProjectTitle: withProject ? projectTitle.trim() : null,
       }
 
@@ -233,6 +253,14 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
+                  <label className={labelCls}>Email *</label>
+                  <input
+                    type="email" required value={client.email}
+                    onChange={e => setClient(c => ({ ...c, email: e.target.value }))}
+                    className={inputCls} placeholder="correo@ejemplo.com"
+                  />
+                </div>
+                <div>
                   <label className={labelCls}>Empresa</label>
                   <input
                     type="text" value={client.company}
@@ -240,14 +268,15 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
                     className={inputCls} placeholder="Ej: García & Co."
                   />
                 </div>
-                <div>
-                  <label className={labelCls}>Email</label>
-                  <input
-                    type="email" value={client.email}
-                    onChange={e => setClient(c => ({ ...c, email: e.target.value }))}
-                    className={inputCls} placeholder="correo@ejemplo.com"
-                  />
-                </div>
+              </div>
+              <div>
+                <label className={labelCls}>Teléfono / WhatsApp</label>
+                <PhoneInput
+                  countryCode={phoneCountry}
+                  phoneNumber={phoneNumber}
+                  onChangeCountry={setPhoneCountry}
+                  onChangeNumber={setPhoneNumber}
+                />
               </div>
             </div>
           </section>

@@ -9,7 +9,7 @@ import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
-import { ChevronDownIcon, UserIcon, ArrowDownTrayIcon, PaperAirplaneIcon, DocumentArrowDownIcon, EyeIcon, UserPlusIcon, UsersIcon } from '@heroicons/react/24/outline'
+import { ChevronDownIcon, UserIcon, ArrowDownTrayIcon, PaperAirplaneIcon, EyeIcon, UserPlusIcon, UsersIcon } from '@heroicons/react/24/outline'
 
 const STATUS_LABELS = {
   draft: 'Borrador', sent: 'Enviado', approved: 'Aprobado',
@@ -40,52 +40,11 @@ const ALLOWED_TRANSITIONS = {
   expired:  [],
 }
 
-function SendConfirmModal({ quote, onClose, onConfirm, onViewPdf, sending, downloading }) {
-  return createPortal(
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-      <div className="bg-surface/60 backdrop-blur-xl rounded-xl shadow-lg w-full max-w-sm p-6 border border-line">
-        <h3 className="text-base font-semibold text-fg mb-1">Confirmar envío de presupuesto</h3>
-        <p className="text-sm text-fg-soft mb-1">
-          Se enviará el presupuesto <span className="font-medium text-fg">#{quote.number} — {quote.title}</span>
-        </p>
-        <p className="text-sm text-fg-soft mb-5">
-          Destinatario: <span className="font-medium text-fg">
-            {quote.client?.name || quote.potentialClientName}
-          </span>
-          {(quote.client?.email || quote.potentialClientEmail) && (
-            <span className="text-fg-muted ml-1">({quote.client?.email || quote.potentialClientEmail})</span>
-          )}
-        </p>
-        <div className="flex gap-2 justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-3 py-2 text-sm text-fg-soft hover:text-fg border border-line-soft rounded-md transition-colors"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={onViewPdf}
-            disabled={downloading}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-line-soft rounded-md text-fg-soft hover:bg-raised disabled:opacity-50 transition-colors"
-          >
-            <DocumentArrowDownIcon className="w-4 h-4 shrink-0" />
-            {downloading ? 'Generando...' : 'Ver PDF'}
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            disabled={sending}
-            className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-brand text-white rounded-md hover:bg-brand-hover disabled:opacity-50 transition-colors"
-          >
-            <PaperAirplaneIcon className="w-4 h-4 shrink-0" />
-            {sending ? 'Enviando...' : 'Enviar'}
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body
+function WaIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="currentColor">
+      <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+    </svg>
   )
 }
 
@@ -163,7 +122,8 @@ export default function QuotesPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [downloading, setDownloading] = useState(null)
-  const [confirmSend, setConfirmSend] = useState(null)
+  const [sendingEmailId, setSendingEmailId] = useState(null)
+  const [sendingWaId, setSendingWaId] = useState(null)
   const [newMenuOpen, setNewMenuOpen] = useState(false)
   const [newMenuPos, setNewMenuPos] = useState({ top: 0, left: 0 })
   const [potentialOpen, setPotentialOpen] = useState(false)
@@ -179,17 +139,47 @@ export default function QuotesPage() {
     onSuccess: () => { qc.invalidateQueries(['quotes']); toast('Presupuesto eliminado', 'success') }
   })
 
-  const send = useMutation({
-    mutationFn: (id) => sendQuote(id),
-    onSuccess: () => { qc.invalidateQueries(['quotes']); toast('Presupuesto enviado', 'success'); setConfirmSend(null) },
-    onError: (err) => { toast(err.response?.data?.error || 'Error al enviar presupuesto'); setConfirmSend(null) }
-  })
-
   const changeStatus = useMutation({
     mutationFn: ({ id, status }) => updateQuote(id, { status }),
     onSuccess: () => qc.invalidateQueries(['quotes']),
     onError: (err) => toast(err.response?.data?.error || 'Error al cambiar estado')
   })
+
+  async function handleSendEmail(q) {
+    setSendingEmailId(q.id)
+    try {
+      await sendQuote(q.id)
+      qc.invalidateQueries(['quotes'])
+      toast('Presupuesto enviado por email', 'success')
+    } catch (err) {
+      toast(err.response?.data?.error || 'Error al enviar presupuesto')
+    } finally {
+      setSendingEmailId(null)
+    }
+  }
+
+  async function handleSendWa(q) {
+    const phone = (q.client?.phone || q.potentialClientPhone || '').replace(/\D/g, '')
+    if (!phone) {
+      toast('Este cliente no tiene teléfono. Editá el presupuesto para agregar un número de WhatsApp.')
+      return
+    }
+    const name = q.client?.name || q.potentialClientName || 'cliente'
+    const publicUrl = `${window.location.origin}/p/presupuesto/${q.id}`
+    const num = String(q.number).padStart(3, '0')
+    const msg = `Hola ${name}, te comparto el presupuesto #${num} — ${q.title}:\n${publicUrl}`
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank')
+    setSendingWaId(q.id)
+    try {
+      await updateQuote(q.id, { sentByWhatsapp: true })
+      qc.invalidateQueries(['quotes'])
+      toast('Presupuesto compartido por WhatsApp', 'success')
+    } catch (err) {
+      toast(err.response?.data?.error || 'Error al registrar envío por WhatsApp')
+    } finally {
+      setSendingWaId(null)
+    }
+  }
 
   async function handleDownload(id, number) {
     setDownloading(id)
@@ -210,17 +200,6 @@ export default function QuotesPage() {
     if (!canWrite) {
       return <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[q.status]}`}>{STATUS_LABELS[q.status]}</span>
     }
-    if (q.status === 'draft') {
-      return (
-        <button
-          onClick={() => setConfirmSend(q)}
-          className="flex items-center gap-1.5 px-3 py-1 bg-brand text-white text-xs font-semibold rounded-lg hover:bg-brand-hover transition-colors"
-        >
-          <PaperAirplaneIcon className="w-3.5 h-3.5 shrink-0" />
-          Enviar presupuesto
-        </button>
-      )
-    }
     const hasPendingInstallments = (q.status === 'approved' || q.status === 'signed') && q.installments?.length > 0
     return (
       <div className="flex items-center gap-1.5">
@@ -232,6 +211,34 @@ export default function QuotesPage() {
             {q.installments.length}
           </span>
         )}
+      </div>
+    )
+  }
+
+  function renderEnvio(q) {
+    if (!canWrite || !['draft', 'sent'].includes(q.status)) {
+      return <span className="text-fg-muted">—</span>
+    }
+    const waDisabled  = q.sentByWhatsapp || sendingWaId === q.id
+    const emlDisabled = q.sentByEmail    || sendingEmailId === q.id
+    return (
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => handleSendWa(q)}
+          disabled={waDisabled}
+          title={q.sentByWhatsapp ? 'Ya enviado por WhatsApp' : 'Compartir por WhatsApp'}
+          className={`p-1.5 rounded-lg transition-colors ${waDisabled ? 'text-[#25D366]/30 cursor-not-allowed' : 'text-[#25D366] hover:bg-[#25D366]/10'}`}
+        >
+          <WaIcon className={`w-4 h-4 ${sendingWaId === q.id ? 'animate-pulse' : ''}`} />
+        </button>
+        <button
+          onClick={() => handleSendEmail(q)}
+          disabled={emlDisabled}
+          title={q.sentByEmail ? 'Ya enviado por email' : 'Enviar por email'}
+          className={`p-1.5 rounded-lg transition-colors ${emlDisabled ? 'text-brand/30 cursor-not-allowed' : 'text-brand hover:bg-brand-subtle'}`}
+        >
+          <PaperAirplaneIcon className={`w-4 h-4 ${sendingEmailId === q.id ? 'animate-pulse' : ''}`} />
+        </button>
       </div>
     )
   }
@@ -344,6 +351,26 @@ export default function QuotesPage() {
                   >
                     <ArrowDownTrayIcon className="w-4 h-4" />
                   </button>
+                  {canWrite && ['draft', 'sent'].includes(q.status) && (
+                    <>
+                      <button
+                        onClick={() => handleSendWa(q)}
+                        disabled={q.sentByWhatsapp || sendingWaId === q.id}
+                        title={q.sentByWhatsapp ? 'Ya enviado por WhatsApp' : 'Compartir por WhatsApp'}
+                        className={`p-1.5 rounded-lg transition-colors ${q.sentByWhatsapp || sendingWaId === q.id ? 'text-[#25D366]/30 cursor-not-allowed bg-raised' : 'text-[#25D366] hover:bg-[#25D366]/10 bg-raised'}`}
+                      >
+                        <WaIcon className={`w-4 h-4 ${sendingWaId === q.id ? 'animate-pulse' : ''}`} />
+                      </button>
+                      <button
+                        onClick={() => handleSendEmail(q)}
+                        disabled={q.sentByEmail || sendingEmailId === q.id}
+                        title={q.sentByEmail ? 'Ya enviado por email' : 'Enviar por email'}
+                        className={`p-1.5 rounded-lg transition-colors ${q.sentByEmail || sendingEmailId === q.id ? 'text-brand/30 cursor-not-allowed bg-raised' : 'text-brand hover:bg-brand-subtle bg-raised'}`}
+                      >
+                        <PaperAirplaneIcon className={`w-4 h-4 ${sendingEmailId === q.id ? 'animate-pulse' : ''}`} />
+                      </button>
+                    </>
+                  )}
                   <Link to={`/quotes/${q.id}`} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium bg-brand text-white hover:opacity-90 transition-opacity">
                     <EyeIcon className="w-3.5 h-3.5" />
                     Ver
@@ -365,6 +392,7 @@ export default function QuotesPage() {
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">#</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Título</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Cliente</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Envío</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Estado</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Total</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide"></th>
@@ -384,6 +412,7 @@ export default function QuotesPage() {
                             : '—'
                         )}
                       </td>
+                      <td className="px-4 py-3">{renderEnvio(q)}</td>
                       <td className="px-4 py-3">{renderStatus(q)}</td>
                       <td className="px-4 py-3 text-fg-soft">${Number(q.total).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                       <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
@@ -403,7 +432,7 @@ export default function QuotesPage() {
                     </tr>
                   ))}
                   {!data?.data?.length && (
-                    <tr><td colSpan={6} className="px-4 py-6 text-center text-fg-muted">Sin presupuestos</td></tr>
+                    <tr><td colSpan={7} className="px-4 py-6 text-center text-fg-muted">Sin presupuestos</td></tr>
                   )}
                 </tbody>
               </table>
@@ -419,17 +448,6 @@ export default function QuotesPage() {
           quoteId={editingId}
           onClose={() => setModalOpen(false)}
           onSaved={handleSaved}
-        />
-      )}
-
-      {confirmSend && (
-        <SendConfirmModal
-          quote={confirmSend}
-          onClose={() => setConfirmSend(null)}
-          onConfirm={() => send.mutate(confirmSend.id)}
-          onViewPdf={() => handleDownload(confirmSend.id, confirmSend.number)}
-          sending={send.isPending}
-          downloading={downloading === confirmSend.id}
         />
       )}
 
