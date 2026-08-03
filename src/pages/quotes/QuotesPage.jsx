@@ -2,14 +2,14 @@ import { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getQuotes, deleteQuote, updateQuote, sendQuote, downloadQuotePdf } from '../../api/quotes'
+import { getQuotes, deleteQuote, updateQuote, sendQuote, downloadQuotePdf, getAllQuotesHistory } from '../../api/quotes'
 import QuoteModal from './QuoteModal'
 import QuoteModalPotential from './QuoteModalPotential'
 import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
-import { ChevronDownIcon, UserIcon, ArrowDownTrayIcon, PaperAirplaneIcon, EyeIcon, UserPlusIcon, UsersIcon } from '@heroicons/react/24/outline'
+import { ChevronDownIcon, UserIcon, ArrowDownTrayIcon, PaperAirplaneIcon, EyeIcon, UserPlusIcon, UsersIcon, TableCellsIcon, ClockIcon } from '@heroicons/react/24/outline'
 
 const STATUS_LABELS = {
   draft: 'Borrador', sent: 'Enviado', approved: 'Aprobado',
@@ -111,12 +111,102 @@ function StatusDropdown({ quote, onUpdate }) {
   )
 }
 
+const HISTORY_STEP = 25
+
+function fmtDateTime(dt) {
+  if (!dt) return '—'
+  return new Date(dt).toLocaleString('es-AR', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  })
+}
+
+function actionText(entry) {
+  switch (entry.action) {
+    case 'created':      return 'creó el presupuesto'
+    case 'status_changed': return entry.detail ?? 'cambió el estado'
+    case 'updated':      return `actualizó ${entry.detail ?? 'el presupuesto'}`
+    case 'sent_email':   return `envió por email${entry.detail ? ` a ${entry.detail}` : ''}`
+    default:             return entry.action
+  }
+}
+
+function HistoryView({ historyData, isLoading }) {
+  const [visible, setVisible]   = useState(HISTORY_STEP)
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate]     = useState('')
+
+  const filtered = (historyData ?? []).filter(e => {
+    const d = new Date(e.createdAt)
+    if (fromDate && d < new Date(fromDate)) return false
+    if (toDate   && d > new Date(toDate + 'T23:59:59')) return false
+    return true
+  })
+  const shown = filtered.slice(0, visible)
+
+  if (isLoading) return <p className="text-sm text-fg-muted py-10 text-center">Cargando historial…</p>
+  return (
+    <div>
+      <div className="flex flex-wrap gap-3 mb-6">
+        <input type="date" value={fromDate} onChange={e => { setFromDate(e.target.value); setVisible(HISTORY_STEP) }}
+          className="px-3 py-2 text-sm border border-line-soft rounded-md bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-brand" />
+        <input type="date" value={toDate} onChange={e => { setToDate(e.target.value); setVisible(HISTORY_STEP) }}
+          className="px-3 py-2 text-sm border border-line-soft rounded-md bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-brand" />
+        {(fromDate || toDate) && (
+          <button onClick={() => { setFromDate(''); setToDate(''); setVisible(HISTORY_STEP) }}
+            className="px-3 py-2 text-xs rounded-md border border-line-soft text-fg-muted hover:bg-raised transition-colors">
+            Limpiar
+          </button>
+        )}
+      </div>
+      {shown.length === 0 ? (
+        <p className="text-sm text-fg-muted py-10 text-center">Sin movimientos registrados</p>
+      ) : (
+        <div className="relative">
+          <div className="absolute left-5 top-0 bottom-0 w-px bg-line" />
+          <ul className="space-y-1">
+            {shown.map(entry => (
+              <li key={entry.id} className="flex gap-4 items-start relative pl-12">
+                <div className="absolute left-3 top-3 w-4 h-4 rounded-full bg-brand-subtle border-2 border-brand flex items-center justify-center shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand" />
+                </div>
+                <div className="flex-1 bg-surface/60 border border-line rounded-xl px-4 py-3 hover:border-brand/30 transition-colors">
+                  <div className="flex flex-wrap items-center gap-1 text-sm text-fg">
+                    <span className="font-medium">{entry.user?.name ?? 'Alguien'}</span>
+                    <span className="text-fg-muted">{actionText(entry)}</span>
+                    {entry.quote && (
+                      <Link to={`/quotes/${entry.quote.id}`}
+                        className="font-medium text-brand hover:underline">
+                        #{String(entry.quote.number).padStart(3, '0')} {entry.quote.title}
+                      </Link>
+                    )}
+                  </div>
+                  <p className="text-xs text-fg-muted mt-1">{fmtDateTime(entry.createdAt)}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+          {visible < filtered.length && (
+            <div className="flex justify-center mt-6">
+              <button onClick={() => setVisible(v => v + HISTORY_STEP)}
+                className="px-4 py-2 text-sm rounded-lg border border-line-soft text-fg-muted hover:bg-raised transition-colors">
+                Mostrar más ({filtered.length - visible} restantes)
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function QuotesPage() {
   const { user } = useAuth()
   const toast = useToast()
   const confirm = useConfirm()
   const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
+  const [tab, setTab] = useState('table')
   const [statusFilter, setStatusFilter] = useState('')
   const [page, setPage] = useState(1)
   const [modalOpen, setModalOpen] = useState(false)
@@ -132,6 +222,12 @@ export default function QuotesPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['quotes', statusFilter, page],
     queryFn: () => getQuotes({ ...(statusFilter ? { status: statusFilter } : {}), page }).then(r => r.data)
+  })
+
+  const { data: historyData, isLoading: historyLoading } = useQuery({
+    queryKey: ['quotes-history'],
+    queryFn: () => getAllQuotesHistory().then(r => r.data.data),
+    enabled: tab === 'history',
   })
 
   const del = useMutation({
@@ -262,16 +358,32 @@ export default function QuotesPage() {
     <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-fg">Presupuestos</h2>
-        {canWrite && (
-          <button
-            ref={newBtnRef}
-            onClick={openNewMenu}
-            className="flex items-center gap-1.5 px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition-colors"
-          >
-            + Nuevo presupuesto
-            <ChevronDownIcon className="w-4 h-4 shrink-0" />
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-0.5 bg-raised rounded-lg border border-line overflow-hidden">
+            <button
+              onClick={() => setTab('table')}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${tab === 'table' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'}`}
+            >
+              <TableCellsIcon className="w-4 h-4" /> Tabla
+            </button>
+            <button
+              onClick={() => setTab('history')}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${tab === 'history' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'}`}
+            >
+              <ClockIcon className="w-4 h-4" /> Historial
+            </button>
+          </div>
+          {canWrite && tab === 'table' && (
+            <button
+              ref={newBtnRef}
+              onClick={openNewMenu}
+              className="flex items-center gap-1.5 px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition-colors"
+            >
+              + Nuevo presupuesto
+              <ChevronDownIcon className="w-4 h-4 shrink-0" />
+            </button>
+          )}
+        </div>
 
         {newMenuOpen && createPortal(
           <>
@@ -306,6 +418,11 @@ export default function QuotesPage() {
         )}
       </div>
 
+      {tab === 'history' && (
+        <HistoryView historyData={historyData} isLoading={historyLoading} />
+      )}
+
+      {tab === 'table' && <>
       <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1) }}
         className="mb-4 w-full md:w-auto px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg">
         <option value="">Todos los estados</option>
@@ -442,6 +559,7 @@ export default function QuotesPage() {
       )}
 
       <Pagination pagination={data?.pagination} onPageChange={setPage} />
+      </>}
 
       {modalOpen && (
         <QuoteModal

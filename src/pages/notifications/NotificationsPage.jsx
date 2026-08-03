@@ -53,6 +53,7 @@ export default function NotificationsPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const [decliningId, setDecliningId] = useState(null)
+  const [visible, setVisible] = useState(10)
 
   const { data, isLoading } = useQuery({
     queryKey: ['notifications'],
@@ -107,6 +108,7 @@ export default function NotificationsPage() {
   useEffect(() => { readAll.mutate() }, [])
 
   const notifications = data?.notifications ?? []
+  const shownNotifications = notifications.slice(0, visible)
   const isEmpty = notifications.length === 0 && invitations.length === 0
 
   return (

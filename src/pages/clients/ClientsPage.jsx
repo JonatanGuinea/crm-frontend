@@ -50,10 +50,10 @@ export default function ClientsPage() {
       <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
         <h2 className="text-xl font-semibold text-fg">Clientes</h2>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 p-1 bg-raised rounded-lg border border-line">
+          <div className="flex items-center gap-0.5 bg-raised rounded-lg border border-line overflow-hidden">
             <button
               onClick={() => setTab('table')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 tab === 'table' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'
               }`}
             >
@@ -62,7 +62,7 @@ export default function ClientsPage() {
             </button>
             <button
               onClick={() => setTab('history')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 tab === 'history' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'
               }`}
             >

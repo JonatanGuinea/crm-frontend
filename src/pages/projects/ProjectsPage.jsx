@@ -2,14 +2,14 @@ import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { getProjects, deleteProject, updateProject } from '../../api/projects'
+import { getProjects, deleteProject, updateProject, getAllProjectsHistory } from '../../api/projects'
 import ProjectModal from './ProjectModal'
 import QuoteModal from '../quotes/QuoteModal'
 import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
-import { ChevronDownIcon, UserIcon, CalendarDaysIcon, BanknotesIcon, EyeIcon, PaperClipIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ChevronDownIcon, UserIcon, CalendarDaysIcon, BanknotesIcon, EyeIcon, PaperClipIcon, XMarkIcon, ClockIcon, TableCellsIcon } from '@heroicons/react/24/outline'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 
 const STATUS_LABELS = {
@@ -113,16 +113,24 @@ export default function ProjectsPage() {
     localStorage.setItem('projectsLastSeen', now)
     qc.invalidateQueries(['new-projects-count'])
   }, [])
+  const [tab, setTab]             = useState('table')
+  const [historyVisible, setHistoryVisible] = useState(25)
   const [statusFilter, setStatusFilter] = useState('')
-  const [page, setPage] = useState(1)
+  const [page, setPage]           = useState(1)
   const [modalOpen, setModalOpen] = useState(false)
-  const [editing, setEditing] = useState(null)
-  const [quotingProject, setQuotingProject] = useState(null)
+  const [editing, setEditing]     = useState(null)
+  const [quotingProject, setQuotingProject]   = useState(null)
   const [attachingProject, setAttachingProject] = useState(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['projects', statusFilter, page],
     queryFn: () => getProjects({ ...(statusFilter ? { status: statusFilter } : {}), page }).then(r => r.data)
+  })
+
+  const { data: historyData = [] } = useQuery({
+    queryKey: ['projects-history'],
+    queryFn: () => getAllProjectsHistory().then(r => r.data.data),
+    enabled: tab === 'history',
   })
 
   const del = useMutation({
@@ -139,15 +147,93 @@ export default function ProjectsPage() {
 
   return (
     <div className="p-4 md:p-8">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
         <h2 className="text-xl font-semibold text-fg">Proyectos</h2>
-        {canWrite && (
-          <button onClick={() => { setEditing(null); setModalOpen(true) }} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition-colors">
-            + Nuevo proyecto
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-0.5 bg-raised rounded-lg border border-line overflow-hidden">
+            <button
+              onClick={() => setTab('table')}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                tab === 'table' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'
+              }`}
+            >
+              <TableCellsIcon className="w-4 h-4" />
+              Tabla
+            </button>
+            <button
+              onClick={() => setTab('history')}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                tab === 'history' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'
+              }`}
+            >
+              <ClockIcon className="w-4 h-4" />
+              Historial
+            </button>
+          </div>
+          {canWrite && tab === 'table' && (
+            <button onClick={() => { setEditing(null); setModalOpen(true) }} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition-colors">
+              + Nuevo proyecto
+            </button>
+          )}
+        </div>
       </div>
 
+      {tab === 'history' && (
+        <div className="flex flex-col gap-4 max-w-2xl">
+          {historyData.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-3 text-fg-muted">
+              <ClockIcon className="w-10 h-10 opacity-30" />
+              <p className="text-sm">Sin movimientos registrados.</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-1">
+              {historyData.slice(0, historyVisible).map((entry, i) => {
+                const initials = entry.user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+                const date = new Date(entry.createdAt)
+                const dateStr = date.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
+                const timeStr = date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+                const shown = historyData.slice(0, historyVisible)
+                const actionText = entry.action === 'created'
+                  ? 'creó el proyecto'
+                  : entry.action === 'status_changed'
+                    ? 'cambió el estado'
+                    : 'actualizó'
+                return (
+                  <div key={entry.id} className="flex gap-4">
+                    <div className="flex flex-col items-center">
+                      <div className="w-8 h-8 rounded-full bg-brand-subtle text-brand text-[11px] font-bold flex items-center justify-center shrink-0">
+                        {initials}
+                      </div>
+                      {i < shown.length - 1 && <div className="w-px flex-1 bg-line mt-1 mb-1 min-h-[16px]" />}
+                    </div>
+                    <div className="pb-4 flex-1 min-w-0">
+                      <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                        <span className="text-sm font-semibold text-fg">{entry.user.name}</span>
+                        <span className="text-sm text-fg-muted">{actionText}</span>
+                        {entry.detail && <span className="text-sm text-fg-soft">· {entry.detail}</span>}
+                      </div>
+                      <Link to={`/projects/${entry.project.id}`} className="text-xs text-brand hover:underline">
+                        {entry.project.title}
+                      </Link>
+                      <p className="text-[11px] text-fg-muted/70 mt-0.5">{dateStr} · {timeStr}</p>
+                    </div>
+                  </div>
+                )
+              })}
+              {historyData.length > historyVisible && (
+                <button
+                  onClick={() => setHistoryVisible(v => v + 25)}
+                  className="mt-2 text-xs text-fg-muted hover:text-fg text-center py-2 border border-dashed border-line rounded-xl transition-colors"
+                >
+                  Mostrar más ({historyData.length - historyVisible} restante{historyData.length - historyVisible !== 1 ? 's' : ''})
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === 'table' && <>
       <select
         value={statusFilter}
         onChange={e => { setStatusFilter(e.target.value); setPage(1) }}
@@ -326,6 +412,7 @@ export default function ProjectsPage() {
       )}
 
       <Pagination pagination={data?.pagination} onPageChange={setPage} />
+      </>}
 
       {modalOpen && (
         <ProjectModal
