@@ -170,7 +170,7 @@ export default function NotificationsPage() {
           ))}
 
           {/* Notificaciones regulares */}
-          {notifications.map(n => {
+          {shownNotifications.map(n => {
             const meta = n.metadata ? (() => { try { return JSON.parse(n.metadata) } catch { return null } })() : null
             const isRejection = n.type === 'quote_rejected'
 
@@ -230,6 +230,17 @@ export default function NotificationsPage() {
               </div>
             )
           })}
+
+          {visible < notifications.length && (
+            <div className="flex justify-center pt-2">
+              <button
+                onClick={() => setVisible(v => v + 10)}
+                className="px-4 py-2 text-sm rounded-lg border border-line-soft text-fg-muted hover:bg-raised transition-colors"
+              >
+                Mostrar más ({notifications.length - visible} restantes)
+              </button>
+            </div>
+          )}
         </div>
       )}
 
