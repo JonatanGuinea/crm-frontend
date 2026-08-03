@@ -1,27 +1,35 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { getClients, deleteClient } from '../../api/clients'
+import { getClients, deleteClient, getAllClientsHistory } from '../../api/clients'
 import ClientModal from './ClientModal'
 import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
-import { EnvelopeIcon, PhoneIcon, BuildingOfficeIcon, EyeIcon } from '@heroicons/react/24/outline'
+import { EnvelopeIcon, PhoneIcon, BuildingOfficeIcon, EyeIcon, ClockIcon, TableCellsIcon } from '@heroicons/react/24/outline'
 
 export default function ClientsPage() {
   const { user } = useAuth()
   const confirm = useConfirm()
   const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
-  const [search, setSearch] = useState('')
-  const [page, setPage] = useState(1)
+  const [tab, setTab]         = useState('table')
+  const [search, setSearch]   = useState('')
+  const [page, setPage]       = useState(1)
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(null)
+  const [historyVisible, setHistoryVisible] = useState(25)
 
   const { data, isLoading } = useQuery({
     queryKey: ['clients', search, page],
     queryFn: () => getClients({ ...(search ? { name: search } : {}), page }).then(r => r.data)
+  })
+
+  const { data: historyData = [] } = useQuery({
+    queryKey: ['clients-history'],
+    queryFn: () => getAllClientsHistory().then(r => r.data.data),
+    enabled: tab === 'history',
   })
 
   const toast = useToast()
@@ -39,15 +47,92 @@ export default function ClientsPage() {
 
   return (
     <div className="p-4 md:p-8 min-h-full">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
         <h2 className="text-xl font-semibold text-fg">Clientes</h2>
-        {canWrite && (
-          <button onClick={openCreate} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition-colors">
-            + Nuevo cliente
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 p-1 bg-raised rounded-lg border border-line">
+            <button
+              onClick={() => setTab('table')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                tab === 'table' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'
+              }`}
+            >
+              <TableCellsIcon className="w-4 h-4" />
+              Tabla
+            </button>
+            <button
+              onClick={() => setTab('history')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                tab === 'history' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'
+              }`}
+            >
+              <ClockIcon className="w-4 h-4" />
+              Historial
+            </button>
+          </div>
+          {canWrite && tab === 'table' && (
+            <button onClick={openCreate} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition-colors">
+              + Nuevo cliente
+            </button>
+          )}
+        </div>
       </div>
 
+      {tab === 'history' && (
+        <div className="flex flex-col gap-4 max-w-2xl">
+          {historyData.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-3 text-fg-muted">
+              <ClockIcon className="w-10 h-10 opacity-30" />
+              <p className="text-sm">Sin movimientos registrados.</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-1">
+              {historyData.slice(0, historyVisible).map((entry, i) => {
+                const initials = entry.user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+                const date = new Date(entry.createdAt)
+                const dateStr = date.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
+                const timeStr = date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+                const shown = historyData.slice(0, historyVisible)
+                return (
+                  <div key={entry.id} className="flex gap-4">
+                    <div className="flex flex-col items-center">
+                      <div className="w-8 h-8 rounded-full bg-brand-subtle text-brand text-[11px] font-bold flex items-center justify-center shrink-0">
+                        {initials}
+                      </div>
+                      {i < shown.length - 1 && <div className="w-px flex-1 bg-line mt-1 mb-1 min-h-[16px]" />}
+                    </div>
+                    <div className="pb-4 flex-1 min-w-0">
+                      <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                        <span className="text-sm font-semibold text-fg">{entry.user.name}</span>
+                        <span className="text-sm text-fg-muted">
+                          {entry.action === 'created' ? 'creó el cliente' : 'actualizó'}
+                        </span>
+                        {entry.detail && (
+                          <span className="text-sm text-fg-soft">· {entry.detail}</span>
+                        )}
+                      </div>
+                      <Link to={`/clients/${entry.client.id}`} className="text-xs text-brand hover:underline">
+                        {entry.client.name}
+                      </Link>
+                      <p className="text-[11px] text-fg-muted/70 mt-0.5">{dateStr} · {timeStr}</p>
+                    </div>
+                  </div>
+                )
+              })}
+              {historyData.length > historyVisible && (
+                <button
+                  onClick={() => setHistoryVisible(v => v + 25)}
+                  className="mt-2 text-xs text-fg-muted hover:text-fg text-center py-2 border border-dashed border-line rounded-xl transition-colors"
+                >
+                  Mostrar más ({historyData.length - historyVisible} restante{historyData.length - historyVisible !== 1 ? 's' : ''})
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === 'table' && <>
       <input
         type="text"
         placeholder="Buscar por nombre..."
@@ -148,6 +233,7 @@ export default function ClientsPage() {
       )}
 
       <Pagination pagination={data?.pagination} onPageChange={setPage} />
+      </>}
 
       {modalOpen && (
         <ClientModal
