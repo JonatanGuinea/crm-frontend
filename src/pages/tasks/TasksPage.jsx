@@ -70,7 +70,7 @@ function TaskCard({ task, onEdit, onDelete, onMove }) {
         <span className={`text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full ${prio.cls}`}>
           {prio.label}
         </span>
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1">
           <button
             onClick={() => onEdit(task)}
             className="p-1 rounded-md hover:bg-raised text-fg-muted hover:text-fg transition-colors"
@@ -127,7 +127,7 @@ function TaskCard({ task, onEdit, onDelete, onMove }) {
       )}
 
       {/* Move buttons */}
-      <div className="flex items-center gap-1.5 pt-1 border-t border-line opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center gap-1.5 pt-1 border-t border-line">
         <button
           disabled={!canPrev}
           onClick={() => canPrev && onMove(task, PREV_STATUS[task.status])}

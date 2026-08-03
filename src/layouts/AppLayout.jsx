@@ -162,10 +162,10 @@ function SidebarAvatar({ avatar, name }) {
 
 function SidebarContent({ collapsed, profile, user, onNavClick, dark, onToggleTheme, newProjectsCount }) {
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
       {!collapsed && <OrgSwitcher />}
 
-      <nav className="flex-1 px-2 py-4 space-y-1">
+      <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
         {navItems.map(({ to, label, icon: Icon, exact }) => {
           const isProjects = to === '/projects'
           const badge = isProjects && newProjectsCount > 0 ? newProjectsCount : 0
@@ -278,7 +278,7 @@ export default function AppLayout() {
   }
 
   return (
-    <div className={`flex h-screen relative overflow-hidden ${dark ? 'bg-slate-950' : 'bg-base'}`}>
+    <div className={`flex h-dvh relative overflow-hidden ${dark ? 'bg-slate-950' : 'bg-base'}`}>
       {needsOrg && <SetupOrgModal onCreated={handleOrgCreated} />}
 
       {/* Glows de fondo */}
@@ -295,9 +295,10 @@ export default function AppLayout() {
 
       {/* Mobile sidebar (drawer) */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-surface/60 backdrop-blur-xl border-r border-line flex flex-col transition-transform duration-300 ease-in-out md:hidden ${
+        className={`fixed top-0 left-0 bottom-0 z-50 w-64 bg-surface/60 backdrop-blur-xl border-r border-line flex flex-col transition-transform duration-300 ease-in-out md:hidden ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
+        style={{ height: '100dvh' }}
       >
         <div className="flex items-center justify-between px-4 h-16 border-b border-line shrink-0">
           <img src={dark ? logoDark : logo} alt="Logo" className="w-4/5 max-h-10 object-contain" />
