@@ -25,6 +25,9 @@ import AcceptInvitePage from './pages/auth/AcceptInvitePage'
 import ProfilePage from './pages/profile/ProfilePage'
 import QuoteDetailPage from './pages/quotes/QuoteDetailPage'
 import ExpensesPage from './pages/expenses/ExpensesPage'
+import FinancesDashboard from './pages/finances/FinancesDashboard'
+import MovementsPage from './pages/finances/MovementsPage'
+import AccountsPage from './pages/finances/AccountsPage'
 import TasksPage from './pages/tasks/TasksPage'
 import QuotePublicPage from './pages/public/QuotePublicPage'
 import StockDashboard from './pages/stock/StockDashboard'
@@ -86,6 +89,9 @@ export default function App() {
               <Route path="/quotes" element={<QuotesPage />} />
               <Route path="/quotes/:id" element={<QuoteDetailPage />} />
               <Route path="/expenses" element={<ExpensesPage />} />
+              <Route path="/finances" element={<FinancesDashboard />} />
+              <Route path="/finances/movements" element={<MovementsPage />} />
+              <Route path="/finances/accounts" element={<AccountsPage />} />
               <Route path="/tasks" element={<TasksPage />} />
               <Route path="/stock" element={<StockDashboard />} />
               <Route path="/stock/products" element={<ProductsPage />} />

@@ -42,6 +42,7 @@ import {
   CubeIcon,
   ChevronDownIcon,
   BuildingStorefrontIcon,
+  BanknotesIcon,
 } from '@heroicons/react/24/outline'
 
 
@@ -57,7 +58,7 @@ const navItemsTop = [
 ]
 
 const navItemsBottom = [
-  { to: '/expenses',      label: 'Egresos',         icon: ArrowTrendingDownIcon },
+  { to: '/finances',      label: 'Finanzas',        icon: BanknotesIcon },
   { to: '/members',       label: 'Equipo',          icon: UserGroupIcon },
 ]
 
