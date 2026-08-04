@@ -20,3 +20,9 @@ export const stockOut        = (data) => api.post('/stock/out', data)
 export const stockAdjustment = (data) => api.post('/stock/adjustment', data)
 export const getMovements    = (params) => api.get('/stock/movements', { params })
 export const getStockDashboard = () => api.get('/stock/dashboard')
+
+// Proveedores
+export const getSuppliers    = (params)     => api.get('/suppliers', { params })
+export const createSupplier  = (data)       => api.post('/suppliers', data)
+export const updateSupplier  = (id, data)   => api.patch(`/suppliers/${id}`, data)
+export const deleteSupplier  = (id)         => api.delete(`/suppliers/${id}`)

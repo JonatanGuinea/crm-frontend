@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Link, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
@@ -40,21 +40,31 @@ import {
   Cog6ToothIcon,
   ArrowRightStartOnRectangleIcon,
   CubeIcon,
+  ChevronDownIcon,
+  BuildingStorefrontIcon,
 } from '@heroicons/react/24/outline'
 
 
 const API_BASE = import.meta.env.VITE_API_URL.replace('/api', '')
 
-const navItems = [
+const navItemsTop = [
   { to: '/',              label: 'Dashboard',      icon: HomeIcon,           exact: true },
   { to: '/clients',       label: 'Clientes',        icon: UsersIcon },
   { to: '/projects',      label: 'Proyectos',       icon: FolderIcon },
   { to: '/tasks',         label: 'Tareas',          icon: ClipboardDocumentListIcon },
   { to: '/projects/calendar', label: 'Agenda',      icon: CalendarDaysIcon },
   { to: '/quotes',        label: 'Presupuestos',    icon: DocumentTextIcon },
+]
+
+const navItemsBottom = [
   { to: '/expenses',      label: 'Egresos',         icon: ArrowTrendingDownIcon },
-  { to: '/stock',         label: 'Stock',           icon: CubeIcon },
   { to: '/members',       label: 'Equipo',          icon: UserGroupIcon },
+]
+
+const stockSubItems = [
+  { to: '/stock',           label: 'Stock disponible', icon: CubeIcon,                  exact: true },
+  { to: '/stock/products',  label: 'Productos',        icon: ReceiptRefundIcon },
+  { to: '/stock/providers', label: 'Proveedores',      icon: BuildingStorefrontIcon },
 ]
 
 function ProfileDropdown({ profile, user }) {
@@ -162,47 +172,133 @@ function SidebarAvatar({ avatar, name }) {
   )
 }
 
-function SidebarContent({ collapsed, profile, user, onNavClick, dark, onToggleTheme, newProjectsCount }) {
+function NavItem({ to, label, icon: Icon, exact, collapsed, onNavClick, badge = 0 }) {
   return (
-    <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-      {!collapsed && <OrgSwitcher />}
+    <NavLink
+      to={to}
+      end={exact}
+      onClick={onNavClick}
+      title={collapsed ? label : undefined}
+      className={({ isActive }) =>
+        `relative flex items-center gap-3 px-2 py-1.5 rounded-md text-sm font-medium transition-colors ${
+          isActive ? 'bg-brand-subtle text-brand' : 'text-fg-soft hover:bg-raised hover:text-fg'
+        } ${collapsed ? 'justify-center' : ''}`
+      }
+    >
+      <div className="relative shrink-0">
+        <Icon className="w-5 h-5" />
+        {badge > 0 && collapsed && (
+          <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none">
+            {badge > 99 ? '99+' : badge}
+          </span>
+        )}
+      </div>
+      {!collapsed && <span className="truncate flex-1">{label}</span>}
+      {!collapsed && badge > 0 && (
+        <span className="ml-auto min-w-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
+          {badge > 99 ? '99+' : badge}
+        </span>
+      )}
+    </NavLink>
+  )
+}
 
-      <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-        {navItems.map(({ to, label, icon: Icon, exact }) => {
-          const isProjects = to === '/projects'
-          const badge = isProjects && newProjectsCount > 0 ? newProjectsCount : 0
-          return (
+function SidebarContent({ collapsed, profile, user, onNavClick, dark, onToggleTheme, newProjectsCount }) {
+  const location = useLocation()
+  const isOnStock = location.pathname.startsWith('/stock')
+  const [stockOpen, setStockOpen] = useState(isOnStock)
+
+  const stockGroup = (
+    <div key="stock-group">
+      {/* Botón padre Stock */}
+      <button
+        onClick={() => !collapsed && setStockOpen(o => !o)}
+        title={collapsed ? 'Stock' : undefined}
+        className={`w-full flex items-center gap-3 px-2 py-1.5 rounded-md text-sm font-medium transition-colors ${
+          isOnStock && !stockOpen ? 'bg-brand-subtle text-brand' : 'text-fg-soft hover:bg-raised hover:text-fg'
+        } ${collapsed ? 'justify-center' : ''}`}
+      >
+        <CubeIcon className="w-5 h-5 shrink-0" />
+        {!collapsed && (
+          <>
+            <span className="truncate flex-1 text-left">Stock</span>
+            <ChevronDownIcon className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${stockOpen ? 'rotate-180' : ''}`} />
+          </>
+        )}
+      </button>
+
+      {/* Sub-items expandido */}
+      {!collapsed && stockOpen && (
+        <div className="mt-0.5 ml-3 pl-3 border-l border-line flex flex-col gap-0.5">
+          {stockSubItems.map(({ to, label, icon: Icon, exact }) => (
             <NavLink
               key={to}
               to={to}
               end={exact}
               onClick={onNavClick}
-              title={collapsed ? label : undefined}
               className={({ isActive }) =>
-                `relative flex items-center gap-3 px-2 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-brand-subtle text-brand'
-                    : 'text-fg-soft hover:bg-raised hover:text-fg'
-                } ${collapsed ? 'justify-center' : ''}`
+                `flex items-center gap-2.5 px-2 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  isActive ? 'bg-brand-subtle text-brand' : 'text-fg-soft hover:bg-raised hover:text-fg'
+                }`
               }
             >
-              <div className="relative shrink-0">
-                <Icon className="w-5 h-5" />
-                {badge > 0 && collapsed && (
-                  <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none">
-                    {badge > 99 ? '99+' : badge}
-                  </span>
-                )}
-              </div>
-              {!collapsed && <span className="truncate flex-1">{label}</span>}
-              {!collapsed && badge > 0 && (
-                <span className="ml-auto min-w-[18px] h-4.5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
-                  {badge > 99 ? '99+' : badge}
-                </span>
-              )}
+              <Icon className="w-4 h-4 shrink-0" />
+              <span className="truncate">{label}</span>
             </NavLink>
-          )
-        })}
+          ))}
+        </div>
+      )}
+
+      {/* Sub-items colapsado: iconos individuales */}
+      {collapsed && (
+        <div className="mt-0.5 flex flex-col gap-0.5">
+          {stockSubItems.map(({ to, label, icon: Icon, exact }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={exact}
+              title={label}
+              onClick={onNavClick}
+              className={({ isActive }) =>
+                `flex items-center justify-center px-2 py-1.5 rounded-md text-sm transition-colors ${
+                  isActive ? 'bg-brand-subtle text-brand' : 'text-fg-soft hover:bg-raised hover:text-fg'
+                }`
+              }
+            >
+              <Icon className="w-4 h-4 shrink-0" />
+            </NavLink>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+
+  return (
+    <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+      {!collapsed && <OrgSwitcher />}
+
+      <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
+        {/* Items superiores (hasta Presupuestos) */}
+        {navItemsTop.map(({ to, label, icon: Icon, exact }) => (
+          <NavItem
+            key={to}
+            to={to} label={label} icon={Icon} exact={exact}
+            collapsed={collapsed} onNavClick={onNavClick}
+            badge={to === '/projects' && newProjectsCount > 0 ? newProjectsCount : 0}
+          />
+        ))}
+
+        {/* Stock justo debajo de Presupuestos */}
+        {stockGroup}
+
+        {/* Items inferiores (Egresos, Equipo) */}
+        {navItemsBottom.map(({ to, label, icon: Icon, exact }) => (
+          <NavItem
+            key={to}
+            to={to} label={label} icon={Icon} exact={exact}
+            collapsed={collapsed} onNavClick={onNavClick}
+          />
+        ))}
       </nav>
 
       <div className="px-2 py-4 border-t border-line space-y-1 shrink-0">

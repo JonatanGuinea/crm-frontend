@@ -30,6 +30,7 @@ import QuotePublicPage from './pages/public/QuotePublicPage'
 import StockDashboard from './pages/stock/StockDashboard'
 import ProductsPage from './pages/stock/ProductsPage'
 import ProductDetailPage from './pages/stock/ProductDetailPage'
+import ProvidersPage from './pages/stock/ProvidersPage'
 
 const qc = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } }
@@ -89,6 +90,7 @@ export default function App() {
               <Route path="/stock" element={<StockDashboard />} />
               <Route path="/stock/products" element={<ProductsPage />} />
               <Route path="/stock/products/:id" element={<ProductDetailPage />} />
+              <Route path="/stock/providers" element={<ProvidersPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/members" element={<MembersPage />} />
               <Route path="/profile" element={<ProfilePage />} />

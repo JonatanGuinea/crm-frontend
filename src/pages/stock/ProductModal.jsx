@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createProduct, updateProduct, getCategories } from '../../api/stock'
+import { createProduct, updateProduct, getCategories, getSuppliers } from '../../api/stock'
 import { useToast } from '../../components/Toast'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 
@@ -12,17 +12,18 @@ export default function ProductModal({ product, onClose }) {
   const isEdit = Boolean(product)
 
   const [form, setForm] = useState({
-    sku:          product?.sku          ?? '',
-    name:         product?.name         ?? '',
-    description:  product?.description  ?? '',
-    unit:         product?.unit         ?? 'unidad',
-    categoryId:   product?.categoryId   ?? '',
-    costPrice:    product?.costPrice    ?? '',
-    salePrice:    product?.salePrice    ?? '',
-    minStock:     product?.minStock     ?? '0',
-    maxStock:     product?.maxStock     ?? '',
-    status:       product?.status       ?? 'active',
-    initialStock: '',
+    sku:           product?.sku          ?? '',
+    name:          product?.name         ?? '',
+    description:   product?.description  ?? '',
+    unit:          product?.unit         ?? 'unidad',
+    categoryId:    product?.categoryId   ?? '',
+    supplierId:    product?.supplierId   ?? '',
+    costPrice:     product?.costPrice    ?? '',
+    salePrice:     product?.salePrice    ?? '',
+    minStock:      product?.minStock     ?? '0',
+    maxStock:      product?.maxStock     ?? '',
+    status:        product?.status       ?? 'active',
+    initialStock:  '',
     initialReason: '',
   })
 
@@ -32,6 +33,13 @@ export default function ProductModal({ product, onClose }) {
     staleTime: 60_000,
   })
   const categories = categoriesData ?? []
+
+  const { data: suppliersData } = useQuery({
+    queryKey: ['suppliers'],
+    queryFn: () => getSuppliers().then(r => r.data.data),
+    staleTime: 60_000,
+  })
+  const suppliers = suppliersData ?? []
 
   function set(field) {
     return e => setForm(f => ({ ...f, [field]: e.target.value }))
@@ -55,7 +63,8 @@ export default function ProductModal({ product, onClose }) {
       name:        form.name.trim(),
       description: form.description.trim() || undefined,
       unit:        form.unit,
-      categoryId:  form.categoryId || undefined,
+      categoryId:  form.categoryId  || undefined,
+      supplierId:  form.supplierId  || undefined,
       costPrice:   form.costPrice !== '' ? Number(form.costPrice) : undefined,
       salePrice:   form.salePrice !== '' ? Number(form.salePrice) : undefined,
       minStock:    Number(form.minStock),
@@ -110,19 +119,30 @@ export default function ProductModal({ product, onClose }) {
               <textarea className={inputCls} rows={2} placeholder="Descripción opcional" value={form.description} onChange={set('description')} />
             </div>
 
-            <div>
-              <label className={labelCls}>Categoría</label>
-              <select className={inputCls} value={form.categoryId} onChange={set('categoryId')}>
-                <option value="">Sin categoría</option>
-                {categories.map(c => (
-                  <optgroup key={c.id} label={c.name}>
-                    <option value={c.id}>{c.name}</option>
-                    {c.children?.map(ch => (
-                      <option key={ch.id} value={ch.id}>↳ {ch.name}</option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelCls}>Categoría</label>
+                <select className={inputCls} value={form.categoryId} onChange={set('categoryId')}>
+                  <option value="">Sin categoría</option>
+                  {categories.map(c => (
+                    <optgroup key={c.id} label={c.name}>
+                      <option value={c.id}>{c.name}</option>
+                      {c.children?.map(ch => (
+                        <option key={ch.id} value={ch.id}>↳ {ch.name}</option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Proveedor</label>
+                <select className={inputCls} value={form.supplierId} onChange={set('supplierId')}>
+                  <option value="">Sin proveedor</option>
+                  {suppliers.filter(s => s.status === 'active').map(s => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
