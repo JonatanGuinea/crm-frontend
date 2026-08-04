@@ -323,7 +323,7 @@ export default function ProjectsPage() {
                       onClick={() => { setEditing(p); setModalOpen(true) }}
                       className="w-full flex items-center justify-center py-1.5 rounded-lg text-xs font-medium bg-warning-subtle text-warning border border-warning/20 hover:opacity-80 transition-opacity"
                     >
-                      Completar proyecto
+                      Completar datos
                     </button>
                   )}
                   <div className="flex items-center gap-2">
@@ -419,7 +419,7 @@ export default function ProjectsPage() {
                               onClick={() => { setEditing(p); setModalOpen(true) }}
                               className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium bg-warning-subtle text-warning border border-warning/20 hover:opacity-80 transition-opacity"
                             >
-                              Completar proyecto
+                              Completar datos
                             </button>
                           )}
                           <Link to={`/projects/${p.id}`} className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium bg-brand text-white hover:opacity-90 transition-opacity">

@@ -3,10 +3,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createTask, updateTask } from '../../api/tasks'
 import { getProjects } from '../../api/projects'
 import { getMembers } from '../../api/members'
+import { getProducts } from '../../api/stock'
 import { useToast } from '../../components/Toast'
 import { useAuth } from '../../context/AuthContext'
 import DatePicker from '../../components/DatePicker'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon, PlusIcon, TrashIcon, CubeIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
 const STATUS_OPTIONS = [
   { value: 'todo',        label: 'Pendiente' },
@@ -38,6 +39,17 @@ export default function TaskModal({ task, defaultStatus = 'todo', defaultProject
   })
   const [errors, setErrors] = useState({})
 
+  // Stock items: [{ productId, quantity, product }]
+  const [stockItems, setStockItems] = useState(
+    task?.stockItems?.map(i => ({
+      productId: i.productId,
+      quantity:  Number(i.quantity),
+      product:   i.product,
+    })) ?? []
+  )
+  const [selectedProductId, setSelectedProductId] = useState('')
+  const [selectedQty, setSelectedQty] = useState('1')
+
   const { data: projects } = useQuery({
     queryKey: ['projects'],
     queryFn: () => getProjects().then(r => r.data.data?.items ?? r.data.data ?? []),
@@ -52,10 +64,19 @@ export default function TaskModal({ task, defaultStatus = 'todo', defaultProject
   })
   const members = (membersData ?? []).filter(m => m.status === 'active')
 
+  const { data: productsData } = useQuery({
+    queryKey: ['products', { limit: 200, status: 'active' }],
+    queryFn: () => getProducts({ limit: 200, status: 'active' }).then(r => r.data.data),
+    staleTime: 60_000,
+  })
+  const products = productsData?.items ?? []
+
   const mutation = useMutation({
     mutationFn: (data) => isEdit ? updateTask(task.id, data) : createTask(data),
     onSuccess: () => {
       qc.invalidateQueries(['tasks'])
+      qc.invalidateQueries(['products'])
+      qc.invalidateQueries(['stock-dashboard'])
       toast(isEdit ? 'Tarea actualizada' : 'Tarea creada', 'success')
       onClose()
     },
@@ -74,6 +95,28 @@ export default function TaskModal({ task, defaultStatus = 'todo', defaultProject
     return Object.keys(e).length === 0
   }
 
+  function addStockItem() {
+    if (!selectedProductId || !selectedQty || Number(selectedQty) <= 0) return
+    const product = products.find(p => p.id === selectedProductId)
+    if (!product) return
+    // Si ya existe, actualiza la cantidad
+    setStockItems(prev => {
+      const idx = prev.findIndex(i => i.productId === selectedProductId)
+      if (idx >= 0) {
+        const updated = [...prev]
+        updated[idx] = { ...updated[idx], quantity: Number(selectedQty) }
+        return updated
+      }
+      return [...prev, { productId: selectedProductId, quantity: Number(selectedQty), product }]
+    })
+    setSelectedProductId('')
+    setSelectedQty('1')
+  }
+
+  function removeStockItem(productId) {
+    setStockItems(prev => prev.filter(i => i.productId !== productId))
+  }
+
   function handleSubmit(ev) {
     ev.preventDefault()
     if (!validate()) return
@@ -85,6 +128,7 @@ export default function TaskModal({ task, defaultStatus = 'todo', defaultProject
       dueDate:      form.dueDate || null,
       assignedToId: form.assignedToId || null,
       projectId:    form.projectId    || null,
+      stockItems:   stockItems.map(i => ({ productId: i.productId, quantity: i.quantity })),
     }
     mutation.mutate(payload)
   }
@@ -94,6 +138,9 @@ export default function TaskModal({ task, defaultStatus = 'todo', defaultProject
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose])
+
+  // Productos disponibles para el selector (excluye los ya agregados)
+  const availableProducts = products.filter(p => !stockItems.some(i => i.productId === p.id))
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
@@ -207,6 +254,93 @@ export default function TaskModal({ task, defaultStatus = 'todo', defaultProject
                 ))}
               </select>
             </div>
+
+            {/* Materiales / Stock */}
+            {products.length > 0 && (
+              <div className="border-t border-line pt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <CubeIcon className="w-4 h-4 text-fg-muted" />
+                  <p className="text-xs font-semibold text-fg-muted uppercase tracking-wide">Materiales</p>
+                  <p className="text-xs text-fg-muted ml-auto">Se descuentan al completar</p>
+                </div>
+
+                {/* Ítems agregados */}
+                {stockItems.length > 0 && (
+                  <div className="flex flex-col gap-1.5 mb-3">
+                    {stockItems.map(item => {
+                      const currentStock = Number(item.product.stock)
+                      const insufficient = currentStock < item.quantity
+                      const outOfStock   = currentStock <= 0
+                      return (
+                        <div key={item.productId} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${insufficient ? 'bg-warning-subtle border border-warning/30' : 'bg-raised'}`}>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <p className="text-sm font-medium text-fg truncate">{item.product.name}</p>
+                              {insufficient && (
+                                <ExclamationTriangleIcon className="w-3.5 h-3.5 text-warning shrink-0" />
+                              )}
+                            </div>
+                            <p className="text-xs text-fg-muted font-mono">
+                              {item.product.sku}
+                              {outOfStock
+                                ? <span className="ml-1.5 text-danger font-medium">· Sin stock</span>
+                                : insufficient
+                                  ? <span className="ml-1.5 text-warning font-medium">· Stock: {currentStock} {item.product.unit}</span>
+                                  : null
+                              }
+                            </p>
+                          </div>
+                          <span className="text-sm font-semibold text-fg shrink-0">
+                            {item.quantity} <span className="text-xs font-normal text-fg-muted">{item.product.unit}</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeStockItem(item.productId)}
+                            className="p-1 rounded-md hover:bg-danger-subtle text-fg-muted hover:text-danger transition-colors shrink-0"
+                          >
+                            <TrashIcon className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {/* Agregar ítem */}
+                {availableProducts.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={selectedProductId}
+                      onChange={e => setSelectedProductId(e.target.value)}
+                      className="flex-1 px-3 py-2 rounded-lg bg-raised border border-line text-sm text-fg focus:outline-none focus:border-brand transition-colors"
+                    >
+                      <option value="">Seleccionar producto…</option>
+                      {availableProducts.map(p => (
+                        <option key={p.id} value={p.id}>
+                          {p.name} ({p.sku}) — {Number(p.stock) <= 0 ? 'Sin stock' : `${Number(p.stock)} ${p.unit}`}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      value={selectedQty}
+                      onChange={e => setSelectedQty(e.target.value)}
+                      className="w-20 px-3 py-2 rounded-lg bg-raised border border-line text-sm text-fg focus:outline-none focus:border-brand transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={addStockItem}
+                      disabled={!selectedProductId || !selectedQty || Number(selectedQty) <= 0}
+                      className="p-2 rounded-lg bg-brand text-white hover:opacity-90 transition-opacity disabled:opacity-40 shrink-0"
+                    >
+                      <PlusIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
           </div>
 
