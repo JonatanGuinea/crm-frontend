@@ -3,13 +3,19 @@ import { useQuery } from '@tanstack/react-query'
 import { getFinancesDashboard } from '../../api/finances'
 import { getQuotesDashboard } from '../../api/quotes'
 import { getProjectsDashboard } from '../../api/projects'
-import { getStockDashboard } from '../../api/stock'
+import { getStockDashboard, getProducts } from '../../api/stock'
 import { getTopClients } from '../../api/clients'
 import { getOrganizations } from '../../api/organizations'
 import { useAuth } from '../../context/AuthContext'
 import { fmt } from '../../utils/fmt'
 import {
-  ChevronLeftIcon, ChevronRightIcon, PrinterIcon,
+  generateFinancesPDF,
+  generateQuotesPDF,
+  generateProjectsPDF,
+  generateStockPDF,
+} from '../../utils/generateReport'
+import {
+  ChevronLeftIcon, ChevronRightIcon, ArrowDownTrayIcon,
   BanknotesIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon,
   DocumentTextIcon, FolderOpenIcon, CubeIcon,
   ExclamationTriangleIcon, XCircleIcon, CheckCircleIcon,
@@ -49,7 +55,7 @@ function buildEvolution(apiData) {
 
 function KpiCard({ icon: Icon, iconBg, iconColor, label, value, sub }) {
   return (
-    <div className="bg-surface border border-line rounded-xl p-4 flex items-start gap-3 print:border print:rounded-lg print:shadow-none">
+    <div className="bg-surface border border-line rounded-xl p-4 flex items-start gap-3">
       <div className={`p-2 rounded-lg shrink-0 ${iconBg}`}>
         <Icon className={`w-4 h-4 ${iconColor}`} />
       </div>
@@ -114,15 +120,16 @@ function StatusBar({ items, total }) {
   )
 }
 
+function Spinner() {
+  return <div className="flex items-center justify-center py-24 text-fg-muted text-sm">Cargando…</div>
+}
+
 // ── tabs ──────────────────────────────────────────────────────────────────────
 
-function FinancesTab({ year, month, currency }) {
-  const { data } = useQuery({
-    queryKey: ['report-finances', year, month],
-    queryFn: () => getFinancesDashboard({ year, month }).then(r => r.data.data),
-  })
+function FinancesTab({ data, year, month, currency }) {
+  if (!data) return <Spinner />
 
-  const evolution = buildEvolution(data?.monthlyEvolution)
+  const evolution     = buildEvolution(data?.monthlyEvolution)
   const totalBalance  = Number(data?.totalBalance  ?? 0)
   const incomeMonth   = Number(data?.incomeMonth   ?? 0)
   const expenseMonth  = Number(data?.expenseMonth  ?? 0)
@@ -215,18 +222,10 @@ function FinancesTab({ year, month, currency }) {
   )
 }
 
-function QuotesTab({ currency }) {
-  const { data } = useQuery({
-    queryKey: ['report-quotes', currency],
-    queryFn: () => getQuotesDashboard(currency).then(r => r.data.data),
-  })
+function QuotesTab({ data, topClients, currency }) {
+  if (!data) return <Spinner />
 
-  const { data: topClients } = useQuery({
-    queryKey: ['report-top-clients'],
-    queryFn: () => getTopClients().then(r => r.data.data),
-  })
-
-  const summary = data?.summary ?? {}
+  const summary  = data?.summary ?? {}
   const approved = Number(summary.approved ?? 0)
   const sent     = Number(summary.sent     ?? 0)
   const draft    = Number(summary.draft    ?? 0)
@@ -235,7 +234,7 @@ function QuotesTab({ currency }) {
   const totalValue = Number(summary.totalValue ?? 0)
   const convRate = sent + approved > 0 ? ((approved / (sent + approved)) * 100).toFixed(1) : '0'
 
-  const monthly = data?.monthly ?? []
+  const monthly   = data?.monthly ?? []
   const chartData = monthly.map(m => ({ month: m.key, income: Number(m.approved ?? 0), expense: Number(m.issued ?? 0) }))
 
   return (
@@ -312,11 +311,8 @@ function QuotesTab({ currency }) {
   )
 }
 
-function ProjectsTab() {
-  const { data } = useQuery({
-    queryKey: ['report-projects'],
-    queryFn: () => getProjectsDashboard().then(r => r.data.data),
-  })
+function ProjectsTab({ data }) {
+  if (!data) return <Spinner />
 
   const byStatus = data?.byStatus ?? []
   const summary  = data?.summary  ?? {}
@@ -427,24 +423,8 @@ function ProjectsTab() {
   )
 }
 
-function StockTab() {
-  const { data } = useQuery({
-    queryKey: ['report-stock'],
-    queryFn: () => getStockDashboard().then(r => r.data.data),
-  })
-
-  const { data: productsData } = useQuery({
-    queryKey: ['report-stock-products'],
-    queryFn: () => import('../../api/stock').then(m => m.getProducts({ outOfStock: 'true', limit: 100 })).then(r => r.data.data?.items ?? []),
-  })
-
-  const { data: lowStockData } = useQuery({
-    queryKey: ['report-stock-low'],
-    queryFn: () => import('../../api/stock').then(m => m.getProducts({ lowStock: 'true', limit: 100 })).then(r => r.data.data?.items ?? []),
-  })
-
-  const outOfStock = productsData ?? []
-  const lowStock   = lowStockData ?? []
+function StockTab({ summary, outOfStock, lowStock }) {
+  if (!summary) return <Spinner />
 
   return (
     <div className="flex flex-col gap-8">
@@ -453,17 +433,17 @@ function StockTab() {
         <SectionTitle>Resumen del inventario</SectionTitle>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <KpiCard icon={CubeIcon} iconBg="bg-brand-subtle" iconColor="text-brand"
-            label="Total productos" value={fmtN(data?.totalProducts)} sub={`${data?.activeProducts ?? 0} activos`} />
-          <KpiCard icon={XCircleIcon} iconBg={data?.outOfStock > 0 ? 'bg-danger-subtle' : 'bg-raised'}
-            iconColor={data?.outOfStock > 0 ? 'text-danger' : 'text-fg-muted'}
-            label="Sin stock" value={fmtN(data?.outOfStock)} />
-          <KpiCard icon={ExclamationTriangleIcon} iconBg={data?.lowStock > 0 ? 'bg-warning-subtle' : 'bg-raised'}
-            iconColor={data?.lowStock > 0 ? 'text-warning' : 'text-fg-muted'}
-            label="Stock bajo" value={fmtN(data?.lowStock)} />
+            label="Total productos" value={fmtN(summary?.totalProducts)} sub={`${summary?.activeProducts ?? 0} activos`} />
+          <KpiCard icon={XCircleIcon} iconBg={summary?.outOfStock > 0 ? 'bg-danger-subtle' : 'bg-raised'}
+            iconColor={summary?.outOfStock > 0 ? 'text-danger' : 'text-fg-muted'}
+            label="Sin stock" value={fmtN(summary?.outOfStock)} />
+          <KpiCard icon={ExclamationTriangleIcon} iconBg={summary?.lowStock > 0 ? 'bg-warning-subtle' : 'bg-raised'}
+            iconColor={summary?.lowStock > 0 ? 'text-warning' : 'text-fg-muted'}
+            label="Stock bajo" value={fmtN(summary?.lowStock)} />
         </div>
       </div>
 
-      {outOfStock.length > 0 && (
+      {outOfStock?.length > 0 && (
         <div>
           <SectionTitle>Productos sin stock</SectionTitle>
           <div className="bg-surface border border-line rounded-xl overflow-hidden">
@@ -493,7 +473,7 @@ function StockTab() {
         </div>
       )}
 
-      {lowStock.length > 0 && (
+      {lowStock?.length > 0 && (
         <div>
           <SectionTitle>Productos con stock bajo</SectionTitle>
           <div className="bg-surface border border-line rounded-xl overflow-hidden">
@@ -531,10 +511,10 @@ function StockTab() {
 // ── main ──────────────────────────────────────────────────────────────────────
 
 const TABS = [
-  { key: 'finances',  label: 'Finanzas',      icon: BanknotesIcon },
-  { key: 'quotes',    label: 'Presupuestos',   icon: DocumentTextIcon },
-  { key: 'projects',  label: 'Proyectos',      icon: FolderOpenIcon },
-  { key: 'stock',     label: 'Stock',          icon: CubeIcon },
+  { key: 'finances',  label: 'Finanzas',    icon: BanknotesIcon },
+  { key: 'quotes',    label: 'Presupuestos', icon: DocumentTextIcon },
+  { key: 'projects',  label: 'Proyectos',   icon: FolderOpenIcon },
+  { key: 'stock',     label: 'Stock',       icon: CubeIcon },
 ]
 
 export default function ReportsPage() {
@@ -554,27 +534,84 @@ export default function ReportsPage() {
     setPeriod(p => p.month === 12 ? { year: p.year + 1, month: 1 } : { ...p, month: p.month + 1 })
   }
 
+  // ── org ──
   const { data: orgData } = useQuery({
     queryKey: ['organization', orgId],
-    queryFn: () => getOrganizations().then(r => r.data.data?.find(o => o.id === orgId)),
-    enabled: Boolean(orgId),
+    queryFn:  () => getOrganizations().then(r => r.data.data?.find(o => o.id === orgId)),
+    enabled:  Boolean(orgId),
     staleTime: 5 * 60 * 1000,
   })
   const currency = orgData?.defaultCurrency ?? 'USD'
+  const orgName  = orgData?.name ?? 'CRM'
+
+  // ── finances ──
+  const { data: finData } = useQuery({
+    queryKey: ['report-finances', period.year, period.month],
+    queryFn:  () => getFinancesDashboard({ year: period.year, month: period.month }).then(r => r.data.data),
+    enabled:  tab === 'finances',
+  })
+
+  // ── quotes ──
+  const { data: quotesData } = useQuery({
+    queryKey: ['report-quotes', currency],
+    queryFn:  () => getQuotesDashboard(currency).then(r => r.data.data),
+    enabled:  tab === 'quotes',
+  })
+  const { data: topClients } = useQuery({
+    queryKey: ['report-top-clients'],
+    queryFn:  () => getTopClients().then(r => r.data.data),
+    enabled:  tab === 'quotes',
+  })
+
+  // ── projects ──
+  const { data: projectsData } = useQuery({
+    queryKey: ['report-projects'],
+    queryFn:  () => getProjectsDashboard().then(r => r.data.data),
+    enabled:  tab === 'projects',
+  })
+
+  // ── stock ──
+  const { data: stockSummary } = useQuery({
+    queryKey: ['report-stock'],
+    queryFn:  () => getStockDashboard().then(r => r.data.data),
+    enabled:  tab === 'stock',
+  })
+  const { data: outOfStockProducts } = useQuery({
+    queryKey: ['report-stock-out'],
+    queryFn:  () => getProducts({ outOfStock: 'true', limit: 200 }).then(r => r.data.data?.items ?? []),
+    enabled:  tab === 'stock',
+  })
+  const { data: lowStockProducts } = useQuery({
+    queryKey: ['report-stock-low'],
+    queryFn:  () => getProducts({ lowStock: 'true', limit: 200 }).then(r => r.data.data?.items ?? []),
+    enabled:  tab === 'stock',
+  })
+
+  // ── PDF ──
+  function handleDownload() {
+    if (tab === 'finances') {
+      generateFinancesPDF({ data: finData, year: period.year, month: period.month, currency, orgName })
+    } else if (tab === 'quotes') {
+      generateQuotesPDF({ data: quotesData, topClients, currency, orgName })
+    } else if (tab === 'projects') {
+      generateProjectsPDF({ data: projectsData, orgName })
+    } else if (tab === 'stock') {
+      generateStockPDF({ summary: stockSummary, outOfStock: outOfStockProducts, lowStock: lowStockProducts, orgName })
+    }
+  }
 
   const activeTab = TABS.find(t => t.key === tab)
 
   return (
-    <div className="p-4 md:p-8 max-w-4xl print:p-4 print:max-w-none">
+    <div className="p-4 md:p-8 max-w-4xl">
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-6 flex-wrap print:mb-4">
+      <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-fg">Reportes</h1>
           <p className="text-sm text-fg-muted mt-0.5 capitalize">{activeTab?.label} · {periodLabel(period.year, period.month)}</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap print:hidden">
-          {/* Navegador de mes — solo visible en tabs que usan el mes */}
+        <div className="flex items-center gap-2 flex-wrap">
           {tab === 'finances' && (
             <div className="flex items-center gap-1 bg-raised border border-line rounded-xl px-1 py-1">
               <button onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-surface text-fg-muted hover:text-fg transition-colors">
@@ -589,17 +626,17 @@ export default function ReportsPage() {
             </div>
           )}
           <button
-            onClick={() => window.print()}
+            onClick={handleDownload}
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-line text-sm font-medium text-fg-muted hover:text-fg hover:bg-raised transition-colors"
           >
-            <PrinterIcon className="w-4 h-4" />
-            Imprimir
+            <ArrowDownTrayIcon className="w-4 h-4" />
+            Descargar PDF
           </button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-raised border border-line rounded-xl p-1 mb-6 print:hidden">
+      <div className="flex gap-1 bg-raised border border-line rounded-xl p-1 mb-6">
         {TABS.map(t => {
           const Icon = t.icon
           return (
@@ -620,10 +657,10 @@ export default function ReportsPage() {
       </div>
 
       {/* Contenido */}
-      {tab === 'finances' && <FinancesTab year={period.year} month={period.month} currency={currency} />}
-      {tab === 'quotes'   && <QuotesTab currency={currency} />}
-      {tab === 'projects' && <ProjectsTab />}
-      {tab === 'stock'    && <StockTab />}
+      {tab === 'finances' && <FinancesTab data={finData}     year={period.year} month={period.month} currency={currency} />}
+      {tab === 'quotes'   && <QuotesTab   data={quotesData}  topClients={topClients} currency={currency} />}
+      {tab === 'projects' && <ProjectsTab data={projectsData} />}
+      {tab === 'stock'    && <StockTab    summary={stockSummary} outOfStock={outOfStockProducts} lowStock={lowStockProducts} />}
     </div>
   )
 }
