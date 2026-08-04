@@ -24,9 +24,9 @@ import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid'
 // ── constants ─────────────────────────────────────────────────────────────────
 
 const COLUMNS = [
-  { id: 'todo',        label: 'Pendiente',   color: 'text-fg-muted',  dot: 'bg-fg-muted',  count_bg: 'bg-raised',          col_bg: 'bg-raised/60' },
-  { id: 'in_progress', label: 'En progreso', color: 'text-warning',   dot: 'bg-warning',   count_bg: 'bg-warning-subtle',  col_bg: 'bg-warning-subtle/40' },
-  { id: 'done',        label: 'Completada',  color: 'text-success',   dot: 'bg-success',   count_bg: 'bg-success-subtle',  col_bg: 'bg-success-subtle/40' },
+  { id: 'todo',        label: 'Pendiente',   color: 'text-fg-muted',  dot: 'bg-fg-muted',  count_bg: 'bg-raised',          col_bg: 'bg-raised/60',          glow: '0 0 0 2px color-mix(in srgb, var(--color-fg-muted) 25%, transparent)' },
+  { id: 'in_progress', label: 'En progreso', color: 'text-warning',   dot: 'bg-warning',   count_bg: 'bg-warning-subtle',  col_bg: 'bg-warning-subtle/40',  glow: '0 0 0 2px color-mix(in srgb, var(--color-warning) 35%, transparent)' },
+  { id: 'done',        label: 'Completada',  color: 'text-success',   dot: 'bg-success',   count_bg: 'bg-success-subtle',  col_bg: 'bg-success-subtle/40',  glow: '0 0 0 2px color-mix(in srgb, var(--color-success) 35%, transparent)' },
 ]
 
 const PRIORITY = {
@@ -82,9 +82,10 @@ const STATUS_COLORS = {
 
 function actionLabel(fromStatus, toStatus) {
   if (!fromStatus) return { verb: 'creó la tarea', color: 'text-fg-muted' }
-  if (toStatus === 'done')        return { verb: 'completó la tarea',              color: 'text-success' }
-  if (toStatus === 'in_progress') return { verb: 'inició la tarea',                color: 'text-warning' }
-  if (toStatus === 'todo')        return { verb: 'regresó la tarea a pendiente',   color: 'text-fg-muted' }
+  if (toStatus === 'done')                                          return { verb: 'completó la tarea',                   color: 'text-success' }
+  if (toStatus === 'in_progress' && fromStatus === 'done')          return { verb: 'regresó la tarea a en progreso',      color: 'text-warning' }
+  if (toStatus === 'in_progress')                                   return { verb: 'inició la tarea',                     color: 'text-warning' }
+  if (toStatus === 'todo')                                          return { verb: 'regresó la tarea a pendiente',        color: 'text-fg-muted' }
   return { verb: `movió a ${STATUS_LABELS[toStatus]}`, color: 'text-fg-muted' }
 }
 
@@ -222,7 +223,7 @@ function HistoryView() {
 
 // ── TaskCard ──────────────────────────────────────────────────────────────────
 
-function TaskCard({ task, onEdit, onDelete, onMove }) {
+function TaskCard({ task, onEdit, onDelete, onMove, isMoving, justMoved }) {
   const overdue  = isOverdue(task.dueDate)
   const prio     = PRIORITY[task.priority]
   const isDone   = task.status === 'done'
@@ -230,11 +231,15 @@ function TaskCard({ task, onEdit, onDelete, onMove }) {
   const canPrev  = Boolean(PREV_STATUS[task.status])
 
   return (
-    <div className={`group bg-surface border rounded-xl p-3.5 flex flex-col gap-2.5 transition-all hover:shadow-sm ${
-      isDone
-        ? 'border-success/30 bg-success-subtle/10'
-        : 'border-line hover:border-line-soft'
-    }`}>
+    <div
+      className={`group bg-surface border rounded-xl p-3.5 flex flex-col gap-2.5 hover:shadow-sm ${
+        isDone ? 'border-success/30 bg-success-subtle/10' : 'border-line hover:border-line-soft'
+      } ${justMoved ? 'task-card-enter' : ''}`}
+      style={isMoving
+        ? { opacity: 0, transform: 'translateY(8px) scale(0.93)', transition: 'opacity 0.18s ease, transform 0.18s ease', pointerEvents: 'none' }
+        : { transition: 'box-shadow 0.15s ease' }
+      }
+    >
       {/* Priority + actions */}
       <div className="flex items-center justify-between gap-2">
         {isDone ? (
@@ -263,7 +268,7 @@ function TaskCard({ task, onEdit, onDelete, onMove }) {
       </div>
 
       {/* Title */}
-      <p className={`text-sm font-medium leading-snug ${isDone ? 'line-through text-fg-muted' : 'text-fg'}`}>
+      <p className={`text-sm font-medium leading-snug ${isDone ? 'text-fg-muted' : 'text-fg'}`}>
         {task.title}
       </p>
 
@@ -314,8 +319,8 @@ function TaskCard({ task, onEdit, onDelete, onMove }) {
       {/* Move buttons */}
       <div className="flex items-center gap-1.5 pt-1 border-t border-line">
         <button
-          disabled={!canPrev}
-          onClick={() => canPrev && onMove(task, PREV_STATUS[task.status])}
+          disabled={!canPrev || isMoving}
+          onClick={() => canPrev && !isMoving && onMove(task, PREV_STATUS[task.status])}
           className="flex items-center gap-1 text-[11px] text-fg-muted hover:text-fg disabled:opacity-30 disabled:cursor-not-allowed transition-colors px-1.5 py-0.5 rounded hover:bg-raised"
         >
           <ChevronRightIcon className="w-3 h-3 rotate-180" />
@@ -323,8 +328,8 @@ function TaskCard({ task, onEdit, onDelete, onMove }) {
         </button>
         <div className="flex-1" />
         <button
-          disabled={!canNext}
-          onClick={() => canNext && onMove(task, NEXT_STATUS[task.status])}
+          disabled={!canNext || isMoving}
+          onClick={() => canNext && !isMoving && onMove(task, NEXT_STATUS[task.status])}
           className="flex items-center gap-1 text-[11px] text-fg-muted hover:text-fg disabled:opacity-30 disabled:cursor-not-allowed transition-colors px-1.5 py-0.5 rounded hover:bg-raised"
         >
           Siguiente
@@ -352,6 +357,9 @@ export default function TasksPage() {
   const [onlyMine, setOnlyMine]             = useState(false)
   const [doneCollapsed, setDoneCollapsed]   = useState(false)
   const [doneVisible, setDoneVisible]       = useState(10)
+  const [movingTaskId, setMovingTaskId]     = useState(null)
+  const [justMovedId, setJustMovedId]       = useState(null)
+  const [glowColumn, setGlowColumn]         = useState(null)
 
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ['tasks'],
@@ -375,8 +383,18 @@ export default function TasksPage() {
 
   const moveMutation = useMutation({
     mutationFn: ({ id, status }) => updateTask(id, { status }),
-    onSuccess: () => qc.invalidateQueries(['tasks']),
-    onError: () => toast('Error al mover la tarea', 'error'),
+    onSuccess: async (_, vars) => {
+      setMovingTaskId(null)
+      setGlowColumn(vars.status)
+      await qc.invalidateQueries(['tasks'])
+      setJustMovedId(vars.id)
+      qc.invalidateQueries(['tasks-history'])
+      setTimeout(() => { setJustMovedId(null); setGlowColumn(null) }, 700)
+    },
+    onError: () => {
+      setMovingTaskId(null)
+      toast('Error al mover la tarea', 'error')
+    },
   })
 
   const deleteMutation = useMutation({
@@ -403,7 +421,10 @@ export default function TasksPage() {
       )
       if (!ok) return
     }
-    moveMutation.mutate({ id: task.id, status: newStatus })
+    setMovingTaskId(task.id)
+    setTimeout(() => {
+      moveMutation.mutate({ id: task.id, status: newStatus })
+    }, 190)
   }
 
   const myId = user?.uid
@@ -415,11 +436,27 @@ export default function TasksPage() {
     return true
   })
 
-  const byStatus = (status) => filtered.filter(t => t.status === status)
+  const byStatus = (status) => {
+    const list = filtered.filter(t => t.status === status)
+    if (status === 'done') {
+      list.sort((a, b) => new Date(b.completedAt ?? 0) - new Date(a.completedAt ?? 0))
+    }
+    return list
+  }
   const hasFilters = filterPriority || filterMember || filterProject || onlyMine
 
   return (
     <div className="p-4 md:p-8 flex flex-col gap-6 min-h-full">
+      <style>{`
+        @keyframes taskCardEnter {
+          0%   { opacity: 0; transform: translateY(-16px) scale(0.92); }
+          60%  { opacity: 1; }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .task-card-enter {
+          animation: taskCardEnter 0.42s cubic-bezier(0.34, 1.5, 0.64, 1) both;
+        }
+      `}</style>
 
       {/* Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -429,10 +466,10 @@ export default function TasksPage() {
         </div>
         <div className="flex items-center gap-2">
           {/* Tabs */}
-          <div className="flex items-center gap-1 p-1 bg-raised rounded-lg border border-line">
+          <div className="flex items-center gap-0.5 bg-raised rounded-lg border border-line overflow-hidden">
             <button
               onClick={() => setTab('board')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 tab === 'board' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'
               }`}
             >
@@ -441,7 +478,7 @@ export default function TasksPage() {
             </button>
             <button
               onClick={() => setTab('history')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 tab === 'history' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'
               }`}
             >
@@ -535,7 +572,11 @@ export default function TasksPage() {
             const isDoneCol = col.id === 'done'
 
             return (
-              <div key={col.id} className={`flex flex-col gap-3 rounded-2xl p-3 ${col.col_bg}`}>
+              <div
+                key={col.id}
+                className={`flex flex-col gap-3 rounded-2xl p-3 ${col.col_bg}`}
+                style={{ boxShadow: glowColumn === col.id ? col.glow : 'none', transition: 'box-shadow 0.3s ease' }}
+              >
                 {/* Column header */}
                 <div className="flex items-center justify-between px-1">
                   <div className="flex items-center gap-2">
@@ -583,6 +624,8 @@ export default function TasksPage() {
                             onEdit={(t) => setModal({ task: t })}
                             onDelete={handleDelete}
                             onMove={handleMove}
+                            isMoving={movingTaskId === task.id}
+                            justMoved={justMovedId === task.id}
                           />
                         ))}
                         {isDoneCol && colTasks.length > doneVisible && (

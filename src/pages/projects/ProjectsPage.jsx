@@ -38,6 +38,30 @@ const ALLOWED_TRANSITIONS = {
   cancelled:   [],
 }
 
+function TaskProgress({ total, done }) {
+  if (!total) return <span className="text-xs text-fg-muted">—</span>
+  const pct = Math.round((done / total) * 100)
+  const allDone = done === total
+  return (
+    <div className="flex flex-col gap-1 min-w-[80px]">
+      <div className="flex items-center justify-between gap-2">
+        <span className={`text-xs font-medium ${allDone ? 'text-success' : 'text-fg-soft'}`}>
+          {done}/{total}
+        </span>
+        <span className={`text-[10px] font-semibold ${allDone ? 'text-success' : 'text-fg-muted'}`}>
+          {pct}%
+        </span>
+      </div>
+      <div className="h-1.5 rounded-full bg-raised overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-500 ${allDone ? 'bg-success' : 'bg-brand'}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
 function StatusDropdown({ project, onUpdate }) {
   const [open, setOpen] = useState(false)
   const [dropPos, setDropPos] = useState({ top: 0, left: 0 })
@@ -290,6 +314,7 @@ export default function ProjectsPage() {
                       Vence: {new Date(p.endDate).toLocaleDateString('es-AR')}
                     </p>
                   )}
+                  <TaskProgress total={p.taskCount} done={p.doneTaskCount} />
                 </div>
                 {/* Acciones */}
                 <div className="flex flex-col gap-2 pt-3 border-t border-line">
@@ -331,6 +356,7 @@ export default function ProjectsPage() {
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Título</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Cliente</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Estado</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Tareas</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Presupuesto</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Archivos</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide"></th>
@@ -354,6 +380,9 @@ export default function ProjectsPage() {
                             </span>
                           ) : null })()}
                         </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <TaskProgress total={p.taskCount} done={p.doneTaskCount} />
                       </td>
                       <td className="px-4 py-3">
                         {p.quotes?.length > 0
@@ -402,7 +431,7 @@ export default function ProjectsPage() {
                     </tr>
                   ))}
                   {!data?.data?.length && (
-                    <tr><td colSpan={6} className="px-4 py-6 text-center text-fg-muted">Sin proyectos</td></tr>
+                    <tr><td colSpan={7} className="px-4 py-6 text-center text-fg-muted">Sin proyectos</td></tr>
                   )}
                 </tbody>
               </table>
