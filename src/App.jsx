@@ -33,6 +33,7 @@ import CategoriesPage from './pages/finances/CategoriesPage'
 import TasksPage from './pages/tasks/TasksPage'
 import QuotePublicPage from './pages/public/QuotePublicPage'
 import StockDashboard from './pages/stock/StockDashboard'
+import ReportsPage from './pages/reports/ReportsPage'
 import ProductsPage from './pages/stock/ProductsPage'
 import ProductDetailPage from './pages/stock/ProductDetailPage'
 import ProvidersPage from './pages/stock/ProvidersPage'
@@ -104,6 +105,7 @@ export default function App() {
               <Route path="/members" element={<MembersPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/organization" element={<OrgSettingsPage />} />
+              <Route path="/reports" element={<ReportsPage />} />
             </Route>
 
             <Route path="/p/presupuesto/:id" element={<QuotePublicPage />} />

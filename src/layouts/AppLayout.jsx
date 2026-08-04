@@ -41,6 +41,7 @@ import {
   ChevronDownIcon,
   BuildingStorefrontIcon,
   BanknotesIcon,
+  ChartBarIcon,
 } from '@heroicons/react/24/outline'
 
 
@@ -57,6 +58,7 @@ const navItemsTop = [
 
 const navItemsBottom = [
   { to: '/finances',      label: 'Finanzas',        icon: BanknotesIcon },
+  { to: '/reports',       label: 'Reportes',        icon: ChartBarIcon },
   { to: '/members',       label: 'Equipo',          icon: UserGroupIcon },
 ]
 

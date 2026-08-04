@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getFinancesDashboard, seedFinancialCategories } from '../../api/finances'
 import { useToast } from '../../components/Toast'
+import { fmt } from '../../utils/fmt'
 import MovementModal from './MovementModal'
 import {
   BanknotesIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon,
@@ -11,7 +12,6 @@ import {
   ChevronDownIcon,
 } from '@heroicons/react/24/outline'
 
-const fmt = (n) => Number(n ?? 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
 const ACCOUNT_ICONS = {
   cash:    WalletIcon,
@@ -57,7 +57,7 @@ function StatCard({ icon: Icon, label, value, sub, iconBg, iconColor, borderColo
         <p className="text-xs font-medium text-fg-muted text-right leading-tight truncate">{label}</p>
       </div>
       <div className="min-w-0">
-        <p className={`text-2xl font-bold tracking-tight truncate ${valueColor}`}>${value}</p>
+        <p className={`text-base md:text-lg font-bold tracking-tight truncate ${valueColor}`} title={value}>{value}</p>
         {sub && <p className="text-xs text-fg-muted mt-0.5 truncate">{sub}</p>}
       </div>
     </div>
@@ -415,31 +415,6 @@ export default function FinancesDashboard() {
           </Link>
         )}
       </div>
-
-      {/* ── Gastos por categoría ── */}
-      {(data?.categoryBreakdown ?? []).length > 0 && (
-        <div className="flex flex-col gap-3">
-          <h2 className="text-sm font-semibold text-fg">Gastos por categoría (este mes)</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {data.categoryBreakdown.map((c, i) => {
-              const max = data.categoryBreakdown[0].total
-              const pct = Math.round((c.total / max) * 100)
-              return (
-                <div key={c.categoryId ?? i} className="px-4 py-3.5 bg-surface border border-line rounded-2xl">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-medium text-fg truncate">{c.name}</p>
-                    <p className="text-sm font-bold text-danger shrink-0 ml-2">${fmt(c.total)}</p>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-raised overflow-hidden">
-                    <div className="h-full rounded-full bg-danger/50 transition-all" style={{ width: `${pct}%` }} />
-                  </div>
-                  <p className="text-xs text-fg-muted mt-1.5">{pct}% del mayor gasto</p>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
 
       {/* Seed prompt */}
       {data?.categoryBreakdown?.length === 0 && (

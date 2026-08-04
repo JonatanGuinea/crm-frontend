@@ -9,6 +9,7 @@ import { getProfile } from '../api/profile'
 import { getOrganizations } from '../api/organizations'
 import { getFinancesDashboard } from '../api/finances'
 import { useAuth } from '../context/AuthContext'
+import { fmt } from '../utils/fmt'
 import {
   BanknotesIcon,
   FolderOpenIcon,
@@ -24,14 +25,6 @@ import {
 } from '@heroicons/react/24/outline'
 
 // ── helpers ───────────────────────────────────────────────────────────────────
-
-const CURRENCY_SYMBOL = { USD: 'US$', ARS: '$' }
-
-function fmt(n, currency) {
-  if (n == null) return '-'
-  const symbol = currency ? (CURRENCY_SYMBOL[currency] ?? currency + ' ') : '$'
-  return symbol + Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-}
 
 function greeting(name) {
   const h = new Date().getHours()
@@ -122,15 +115,15 @@ const ACTIVITY_CONFIG = {
 
 // ── sub-components ────────────────────────────────────────────────────────────
 
-function KpiCard({ icon: Icon, iconBg, iconColor, label, value, sub }) {
+function KpiCard({ icon: Icon, iconBg, iconColor, label, value, sub, valueColor = 'text-fg' }) {
   return (
-    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-3 md:p-5 flex items-start gap-2 md:gap-4">
-      <div className={`p-2 md:p-2.5 rounded-xl shrink-0 ${iconBg}`}>
+    <div className="bg-surface border border-line rounded-xl p-3 md:p-5 flex flex-col gap-2 md:gap-3">
+      <div className={`p-2 md:p-2.5 rounded-xl self-start ${iconBg}`}>
         <Icon className={`w-4 h-4 md:w-5 md:h-5 ${iconColor}`} />
       </div>
       <div className="min-w-0">
         <p className="text-xs text-fg-muted uppercase tracking-wide leading-tight">{label}</p>
-        <p className="text-base md:text-2xl font-bold text-fg mt-0.5 truncate">{value}</p>
+        <p className={`text-base md:text-lg font-bold mt-0.5 truncate ${valueColor}`} title={typeof value === 'string' ? value : undefined}>{value}</p>
         {sub != null && <p className="hidden md:block text-xs text-fg-muted mt-0.5">{sub}</p>}
       </div>
     </div>
@@ -142,7 +135,7 @@ function ProjectsPanel({ projects }) {
   const total = byStatus.reduce((acc, s) => acc + s.totalProjects, 0)
 
   return (
-    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-5">
+    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-5">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-fg">Proyectos por estado</h3>
         <Link to="/projects" className="flex items-center gap-1 text-xs text-brand hover:underline">
@@ -188,7 +181,7 @@ function TopClientsPanel({ clients, currency }) {
   const max = list[0]?.total ?? 1
 
   return (
-    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-4">
+    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-fg">Top clientes</h3>
         <Link to="/clients" className="flex items-center gap-1 text-xs text-brand hover:underline">
@@ -232,7 +225,7 @@ function ExpiringQuotesPanel({ quotes }) {
   const expiring = quotes?.expiringSoon ?? []
 
   return (
-    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-4">
+    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-fg">Presupuestos por vencer</h3>
         <Link to="/quotes" className="flex items-center gap-1 text-xs text-brand hover:underline">
@@ -281,7 +274,7 @@ function QuotesSummaryPanel({ quotes, currency }) {
   const pct = (v) => barTotal ? (v / barTotal) * 100 : 0
 
   return (
-    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-5">
+    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-5">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-fg">Resumen de presupuestos</h3>
         <Link to="/quotes" className="flex items-center gap-1 text-xs text-brand hover:underline">
@@ -414,7 +407,7 @@ function IncomeExpensesChart({ data, currency }) {
   )
 
   return (
-    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-4">
+    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h3 className="text-sm font-semibold text-fg">Ingresos y egresos — últimos 6 meses</h3>
         <div className="flex items-center gap-3">
@@ -482,7 +475,7 @@ function RecentMovementsPanel({ movements, currency }) {
   const list = movements ?? []
 
   return (
-    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-4">
+    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-fg">Últimos movimientos</h3>
         <Link to="/finances/movements" className="flex items-center gap-1 text-xs text-brand hover:underline">
@@ -531,7 +524,7 @@ function UpcomingProjectsPanel({ projects }) {
   const upcoming = projects?.upcomingProjects ?? []
 
   return (
-    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-4">
+    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-fg">Proyectos por vencer</h3>
         <Link to="/projects" className="flex items-center gap-1 text-xs text-brand hover:underline">
@@ -571,7 +564,7 @@ function ActivityFeed({ activity }) {
   const items = activity ?? []
 
   return (
-    <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-4">
+    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
       <h3 className="text-sm font-semibold text-fg">Actividad reciente</h3>
 
       {items.length === 0 ? (
@@ -705,6 +698,7 @@ export default function DashboardPage() {
           iconColor="text-brand"
           label="Saldo en caja"
           value={fmt(totalBalance, currency)}
+          valueColor="text-brand"
           sub={finData?.accounts?.length ? `${finData.accounts.length} cuenta${finData.accounts.length !== 1 ? 's' : ''}` : undefined}
         />
         <KpiCard
@@ -713,6 +707,7 @@ export default function DashboardPage() {
           iconColor="text-success"
           label="Ingresos del mes"
           value={fmt(incomeMonth, currency)}
+          valueColor="text-success"
           sub="movimientos confirmados"
         />
         <KpiCard
@@ -721,6 +716,7 @@ export default function DashboardPage() {
           iconColor="text-danger"
           label="Egresos del mes"
           value={fmt(expenseMonth, currency)}
+          valueColor="text-danger"
           sub="movimientos confirmados"
         />
       </div>
@@ -737,7 +733,7 @@ export default function DashboardPage() {
 
       {/* Recent quotes + Recent movements */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="bg-surface/60 backdrop-blur-xl border border-line rounded-xl p-6 flex flex-col gap-4">
+        <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-fg">Presupuestos recientes</h3>
             <Link to="/quotes" className="flex items-center gap-1 text-xs text-brand hover:underline">
