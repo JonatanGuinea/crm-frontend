@@ -8,7 +8,6 @@ import GlobalSearch from '../components/GlobalSearch'
 import OrgSwitcher from '../components/OrgSwitcher'
 import InvitationsBanner from '../components/InvitationsBanner'
 import DBStatusBanner from '../components/DBStatusBanner'
-import OrgSettingsModal from '../components/OrgSettingsModal'
 import { SetupOrgModal } from '../components/OrgModal'
 import { getProfile } from '../api/profile'
 import { getNotifications } from '../api/notifications'
@@ -37,7 +36,6 @@ import {
   ClipboardDocumentListIcon,
   UserCircleIcon,
   BuildingOffice2Icon,
-  Cog6ToothIcon,
   ArrowRightStartOnRectangleIcon,
   CubeIcon,
   ChevronDownIcon,
@@ -63,7 +61,7 @@ const navItemsBottom = [
 ]
 
 const stockSubItems = [
-  { to: '/stock',           label: 'Stock disponible', icon: CubeIcon,                  exact: true },
+  { to: '/stock',           label: 'Datos', icon: CubeIcon,                  exact: true },
   { to: '/stock/products',  label: 'Productos',        icon: ReceiptRefundIcon },
   { to: '/stock/providers', label: 'Proveedores',      icon: BuildingStorefrontIcon },
 ]
@@ -72,7 +70,6 @@ function ProfileDropdown({ profile, user }) {
   const { logout } = useAuth()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
-  const [showOrgModal, setShowOrgModal] = useState(false)
   const [menuPos, setMenuPos] = useState({ top: 0, right: 0 })
   const btnRef = useRef()
   const menuRef = useRef()
@@ -100,8 +97,7 @@ function ProfileDropdown({ profile, user }) {
 
   const items = [
     { label: 'Perfil',        icon: UserCircleIcon,      action: () => go('/profile') },
-    { label: 'Empresa',       icon: BuildingOffice2Icon, action: () => { setOpen(false); setShowOrgModal(true) } },
-    { label: 'Configuración', icon: Cog6ToothIcon,       action: () => go('/members') },
+    { label: 'Empresa',       icon: BuildingOffice2Icon, action: () => go('/organization') },
   ]
 
   return (
@@ -156,7 +152,6 @@ function ProfileDropdown({ profile, user }) {
         document.body
       )}
 
-      {showOrgModal && <OrgSettingsModal onClose={() => setShowOrgModal(false)} />}
     </div>
   )
 }

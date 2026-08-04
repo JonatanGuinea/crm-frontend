@@ -1,7 +1,7 @@
 import api from './client'
 
 // Dashboard
-export const getFinancesDashboard = () => api.get('/finances/dashboard')
+export const getFinancesDashboard = (params) => api.get('/finances/dashboard', { params })
 
 // Categorías financieras
 export const getFinancialCategories = (params) => api.get('/financial-categories', { params })
@@ -14,7 +14,8 @@ export const seedFinancialCategories = () => api.post('/financial-categories/see
 export const getCashAccounts = () => api.get('/cash-accounts')
 export const createCashAccount = (data) => api.post('/cash-accounts', data)
 export const updateCashAccount = (id, data) => api.patch(`/cash-accounts/${id}`, data)
-export const deleteCashAccount = (id) => api.delete(`/cash-accounts/${id}`)
+export const deleteCashAccount    = (id) => api.delete(`/cash-accounts/${id}`)
+export const setDefaultCashAccount = (id) => api.patch(`/cash-accounts/${id}/set-default`)
 
 // Movimientos
 export const getCashMovements = (params) => api.get('/cash-movements', { params })

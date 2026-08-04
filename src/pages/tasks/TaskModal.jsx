@@ -322,10 +322,11 @@ export default function TaskModal({ task, defaultStatus = 'todo', defaultProject
                 {/* Agregar ítem */}
                 {availableProducts.length > 0 && (
                   <div className="flex items-center gap-2">
+                    <div className="flex-1 min-w-0">
                     <select
                       value={selectedProductId}
                       onChange={e => setSelectedProductId(e.target.value)}
-                      className="flex-1 px-3 py-2 rounded-lg bg-raised border border-line text-sm text-fg focus:outline-none focus:border-brand transition-colors"
+                      className="w-full px-3 py-2 rounded-lg bg-raised border border-line text-sm text-fg focus:outline-none focus:border-brand transition-colors"
                     >
                       <option value="">Seleccionar producto…</option>
                       {availableProducts.map(p => {
@@ -335,17 +336,18 @@ export default function TaskModal({ task, defaultStatus = 'todo', defaultProject
                         if (Number(p.stock) <= 0) {
                           stockLabel = 'Sin stock'
                         } else if (committed > 0) {
-                          stockLabel = `Disponible: ${avail} ${p.unit} (comprometido: ${committed})`
+                          stockLabel = `Disp: ${avail} ${p.unit}`
                         } else {
                           stockLabel = `${Number(p.stock)} ${p.unit}`
                         }
                         return (
                           <option key={p.id} value={p.id}>
-                            {p.name} ({p.sku}) — {stockLabel}
+                            {p.name} — {stockLabel}
                           </option>
                         )
                       })}
                     </select>
+                    </div>
                     <input
                       type="number"
                       min="0.01"

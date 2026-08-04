@@ -98,7 +98,8 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
   function handleCreateAnticipo(e) {
     e.preventDefault()
     setAnticoError('')
-    if (!effectiveDp || effectiveDp <= 0) return setAnticoError('Ingresá el monto del anticipo')
+    if (dpMode === 'percent' && (!total || total <= 0)) return setAnticoError('El presupuesto no tiene monto total. Agregá ítems con precio antes de usar el modo porcentual.')
+    if (!effectiveDp || effectiveDp <= 0) return setAnticoError(dpMode === 'percent' ? 'El porcentaje ingresado da monto $0. Revisá el total del presupuesto.' : 'Ingresá el monto del anticipo')
     if (!dpDate)                           return setAnticoError('Ingresá la fecha del anticipo')
     if (effectiveDp >= total)              return setAnticoError('El anticipo no puede ser igual o mayor al total')
     if (remainderType === 'second') {

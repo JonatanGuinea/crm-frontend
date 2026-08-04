@@ -133,6 +133,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
       setError('Seleccioná la fecha del primer vencimiento')
       return
     }
+    if (!form.clientId) { setError('Seleccioná un cliente'); return }
     setError('')
     setLoading(true)
     try {

@@ -1,15 +1,14 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { getFinancesDashboard, seedFinancialCategories, getCashAccounts } from '../../api/finances'
+import { getFinancesDashboard, seedFinancialCategories } from '../../api/finances'
 import { useToast } from '../../components/Toast'
-import { useAuth } from '../../context/AuthContext'
 import MovementModal from './MovementModal'
-import TransferModal from './TransferModal'
 import {
   BanknotesIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon,
-  ArrowsRightLeftIcon, ChevronRightIcon, BuildingLibraryIcon,
-  CreditCardIcon, DevicePhoneMobileIcon, WalletIcon,
+  ChevronLeftIcon, ChevronRightIcon, BuildingLibraryIcon,
+  ClockIcon, DevicePhoneMobileIcon, WalletIcon,
+  ChevronDownIcon,
 } from '@heroicons/react/24/outline'
 
 const fmt = (n) => Number(n ?? 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -22,209 +21,402 @@ const ACCOUNT_ICONS = {
 
 const TYPE_LABELS = {
   income: 'Ingreso', expense: 'Egreso',
-  transfer_out: 'Transferencia salida', transfer_in: 'Transferencia entrada',
+  transfer_out: 'Transf. salida', transfer_in: 'Transf. entrada',
   adjustment: 'Ajuste',
 }
 const TYPE_COLORS = {
-  income: 'text-success', expense: 'text-danger',
-  transfer_out: 'text-warning', transfer_in: 'text-info',
-  adjustment: 'text-fg-muted',
+  income:       'text-success bg-success-subtle/20',
+  expense:      'text-danger bg-danger-subtle/20',
+  transfer_out: 'text-warning bg-warning-subtle/20',
+  transfer_in:  'text-info bg-info-subtle/20',
+  adjustment:   'text-fg-muted bg-raised',
+}
+const STATUS_COLORS = { confirmed: 'text-success', pending: 'text-warning', annulled: 'text-fg-muted' }
+const STATUS_LABELS = { confirmed: 'Confirmado', pending: 'Pendiente', annulled: 'Anulado' }
+
+const amountColor = (m) => {
+  if (m.status === 'pending')  return 'text-warning'
+  if (m.status === 'annulled') return 'text-fg-muted'
+  return m.type === 'income' || m.type === 'transfer_in' ? 'text-success' : 'text-danger'
 }
 
-function StatCard({ icon: Icon, label, value, sub, color = 'text-fg', bg = 'bg-surface', border = 'border-line' }) {
+const amountSign = (m) =>
+  m.type === 'income' || m.type === 'transfer_in' ? '+' : '−'
+
+// ── StatCard ──────────────────────────────────────────────────────────────────
+function StatCard({ icon: Icon, label, value, sub, iconBg, iconColor, borderColor, valueColor = 'text-fg' }) {
   return (
-    <div className={`rounded-xl border p-5 flex flex-col gap-3 ${bg} ${border}`}>
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-fg-muted">{label}</p>
-        <Icon className={`w-4 h-4 ${color} opacity-70`} />
+    <div
+      className="rounded-2xl border border-line bg-surface p-4 flex flex-col gap-4 min-w-0 overflow-hidden"
+      style={borderColor ? { borderColor } : undefined}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
+          <Icon className={`w-4.5 h-4.5 ${iconColor}`} />
+        </div>
+        <p className="text-xs font-medium text-fg-muted text-right leading-tight truncate">{label}</p>
       </div>
-      <div>
-        <p className={`text-2xl sm:text-3xl font-bold ${color}`}>${value}</p>
-        {sub && <p className="text-xs text-fg-muted mt-1">{sub}</p>}
+      <div className="min-w-0">
+        <p className={`text-2xl font-bold tracking-tight truncate ${valueColor}`}>${value}</p>
+        {sub && <p className="text-xs text-fg-muted mt-0.5 truncate">{sub}</p>}
       </div>
     </div>
   )
 }
 
+
+// ── AccountSelector ───────────────────────────────────────────────────────────
+function AccountSelector({ accounts, value, onChange }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    function handleOutside(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleOutside)
+    return () => document.removeEventListener('mousedown', handleOutside)
+  }, [])
+
+  if (accounts.length <= 1) return null
+
+  const selected = accounts.find(a => a.id === value) ?? null
+  const SelectedIcon = selected ? (ACCOUNT_ICONS[selected.type] ?? WalletIcon) : WalletIcon
+
+  return (
+    <div ref={ref} className="relative self-start sm:self-auto">
+      {/* Trigger */}
+      <button
+        type="button"
+        onClick={() => setOpen(p => !p)}
+        className={`flex items-center gap-2.5 pl-3 pr-3 py-2 rounded-xl border text-sm font-medium transition-all duration-200 ${
+          open
+            ? 'border-brand/40 bg-surface/80 backdrop-blur-xl shadow-sm text-fg ring-2 ring-brand/15'
+            : 'border-line/60 bg-surface/50 backdrop-blur-xl text-fg hover:border-line hover:bg-surface/80 hover:shadow-sm'
+        }`}
+      >
+        <div className={`w-15 h-6 rounded-md flex items-center justify-center shrink-0 transition-colors ${
+          selected ? 'bg-brand-subtle text-brand' : 'bg-raised text-fg-muted'
+        }`}>
+          <SelectedIcon className="w-3 h-3" />
+        </div>
+        <span className="max-w-[130px] truncate">{selected?.name ?? 'Todas las cuentas'}</span>
+        <ChevronDownIcon className={`w-3.5 h-3.5 text-fg-muted shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      {/* Dropdown panel */}
+      {open && (
+        <div className="absolute top-full left-0 mt-2 w-64 rounded-2xl border border-line/50 bg-surface/90 backdrop-blur-2xl shadow-2xl z-50 overflow-hidden">
+          {/* All accounts */}
+          <button
+            type="button"
+            onClick={() => { onChange(''); setOpen(false) }}
+            className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
+              !value ? 'bg-brand/8 text-brand' : 'text-fg hover:bg-raised/60'
+            }`}
+          >
+            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+              !value ? 'bg-brand-subtle' : 'bg-raised'
+            }`}>
+              <WalletIcon className={`w-3.5 h-3.5 ${!value ? 'text-brand' : 'text-fg-muted'}`} />
+            </div>
+            <span className="font-medium flex-1 text-left">Todas las cuentas</span>
+            {!value && <div className="w-1.5 h-1.5 rounded-full bg-brand shrink-0" />}
+          </button>
+
+          <div className="h-px bg-line/40 mx-3" />
+
+          {accounts.map(acc => {
+            const AccIcon = ACCOUNT_ICONS[acc.type] ?? WalletIcon
+            const isSel   = acc.id === value
+            const bal     = Number(acc.currentBalance)
+            return (
+              <button
+                key={acc.id}
+                type="button"
+                onClick={() => { onChange(acc.id); setOpen(false) }}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
+                  isSel ? 'bg-brand/8 text-brand' : 'text-fg hover:bg-raised/60'
+                }`}
+              >
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                  isSel ? 'bg-brand-subtle' : 'bg-raised'
+                }`}>
+                  <AccIcon className={`w-3.5 h-3.5 ${isSel ? 'text-brand' : 'text-fg-muted'}`} />
+                </div>
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="font-medium truncate leading-tight">{acc.name}</p>
+                  <p className={`text-xs mt-0.5 leading-tight ${isSel ? 'text-brand/70' : 'text-fg-muted'}`}>
+                    ${Number(bal).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                  </p>
+                </div>
+                {isSel && <div className="w-1.5 h-1.5 rounded-full bg-brand shrink-0" />}
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 export default function FinancesDashboard() {
   const toast = useToast()
-  const qc = useQueryClient()
-  const { user } = useAuth()
-  const [movementModal, setMovementModal] = useState(null)
-  const [transferModal, setTransferModal] = useState(false)
+  const qc    = useQueryClient()
+  const [selectedAccountId,  setSelectedAccountId]  = useState('')
+  const [movementModal,      setMovementModal]      = useState(null)
+  const [defaultApplied,     setDefaultApplied]     = useState(false)
+  const _now = new Date()
+  const [selectedMonth, setSelectedMonth] = useState({ year: _now.getFullYear(), month: _now.getMonth() + 1 })
+
+  function prevMonth() {
+    setSelectedMonth(({ year, month }) =>
+      month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 }
+    )
+  }
+  function nextMonth() {
+    setSelectedMonth(({ year, month }) =>
+      month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 }
+    )
+  }
+
+  const monthLabel = new Date(selectedMonth.year, selectedMonth.month - 1, 1)
+    .toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
 
   const { data, isLoading } = useQuery({
-    queryKey: ['finances-dashboard'],
-    queryFn: () => getFinancesDashboard().then(r => r.data.data),
+    queryKey: ['finances-dashboard', selectedAccountId, selectedMonth],
+    queryFn:  () => getFinancesDashboard({
+      ...(selectedAccountId ? { accountId: selectedAccountId } : {}),
+      month: selectedMonth.month,
+      year:  selectedMonth.year,
+    }).then(r => r.data.data),
     refetchInterval: 60_000,
   })
 
-  const { data: accounts = [] } = useQuery({
-    queryKey: ['cash-accounts'],
-    queryFn: () => getCashAccounts().then(r => r.data.data),
-  })
+  // Auto-selecciona la cuenta predeterminada al primer load
+  useEffect(() => {
+    if (!defaultApplied && data?.defaultCashAccountId) {
+      setSelectedAccountId(data.defaultCashAccountId)
+      setDefaultApplied(true)
+    }
+  }, [data?.defaultCashAccountId, defaultApplied])
+
+  function invalidate() {
+    qc.invalidateQueries(['finances-dashboard'])
+    qc.invalidateQueries(['cash-movements'])
+  }
 
   async function handleSeed() {
     try {
       await seedFinancialCategories()
       toast('Categorías inicializadas', 'success')
+      qc.invalidateQueries(['finances-dashboard'])
     } catch (err) {
       toast(err.response?.data?.error || err.message, 'error')
     }
   }
 
-  if (isLoading) return <div className="flex items-center justify-center py-20 text-fg-muted text-sm">Cargando…</div>
+  if (isLoading) return (
+    <div className="flex items-center justify-center py-24 text-fg-muted text-sm">Cargando…</div>
+  )
 
-  const noAccounts = accounts.length === 0
+  const allAccounts = data?.allAccounts ?? []
+  const netMonth    = Number(data?.netMonth ?? 0)
+  const netPositive = netMonth >= 0
 
   return (
     <div className="p-4 md:p-8 flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-fg">Finanzas</h1>
-          <p className="text-sm text-fg-muted mt-0.5">Resumen financiero del mes</p>
+
+      {/* ── Header ── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        {/* Título + navegador de mes */}
+        <div className="shrink-0">
+          <h1 className="text-xl font-semibold text-fg">Finanzas</h1>
+          <div className="flex items-center gap-1 mt-0.5">
+            <button
+              onClick={prevMonth}
+              className="text-fg-muted hover:text-fg transition-colors p-0.5 rounded"
+            >
+              <ChevronLeftIcon className="w-3.5 h-3.5" />
+            </button>
+            <span className="text-xs font-medium text-fg-muted capitalize">{monthLabel}</span>
+            <button
+              onClick={nextMonth}
+              className="text-fg-muted hover:text-fg transition-colors p-0.5 rounded"
+            >
+              <ChevronRightIcon className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          {noAccounts && (
-            <Link to="/finances/accounts" className="px-4 py-2 rounded-lg border border-warning text-warning text-sm font-medium hover:bg-warning-subtle transition-colors">
-              Crear primera cuenta
-            </Link>
-          )}
-          <button
-            onClick={() => setMovementModal('expense')}
-            disabled={noAccounts}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-danger text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40"
-          >
-            <ArrowTrendingDownIcon className="w-4 h-4" />
-            Egreso
-          </button>
-          <button
-            onClick={() => setMovementModal('income')}
-            disabled={noAccounts}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-success text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40"
-          >
-            <ArrowTrendingUpIcon className="w-4 h-4" />
-            Ingreso
-          </button>
-          <button
-            onClick={() => setTransferModal(true)}
-            disabled={accounts.length < 2}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-line bg-surface text-sm font-medium text-fg-soft hover:bg-raised hover:text-fg transition-colors disabled:opacity-40"
-          >
-            <ArrowsRightLeftIcon className="w-4 h-4" />
-            Transferir
-          </button>
-        </div>
+
+        {/* Selector de cuenta */}
+        <AccountSelector
+          accounts={allAccounts}
+          value={selectedAccountId}
+          onChange={setSelectedAccountId}
+        />
+
+        <Link
+          to="/finances/accounts"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-line bg-surface text-sm font-medium text-fg-muted hover:bg-raised hover:text-fg transition-colors shrink-0"
+        >
+          <WalletIcon className="w-4 h-4" /> Cuentas
+        </Link>
       </div>
 
-      {/* Stats principales */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {/* ── Stats ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         <StatCard
           icon={BanknotesIcon}
-          label="Saldo total disponible"
+          label={selectedAccountId ? 'Saldo de la cuenta' : 'Saldo disponible'}
+          sub={selectedAccountId ? data?.accounts?.[0]?.name : 'Cuentas activas'}
           value={fmt(data?.totalBalance)}
-          sub="Suma de cuentas activas"
-          color={Number(data?.totalBalance) >= 0 ? 'text-fg' : 'text-danger'}
+          iconBg="bg-brand-subtle"
+          iconColor="text-brand"
+          valueColor={Number(data?.totalBalance) >= 0 ? 'text-fg' : 'text-danger'}
         />
         <StatCard
           icon={ArrowTrendingUpIcon}
           label="Ingresos del mes"
           value={fmt(data?.incomeMonth)}
-          color="text-success"
-          bg="bg-success-subtle/10"
-          border="border-success/20"
+          iconBg="bg-success-subtle/30"
+          iconColor="text-success"
+          borderColor="var(--brand-green)"
+          valueColor="text-success"
         />
         <StatCard
           icon={ArrowTrendingDownIcon}
           label="Egresos del mes"
           value={fmt(data?.expenseMonth)}
-          color="text-danger"
-          bg="bg-danger-subtle/10"
-          border="border-danger/20"
+          iconBg="bg-danger-subtle/30"
+          iconColor="text-danger"
+          borderColor="var(--brand-red)"
+          valueColor="text-danger"
+        />
+        <StatCard
+          icon={ClockIcon}
+          label="A cobrar"
+          sub="Ingresos pendientes"
+          value={fmt(data?.pendingIncome)}
+          iconBg={Number(data?.pendingIncome) > 0 ? 'bg-warning/10' : 'bg-raised'}
+          iconColor={Number(data?.pendingIncome) > 0 ? 'text-warning' : 'text-fg-muted'}
+          borderColor={Number(data?.pendingIncome) > 0 ? 'var(--brand-amber)' : undefined}
+          valueColor={Number(data?.pendingIncome) > 0 ? 'text-warning' : 'text-fg-muted'}
+        />
+        <StatCard
+          icon={ClockIcon}
+          label="A pagar"
+          sub="Egresos pendientes"
+          value={fmt(data?.pendingExpense)}
+          iconBg={Number(data?.pendingExpense) > 0 ? 'bg-warning/10' : 'bg-raised'}
+          iconColor={Number(data?.pendingExpense) > 0 ? 'text-warning' : 'text-fg-muted'}
+          borderColor={Number(data?.pendingExpense) > 0 ? 'var(--brand-amber)' : undefined}
+          valueColor={Number(data?.pendingExpense) > 0 ? 'text-warning' : 'text-fg-muted'}
         />
       </div>
 
-      {/* Resultado del mes */}
-      {data?.netMonth !== undefined && (
-        <div className={`rounded-xl border px-5 py-4 flex items-center justify-between ${Number(data.netMonth) >= 0 ? 'bg-success-subtle/10 border-success/20' : 'bg-danger-subtle/10 border-danger/20'}`}>
-          <p className="text-sm font-medium text-fg-muted">Resultado neto del mes</p>
-          <p className={`text-xl font-bold ${Number(data.netMonth) >= 0 ? 'text-success' : 'text-danger'}`}>
-            {Number(data.netMonth) >= 0 ? '+' : ''}${fmt(data.netMonth)}
-          </p>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Saldo por cuenta */}
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-fg">Saldo por cuenta</h2>
-            <Link to="/finances/accounts" className="text-xs text-fg-muted hover:text-fg flex items-center gap-0.5 transition-colors">
-              Gestionar <ChevronRightIcon className="w-3 h-3" />
-            </Link>
+      {/* ── Resultado neto ── */}
+      <div className={`rounded-2xl border px-5 py-4 flex items-center justify-between gap-4 ${netPositive ? 'border-success/25 bg-success/5' : 'border-danger/25 bg-danger/5'}`}>
+        <div className="flex items-center gap-3">
+          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${netPositive ? 'bg-success/15' : 'bg-danger/15'}`}>
+            {netPositive
+              ? <ArrowTrendingUpIcon className="w-4 h-4 text-success" />
+              : <ArrowTrendingDownIcon className="w-4 h-4 text-danger" />
+            }
           </div>
-          {(data?.accounts ?? []).length === 0 ? (
-            <div className="py-8 text-center border border-dashed border-line rounded-xl text-sm text-fg-muted">
-              Sin cuentas creadas aún.{' '}
-              <Link to="/finances/accounts" className="text-brand hover:underline">Crear primera cuenta</Link>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {(data?.accounts ?? []).map(acc => {
-                const Icon = ACCOUNT_ICONS[acc.type] ?? WalletIcon
-                const bal  = Number(acc.currentBalance)
-                return (
-                  <div key={acc.id} className="flex items-center gap-3 px-4 py-3 bg-surface border border-line rounded-xl">
-                    <div className="w-8 h-8 rounded-full bg-brand-subtle flex items-center justify-center shrink-0">
-                      <Icon className="w-4 h-4 text-brand" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-fg">{acc.name}</p>
-                      <p className="text-xs text-fg-muted capitalize">{acc.type} · {acc.currency}</p>
-                    </div>
-                    <p className={`text-sm font-bold shrink-0 ${bal >= 0 ? 'text-fg' : 'text-danger'}`}>
-                      ${fmt(bal)}
-                    </p>
-                  </div>
-                )
-              })}
-            </div>
-          )}
+          <p className="text-sm font-medium text-fg-muted">Resultado neto del mes</p>
         </div>
+        <p className={`text-xl font-bold shrink-0 ${netPositive ? 'text-success' : 'text-danger'}`}>
+          {netPositive ? '+' : ''}${fmt(netMonth)}
+        </p>
+      </div>
 
-        {/* Últimos movimientos */}
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-fg">Últimos movimientos</h2>
+      {/* ── Movimientos recientes ── */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold text-fg shrink-0">Últimos movimientos</h2>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setMovementModal('expense')}
+              disabled={allAccounts.length === 0}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-danger/10 text-danger border border-danger/20 text-xs font-medium hover:bg-danger/20 transition-colors disabled:opacity-40"
+            >
+              <ArrowTrendingDownIcon className="w-10 h-7" /> Egreso
+            </button>
+            <button
+              onClick={() => setMovementModal('income')}
+              disabled={allAccounts.length === 0}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success/10 text-success border border-success/20 text-xs font-medium hover:bg-success/20 transition-colors disabled:opacity-40"
+            >
+              <ArrowTrendingUpIcon className="w-10 h-7" /> Ingreso
+            </button>
             <Link to="/finances/movements" className="text-xs text-fg-muted hover:text-fg flex items-center gap-0.5 transition-colors">
               Ver todos <ChevronRightIcon className="w-3 h-3" />
             </Link>
           </div>
-          {(data?.recentMovements ?? []).length === 0 ? (
-            <p className="py-8 text-center border border-dashed border-line rounded-xl text-sm text-fg-muted">Sin movimientos aún.</p>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {(data?.recentMovements ?? []).map(m => (
-                <div key={m.id} className="flex items-center gap-3 px-4 py-3 bg-surface border border-line rounded-xl">
-                  <div className={`w-2 h-2 rounded-full shrink-0 ${m.type === 'income' || m.type === 'transfer_in' ? 'bg-success' : 'bg-danger'}`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-fg truncate">{m.description || TYPE_LABELS[m.type]}</p>
-                    <p className="text-xs text-fg-muted">
-                      {m.account?.name} · {new Date(m.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
-                    </p>
-                  </div>
-                  <p className={`text-sm font-semibold shrink-0 ${TYPE_COLORS[m.type]}`}>
-                    {m.type === 'income' || m.type === 'transfer_in' ? '+' : '−'}${fmt(m.amount)}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
+        {(data?.recentMovements ?? []).length === 0 ? (
+          <div className="flex flex-col items-center gap-3 py-10 border border-dashed border-line rounded-2xl text-center">
+            <BanknotesIcon className="w-8 h-8 text-fg-muted/30" />
+            <p className="text-sm text-fg-muted">Sin movimientos aún.</p>
+          </div>
+        ) : (
+          <div className="bg-surface/60 backdrop-blur-xl rounded-2xl border border-line overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-raised border-b border-line">
+                  <tr>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Fecha</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Tipo</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Descripción</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Cuenta</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Categoría</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Estado</th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Monto</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {(data?.recentMovements ?? []).map(m => (
+                    <tr key={m.id} className={`hover:bg-raised/50 transition-colors ${m.status === 'annulled' ? 'opacity-50' : ''}`}>
+                      <td className="px-4 py-3 text-fg-muted whitespace-nowrap text-xs">
+                        {new Date(m.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' })}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${TYPE_COLORS[m.type]}`}>
+                          {TYPE_LABELS[m.type]}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 max-w-[200px]">
+                        <p className="text-sm text-fg truncate">{m.description || '—'}</p>
+                        {m.reference && <p className="text-xs text-fg-muted truncate">{m.reference}</p>}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-fg-muted">{m.account?.name ?? '—'}</td>
+                      <td className="px-4 py-3 text-sm text-fg-muted">{m.category?.name ?? '—'}</td>
+                      <td className="px-4 py-3">
+                        <span className={`text-xs font-medium ${STATUS_COLORS[m.status]}`}>{STATUS_LABELS[m.status]}</span>
+                      </td>
+                      <td className={`px-4 py-3 font-semibold text-right whitespace-nowrap text-sm ${amountColor(m)}`}>
+                        {amountSign(m)}${fmt(m.amount)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+        {(data?.recentMovements ?? []).length > 0 && (
+          <Link
+            to="/finances/movements"
+            className="self-center text-xs text-fg-muted hover:text-fg flex items-center gap-1 transition-colors py-1"
+          >
+            Ver más <ChevronRightIcon className="w-3 h-3" />
+          </Link>
+        )}
       </div>
 
-      {/* Gastos por categoría */}
+      {/* ── Gastos por categoría ── */}
       {(data?.categoryBreakdown ?? []).length > 0 && (
         <div className="flex flex-col gap-3">
           <h2 className="text-sm font-semibold text-fg">Gastos por categoría (este mes)</h2>
@@ -233,16 +425,15 @@ export default function FinancesDashboard() {
               const max = data.categoryBreakdown[0].total
               const pct = Math.round((c.total / max) * 100)
               return (
-                <div key={c.categoryId ?? i} className="flex items-center gap-3 px-4 py-3 bg-surface border border-line rounded-xl">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="text-xs font-medium text-fg truncate">{c.name}</p>
-                      <p className="text-xs font-semibold text-danger shrink-0 ml-2">${fmt(c.total)}</p>
-                    </div>
-                    <div className="h-1.5 rounded-full bg-raised overflow-hidden">
-                      <div className="h-full rounded-full bg-danger/60" style={{ width: `${pct}%` }} />
-                    </div>
+                <div key={c.categoryId ?? i} className="px-4 py-3.5 bg-surface border border-line rounded-2xl">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-medium text-fg truncate">{c.name}</p>
+                    <p className="text-sm font-bold text-danger shrink-0 ml-2">${fmt(c.total)}</p>
                   </div>
+                  <div className="h-1.5 rounded-full bg-raised overflow-hidden">
+                    <div className="h-full rounded-full bg-danger/50 transition-all" style={{ width: `${pct}%` }} />
+                  </div>
+                  <p className="text-xs text-fg-muted mt-1.5">{pct}% del mayor gasto</p>
                 </div>
               )
             })}
@@ -250,10 +441,10 @@ export default function FinancesDashboard() {
         </div>
       )}
 
-      {/* Seed prompt si no hay categorías */}
+      {/* Seed prompt */}
       {data?.categoryBreakdown?.length === 0 && (
-        <div className="flex flex-col items-center gap-3 py-8 border border-dashed border-line rounded-xl">
-          <p className="text-sm text-fg-muted">No hay categorías financieras configuradas.</p>
+        <div className="flex flex-col items-center gap-3 py-8 border border-dashed border-line rounded-2xl">
+          <p className="text-sm text-fg-muted">Sin categorías financieras configuradas.</p>
           <button onClick={handleSeed} className="text-sm text-brand hover:underline">
             Inicializar categorías por defecto
           </button>
@@ -263,16 +454,9 @@ export default function FinancesDashboard() {
       {movementModal && (
         <MovementModal
           defaultType={movementModal}
-          accounts={accounts}
+          accounts={allAccounts}
           onClose={() => setMovementModal(null)}
-          onSaved={() => { setMovementModal(null); qc.invalidateQueries(['finances-dashboard']); qc.invalidateQueries(['cash-accounts']); qc.invalidateQueries(['cash-movements']) }}
-        />
-      )}
-      {transferModal && (
-        <TransferModal
-          accounts={accounts}
-          onClose={() => setTransferModal(false)}
-          onSaved={() => { setTransferModal(false); qc.invalidateQueries(['finances-dashboard']); qc.invalidateQueries(['cash-accounts']); qc.invalidateQueries(['cash-movements']) }}
+          onSaved={() => { setMovementModal(null); invalidate() }}
         />
       )}
     </div>

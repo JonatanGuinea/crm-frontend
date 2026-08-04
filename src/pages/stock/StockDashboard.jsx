@@ -5,7 +5,7 @@ import { getStockDashboard } from '../../api/stock'
 import StockMovementModal from './StockMovementModal'
 import {
   CubeIcon, ExclamationTriangleIcon, XCircleIcon,
-  ChevronRightIcon, ArrowDownTrayIcon, ArrowUpTrayIcon,
+  ArrowDownTrayIcon, ArrowUpTrayIcon,
 } from '@heroicons/react/24/outline'
 
 const MOVEMENT_LABELS = {
@@ -75,13 +75,6 @@ export default function StockDashboard() {
             <ArrowUpTrayIcon className="w-4 h-4" />
             Egreso
           </button>
-          <Link
-            to="/stock/products"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-line bg-surface text-sm font-medium text-fg-soft hover:bg-raised hover:text-fg transition-colors"
-          >
-            <CubeIcon className="w-4 h-4" />
-            Productos
-          </Link>
         </div>
       </div>
 
@@ -114,64 +107,75 @@ export default function StockDashboard() {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Últimos movimientos */}
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-fg">Últimos movimientos</h2>
-            <Link to="/stock/products" className="text-xs text-fg-muted hover:text-fg transition-colors flex items-center gap-0.5">
-              Ver todos <ChevronRightIcon className="w-3 h-3" />
-            </Link>
-          </div>
-          <div className="flex flex-col gap-2">
-            {data.recentMovements.length === 0 ? (
-              <p className="text-sm text-fg-muted py-4 text-center border border-dashed border-line rounded-xl">Sin movimientos aún.</p>
-            ) : data.recentMovements.map(m => (
-              <div key={m.id} className="flex items-center gap-3 px-4 py-3 bg-surface border border-line rounded-xl hover:bg-raised/40 transition-colors">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${m.direction === 'IN' ? 'bg-success-subtle' : 'bg-danger-subtle'}`}>
-                  {m.direction === 'IN'
-                    ? <ArrowDownTrayIcon className="w-3.5 h-3.5 text-success" />
-                    : <ArrowUpTrayIcon className="w-3.5 h-3.5 text-danger" />
-                  }
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-fg truncate">{m.product?.name}</p>
-                  <p className="text-xs text-fg-muted">{MOVEMENT_LABELS[m.type] ?? m.type} · {fmtDateTime(m.createdAt)}</p>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className={`text-sm font-semibold ${m.direction === 'IN' ? 'text-success' : 'text-danger'}`}>
-                    {m.direction === 'IN' ? '+' : '−'}{Number(m.quantity).toLocaleString('es-AR')}
-                  </p>
-                  <p className="text-xs text-fg-muted">{m.product?.unit}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* Últimos movimientos */}
+      <div className="flex flex-col gap-3">
+        <h2 className="text-sm font-semibold text-fg">Últimos movimientos</h2>
 
-        {/* Top productos */}
-        <div className="flex flex-col gap-3">
-          <h2 className="text-sm font-semibold text-fg">Más movidos (30 días)</h2>
-          <div className="flex flex-col gap-2">
-            {data.topProducts.length === 0 ? (
-              <p className="text-sm text-fg-muted py-4 text-center border border-dashed border-line rounded-xl">Sin datos aún.</p>
-            ) : data.topProducts.map((p, i) => (
-              <Link key={p.id} to={`/stock/products/${p.id}`} className="flex items-center gap-3 px-4 py-3 bg-surface border border-line rounded-xl hover:bg-raised/40 transition-colors">
-                <span className="w-6 h-6 rounded-full bg-brand-subtle text-brand text-xs font-bold flex items-center justify-center shrink-0">
-                  {i + 1}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-fg truncate">{p.name}</p>
-                  <p className="text-xs text-fg-muted font-mono">{p.sku}</p>
+        {data.recentMovements.length === 0 ? (
+          <p className="text-sm text-fg-muted py-4 text-center border border-dashed border-line rounded-xl">Sin movimientos aún.</p>
+        ) : (
+          <>
+            {/* Desktop */}
+            <div className="hidden md:block overflow-hidden rounded-2xl border border-line">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-line bg-raised/60">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Tipo</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Producto</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Motivo</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Fecha</th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Cantidad</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.recentMovements.map((m, i) => (
+                    <tr key={m.id} className={`border-b border-line last:border-0 hover:bg-raised/40 transition-colors ${i % 2 === 0 ? '' : 'bg-raised/20'}`}>
+                      <td className="px-4 py-3">
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center ${m.direction === 'IN' ? 'bg-success-subtle' : 'bg-danger-subtle'}`}>
+                          {m.direction === 'IN'
+                            ? <ArrowDownTrayIcon className="w-3.5 h-3.5 text-success" />
+                            : <ArrowUpTrayIcon className="w-3.5 h-3.5 text-danger" />
+                          }
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 font-medium text-fg">{m.product?.name}</td>
+                      <td className="px-4 py-3 text-fg-muted">{MOVEMENT_LABELS[m.type] ?? m.type}</td>
+                      <td className="px-4 py-3 text-fg-muted text-xs">{fmtDateTime(m.createdAt)}</td>
+                      <td className={`px-4 py-3 text-right font-semibold ${m.direction === 'IN' ? 'text-success' : 'text-danger'}`}>
+                        {m.direction === 'IN' ? '+' : '−'}{Number(m.quantity).toLocaleString('es-AR')}
+                        <span className="text-xs text-fg-muted font-normal ml-1">{m.product?.unit}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile */}
+            <div className="flex flex-col gap-3 md:hidden">
+              {data.recentMovements.map(m => (
+                <div key={m.id} className="bg-surface border border-line rounded-xl p-4 flex items-center gap-3">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${m.direction === 'IN' ? 'bg-success-subtle' : 'bg-danger-subtle'}`}>
+                    {m.direction === 'IN'
+                      ? <ArrowDownTrayIcon className="w-3.5 h-3.5 text-success" />
+                      : <ArrowUpTrayIcon className="w-3.5 h-3.5 text-danger" />
+                    }
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-fg truncate">{m.product?.name}</p>
+                    <p className="text-xs text-fg-muted">{MOVEMENT_LABELS[m.type] ?? m.type} · {fmtDateTime(m.createdAt)}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className={`text-sm font-semibold ${m.direction === 'IN' ? 'text-success' : 'text-danger'}`}>
+                      {m.direction === 'IN' ? '+' : '−'}{Number(m.quantity).toLocaleString('es-AR')}
+                    </p>
+                    <p className="text-xs text-fg-muted">{m.product?.unit}</p>
+                  </div>
                 </div>
-                <div className="text-right shrink-0">
-                  <p className="text-sm font-semibold text-fg">{p.movementCount}</p>
-                  <p className="text-xs text-fg-muted">movimientos</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
       {modal && (
         <StockMovementModal mode={modal} onClose={() => setModal(null)} />

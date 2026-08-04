@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { getProducts, deleteProduct, getCategories } from '../../api/stock'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
@@ -34,10 +34,14 @@ export default function ProductsPage() {
   const toast   = useToast()
   const confirm = useConfirm()
 
+  const [searchParams] = useSearchParams()
+  const initialStock = searchParams.get('outOfStock') === 'true' ? 'out'
+    : searchParams.get('lowStock') === 'true' ? 'low' : ''
+
   const [search, setSearch]         = useState('')
   const [filterStatus, setFilter]   = useState('')
   const [filterCategory, setFilterCat] = useState('')
-  const [filterStock, setFilterStock]  = useState('')
+  const [filterStock, setFilterStock]  = useState(initialStock)
   const [modal, setModal]           = useState(null) // { type: 'product'|'in'|'out'|'adj', product? }
   const [showCategories, setShowCategories] = useState(false)
 

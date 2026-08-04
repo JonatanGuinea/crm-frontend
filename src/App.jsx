@@ -23,11 +23,13 @@ import NotificationsPage from './pages/notifications/NotificationsPage'
 import MembersPage from './pages/members/MembersPage'
 import AcceptInvitePage from './pages/auth/AcceptInvitePage'
 import ProfilePage from './pages/profile/ProfilePage'
+import OrgSettingsPage from './pages/org/OrgSettingsPage'
 import QuoteDetailPage from './pages/quotes/QuoteDetailPage'
 import ExpensesPage from './pages/expenses/ExpensesPage'
 import FinancesDashboard from './pages/finances/FinancesDashboard'
 import MovementsPage from './pages/finances/MovementsPage'
 import AccountsPage from './pages/finances/AccountsPage'
+import CategoriesPage from './pages/finances/CategoriesPage'
 import TasksPage from './pages/tasks/TasksPage'
 import QuotePublicPage from './pages/public/QuotePublicPage'
 import StockDashboard from './pages/stock/StockDashboard'
@@ -92,6 +94,7 @@ export default function App() {
               <Route path="/finances" element={<FinancesDashboard />} />
               <Route path="/finances/movements" element={<MovementsPage />} />
               <Route path="/finances/accounts" element={<AccountsPage />} />
+              <Route path="/finances/categories" element={<CategoriesPage />} />
               <Route path="/tasks" element={<TasksPage />} />
               <Route path="/stock" element={<StockDashboard />} />
               <Route path="/stock/products" element={<ProductsPage />} />
@@ -100,6 +103,7 @@ export default function App() {
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/members" element={<MembersPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/organization" element={<OrgSettingsPage />} />
             </Route>
 
             <Route path="/p/presupuesto/:id" element={<QuotePublicPage />} />

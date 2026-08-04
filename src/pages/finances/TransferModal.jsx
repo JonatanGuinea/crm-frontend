@@ -1,9 +1,13 @@
 import { useState } from 'react'
 import { createTransfer } from '../../api/finances'
 import { useToast } from '../../components/Toast'
+import DatePicker from '../../components/DatePicker'
 import { XMarkIcon, ArrowsRightLeftIcon } from '@heroicons/react/24/outline'
 
 const today = () => new Date().toISOString().slice(0, 10)
+
+const inputCls = 'w-full rounded-lg border border-line bg-raised text-fg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40'
+const labelCls = 'text-xs font-medium text-fg-muted'
 
 export default function TransferModal({ accounts, onClose, onSaved }) {
   const toast = useToast()
@@ -37,49 +41,43 @@ export default function TransferModal({ accounts, onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="w-full sm:max-w-md bg-surface rounded-t-2xl sm:rounded-2xl border border-line shadow-xl">
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-line">
+      <div className="w-full sm:max-w-md bg-surface rounded-t-2xl sm:rounded-2xl border border-line shadow-xl max-h-[92dvh] flex flex-col">
+
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-line shrink-0">
           <div className="flex items-center gap-2">
             <ArrowsRightLeftIcon className="w-5 h-5 text-fg-muted" />
             <h2 className="text-base font-semibold text-fg">Transferencia entre cuentas</h2>
           </div>
-          <button onClick={onClose} className="text-fg-muted hover:text-fg transition-colors">
+          <button onClick={onClose} className="text-fg-muted hover:text-fg transition-colors p-1">
             <XMarkIcon className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-5 py-4 flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-fg-muted">Desde</label>
-              <select
-                value={form.fromAccountId}
-                onChange={e => set('fromAccountId', e.target.value)}
-                className="w-full rounded-lg border border-line bg-raised text-fg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40"
-              >
-                {activeAccounts.map(a => (
-                  <option key={a.id} value={a.id}>{a.name}</option>
-                ))}
-              </select>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-fg-muted">Hacia</label>
-              <select
-                value={form.toAccountId}
-                onChange={e => set('toAccountId', e.target.value)}
-                className="w-full rounded-lg border border-line bg-raised text-fg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40"
-              >
-                {activeAccounts.map(a => (
-                  <option key={a.id} value={a.id}>{a.name}</option>
-                ))}
-              </select>
-            </div>
+        <form onSubmit={handleSubmit} className="px-5 py-4 flex flex-col gap-4 overflow-y-auto">
+
+          {/* Desde */}
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls}>Desde</label>
+            <select value={form.fromAccountId} onChange={e => set('fromAccountId', e.target.value)} className={inputCls}>
+              {activeAccounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+            </select>
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-fg-muted">Monto</label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-fg-muted">$</span>
+          {/* Hacia */}
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls}>Hacia</label>
+            <select value={form.toAccountId} onChange={e => set('toAccountId', e.target.value)} className={inputCls}>
+              {activeAccounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+            </select>
+          </div>
+
+          {/* Monto */}
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls}>Monto</label>
+            <div className="flex rounded-lg border border-line overflow-hidden focus-within:ring-2 focus-within:ring-brand/40">
+              <span className="flex items-center px-3 border-r border-line bg-raised text-sm font-semibold text-fg-muted shrink-0">
+                $
+              </span>
               <input
                 type="number"
                 min="0.01"
@@ -87,32 +85,32 @@ export default function TransferModal({ accounts, onClose, onSaved }) {
                 placeholder="0.00"
                 value={form.amount}
                 onChange={e => set('amount', e.target.value)}
-                className="w-full rounded-lg border border-line bg-raised text-fg text-sm pl-7 pr-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40"
+                className="flex-1 min-w-0 bg-raised text-fg text-sm px-3 py-2.5 focus:outline-none"
                 required
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-fg-muted">Fecha</label>
-              <input
-                type="date"
-                value={form.date}
-                onChange={e => set('date', e.target.value)}
-                className="w-full rounded-lg border border-line bg-raised text-fg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-fg-muted">Descripción (opcional)</label>
-              <input
-                type="text"
-                placeholder="Ej: Pase a banco"
-                value={form.description}
-                onChange={e => set('description', e.target.value)}
-                className="w-full rounded-lg border border-line bg-raised text-fg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40"
-              />
-            </div>
+          {/* Fecha */}
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls}>Fecha</label>
+            <DatePicker
+              value={form.date}
+              onChange={e => set('date', e.target.value)}
+              className={inputCls}
+            />
+          </div>
+
+          {/* Descripción */}
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls}>Descripción <span className="font-normal text-fg-muted/70">(opcional)</span></label>
+            <input
+              type="text"
+              placeholder="Ej: Pase a banco"
+              value={form.description}
+              onChange={e => set('description', e.target.value)}
+              className={inputCls}
+            />
           </div>
 
           <div className="flex gap-3 pt-1 pb-2">

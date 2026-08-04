@@ -105,7 +105,7 @@ export default function ProjectCalendarPage() {
   const projects = useMemo(() => {
     const all = data?.data || []
     if (statusFilter) return all.filter(p => p.status === statusFilter)
-    return all.filter(p => p.status !== 'cancelled')
+    return all.filter(p => p.status !== 'cancelled' && p.status !== 'finished')
   }, [data, statusFilter])
 
   const monthGroups = useMemo(() => {
@@ -140,7 +140,7 @@ export default function ProjectCalendarPage() {
             onChange={e => setStatusFilter(e.target.value)}
             className="px-3 py-2 border border-line-soft rounded-md text-sm bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-brand"
           >
-            <option value="">Todos (sin cancelados)</option>
+            <option value="">Solo activos</option>
             {Object.entries(STATUS_LABELS).map(([v, l]) => (
               <option key={v} value={v}>{l}</option>
             ))}
