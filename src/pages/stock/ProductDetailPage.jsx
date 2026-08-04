@@ -75,7 +75,7 @@ export default function ProductDetailPage() {
           <h1 className="text-2xl font-bold text-fg mt-0.5">{product.name}</h1>
           {product.description && <p className="text-sm text-fg-muted mt-1">{product.description}</p>}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button onClick={() => setModal('in')} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-success-subtle text-success text-sm font-medium hover:opacity-80 transition-opacity">
             <ArrowDownTrayIcon className="w-4 h-4" />
             Ingresar
@@ -141,45 +141,78 @@ export default function ProductDetailPage() {
             Sin movimientos registrados.
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-line">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-line bg-raised/60">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Fecha</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Tipo</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Cantidad</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Stock anterior</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Stock nuevo</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Referencia</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Usuario</th>
-                </tr>
-              </thead>
-              <tbody>
-                {movements.map((m, i) => (
-                  <tr key={m.id} className={`border-b border-line last:border-0 hover:bg-raised/40 transition-colors ${i % 2 === 0 ? '' : 'bg-raised/20'}`}>
-                    <td className="px-4 py-3 text-xs text-fg-muted whitespace-nowrap">{fmtDateTime(m.createdAt)}</td>
-                    <td className="px-4 py-3">
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                        m.direction === 'IN' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'
-                      }`}>
-                        {MOVEMENT_LABELS[m.type] ?? m.type}
-                      </span>
-                    </td>
-                    <td className={`px-4 py-3 text-right font-semibold ${m.direction === 'IN' ? 'text-success' : 'text-danger'}`}>
-                      {m.direction === 'IN' ? '+' : '−'}{Number(m.quantity).toLocaleString('es-AR')}
-                    </td>
-                    <td className="px-4 py-3 text-right text-fg-muted">{Number(m.previousStock).toLocaleString('es-AR')}</td>
-                    <td className="px-4 py-3 text-right font-medium text-fg">{Number(m.currentStock).toLocaleString('es-AR')}</td>
-                    <td className="px-4 py-3 text-xs text-fg-muted">
-                      <div>{m.reference ?? '—'}</div>
-                      {m.reason && <div className="text-fg-muted/70 mt-0.5">{m.reason}</div>}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-fg-muted">{m.createdBy?.name ?? '—'}</td>
+          <>
+            {/* Mobile cards */}
+            <div className="flex flex-col gap-2 md:hidden">
+              {movements.map(m => (
+                <div key={m.id} className="bg-surface border border-line rounded-xl p-4 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${m.direction === 'IN' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'}`}>
+                      {MOVEMENT_LABELS[m.type] ?? m.type}
+                    </span>
+                    <span className={`text-sm font-bold ${m.direction === 'IN' ? 'text-success' : 'text-danger'}`}>
+                      {m.direction === 'IN' ? '+' : '−'}{Number(m.quantity).toLocaleString('es-AR')} {product.unit}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-fg-muted">
+                    <span>{Number(m.previousStock).toLocaleString('es-AR')}</span>
+                    <span>→</span>
+                    <span className="font-medium text-fg">{Number(m.currentStock).toLocaleString('es-AR')} {product.unit}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-fg-muted">
+                    <span>{fmtDateTime(m.createdAt)}</span>
+                    {(m.reference || m.reason) && (
+                      <span className="truncate ml-2 text-right max-w-[55%]">{m.reference || m.reason}</span>
+                    )}
+                  </div>
+                  {m.createdBy?.name && (
+                    <p className="text-xs text-fg-muted/70">{m.createdBy.name}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-hidden rounded-2xl border border-line">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-line bg-raised/60">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Fecha</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Tipo</th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Cantidad</th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Stock anterior</th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Stock nuevo</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Referencia</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Usuario</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {movements.map((m, i) => (
+                    <tr key={m.id} className={`border-b border-line last:border-0 hover:bg-raised/40 transition-colors ${i % 2 === 0 ? '' : 'bg-raised/20'}`}>
+                      <td className="px-4 py-3 text-xs text-fg-muted whitespace-nowrap">{fmtDateTime(m.createdAt)}</td>
+                      <td className="px-4 py-3">
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                          m.direction === 'IN' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'
+                        }`}>
+                          {MOVEMENT_LABELS[m.type] ?? m.type}
+                        </span>
+                      </td>
+                      <td className={`px-4 py-3 text-right font-semibold ${m.direction === 'IN' ? 'text-success' : 'text-danger'}`}>
+                        {m.direction === 'IN' ? '+' : '−'}{Number(m.quantity).toLocaleString('es-AR')}
+                      </td>
+                      <td className="px-4 py-3 text-right text-fg-muted">{Number(m.previousStock).toLocaleString('es-AR')}</td>
+                      <td className="px-4 py-3 text-right font-medium text-fg">{Number(m.currentStock).toLocaleString('es-AR')}</td>
+                      <td className="px-4 py-3 text-xs text-fg-muted">
+                        <div>{m.reference ?? '—'}</div>
+                        {m.reason && <div className="text-fg-muted/70 mt-0.5">{m.reason}</div>}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-fg-muted">{m.createdBy?.name ?? '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
 
         {/* Paginación */}

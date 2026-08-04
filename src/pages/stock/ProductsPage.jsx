@@ -110,42 +110,43 @@ export default function ProductsPage() {
       </div>
 
       {/* Filtros */}
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
         <div className="relative">
           <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted pointer-events-none" />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Buscar por nombre o SKU…"
-            className="pl-9 pr-3 py-1.5 rounded-lg bg-raised border border-line text-sm text-fg focus:outline-none focus:border-brand transition-colors w-56"
+            className="pl-9 pr-3 py-1.5 rounded-lg bg-raised border border-line text-sm text-fg focus:outline-none focus:border-brand transition-colors w-full sm:w-56"
           />
         </div>
-
-        <select value={filterStatus} onChange={e => setFilter(e.target.value)} className="px-3 py-1.5 rounded-lg bg-raised border border-line text-sm text-fg-soft focus:outline-none focus:border-brand transition-colors">
-          <option value="">Todos los estados</option>
-          <option value="active">Activo</option>
-          <option value="inactive">Inactivo</option>
-          <option value="discontinued">Descontinuado</option>
-        </select>
-
-        {categories.length > 0 && (
-          <select value={filterCategory} onChange={e => setFilterCat(e.target.value)} className="px-3 py-1.5 rounded-lg bg-raised border border-line text-sm text-fg-soft focus:outline-none focus:border-brand transition-colors">
-            <option value="">Todas las categorías</option>
-            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
+          <select value={filterStatus} onChange={e => setFilter(e.target.value)} className="px-3 py-1.5 rounded-lg bg-raised border border-line text-sm text-fg-soft focus:outline-none focus:border-brand transition-colors">
+            <option value="">Estado</option>
+            <option value="active">Activo</option>
+            <option value="inactive">Inactivo</option>
+            <option value="discontinued">Descontinuado</option>
           </select>
-        )}
 
-        <select value={filterStock} onChange={e => setFilterStock(e.target.value)} className="px-3 py-1.5 rounded-lg bg-raised border border-line text-sm text-fg-soft focus:outline-none focus:border-brand transition-colors">
-          <option value="">Todo el stock</option>
-          <option value="out">Sin stock</option>
-          <option value="low">Stock bajo</option>
-        </select>
+          {categories.length > 0 && (
+            <select value={filterCategory} onChange={e => setFilterCat(e.target.value)} className="px-3 py-1.5 rounded-lg bg-raised border border-line text-sm text-fg-soft focus:outline-none focus:border-brand transition-colors">
+              <option value="">Categoría</option>
+              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          )}
 
-        {hasFilters && (
-          <button onClick={() => { setSearch(''); setFilter(''); setFilterCat(''); setFilterStock('') }} className="text-xs text-fg-muted hover:text-fg underline transition-colors">
-            Limpiar
-          </button>
-        )}
+          <select value={filterStock} onChange={e => setFilterStock(e.target.value)} className="px-3 py-1.5 rounded-lg bg-raised border border-line text-sm text-fg-soft focus:outline-none focus:border-brand transition-colors">
+            <option value="">Stock</option>
+            <option value="out">Sin stock</option>
+            <option value="low">Stock bajo</option>
+          </select>
+
+          {hasFilters && (
+            <button onClick={() => { setSearch(''); setFilter(''); setFilterCat(''); setFilterStock('') }} className="text-xs text-fg-muted hover:text-fg underline transition-colors">
+              Limpiar
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Tabla */}

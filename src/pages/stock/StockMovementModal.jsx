@@ -60,7 +60,7 @@ function ProductPicker({ mode, onSelect, onClose }) {
   }
 
   return (
-    <div className="bg-surface border border-line rounded-2xl shadow-xl w-full max-w-md flex flex-col max-h-[85vh]">
+    <div className="bg-surface border border-line rounded-t-2xl sm:rounded-2xl shadow-xl w-full sm:max-w-md flex flex-col max-h-[92dvh] sm:max-h-[85vh]">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-line shrink-0">
         <div className="flex items-center gap-2">
@@ -186,9 +186,9 @@ function MovementForm({ product, mode, onBack, onClose }) {
   }
 
   return (
-    <div className="bg-surface border border-line rounded-2xl shadow-xl w-full max-w-md flex flex-col">
+    <div className="bg-surface border border-line rounded-t-2xl sm:rounded-2xl shadow-xl w-full sm:max-w-md flex flex-col max-h-[92dvh] sm:max-h-[85vh]">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-line">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-line shrink-0">
         <div className="flex items-center gap-2">
           {onBack && (
             <button onClick={onBack} className="p-1 rounded-md hover:bg-raised text-fg-muted hover:text-fg transition-colors mr-1">
@@ -203,6 +203,7 @@ function MovementForm({ product, mode, onBack, onClose }) {
         </button>
       </div>
 
+      <div className="flex-1 overflow-y-auto min-h-0">
       {/* Producto */}
       <div className="px-6 pt-4 pb-2">
         <div className="flex items-center justify-between rounded-xl bg-raised border border-line px-4 py-3">
@@ -291,8 +292,9 @@ function MovementForm({ product, mode, onBack, onClose }) {
         </div>
       </form>
 
+      </div>
       {/* Footer */}
-      <div className="px-6 py-4 border-t border-line flex justify-end gap-2">
+      <div className="px-6 py-4 border-t border-line flex justify-end gap-2 shrink-0">
         <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg border border-line text-sm text-fg-muted hover:text-fg hover:bg-raised transition-colors">
           Cancelar
         </button>
@@ -316,7 +318,7 @@ export default function StockMovementModal({ product: initialProduct = null, mod
   const [product, setProduct] = useState(initialProduct)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm">
       {!product
         ? <ProductPicker mode={mode} onSelect={setProduct} onClose={onClose} />
         : <MovementForm

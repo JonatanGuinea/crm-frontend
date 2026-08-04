@@ -5,7 +5,7 @@ import { getStockDashboard } from '../../api/stock'
 import StockMovementModal from './StockMovementModal'
 import {
   CubeIcon, ExclamationTriangleIcon, XCircleIcon,
-  ArrowTrendingDownIcon, ChevronRightIcon, ArrowDownTrayIcon, ArrowUpTrayIcon,
+  ChevronRightIcon, ArrowDownTrayIcon, ArrowUpTrayIcon,
 } from '@heroicons/react/24/outline'
 
 const MOVEMENT_LABELS = {
@@ -26,18 +26,18 @@ function fmtDateTime(iso) {
 
 function StatCard({ icon: Icon, label, value, sub, color = 'text-fg', bg = 'bg-surface', border = 'border-line', to }) {
   const content = (
-    <div className={`rounded-xl border p-5 flex flex-col gap-3 ${bg} ${border} ${to ? 'hover:shadow-md transition-shadow cursor-pointer' : ''}`}>
+    <div className={`h-full rounded-xl border p-5 flex flex-col gap-3 ${bg} ${border} ${to ? 'hover:shadow-md transition-shadow cursor-pointer' : ''}`}>
       <div className="flex items-center justify-between">
         <p className="text-xs font-medium text-fg-muted">{label}</p>
         <Icon className={`w-4 h-4 ${color} opacity-70`} />
       </div>
       <div>
-        <p className={`text-3xl font-bold ${color}`}>{value}</p>
+        <p className={`text-2xl sm:text-3xl font-bold ${color}`}>{value}</p>
         {sub && <p className="text-xs text-fg-muted mt-1">{sub}</p>}
       </div>
     </div>
   )
-  return to ? <Link to={to}>{content}</Link> : content
+  return to ? <Link to={to} className="block h-full">{content}</Link> : content
 }
 
 export default function StockDashboard() {
@@ -52,8 +52,6 @@ export default function StockDashboard() {
   if (isLoading) return <div className="flex items-center justify-center py-20 text-fg-muted text-sm">Cargando…</div>
   if (!data) return null
 
-  const currency = (n) => `$${Number(n).toLocaleString('es-AR', { maximumFractionDigits: 2 })}`
-
   return (
     <div className="p-4 md:p-8 flex flex-col gap-6">
       {/* Header */}
@@ -62,7 +60,7 @@ export default function StockDashboard() {
           <h1 className="text-2xl font-bold text-fg">Stock</h1>
           <p className="text-sm text-fg-muted mt-0.5">Resumen del inventario</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => setModal('in')}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-success text-white text-sm font-semibold hover:opacity-90 transition-opacity"
@@ -113,12 +111,6 @@ export default function StockDashboard() {
           bg={data.lowStock > 0 ? 'bg-warning-subtle/10' : 'bg-surface'}
           border={data.lowStock > 0 ? 'border-warning/30' : 'border-line'}
           to={data.lowStock > 0 ? '/stock/products?lowStock=true' : undefined}
-        />
-        <StatCard
-          icon={ArrowTrendingDownIcon}
-          label="Valor del inventario"
-          value={currency(data.totalInventoryValue)}
-          sub="stock × costo"
         />
       </div>
 
