@@ -39,6 +39,7 @@ import {
   BuildingOffice2Icon,
   Cog6ToothIcon,
   ArrowRightStartOnRectangleIcon,
+  CubeIcon,
 } from '@heroicons/react/24/outline'
 
 
@@ -52,6 +53,7 @@ const navItems = [
   { to: '/projects/calendar', label: 'Agenda',      icon: CalendarDaysIcon },
   { to: '/quotes',        label: 'Presupuestos',    icon: DocumentTextIcon },
   { to: '/expenses',      label: 'Egresos',         icon: ArrowTrendingDownIcon },
+  { to: '/stock',         label: 'Stock',           icon: CubeIcon },
   { to: '/members',       label: 'Equipo',          icon: UserGroupIcon },
 ]
 

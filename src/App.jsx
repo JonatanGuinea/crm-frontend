@@ -27,6 +27,9 @@ import QuoteDetailPage from './pages/quotes/QuoteDetailPage'
 import ExpensesPage from './pages/expenses/ExpensesPage'
 import TasksPage from './pages/tasks/TasksPage'
 import QuotePublicPage from './pages/public/QuotePublicPage'
+import StockDashboard from './pages/stock/StockDashboard'
+import ProductsPage from './pages/stock/ProductsPage'
+import ProductDetailPage from './pages/stock/ProductDetailPage'
 
 const qc = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } }
@@ -83,6 +86,9 @@ export default function App() {
               <Route path="/quotes/:id" element={<QuoteDetailPage />} />
               <Route path="/expenses" element={<ExpensesPage />} />
               <Route path="/tasks" element={<TasksPage />} />
+              <Route path="/stock" element={<StockDashboard />} />
+              <Route path="/stock/products" element={<ProductsPage />} />
+              <Route path="/stock/products/:id" element={<ProductDetailPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/members" element={<MembersPage />} />
               <Route path="/profile" element={<ProfilePage />} />
