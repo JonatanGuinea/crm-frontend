@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createTask, updateTask } from '../../api/tasks'
 import { getProjects } from '../../api/projects'
@@ -139,6 +139,19 @@ export default function TaskModal({ task, defaultStatus = 'todo', defaultProject
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose])
 
+  // Compromisos originales de esta tarea al momento de abrir el modal (solo en edición)
+  const originalCommitments = useMemo(() => {
+    if (!task?.stockItems) return {}
+    return Object.fromEntries(task.stockItems.map(i => [i.productId, Number(i.quantity)]))
+  }, [task])
+
+  // Stock disponible real = físico - comprometido en otras tareas (+ lo que ya tenía esta tarea)
+  function availableFor(product) {
+    const committed   = product.committedStock ?? 0
+    const ownOriginal = originalCommitments[product.id] ?? 0
+    return Number(product.stock) - committed + ownOriginal
+  }
+
   // Productos disponibles para el selector (excluye los ya agregados)
   const availableProducts = products.filter(p => !stockItems.some(i => i.productId === p.id))
 
@@ -268,9 +281,9 @@ export default function TaskModal({ task, defaultStatus = 'todo', defaultProject
                 {stockItems.length > 0 && (
                   <div className="flex flex-col gap-1.5 mb-3">
                     {stockItems.map(item => {
-                      const currentStock = Number(item.product.stock)
-                      const insufficient = currentStock < item.quantity
-                      const outOfStock   = currentStock <= 0
+                      const available    = availableFor(item.product)
+                      const outOfStock   = Number(item.product.stock) <= 0
+                      const insufficient = available < item.quantity
                       return (
                         <div key={item.productId} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${insufficient ? 'bg-warning-subtle border border-warning/30' : 'bg-raised'}`}>
                           <div className="flex-1 min-w-0">
@@ -285,7 +298,7 @@ export default function TaskModal({ task, defaultStatus = 'todo', defaultProject
                               {outOfStock
                                 ? <span className="ml-1.5 text-danger font-medium">· Sin stock</span>
                                 : insufficient
-                                  ? <span className="ml-1.5 text-warning font-medium">· Stock: {currentStock} {item.product.unit}</span>
+                                  ? <span className="ml-1.5 text-warning font-medium">· Disponible: {available} {item.product.unit}</span>
                                   : null
                               }
                             </p>
@@ -315,11 +328,23 @@ export default function TaskModal({ task, defaultStatus = 'todo', defaultProject
                       className="flex-1 px-3 py-2 rounded-lg bg-raised border border-line text-sm text-fg focus:outline-none focus:border-brand transition-colors"
                     >
                       <option value="">Seleccionar producto…</option>
-                      {availableProducts.map(p => (
-                        <option key={p.id} value={p.id}>
-                          {p.name} ({p.sku}) — {Number(p.stock) <= 0 ? 'Sin stock' : `${Number(p.stock)} ${p.unit}`}
-                        </option>
-                      ))}
+                      {availableProducts.map(p => {
+                        const avail     = availableFor(p)
+                        const committed = p.committedStock ?? 0
+                        let stockLabel
+                        if (Number(p.stock) <= 0) {
+                          stockLabel = 'Sin stock'
+                        } else if (committed > 0) {
+                          stockLabel = `Disponible: ${avail} ${p.unit} (comprometido: ${committed})`
+                        } else {
+                          stockLabel = `${Number(p.stock)} ${p.unit}`
+                        }
+                        return (
+                          <option key={p.id} value={p.id}>
+                            {p.name} ({p.sku}) — {stockLabel}
+                          </option>
+                        )
+                      })}
                     </select>
                     <input
                       type="number"
