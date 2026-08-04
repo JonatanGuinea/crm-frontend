@@ -238,7 +238,7 @@ export default function QuotesPage() {
   const changeStatus = useMutation({
     mutationFn: ({ id, status }) => updateQuote(id, { status }),
     onSuccess: () => qc.invalidateQueries(['quotes']),
-    onError: (err) => toast(err.response?.data?.error || 'Error al cambiar estado')
+    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al cambiar estado', 'error')
   })
 
   async function handleSendEmail(q) {
@@ -248,7 +248,7 @@ export default function QuotesPage() {
       qc.invalidateQueries(['quotes'])
       toast('Presupuesto enviado por email', 'success')
     } catch (err) {
-      toast(err.response?.data?.error || 'Error al enviar presupuesto')
+      toast(err.response?.data?.error || err.message || 'Error al enviar presupuesto', 'error')
     } finally {
       setSendingEmailId(null)
     }
@@ -271,7 +271,7 @@ export default function QuotesPage() {
       qc.invalidateQueries(['quotes'])
       toast('Presupuesto compartido por WhatsApp', 'success')
     } catch (err) {
-      toast(err.response?.data?.error || 'Error al registrar envío por WhatsApp')
+      toast(err.response?.data?.error || err.message || 'Error al registrar envío por WhatsApp', 'error')
     } finally {
       setSendingWaId(null)
     }

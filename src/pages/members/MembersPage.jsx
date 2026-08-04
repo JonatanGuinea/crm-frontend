@@ -53,7 +53,7 @@ export default function MembersPage() {
       setInviteError('')
       qc.invalidateQueries(['members', orgId])
     },
-    onError: (err) => setInviteError(err.response?.data?.error || 'Error al invitar')
+    onError: (err) => setInviteError(err.response?.data?.error || err.message || 'Error al invitar')
   })
 
   const changeRole = useMutation({

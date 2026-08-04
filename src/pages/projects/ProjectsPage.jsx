@@ -160,13 +160,13 @@ export default function ProjectsPage() {
   const del = useMutation({
     mutationFn: deleteProject,
     onSuccess: () => { qc.invalidateQueries(['projects']); toast('Proyecto eliminado', 'success') },
-    onError: (err) => toast(err.response?.data?.error || 'Error al eliminar proyecto')
+    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al eliminar proyecto', 'error')
   })
 
   const changeStatus = useMutation({
     mutationFn: ({ id, status }) => updateProject(id, { status }),
     onSuccess: () => qc.invalidateQueries(['projects']),
-    onError: (err) => toast(err.response?.data?.error || 'Error al cambiar estado')
+    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al cambiar estado', 'error')
   })
 
   return (

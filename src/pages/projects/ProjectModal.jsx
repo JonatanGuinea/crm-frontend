@@ -41,7 +41,7 @@ export default function ProjectModal({ project, onClose, onSaved }) {
       }
       onSaved()
     } catch (err) {
-      setError(err.response?.data?.error || 'Error al guardar')
+      setError(err.response?.data?.error || err.message || 'Error al guardar')
     } finally {
       setLoading(false)
     }

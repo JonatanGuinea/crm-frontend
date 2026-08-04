@@ -75,7 +75,7 @@ export default function ExpenseModal({ expense, onClose, onSaved }) {
     try {
       await onSaved({ ...form, amount: parseFloat(form.amount) })
     } catch (err) {
-      setError(err.response?.data?.error || 'Error al guardar')
+      setError(err.response?.data?.error || err.message || 'Error al guardar')
     } finally {
       setSaving(false)
     }
@@ -91,7 +91,7 @@ export default function ExpenseModal({ expense, onClose, onSaved }) {
       setNewCatName('')
       setShowNewCat(false)
     } catch (err) {
-      setError(err.response?.data?.error || 'Error al crear categoría')
+      setError(err.response?.data?.error || err.message || 'Error al crear categoría')
     } finally {
       setSavingCat(false)
     }

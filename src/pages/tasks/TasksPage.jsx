@@ -481,9 +481,9 @@ export default function TasksPage() {
       )
       return { snapshot }
     },
-    onError: (_err, _vars, ctx) => {
+    onError: (err, _vars, ctx) => {
       if (ctx?.snapshot) qc.setQueryData(['tasks'], ctx.snapshot)
-      toast('Error al mover la tarea', 'error')
+      toast(err.response?.data?.error || err.message || 'Error al mover la tarea', 'error')
     },
     onSettled: () => {
       qc.invalidateQueries(['tasks'])
@@ -494,7 +494,7 @@ export default function TasksPage() {
   const deleteMutation = useMutation({
     mutationFn: (id) => deleteTask(id),
     onSuccess: () => { qc.invalidateQueries(['tasks']); toast('Tarea eliminada', 'success') },
-    onError: () => toast('Error al eliminar', 'error'),
+    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al eliminar', 'error'),
   })
 
   // ── DnD handlers ───────────────────────────────────────────────────────────

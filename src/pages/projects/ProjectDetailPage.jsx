@@ -219,7 +219,7 @@ export default function ProjectDetailPage() {
       toast('Proyecto eliminado', 'success')
       navigate('/projects')
     },
-    onError: (err) => toast(err.response?.data?.error || 'Error al eliminar')
+    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al eliminar', 'error')
   })
 
   const { data: project, isLoading } = useQuery({
@@ -242,13 +242,13 @@ export default function ProjectDetailPage() {
   const moveTaskMutation = useMutation({
     mutationFn: ({ taskId, status }) => updateTask(taskId, { status }),
     onSuccess: () => qc.invalidateQueries(['tasks', { projectId: id }]),
-    onError: () => toast('Error al mover la tarea')
+    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al mover la tarea', 'error')
   })
 
   const deleteTaskMutation = useMutation({
     mutationFn: (taskId) => deleteTask(taskId),
     onSuccess: () => { qc.invalidateQueries(['tasks', { projectId: id }]); toast('Tarea eliminada', 'success') },
-    onError: () => toast('Error al eliminar')
+    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al eliminar', 'error')
   })
 
   if (isLoading) return <div className="p-8 text-sm text-fg-soft">Cargando...</div>

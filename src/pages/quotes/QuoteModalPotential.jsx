@@ -210,7 +210,7 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
       toast('Presupuesto creado', 'success')
       onSaved()
     } catch (err) {
-      setError(err.response?.data?.error || 'Error al guardar')
+      setError(err.response?.data?.error || err.message || 'Error al guardar')
     } finally {
       setLoading(false)
     }

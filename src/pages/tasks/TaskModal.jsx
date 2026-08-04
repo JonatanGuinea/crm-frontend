@@ -59,7 +59,7 @@ export default function TaskModal({ task, defaultStatus = 'todo', defaultProject
       toast(isEdit ? 'Tarea actualizada' : 'Tarea creada', 'success')
       onClose()
     },
-    onError: (err) => toast(err.response?.data?.message ?? 'Error al guardar', 'error'),
+    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al guardar', 'error'),
   })
 
   function set(field, value) {

@@ -117,7 +117,7 @@ export default function OrgSettingsModal({ onClose }) {
       toast('Organización actualizada', 'success')
       onClose()
     },
-    onError: (err) => toast(err.response?.data?.error || 'Error al guardar')
+    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al guardar', 'error')
   })
 
   const uploadLogo = useMutation({
@@ -128,7 +128,7 @@ export default function OrgSettingsModal({ onClose }) {
       if (filename) setLogoPreview(`${API_BASE}/uploads/${filename}`)
       toast('Logo actualizado', 'success')
     },
-    onError: (err) => toast(err.response?.data?.error || 'Error al subir logo')
+    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al subir logo', 'error')
   })
 
   return createPortal(

@@ -73,7 +73,7 @@ export default function ProductsPage() {
         : 'Producto eliminado'
       toast(msg, 'success')
     },
-    onError: (err) => toast(err.response?.data?.message ?? 'Error al eliminar', 'error'),
+    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al eliminar', 'error'),
   })
 
   async function handleDelete(product) {

@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getStockDashboard } from '../../api/stock'
+import StockMovementModal from './StockMovementModal'
 import {
   CubeIcon, ExclamationTriangleIcon, XCircleIcon,
   ArrowTrendingDownIcon, ChevronRightIcon, ArrowDownTrayIcon, ArrowUpTrayIcon,
@@ -39,6 +41,8 @@ function StatCard({ icon: Icon, label, value, sub, color = 'text-fg', bg = 'bg-s
 }
 
 export default function StockDashboard() {
+  const [modal, setModal] = useState(null) // 'in' | 'out'
+
   const { data, isLoading } = useQuery({
     queryKey: ['stock-dashboard'],
     queryFn: () => getStockDashboard().then(r => r.data.data),
@@ -58,13 +62,29 @@ export default function StockDashboard() {
           <h1 className="text-2xl font-bold text-fg">Stock</h1>
           <p className="text-sm text-fg-muted mt-0.5">Resumen del inventario</p>
         </div>
-        <Link
-          to="/stock/products"
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
-        >
-          <CubeIcon className="w-4 h-4" />
-          Ver productos
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setModal('in')}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-success text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+          >
+            <ArrowDownTrayIcon className="w-4 h-4" />
+            Ingreso
+          </button>
+          <button
+            onClick={() => setModal('out')}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-danger text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+          >
+            <ArrowUpTrayIcon className="w-4 h-4" />
+            Egreso
+          </button>
+          <Link
+            to="/stock/products"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-line bg-surface text-sm font-medium text-fg-soft hover:bg-raised hover:text-fg transition-colors"
+          >
+            <CubeIcon className="w-4 h-4" />
+            Productos
+          </Link>
+        </div>
       </div>
 
       {/* Stats */}
@@ -161,6 +181,9 @@ export default function StockDashboard() {
           </div>
         </div>
       </div>
+      {modal && (
+        <StockMovementModal mode={modal} onClose={() => setModal(null)} />
+      )}
     </div>
   )
 }

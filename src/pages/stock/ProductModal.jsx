@@ -45,7 +45,7 @@ export default function ProductModal({ product, onClose }) {
       toast(isEdit ? 'Producto actualizado' : 'Producto creado', 'success')
       onClose()
     },
-    onError: (err) => toast(err.response?.data?.message ?? 'Error al guardar', 'error'),
+    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al guardar', 'error'),
   })
 
   function handleSubmit(e) {

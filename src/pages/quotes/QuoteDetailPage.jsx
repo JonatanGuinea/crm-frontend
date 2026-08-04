@@ -61,7 +61,7 @@ export default function QuoteDetailPage() {
       toast('Presupuesto eliminado', 'success')
       navigate('/quotes')
     },
-    onError: (err) => toast(err.response?.data?.error || 'Error al eliminar')
+    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al eliminar', 'error')
   })
 
   if (isLoading) return <div className="p-8 text-sm text-fg-soft">Cargando...</div>

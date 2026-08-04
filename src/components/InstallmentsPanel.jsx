@@ -54,7 +54,7 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
       setShowForm(false)
       setFormError('')
     },
-    onError: (err) => setFormError(err.response?.data?.error || 'Error al crear el plan')
+    onError: (err) => setFormError(err.response?.data?.error || err.message || 'Error al crear el plan')
   })
 
   const createCustomMut = useMutation({
@@ -66,7 +66,7 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
       setShowAnticipo(false)
       setAnticoError('')
     },
-    onError: (err) => setAnticoError(err.response?.data?.error || 'Error al crear el plan')
+    onError: (err) => setAnticoError(err.response?.data?.error || err.message || 'Error al crear el plan')
   })
 
   const payMut = useMutation({
