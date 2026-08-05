@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createProduct, updateProduct, getCategories, getSuppliers } from '../../api/stock'
 import { useToast } from '../../components/Toast'

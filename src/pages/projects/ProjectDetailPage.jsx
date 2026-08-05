@@ -129,7 +129,7 @@ function MiniTaskCard({ task, canWrite, onEdit, onDelete, onMove }) {
   )
 }
 
-function ProjectTasksPanel({ tasks, projectId, canWrite, onAdd, onEdit, onDelete, onMove }) {
+function ProjectTasksPanel({ tasks, canWrite, onAdd, onEdit, onDelete, onMove }) {
   const total = tasks.length
   const done  = tasks.filter(t => t.status === 'done').length
 

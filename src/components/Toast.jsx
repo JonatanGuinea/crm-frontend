@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { CheckCircleIcon, XCircleIcon, XMarkIcon } from '@heroicons/react/24/outline'

@@ -197,6 +197,7 @@ export default function FinancesDashboard() {
   // Auto-selecciona la cuenta predeterminada al primer load
   useEffect(() => {
     if (!defaultApplied && data?.defaultCashAccountId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedAccountId(data.defaultCashAccountId)
       setDefaultApplied(true)
     }

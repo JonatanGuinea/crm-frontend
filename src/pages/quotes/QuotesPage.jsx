@@ -2,13 +2,12 @@ import { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getQuotes, deleteQuote, updateQuote, sendQuote, downloadQuotePdf, getAllQuotesHistory } from '../../api/quotes'
+import { getQuotes, updateQuote, sendQuote, downloadQuotePdf, getAllQuotesHistory } from '../../api/quotes'
 import QuoteModal from './QuoteModal'
 import QuoteModalPotential from './QuoteModalPotential'
 import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
-import { useConfirm } from '../../components/ConfirmDialog'
 import { ChevronDownIcon, UserIcon, ArrowDownTrayIcon, PaperAirplaneIcon, EyeIcon, UserPlusIcon, UsersIcon, TableCellsIcon, ClockIcon } from '@heroicons/react/24/outline'
 
 const STATUS_LABELS = {
@@ -203,7 +202,6 @@ function HistoryView({ historyData, isLoading }) {
 export default function QuotesPage() {
   const { user } = useAuth()
   const toast = useToast()
-  const confirm = useConfirm()
   const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
   const [tab, setTab] = useState('table')
@@ -228,11 +226,6 @@ export default function QuotesPage() {
     queryKey: ['quotes-history'],
     queryFn: () => getAllQuotesHistory().then(r => r.data.data),
     enabled: tab === 'history',
-  })
-
-  const del = useMutation({
-    mutationFn: deleteQuote,
-    onSuccess: () => { qc.invalidateQueries(['quotes']); toast('Presupuesto eliminado', 'success') }
   })
 
   const changeStatus = useMutation({
@@ -350,7 +343,6 @@ export default function QuotesPage() {
     setNewMenuOpen(true)
   }
   function openCreate() { setEditingId(null); setModalOpen(true) }
-  function openEdit(id) { setEditingId(id); setModalOpen(true) }
   function handleSaved() { setModalOpen(false); qc.invalidateQueries(['quotes']) }
   function handlePotentialSaved() { setPotentialOpen(false); qc.invalidateQueries(['quotes']); qc.invalidateQueries(['clients-all']) }
 

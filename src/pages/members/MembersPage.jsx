@@ -2,7 +2,6 @@ import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../context/AuthContext'
 import { useConfirm } from '../../components/ConfirmDialog'
-import { useToast } from '../../components/Toast'
 import { getMembers, inviteMember, updateMemberRole, removeMember } from '../../api/members'
 import { CheckIcon, ClipboardIcon } from '@heroicons/react/24/outline'
 
@@ -68,7 +67,6 @@ export default function MembersPage() {
 
   const canInvite = ['owner', 'admin'].includes(myRole)
   const canManage = myRole === 'owner'
-  const toast = useToast()
 
   return (
     <div className="p-4 md:p-8 max-w-3xl mx-auto min-h-full">

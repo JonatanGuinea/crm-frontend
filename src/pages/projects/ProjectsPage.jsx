@@ -2,13 +2,12 @@ import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { getProjects, deleteProject, updateProject, getAllProjectsHistory } from '../../api/projects'
+import { getProjects, updateProject, getAllProjectsHistory } from '../../api/projects'
 import ProjectModal from './ProjectModal'
 import QuoteModal from '../quotes/QuoteModal'
 import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
-import { useConfirm } from '../../components/ConfirmDialog'
 import { ChevronDownIcon, UserIcon, CalendarDaysIcon, BanknotesIcon, EyeIcon, PaperClipIcon, XMarkIcon, ClockIcon, TableCellsIcon } from '@heroicons/react/24/outline'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 
@@ -128,7 +127,6 @@ function StatusDropdown({ project, onUpdate }) {
 export default function ProjectsPage() {
   const { user } = useAuth()
   const toast = useToast()
-  const confirm = useConfirm()
   const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
 
@@ -136,6 +134,7 @@ export default function ProjectsPage() {
     const now = new Date().toISOString()
     localStorage.setItem('projectsLastSeen', now)
     qc.invalidateQueries(['new-projects-count'])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   const [tab, setTab]             = useState('table')
   const [historyVisible, setHistoryVisible] = useState(25)
@@ -155,12 +154,6 @@ export default function ProjectsPage() {
     queryKey: ['projects-history'],
     queryFn: () => getAllProjectsHistory().then(r => r.data.data),
     enabled: tab === 'history',
-  })
-
-  const del = useMutation({
-    mutationFn: deleteProject,
-    onSuccess: () => { qc.invalidateQueries(['projects']); toast('Proyecto eliminado', 'success') },
-    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al eliminar proyecto', 'error')
   })
 
   const changeStatus = useMutation({

@@ -13,7 +13,7 @@ export const uploadAttachment = (entityType, entityId, file) => {
 
 export const deleteAttachment = (id) => api.delete(`/attachments/${id}`)
 
-export const downloadAttachment = (storedName, filename) =>
+export const downloadAttachment = (storedName) =>
   api.get(`/attachments/file/${storedName}`, { responseType: 'blob' }).then(res => {
     const url = URL.createObjectURL(res.data)
     const a = document.createElement('a')

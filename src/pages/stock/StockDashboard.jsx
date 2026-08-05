@@ -24,12 +24,12 @@ function fmtDateTime(iso) {
     ' ' + d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
 }
 
-function StatCard({ icon: Icon, label, value, sub, color = 'text-fg', bg = 'bg-surface', border = 'border-line', to }) {
+function StatCard({ icon: CardIcon, label, value, sub, color = 'text-fg', bg = 'bg-surface', border = 'border-line', to }) {
   const content = (
     <div className={`h-full rounded-xl border p-5 flex flex-col gap-3 ${bg} ${border} ${to ? 'hover:shadow-md transition-shadow cursor-pointer' : ''}`}>
       <div className="flex items-center justify-between">
         <p className="text-xs font-medium text-fg-muted">{label}</p>
-        <Icon className={`w-4 h-4 ${color} opacity-70`} />
+        <CardIcon className={`w-4 h-4 ${color} opacity-70`} />
       </div>
       <div>
         <p className={`text-2xl sm:text-3xl font-bold ${color}`}>{value}</p>

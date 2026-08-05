@@ -36,6 +36,7 @@ export default function OrgSettingsPage() {
 
   useEffect(() => {
     if (orgData) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setForm({
         name:               orgData.name               || '',
         cuit:               orgData.cuit               || '',

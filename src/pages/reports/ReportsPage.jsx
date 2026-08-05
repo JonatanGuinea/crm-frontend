@@ -328,7 +328,6 @@ function ProjectsTab({ data }) {
 
   const inProgress = byStatus.find(s => s._id === 'in_progress')?.totalProjects ?? 0
   const finished   = byStatus.find(s => s._id === 'finished')?.totalProjects   ?? 0
-  const pending    = byStatus.find(s => s._id === 'pending')?.totalProjects    ?? 0
   const cancelled  = byStatus.find(s => s._id === 'cancelled')?.totalProjects  ?? 0
 
   return (

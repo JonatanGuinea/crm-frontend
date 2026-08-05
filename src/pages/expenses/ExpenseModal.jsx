@@ -63,6 +63,7 @@ export default function ExpenseModal({ expense, onClose, onSaved }) {
     if (!form.categoryId && categories.length > 0) {
       setForm(f => ({ ...f, categoryId: categories[0].id }))
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categories])
 
   async function handleSave(e) {

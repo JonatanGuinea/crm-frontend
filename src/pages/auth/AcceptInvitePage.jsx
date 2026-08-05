@@ -18,6 +18,7 @@ export default function AcceptInvitePage() {
     const token = searchParams.get('token')
 
     if (!token) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setError('No se encontró el token de invitación en el enlace.')
       setStatus('error')
       return

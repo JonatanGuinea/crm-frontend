@@ -105,6 +105,7 @@ export default function NotificationsPage() {
     }
   })
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { readAll.mutate() }, [])
 
   const notifications = data?.notifications ?? []

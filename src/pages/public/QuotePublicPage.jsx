@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getPublicQuote, getPublicQuotePdfUrl, confirmQuote, rejectQuote } from '../../api/public'
 import { ArrowDownTrayIcon, CheckCircleIcon, CheckIcon, ArrowLeftIcon, TrashIcon } from '@heroicons/react/24/outline'
 import ProvinceSelect from '../../components/ProvinceSelect'
-import PhoneInput, { PHONE_COUNTRIES, checkPhone } from '../../components/PhoneInput'
+import PhoneInput, { PHONE_COUNTRIES } from '../../components/PhoneInput'
 
 const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '')
 

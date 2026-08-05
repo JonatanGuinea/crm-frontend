@@ -62,6 +62,7 @@ export default function DatePicker({ value, onChange, className, placeholder = '
 
   useEffect(() => {
     const d = parseValue(value)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (d) setView(new Date(d.getFullYear(), d.getMonth(), 1))
   }, [value])
 

@@ -201,7 +201,7 @@ function NavItem({ to, label, icon: Icon, exact, collapsed, onNavClick, badge = 
   )
 }
 
-function SidebarContent({ collapsed, profile, user, onNavClick, dark, onToggleTheme, newProjectsCount }) {
+function SidebarContent({ collapsed, onNavClick, dark, onToggleTheme, newProjectsCount }) {
   const location = useLocation()
   const isOnStock = location.pathname.startsWith('/stock')
   const [stockOpen, setStockOpen] = useState(isOnStock)
@@ -407,8 +407,6 @@ export default function AppLayout() {
         </div>
         <SidebarContent
           collapsed={false}
-          profile={profile}
-          user={user}
           onNavClick={() => setMobileOpen(false)}
           dark={dark}
           onToggleTheme={toggle}
@@ -437,8 +435,6 @@ export default function AppLayout() {
         </div>
         <SidebarContent
           collapsed={collapsed}
-          profile={profile}
-          user={user}
           onNavClick={undefined}
           dark={dark}
           onToggleTheme={toggle}

@@ -95,6 +95,7 @@ export default function GlobalSearch() {
   // Search
   useEffect(() => {
     if (debouncedQuery.length < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setResults(null)
       setActiveIndex(-1)
       return

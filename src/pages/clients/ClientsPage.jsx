@@ -1,17 +1,14 @@
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { getClients, deleteClient, getAllClientsHistory } from '../../api/clients'
+import { getClients, getAllClientsHistory } from '../../api/clients'
 import ClientModal from './ClientModal'
 import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
-import { useToast } from '../../components/Toast'
-import { useConfirm } from '../../components/ConfirmDialog'
 import { EnvelopeIcon, PhoneIcon, BuildingOfficeIcon, EyeIcon, ClockIcon, TableCellsIcon } from '@heroicons/react/24/outline'
 
 export default function ClientsPage() {
   const { user } = useAuth()
-  const confirm = useConfirm()
   const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
   const [tab, setTab]         = useState('table')
@@ -32,17 +29,7 @@ export default function ClientsPage() {
     enabled: tab === 'history',
   })
 
-  const toast = useToast()
-  const canDelete = user?.role === 'owner'
-
-  const del = useMutation({
-    mutationFn: deleteClient,
-    onSuccess: () => { qc.invalidateQueries(['clients']); toast('Cliente eliminado', 'success') },
-    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al eliminar cliente', 'error')
-  })
-
   function openCreate() { setEditing(null); setModalOpen(true) }
-  function openEdit(c) { setEditing(c); setModalOpen(true) }
   function handleSearch(val) { setSearch(val); setPage(1) }
 
   return (
