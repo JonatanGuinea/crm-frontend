@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getQuotes, updateQuote, sendQuote, downloadQuotePdf, getAllQuotesHistory } from '../../api/quotes'
+import { getOrganizations } from '../../api/organizations'
 import QuoteModal from './QuoteModal'
 import QuoteModalPotential from './QuoteModalPotential'
 import Pagination from '../../components/Pagination'
@@ -203,6 +204,13 @@ export default function QuotesPage() {
   const { user } = useAuth()
   const toast = useToast()
   const canWrite = user?.role !== 'member'
+  const orgId = user?.organizationId
+  const { data: orgData } = useQuery({
+    queryKey: ['organization', orgId],
+    queryFn: () => getOrganizations().then(r => r.data.data?.find(o => o.id === orgId)),
+    enabled: Boolean(orgId),
+    staleTime: 5 * 60 * 1000,
+  })
   const qc = useQueryClient()
   const [tab, setTab] = useState('table')
   const [statusFilter, setStatusFilter] = useState('')
@@ -235,6 +243,10 @@ export default function QuotesPage() {
   })
 
   async function handleSendEmail(q) {
+    if (!orgData?.signature) {
+      toast('La organización no tiene firma configurada. Configurá la firma en Ajustes antes de enviar presupuestos.', 'error')
+      return
+    }
     setSendingEmailId(q.id)
     try {
       await sendQuote(q.id)
@@ -248,6 +260,10 @@ export default function QuotesPage() {
   }
 
   async function handleSendWa(q) {
+    if (!orgData?.signature) {
+      toast('La organización no tiene firma configurada. Configurá la firma en Ajustes antes de enviar presupuestos.', 'error')
+      return
+    }
     const phone = (q.client?.phone || q.potentialClientPhone || '').replace(/\D/g, '')
     if (!phone) {
       toast('Este cliente no tiene teléfono. Editá el presupuesto para agregar un número de WhatsApp.')

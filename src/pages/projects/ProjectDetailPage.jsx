@@ -1,17 +1,18 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
-import { getProjectById, deleteProject } from '../../api/projects'
+import { getProjectById, deleteProject, updateProject } from '../../api/projects'
 import { getQuotes } from '../../api/quotes'
 import { getTasks, updateTask, deleteTask } from '../../api/tasks'
 import ProjectModal from './ProjectModal'
 import QuoteModal from '../quotes/QuoteModal'
 import TaskModal from '../tasks/TaskModal'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
-import { PlusIcon, PencilIcon, TrashIcon, CalendarDaysIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, PencilIcon, TrashIcon, CalendarDaysIcon, ChevronRightIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 
 const STATUS_COLORS = {
   pending:     'bg-warning-subtle text-warning',
@@ -23,6 +24,83 @@ const STATUS_COLORS = {
 const STATUS_LABELS = {
   pending: 'Pendiente', approved: 'Aprobado', in_progress: 'En curso',
   finished: 'Finalizado', cancelled: 'Cancelado'
+}
+const STATUS_DOT = {
+  pending:     'bg-warning',
+  approved:    'bg-info',
+  in_progress: 'bg-brand',
+  finished:    'bg-brand',
+  cancelled:   'bg-fg-muted',
+}
+const ALLOWED_TRANSITIONS = {
+  pending:     ['approved', 'cancelled'],
+  approved:    ['in_progress', 'cancelled'],
+  in_progress: ['finished'],
+  finished:    [],
+  cancelled:   [],
+}
+
+function StatusDropdown({ project, onUpdate }) {
+  const [open, setOpen] = useState(false)
+  const [dropPos, setDropPos] = useState({ top: 0, left: 0 })
+  const btnRef = useRef(null)
+  const allowed = ALLOWED_TRANSITIONS[project.status] || []
+
+  if (!allowed.length) {
+    return (
+      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[project.status]}`}>
+        {STATUS_LABELS[project.status]}
+      </span>
+    )
+  }
+
+  function handleToggle() {
+    if (!open && btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect()
+      const dropW = 160
+      const dropH = allowed.length * 36
+      let top = r.bottom + 4
+      let left = r.left
+      if (left + dropW > window.innerWidth - 8) left = r.right - dropW
+      if (top + dropH > window.innerHeight - 8) top = r.top - dropH - 4
+      setDropPos({ top, left })
+    }
+    setOpen(o => !o)
+  }
+
+  return (
+    <div className="inline-block">
+      {open && createPortal(
+        <>
+          <div className="fixed inset-0 z-[9998]" onClick={() => setOpen(false)} />
+          <div
+            style={{ top: dropPos.top, left: dropPos.left }}
+            className="fixed z-[9999] bg-surface/80 backdrop-blur-xl border border-line-soft rounded-lg shadow-lg py-1 min-w-[150px]"
+          >
+            {allowed.map(s => (
+              <button
+                key={s}
+                onClick={() => { onUpdate(s); setOpen(false) }}
+                className="w-full text-left px-3 py-2 text-xs hover:bg-raised text-fg flex items-center gap-2 transition-colors"
+              >
+                <span className={`w-2 h-2 rounded-full shrink-0 ${STATUS_DOT[s]}`} />
+                {STATUS_LABELS[s]}
+              </button>
+            ))}
+          </div>
+        </>,
+        document.body
+      )}
+      <button
+        ref={btnRef}
+        onClick={handleToggle}
+        className={`px-2.5 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 transition-opacity hover:opacity-80 ${STATUS_COLORS[project.status]}`}
+      >
+        {STATUS_LABELS[project.status]}
+        <ChevronDownIcon className="w-3 h-3 shrink-0" />
+      </button>
+    </div>
+  )
 }
 
 const DOC_STATUS_COLORS = {
@@ -204,7 +282,8 @@ export default function ProjectDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
-  const canWrite = user?.role !== 'member'
+  const isMember = user?.role === 'member'
+  const canWrite = !isMember
   const qc = useQueryClient()
   const toast = useToast()
   const confirm = useConfirm()
@@ -222,6 +301,15 @@ export default function ProjectDetailPage() {
     onError: (err) => toast(err.response?.data?.error || err.message || 'Error al eliminar', 'error')
   })
 
+  const changeStatus = useMutation({
+    mutationFn: (status) => updateProject(id, { status }),
+    onSuccess: () => {
+      qc.invalidateQueries(['project', id])
+      qc.invalidateQueries(['projects'])
+    },
+    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al cambiar estado', 'error')
+  })
+
   const { data: project, isLoading } = useQuery({
     queryKey: ['project', id],
     queryFn: () => getProjectById(id).then(r => r.data.data)
@@ -230,7 +318,7 @@ export default function ProjectDetailPage() {
   const { data: quotesRes } = useQuery({
     queryKey: ['quotes', { projectId: id }],
     queryFn: () => getQuotes({ projectId: id, limit: 100 }).then(r => r.data),
-    enabled: Boolean(id)
+    enabled: Boolean(id) && !isMember,
   })
 
   const { data: projectTasks = [] } = useQuery({
@@ -266,9 +354,7 @@ export default function ProjectDetailPage() {
         <div>
           <h1 className="text-2xl font-bold text-fg leading-tight mb-1">{project.title}</h1>
           <div className="flex items-center gap-2 flex-wrap">
-            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[project.status]}`}>
-              {STATUS_LABELS[project.status]}
-            </span>
+            <StatusDropdown project={project} onUpdate={(status) => changeStatus.mutate(status)} />
             {project.client && (
               <Link to={`/clients/${project.client.id}`} className="text-sm text-brand hover:underline">
                 {project.client.name}
@@ -347,65 +433,67 @@ export default function ProjectDetailPage() {
             onMove={(t, status) => moveTaskMutation.mutate({ taskId: t.id, status })}
           />
 
-          {/* Presupuestos */}
-          <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-line">
-              <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide">
-                Presupuesto <span className="text-fg-muted font-normal">({quotes.length})</span>
-              </h3>
-              <div className="flex items-center gap-3">
-                {canWrite && (
-                  <button
-                    onClick={() => setNewQuoteOpen(true)}
-                    className="px-3 py-1.5 bg-brand text-white text-xs font-semibold rounded-lg hover:bg-brand-hover transition-colors"
-                  >
-                    Asignar
-                  </button>
-                )}
-                {quotes.length > 0 && (
-                  <Link to="/quotes" className="text-xs text-brand hover:underline">Ver todos</Link>
-                )}
+          {/* Presupuestos — solo owner/admin */}
+          {!isMember && (
+            <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-line">
+                <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide">
+                  Presupuesto <span className="text-fg-muted font-normal">({quotes.length})</span>
+                </h3>
+                <div className="flex items-center gap-3">
+                  {canWrite && (
+                    <button
+                      onClick={() => setNewQuoteOpen(true)}
+                      className="px-3 py-1.5 bg-brand text-white text-xs font-semibold rounded-lg hover:bg-brand-hover transition-colors"
+                    >
+                      Asignar
+                    </button>
+                  )}
+                  {quotes.length > 0 && (
+                    <Link to="/quotes" className="text-xs text-brand hover:underline">Ver todos</Link>
+                  )}
+                </div>
               </div>
-            </div>
-            {quotes.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 gap-3">
-                <p className="text-sm text-fg-muted">Sin presupuesto asignado</p>
-                {canWrite && (
-                  <button
-                    onClick={() => setNewQuoteOpen(true)}
-                    className="px-4 py-2 bg-brand text-white text-sm font-semibold rounded-lg hover:bg-brand-hover transition-colors"
-                  >
-                    Asignar presupuesto
-                  </button>
-                )}
-              </div>
-            ) : (
-              <table className="w-full text-sm">
-                <thead className="bg-raised">
-                  <tr>
-                    {['N°', 'Estado', 'Total'].map(h => (
-                      <th key={h} className="text-left px-5 py-2 text-xs font-medium text-fg-soft uppercase">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-line">
-                  {quotes.map(q => (
-                    <tr key={q.id} className="hover:bg-raised">
-                      <td className="px-5 py-3 font-medium text-fg">{q.number}</td>
-                      <td className="px-5 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${DOC_STATUS_COLORS[q.status] || 'bg-raised text-fg-soft'}`}>
-                          {DOC_STATUS_LABELS[q.status] || q.status}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3 text-fg-soft">
-                        {q.total != null ? `$${Number(q.total).toLocaleString('es-AR')}` : '-'}
-                      </td>
+              {quotes.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 gap-3">
+                  <p className="text-sm text-fg-muted">Sin presupuesto asignado</p>
+                  {canWrite && (
+                    <button
+                      onClick={() => setNewQuoteOpen(true)}
+                      className="px-4 py-2 bg-brand text-white text-sm font-semibold rounded-lg hover:bg-brand-hover transition-colors"
+                    >
+                      Asignar presupuesto
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead className="bg-raised">
+                    <tr>
+                      {['N°', 'Estado', 'Total'].map(h => (
+                        <th key={h} className="text-left px-5 py-2 text-xs font-medium text-fg-soft uppercase">{h}</th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+                  </thead>
+                  <tbody className="divide-y divide-line">
+                    {quotes.map(q => (
+                      <tr key={q.id} className="hover:bg-raised">
+                        <td className="px-5 py-3 font-medium text-fg">{q.number}</td>
+                        <td className="px-5 py-3">
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${DOC_STATUS_COLORS[q.status] || 'bg-raised text-fg-soft'}`}>
+                            {DOC_STATUS_LABELS[q.status] || q.status}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3 text-fg-soft">
+                          {q.total != null ? `$${Number(q.total).toLocaleString('es-AR')}` : '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

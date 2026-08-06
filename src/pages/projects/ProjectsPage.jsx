@@ -127,7 +127,8 @@ function StatusDropdown({ project, onUpdate }) {
 export default function ProjectsPage() {
   const { user } = useAuth()
   const toast = useToast()
-  const canWrite = user?.role !== 'member'
+  const isMember = user?.role === 'member'
+  const canWrite = !isMember
   const qc = useQueryClient()
 
   useEffect(() => {
@@ -271,10 +272,7 @@ export default function ProjectsPage() {
                 {/* Header: estado */}
                 <div className="flex items-start justify-between gap-2 mb-3">
                   <div className="flex items-center gap-1.5">
-                    {canWrite
-                      ? <StatusDropdown project={p} onUpdate={(status) => changeStatus.mutate({ id: p.id, status })} />
-                      : <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[p.status]}`}>{STATUS_LABELS[p.status]}</span>
-                    }
+                    <StatusDropdown project={p} onUpdate={(status) => changeStatus.mutate({ id: p.id, status })} />
                     {(() => { const n = p.quotes?.reduce((acc, q) => acc + (q.installments?.length || 0), 0) || 0; return n > 0 ? (
                       <span title={`${n} cuota${n !== 1 ? 's' : ''} pendiente${n !== 1 ? 's' : ''}`}
                         className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-warning-subtle text-warning text-xs font-medium">
@@ -350,7 +348,7 @@ export default function ProjectsPage() {
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Cliente</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Estado</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Tareas</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Presupuesto</th>
+                    {!isMember && <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Presupuesto</th>}
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Archivos</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide"></th>
                   </tr>
@@ -362,10 +360,7 @@ export default function ProjectsPage() {
                       <td className="px-4 py-3 text-fg-soft">{p.client?.name || '-'}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1.5">
-                          {canWrite
-                            ? <StatusDropdown project={p} onUpdate={(status) => changeStatus.mutate({ id: p.id, status })} />
-                            : <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[p.status]}`}>{STATUS_LABELS[p.status]}</span>
-                          }
+                          <StatusDropdown project={p} onUpdate={(status) => changeStatus.mutate({ id: p.id, status })} />
                           {(() => { const n = p.quotes?.reduce((acc, q) => acc + (q.installments?.length || 0), 0) || 0; return n > 0 ? (
                             <span title={`${n} cuota${n !== 1 ? 's' : ''} pendiente${n !== 1 ? 's' : ''}`}
                               className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-warning-subtle text-warning text-xs font-medium">
@@ -377,21 +372,23 @@ export default function ProjectsPage() {
                       <td className="px-4 py-3">
                         <TaskProgress total={p.taskCount} done={p.doneTaskCount} />
                       </td>
-                      <td className="px-4 py-3">
-                        {p.quotes?.length > 0
-                          ? <span className="text-fg-soft text-sm">
-                              ${Number(p.quotes.reduce((s, q) => s + (Number(q.total) || 0), 0)).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </span>
-                          : canWrite && (
-                              <button
-                                onClick={() => setQuotingProject(p)}
-                                className="px-3 py-1 bg-brand text-white text-xs font-semibold rounded-lg hover:bg-brand-hover transition-colors"
-                              >
-                                Asignar
-                              </button>
-                            )
-                        }
-                      </td>
+                      {!isMember && (
+                        <td className="px-4 py-3">
+                          {p.quotes?.length > 0
+                            ? <span className="text-fg-soft text-sm">
+                                ${Number(p.quotes.reduce((s, q) => s + (Number(q.total) || 0), 0)).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </span>
+                            : canWrite && (
+                                <button
+                                  onClick={() => setQuotingProject(p)}
+                                  className="px-3 py-1 bg-brand text-white text-xs font-semibold rounded-lg hover:bg-brand-hover transition-colors"
+                                >
+                                  Asignar
+                                </button>
+                              )
+                          }
+                        </td>
+                      )}
                       <td className="px-4 py-3">
                         <button
                           onClick={() => setAttachingProject(p)}

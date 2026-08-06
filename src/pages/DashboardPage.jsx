@@ -5,6 +5,7 @@ import { getProjectsDashboard } from '../api/projects'
 import { getQuotesDashboard } from '../api/quotes'
 import { getTopClients } from '../api/clients'
 import { getRecentActivity } from '../api/activity'
+import { getTasks } from '../api/tasks'
 import { getProfile } from '../api/profile'
 import { getOrganizations } from '../api/organizations'
 import { getFinancesDashboard } from '../api/finances'
@@ -607,7 +608,8 @@ function ActivityFeed({ activity }) {
 
 export default function DashboardPage() {
   const { user } = useAuth()
-  const orgId = user?.org
+  const orgId    = user?.org
+  const isMember = user?.role === 'member'
 
   const now = new Date()
 
@@ -633,32 +635,39 @@ export default function DashboardPage() {
   const { data: quotes } = useQuery({
     queryKey: ['quotes-dashboard', currency],
     queryFn: () => getQuotesDashboard(currency).then(r => r.data.data),
+    enabled: !isMember,
   })
 
   const { data: topClients } = useQuery({
     queryKey: ['clients-top'],
     queryFn: () => getTopClients().then(r => r.data.data),
+    enabled: !isMember,
   })
 
   const { data: finData } = useQuery({
     queryKey: ['finances-dashboard-main', now.getFullYear(), now.getMonth() + 1],
     queryFn: () => getFinancesDashboard({ year: now.getFullYear(), month: now.getMonth() + 1 })
       .then(r => r.data.data),
+    enabled: !isMember,
   })
 
   const { data: recentActivity } = useQuery({
     queryKey: ['activity-recent'],
     queryFn: () => getRecentActivity().then(r => r.data.data),
+    enabled: !isMember,
   })
 
-  const activeProjects = projects?.byStatus?.find(s => s._id === 'in_progress')?.totalProjects ?? 0
-  const openQuotes     = quotes?.byStatus
-    ?.filter(s => ['draft', 'sent'].includes(s.status))
-    ?.reduce((acc, s) => acc + s.count, 0) ?? 0
+  const { data: myTasks } = useQuery({
+    queryKey: ['tasks-assigned', user?.uid],
+    queryFn: () => getTasks({ assignedToId: user?.uid }).then(r => r.data.data),
+    enabled: isMember && Boolean(user?.uid),
+  })
+  const myPendingTasks = (myTasks ?? []).length
 
-  const totalBalance  = Number(finData?.totalBalance  ?? 0)
-  const incomeMonth   = Number(finData?.incomeMonth   ?? 0)
-  const expenseMonth  = Number(finData?.expenseMonth  ?? 0)
+  const activeProjects = projects?.byStatus?.find(s => s._id === 'in_progress')?.totalProjects ?? 0
+  const totalBalance   = Number(finData?.totalBalance  ?? 0)
+  const incomeMonth    = Number(finData?.incomeMonth   ?? 0)
+  const expenseMonth   = Number(finData?.expenseMonth  ?? 0)
 
   return (
     <div className="p-4 md:p-8 max-w-5xl">
@@ -670,97 +679,128 @@ export default function DashboardPage() {
           <p className="text-sm text-fg-muted mt-0.5 capitalize">{fmtDate()}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <Link to="/clients" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-line bg-raised hover:bg-surface text-xs font-medium text-fg transition-colors">
-            <PlusIcon className="w-3.5 h-3.5" />Cliente
-          </Link>
+          {!isMember && (
+            <Link to="/clients" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-line bg-raised hover:bg-surface text-xs font-medium text-fg transition-colors">
+              <PlusIcon className="w-3.5 h-3.5" />Cliente
+            </Link>
+          )}
           <Link to="/projects" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-line bg-raised hover:bg-surface text-xs font-medium text-fg transition-colors">
             <PlusIcon className="w-3.5 h-3.5" />Proyecto
           </Link>
-          <Link to="/quotes" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand text-white hover:opacity-90 text-xs font-medium transition-opacity">
-            <PlusIcon className="w-3.5 h-3.5" />Presupuesto
-          </Link>
+          {!isMember && (
+            <Link to="/quotes" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand text-white hover:opacity-90 text-xs font-medium transition-opacity">
+              <PlusIcon className="w-3.5 h-3.5" />Presupuesto
+            </Link>
+          )}
         </div>
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <KpiCard
-          icon={FolderOpenIcon}
-          iconBg="bg-info-subtle"
-          iconColor="text-info"
-          label="Proyectos en curso"
-          value={activeProjects}
-          sub={`${openQuotes} presupuestos abiertos`}
-        />
-        <KpiCard
-          icon={BuildingLibraryIcon}
-          iconBg="bg-brand-subtle"
-          iconColor="text-brand"
-          label="Saldo en caja"
-          value={fmt(totalBalance, currency)}
-          valueColor="text-brand"
-          sub={finData?.accounts?.length ? `${finData.accounts.length} cuenta${finData.accounts.length !== 1 ? 's' : ''}` : undefined}
-        />
-        <KpiCard
-          icon={ArrowTrendingUpIcon}
-          iconBg="bg-success-subtle"
-          iconColor="text-success"
-          label="Ingresos del mes"
-          value={fmt(incomeMonth, currency)}
-          valueColor="text-success"
-          sub="movimientos confirmados"
-        />
-        <KpiCard
-          icon={ArrowTrendingDownIcon}
-          iconBg="bg-danger-subtle"
-          iconColor="text-danger"
-          label="Egresos del mes"
-          value={fmt(expenseMonth, currency)}
-          valueColor="text-danger"
-          sub="movimientos confirmados"
-        />
-      </div>
-
-      {/* Quotes summary */}
-      <div className="mb-6">
-        <QuotesSummaryPanel quotes={quotes} currency={currency} />
-      </div>
-
-      {/* Income / Expenses chart — datos reales de finanzas */}
-      <div className="mb-6">
-        <IncomeExpensesChart data={buildMonthlyEvolution(finData?.monthlyEvolution)} currency={currency} />
-      </div>
-
-      {/* Recent quotes + Recent movements */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-fg">Presupuestos recientes</h3>
-            <Link to="/quotes" className="flex items-center gap-1 text-xs text-brand hover:underline">
-              Ver todos <ArrowRightIcon className="w-3 h-3" />
-            </Link>
-          </div>
-          <RecentQuotes quotes={quotes} />
+      {isMember ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <KpiCard
+            icon={FolderOpenIcon}
+            iconBg="bg-info-subtle"
+            iconColor="text-info"
+            label="Proyectos en curso"
+            value={activeProjects}
+          />
+          <KpiCard
+            icon={ClipboardDocumentListIcon}
+            iconBg="bg-warning-subtle"
+            iconColor="text-warning"
+            label="Tareas asignadas"
+            value={myPendingTasks}
+          />
         </div>
-        <RecentMovementsPanel movements={finData?.recentMovements} currency={currency} />
-      </div>
+      ) : (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <KpiCard
+            icon={FolderOpenIcon}
+            iconBg="bg-info-subtle"
+            iconColor="text-info"
+            label="Proyectos en curso"
+            value={activeProjects}
+            sub={`${quotes?.byStatus?.filter(s => ['draft','sent'].includes(s.status))?.reduce((a,s)=>a+s.count,0)??0} presupuestos abiertos`}
+          />
+          <KpiCard
+            icon={BuildingLibraryIcon}
+            iconBg="bg-brand-subtle"
+            iconColor="text-brand"
+            label="Saldo en caja"
+            value={fmt(totalBalance, currency)}
+            valueColor="text-brand"
+            sub={finData?.accounts?.length ? `${finData.accounts.length} cuenta${finData.accounts.length !== 1 ? 's' : ''}` : undefined}
+          />
+          <KpiCard
+            icon={ArrowTrendingUpIcon}
+            iconBg="bg-success-subtle"
+            iconColor="text-success"
+            label="Ingresos del mes"
+            value={fmt(incomeMonth, currency)}
+            valueColor="text-success"
+            sub="movimientos confirmados"
+          />
+          <KpiCard
+            icon={ArrowTrendingDownIcon}
+            iconBg="bg-danger-subtle"
+            iconColor="text-danger"
+            label="Egresos del mes"
+            value={fmt(expenseMonth, currency)}
+            valueColor="text-danger"
+            sub="movimientos confirmados"
+          />
+        </div>
+      )}
 
-      {/* Expiring quotes + Projects panel */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <ExpiringQuotesPanel quotes={quotes} />
-        <ProjectsPanel projects={projects} />
-      </div>
+      {/* Paneles exclusivos de owner/admin */}
+      {!isMember && (
+        <>
+          <div className="mb-6">
+            <QuotesSummaryPanel quotes={quotes} currency={currency} />
+          </div>
 
-      {/* Top clients + Upcoming projects */}
+          <div className="mb-6">
+            <IncomeExpensesChart data={buildMonthlyEvolution(finData?.monthlyEvolution)} currency={currency} />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-fg">Presupuestos recientes</h3>
+                <Link to="/quotes" className="flex items-center gap-1 text-xs text-brand hover:underline">
+                  Ver todos <ArrowRightIcon className="w-3 h-3" />
+                </Link>
+              </div>
+              <RecentQuotes quotes={quotes} />
+            </div>
+            <RecentMovementsPanel movements={finData?.recentMovements} currency={currency} />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <ExpiringQuotesPanel quotes={quotes} />
+            <ProjectsPanel projects={projects} />
+          </div>
+        </>
+      )}
+
+      {/* Paneles visibles para todos */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <TopClientsPanel clients={topClients} currency={currency} />
+        {!isMember && <TopClientsPanel clients={topClients} currency={currency} />}
         <UpcomingProjectsPanel projects={projects} />
       </div>
 
-      {/* Activity feed */}
-      <div className="mb-6">
-        <ActivityFeed activity={recentActivity} />
-      </div>
+      {isMember && (
+        <div className="mb-6">
+          <ProjectsPanel projects={projects} />
+        </div>
+      )}
+
+      {!isMember && (
+        <div className="mb-6">
+          <ActivityFeed activity={recentActivity} />
+        </div>
+      )}
 
     </div>
   )

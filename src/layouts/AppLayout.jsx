@@ -53,12 +53,12 @@ const navItemsTop = [
   { to: '/projects',      label: 'Proyectos',       icon: FolderIcon },
   { to: '/tasks',         label: 'Tareas',          icon: ClipboardDocumentListIcon },
   { to: '/projects/calendar', label: 'Agenda',      icon: CalendarDaysIcon },
-  { to: '/quotes',        label: 'Presupuestos',    icon: DocumentTextIcon },
+  { to: '/quotes',        label: 'Presupuestos',    icon: DocumentTextIcon,   memberHidden: true },
 ]
 
 const navItemsBottom = [
-  { to: '/finances',      label: 'Finanzas',        icon: BanknotesIcon },
-  { to: '/reports',       label: 'Reportes',        icon: ChartBarIcon },
+  { to: '/finances',      label: 'Finanzas',        icon: BanknotesIcon,      memberHidden: true },
+  { to: '/reports',       label: 'Reportes',        icon: ChartBarIcon,       memberHidden: true },
   { to: '/members',       label: 'Equipo',          icon: UserGroupIcon },
 ]
 
@@ -97,9 +97,10 @@ function ProfileDropdown({ profile, user }) {
 
   function go(path) { setOpen(false); navigate(path) }
 
+  const isMember = user?.role === 'member'
   const items = [
-    { label: 'Perfil',        icon: UserCircleIcon,      action: () => go('/profile') },
-    { label: 'Empresa',       icon: BuildingOffice2Icon, action: () => go('/organization') },
+    { label: 'Perfil',   icon: UserCircleIcon,      action: () => go('/profile') },
+    ...(!isMember ? [{ label: 'Empresa', icon: BuildingOffice2Icon, action: () => go('/organization') }] : []),
   ]
 
   return (
@@ -201,10 +202,11 @@ function NavItem({ to, label, icon: Icon, exact, collapsed, onNavClick, badge = 
   )
 }
 
-function SidebarContent({ collapsed, onNavClick, dark, onToggleTheme, newProjectsCount }) {
+function SidebarContent({ collapsed, onNavClick, dark, onToggleTheme, newProjectsCount, user }) {
   const location = useLocation()
   const isOnStock = location.pathname.startsWith('/stock')
   const [stockOpen, setStockOpen] = useState(isOnStock)
+  const isMember = user?.role === 'member'
 
   const stockGroup = (
     <div key="stock-group">
@@ -277,7 +279,7 @@ function SidebarContent({ collapsed, onNavClick, dark, onToggleTheme, newProject
 
       <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
         {/* Items superiores (hasta Presupuestos) */}
-        {navItemsTop.map(({ to, label, icon: Icon, exact }) => (
+        {navItemsTop.filter(item => !(isMember && item.memberHidden)).map(({ to, label, icon: Icon, exact }) => (
           <NavItem
             key={to}
             to={to} label={label} icon={Icon} exact={exact}
@@ -289,8 +291,8 @@ function SidebarContent({ collapsed, onNavClick, dark, onToggleTheme, newProject
         {/* Stock justo debajo de Presupuestos */}
         {stockGroup}
 
-        {/* Items inferiores (Egresos, Equipo) */}
-        {navItemsBottom.map(({ to, label, icon: Icon, exact }) => (
+        {/* Items inferiores (Finanzas, Reportes, Equipo) */}
+        {navItemsBottom.filter(item => !(isMember && item.memberHidden)).map(({ to, label, icon: Icon, exact }) => (
           <NavItem
             key={to}
             to={to} label={label} icon={Icon} exact={exact}
@@ -411,6 +413,7 @@ export default function AppLayout() {
           dark={dark}
           onToggleTheme={toggle}
           newProjectsCount={newProjectsCount}
+          user={user}
         />
       </aside>
 
@@ -439,6 +442,7 @@ export default function AppLayout() {
           dark={dark}
           onToggleTheme={toggle}
           newProjectsCount={newProjectsCount}
+          user={user}
         />
       </aside>
 

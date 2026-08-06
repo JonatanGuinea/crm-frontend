@@ -18,6 +18,7 @@ import { getProjects } from '../../api/projects'
 import { useToast } from '../../components/Toast'
 import { useAuth } from '../../context/AuthContext'
 import { useConfirm } from '../../components/ConfirmDialog'
+import DatePicker from '../../components/DatePicker'
 import TaskModal from './TaskModal'
 import {
   PlusIcon,
@@ -142,19 +143,19 @@ function HistoryView() {
       <div className="flex items-center gap-2 flex-wrap">
         <div className="flex items-center gap-2">
           <label className="text-xs text-fg-muted whitespace-nowrap">Desde</label>
-          <input
-            type="date"
+          <DatePicker
             value={fromDate}
             onChange={e => { setFromDate(e.target.value); setVisible(25) }}
+            placeholder="Desde"
             className="px-2.5 py-1.5 rounded-lg bg-raised border border-line text-sm text-fg focus:outline-none focus:border-brand transition-colors"
           />
         </div>
         <div className="flex items-center gap-2">
           <label className="text-xs text-fg-muted whitespace-nowrap">Hasta</label>
-          <input
-            type="date"
+          <DatePicker
             value={toDate}
             onChange={e => { setToDate(e.target.value); setVisible(25) }}
+            placeholder="Hasta"
             className="px-2.5 py-1.5 rounded-lg bg-raised border border-line text-sm text-fg focus:outline-none focus:border-brand transition-colors"
           />
         </div>
@@ -509,6 +510,26 @@ export default function TasksPage() {
     setActiveTask(null)
   }
 
+  function buildStockBody(task) {
+    const items = task.stockItems ?? []
+    if (items.length === 0) return null
+    return (
+      <div className="flex flex-col gap-1.5">
+        <p className="text-xs font-medium text-fg-muted uppercase tracking-wide">Stock a descontar</p>
+        <ul className="flex flex-col gap-1">
+          {items.map(item => (
+            <li key={item.id} className="flex items-center justify-between text-sm">
+              <span className="text-fg">{item.product.name}</span>
+              <span className="text-fg-muted tabular-nums">
+                -{item.quantity} {item.product.unit}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+
   async function handleDragEnd({ active, over }) {
     setActiveTask(null)
     if (!over) return
@@ -520,7 +541,7 @@ export default function TasksPage() {
     if (task.status === 'in_progress' && newStatus === 'done') {
       const ok = await confirm(
         `¿Confirmás que "${task.title}" fue completada?`,
-        { confirmLabel: 'Sí, completar', danger: false }
+        { confirmLabel: 'Sí, completar', danger: false, body: buildStockBody(task) }
       )
       if (!ok) return
     }
@@ -539,7 +560,7 @@ export default function TasksPage() {
     if (task.status === 'in_progress' && newStatus === 'done') {
       const ok = await confirm(
         `¿Confirmás que "${task.title}" fue completada?`,
-        { confirmLabel: 'Sí, completar', danger: false }
+        { confirmLabel: 'Sí, completar', danger: false, body: buildStockBody(task) }
       )
       if (!ok) return
     }

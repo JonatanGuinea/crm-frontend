@@ -8,9 +8,9 @@ const ConfirmContext = createContext(null)
 export function ConfirmProvider({ children }) {
   const [dialog, setDialog] = useState(null) // { message, confirmLabel, danger, resolve, exiting }
 
-  const confirm = useCallback((message, { confirmLabel = 'Eliminar', danger = true } = {}) => {
+  const confirm = useCallback((message, { confirmLabel = 'Eliminar', danger = true, body = null } = {}) => {
     return new Promise(resolve => {
-      setDialog({ message, confirmLabel, danger, resolve, exiting: false })
+      setDialog({ message, confirmLabel, danger, body, resolve, exiting: false })
     })
   }, [])
 
@@ -45,6 +45,11 @@ export function ConfirmProvider({ children }) {
               </div>
               <p className="text-sm text-fg leading-snug pt-1.5">{dialog.message}</p>
             </div>
+            {dialog.body && (
+              <div className="border-t border-line pt-3">
+                {dialog.body}
+              </div>
+            )}
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => handleResolve(false)}

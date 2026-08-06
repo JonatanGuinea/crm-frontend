@@ -64,6 +64,11 @@ function GuestRoute({ children }) {
   return token ? <Navigate to="/" replace /> : children
 }
 
+function AdminRoute({ children }) {
+  const { user } = useAuth()
+  return user?.role !== 'member' ? children : <Navigate to="/" replace />
+}
+
 export default function App() {
   const [splashDone, setSplashDone] = useState(!initiallyAuthenticated)
 
@@ -89,13 +94,13 @@ export default function App() {
               <Route path="/projects" element={<ProjectsPage />} />
               <Route path="/projects/calendar" element={<ProjectCalendarPage />} />
               <Route path="/projects/:id" element={<ProjectDetailPage />} />
-              <Route path="/quotes" element={<QuotesPage />} />
-              <Route path="/quotes/:id" element={<QuoteDetailPage />} />
-              <Route path="/expenses" element={<ExpensesPage />} />
-              <Route path="/finances" element={<FinancesDashboard />} />
-              <Route path="/finances/movements" element={<MovementsPage />} />
-              <Route path="/finances/accounts" element={<AccountsPage />} />
-              <Route path="/finances/categories" element={<CategoriesPage />} />
+              <Route path="/quotes" element={<AdminRoute><QuotesPage /></AdminRoute>} />
+              <Route path="/quotes/:id" element={<AdminRoute><QuoteDetailPage /></AdminRoute>} />
+              <Route path="/expenses" element={<AdminRoute><ExpensesPage /></AdminRoute>} />
+              <Route path="/finances" element={<AdminRoute><FinancesDashboard /></AdminRoute>} />
+              <Route path="/finances/movements" element={<AdminRoute><MovementsPage /></AdminRoute>} />
+              <Route path="/finances/accounts" element={<AdminRoute><AccountsPage /></AdminRoute>} />
+              <Route path="/finances/categories" element={<AdminRoute><CategoriesPage /></AdminRoute>} />
               <Route path="/tasks" element={<TasksPage />} />
               <Route path="/stock" element={<StockDashboard />} />
               <Route path="/stock/products" element={<ProductsPage />} />
@@ -104,8 +109,8 @@ export default function App() {
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/members" element={<MembersPage />} />
               <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/organization" element={<OrgSettingsPage />} />
-              <Route path="/reports" element={<ReportsPage />} />
+              <Route path="/organization" element={<AdminRoute><OrgSettingsPage /></AdminRoute>} />
+              <Route path="/reports" element={<AdminRoute><ReportsPage /></AdminRoute>} />
             </Route>
 
             <Route path="/p/presupuesto/:id" element={<QuotePublicPage />} />
