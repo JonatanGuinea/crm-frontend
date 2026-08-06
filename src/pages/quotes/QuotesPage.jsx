@@ -204,7 +204,7 @@ export default function QuotesPage() {
   const { user } = useAuth()
   const toast = useToast()
   const canWrite = user?.role !== 'member'
-  const orgId = user?.organizationId
+  const orgId = user?.org
   const { data: orgData } = useQuery({
     queryKey: ['organization', orgId],
     queryFn: () => getOrganizations().then(r => r.data.data?.find(o => o.id === orgId)),

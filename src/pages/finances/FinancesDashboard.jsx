@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { getFinancesDashboard, seedFinancialCategories } from '../../api/finances'
+import { getFinancesDashboard, getCashMovements, confirmCashMovement, seedFinancialCategories } from '../../api/finances'
 import { useToast } from '../../components/Toast'
 import { fmt } from '../../utils/fmt'
 import MovementModal from './MovementModal'
@@ -9,7 +9,7 @@ import {
   BanknotesIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon,
   ChevronLeftIcon, ChevronRightIcon, BuildingLibraryIcon,
   ClockIcon, DevicePhoneMobileIcon, WalletIcon,
-  ChevronDownIcon,
+  ChevronDownIcon, XMarkIcon, CheckCircleIcon,
 } from '@heroicons/react/24/outline'
 
 
@@ -167,6 +167,8 @@ export default function FinancesDashboard() {
   const [selectedAccountId,  setSelectedAccountId]  = useState('')
   const [movementModal,      setMovementModal]      = useState(null)
   const [defaultApplied,     setDefaultApplied]     = useState(false)
+  const [showPending,        setShowPending]        = useState(false)
+  const [confirmingId,       setConfirmingId]       = useState(null)
   const _now = new Date()
   const [selectedMonth, setSelectedMonth] = useState({ year: _now.getFullYear(), month: _now.getMonth() + 1 })
 
@@ -206,6 +208,35 @@ export default function FinancesDashboard() {
   function invalidate() {
     qc.invalidateQueries(['finances-dashboard'])
     qc.invalidateQueries(['cash-movements'])
+    qc.invalidateQueries(['pending-movements'])
+  }
+
+  const pendingFrom = new Date(Date.UTC(selectedMonth.year, selectedMonth.month - 1, 1)).toISOString().slice(0, 10)
+  const pendingTo   = new Date(Date.UTC(selectedMonth.year, selectedMonth.month, 0)).toISOString().slice(0, 10)
+
+  const { data: pendingMovements = [], isLoading: pendingLoading } = useQuery({
+    queryKey: ['pending-movements', selectedAccountId, selectedMonth],
+    queryFn: () => getCashMovements({
+      status: 'pending',
+      ...(selectedAccountId ? { accountId: selectedAccountId } : {}),
+      from: pendingFrom,
+      to:   pendingTo,
+      limit: 100,
+    }).then(r => r.data.data?.items ?? []),
+    enabled: showPending,
+  })
+
+  async function handleConfirmPending(id) {
+    setConfirmingId(id)
+    try {
+      await confirmCashMovement(id)
+      toast('Movimiento confirmado', 'success')
+      invalidate()
+    } catch (err) {
+      toast(err.response?.data?.error || err.message || 'Error al confirmar', 'error')
+    } finally {
+      setConfirmingId(null)
+    }
   }
 
   async function handleSeed() {
@@ -336,7 +367,16 @@ export default function FinancesDashboard() {
       {/* ── Movimientos recientes ── */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold text-fg shrink-0">Últimos movimientos</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-fg shrink-0">Movimientos de hoy</h2>
+            <button
+              onClick={() => setShowPending(true)}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-warning border border-warning/30 bg-warning/5 hover:bg-warning/10 transition-colors"
+            >
+              <ClockIcon className="w-3.5 h-3.5" />
+              Ver pendientes
+            </button>
+          </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setMovementModal('expense')}
@@ -353,14 +393,14 @@ export default function FinancesDashboard() {
               <ArrowTrendingUpIcon className="w-10 h-7" /> Ingreso
             </button>
             <Link to="/finances/movements" className="text-xs text-fg-muted hover:text-fg flex items-center gap-0.5 transition-colors">
-              Ver todos <ChevronRightIcon className="w-3 h-3" />
+              Ver movimientos del mes <ChevronRightIcon className="w-3 h-3" />
             </Link>
           </div>
         </div>
         {(data?.recentMovements ?? []).length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-10 border border-dashed border-line rounded-2xl text-center">
             <BanknotesIcon className="w-8 h-8 text-fg-muted/30" />
-            <p className="text-sm text-fg-muted">Sin movimientos aún.</p>
+            <p className="text-sm text-fg-muted">Sin movimientos hoy.</p>
           </div>
         ) : (
           <div className="bg-surface/60 backdrop-blur-xl rounded-2xl border border-line overflow-hidden">
@@ -407,14 +447,12 @@ export default function FinancesDashboard() {
             </div>
           </div>
         )}
-        {(data?.recentMovements ?? []).length > 0 && (
-          <Link
-            to="/finances/movements"
-            className="self-center text-xs text-fg-muted hover:text-fg flex items-center gap-1 transition-colors py-1"
-          >
-            Ver más <ChevronRightIcon className="w-3 h-3" />
-          </Link>
-        )}
+        <Link
+          to="/finances/movements"
+          className="self-center text-xs font-medium text-brand hover:text-brand/80 flex items-center gap-1 transition-colors py-1 px-3 rounded-lg border border-brand/20 hover:bg-brand/5"
+        >
+          Ver movimientos del mes <ChevronRightIcon className="w-3 h-3" />
+        </Link>
       </div>
 
       {/* Seed prompt */}
@@ -424,6 +462,81 @@ export default function FinancesDashboard() {
           <button onClick={handleSeed} className="text-sm text-brand hover:underline">
             Inicializar categorías por defecto
           </button>
+        </div>
+      )}
+
+      {showPending && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowPending(false)} />
+          <div className="relative z-10 w-full sm:max-w-lg bg-surface rounded-t-2xl sm:rounded-2xl border border-line shadow-2xl flex flex-col max-h-[85vh]">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-line shrink-0">
+              <div>
+                <h3 className="text-sm font-semibold text-fg">Movimientos pendientes</h3>
+                <p className="text-xs text-fg-muted mt-0.5 capitalize">{monthLabel}</p>
+              </div>
+              <button onClick={() => setShowPending(false)} className="p-1.5 rounded-lg hover:bg-raised text-fg-muted hover:text-fg transition-colors">
+                <XMarkIcon className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="overflow-y-auto flex-1 px-5 py-4">
+              {pendingLoading ? (
+                <p className="text-center text-sm text-fg-muted py-10">Cargando…</p>
+              ) : pendingMovements.length === 0 ? (
+                <div className="flex flex-col items-center gap-2 py-12 text-fg-muted">
+                  <CheckCircleIcon className="w-8 h-8 opacity-30" />
+                  <p className="text-sm">Sin movimientos pendientes este mes.</p>
+                </div>
+              ) : (
+                <div className="flex flex-col divide-y divide-line">
+                  {pendingMovements.map(m => (
+                    <div key={m.id} className="flex items-center gap-3 py-3">
+                      <div className={`w-2 h-2 rounded-full shrink-0 ${m.type === 'income' || m.type === 'transfer_in' ? 'bg-success' : 'bg-danger'}`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-fg truncate">{m.description || TYPE_LABELS[m.type]}</p>
+                        <p className="text-xs text-fg-muted mt-0.5">
+                          {new Date(m.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
+                          {m.account && ` · ${m.account.name}`}
+                          {m.client && ` · ${m.client.name}`}
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className={`text-sm font-bold ${m.type === 'income' || m.type === 'transfer_in' ? 'text-success' : 'text-danger'}`}>
+                          {m.type === 'income' || m.type === 'transfer_in' ? '+' : '−'}${fmt(m.amount)}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleConfirmPending(m.id)}
+                        disabled={confirmingId === m.id}
+                        className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-success border border-success/30 hover:bg-success/5 transition-colors disabled:opacity-50"
+                      >
+                        <CheckCircleIcon className="w-3.5 h-3.5" />
+                        {confirmingId === m.id ? '…' : 'Confirmar'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            {pendingMovements.length > 0 && (
+              <div className="px-5 py-3 border-t border-line shrink-0 flex items-center justify-between">
+                <p className="text-xs text-fg-muted">
+                  {pendingMovements.length} pendiente{pendingMovements.length !== 1 ? 's' : ''}
+                </p>
+                <Link
+                  to="/finances/movements"
+                  onClick={() => setShowPending(false)}
+                  className="text-xs text-brand hover:underline"
+                >
+                  Ver en movimientos
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
