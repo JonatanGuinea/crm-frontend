@@ -12,7 +12,7 @@ import ProjectModal from './ProjectModal'
 import QuoteModal from '../quotes/QuoteModal'
 import TaskModal from '../tasks/TaskModal'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
-import { PlusIcon, PencilIcon, TrashIcon, CalendarDaysIcon, ChevronRightIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, PencilIcon, TrashIcon, CalendarDaysIcon, ChevronRightIcon, ChevronDownIcon, XCircleIcon } from '@heroicons/react/24/outline'
 
 const STATUS_COLORS = {
   pending:     'bg-warning-subtle text-warning',
@@ -30,12 +30,12 @@ const STATUS_DOT = {
   approved:    'bg-info',
   in_progress: 'bg-brand',
   finished:    'bg-brand',
-  cancelled:   'bg-fg-muted',
+  cancelled:   'bg-danger',
 }
 const ALLOWED_TRANSITIONS = {
   pending:     ['approved', 'cancelled'],
   approved:    ['in_progress', 'cancelled'],
-  in_progress: ['finished'],
+  in_progress: ['finished', 'cancelled'],
   finished:    [],
   cancelled:   [],
 }
@@ -132,8 +132,8 @@ const TASK_PRIORITY = {
   medium: { label: 'Media', cls: 'bg-warning-subtle text-warning' },
   low:    { label: 'Baja',  cls: 'bg-raised text-fg-muted' },
 }
-const NEXT_STATUS = { todo: 'in_progress', in_progress: 'done', done: null }
-const PREV_STATUS = { todo: null, in_progress: 'todo', done: 'in_progress' }
+const NEXT_STATUS = { todo: 'in_progress', in_progress: 'done', done: null, cancelled: null }
+const PREV_STATUS = { todo: null, in_progress: 'todo', done: 'in_progress', cancelled: null }
 
 function isOverdue(iso) {
   if (!iso) return false
@@ -151,18 +151,22 @@ function TaskAvatar({ user }) {
 }
 
 function MiniTaskCard({ task, canWrite, onEdit, onDelete, onMove }) {
-  const overdue = isOverdue(task.dueDate)
-  const prio    = TASK_PRIORITY[task.priority]
-  const canNext = Boolean(NEXT_STATUS[task.status])
-  const canPrev = Boolean(PREV_STATUS[task.status])
+  const overdue     = isOverdue(task.dueDate)
+  const prio        = TASK_PRIORITY[task.priority]
+  const isCancelled = task.status === 'cancelled'
+  const isDone      = task.status === 'done'
+  const canNext     = Boolean(NEXT_STATUS[task.status])
+  const canPrev     = Boolean(PREV_STATUS[task.status])
 
   return (
-    <div className={`group bg-surface border rounded-lg p-3 flex flex-col gap-2 transition-all hover:shadow-sm ${task.status === 'done' ? 'opacity-60' : ''} border-line`}>
+    <div className={`group bg-surface border rounded-lg p-3 flex flex-col gap-2 transition-all hover:shadow-sm ${
+      isCancelled ? 'opacity-60 border-danger/25 bg-raised/40' : isDone ? 'opacity-60 border-line' : 'border-line'
+    }`}>
       <div className="flex items-start justify-between gap-2">
-        <p className={`text-sm font-medium leading-snug flex-1 ${task.status === 'done' ? 'line-through text-fg-muted' : 'text-fg'}`}>
+        <p className={`text-sm font-medium leading-snug flex-1 ${isCancelled || isDone ? 'line-through text-fg-muted' : 'text-fg'}`}>
           {task.title}
         </p>
-        {canWrite && (
+        {canWrite && !isCancelled && (
           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
             <button onClick={() => onEdit(task)} className="p-1 rounded hover:bg-raised text-fg-muted hover:text-fg" title="Editar">
               <PencilIcon className="w-3 h-3" />
@@ -174,23 +178,32 @@ function MiniTaskCard({ task, canWrite, onEdit, onDelete, onMove }) {
         )}
       </div>
 
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${prio.cls}`}>{prio.label}</span>
-        {task.dueDate && (
-          <span className={`flex items-center gap-0.5 text-[11px] ${overdue && task.status !== 'done' ? 'text-danger' : 'text-fg-muted'}`}>
-            <CalendarDaysIcon className="w-3 h-3 shrink-0" />
-            {new Date(task.dueDate).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
-          </span>
-        )}
-        {task.assignedTo && (
-          <span className="ml-auto flex items-center gap-1">
-            <TaskAvatar user={task.assignedTo} />
-            <span className="text-[11px] text-fg-muted">{task.assignedTo.name.split(' ')[0]}</span>
-          </span>
-        )}
-      </div>
+      {isCancelled && (
+        <div className="flex items-center gap-1 text-danger">
+          <XCircleIcon className="w-3 h-3 shrink-0" />
+          <span className="text-[10px] font-semibold">Proyecto cancelado</span>
+        </div>
+      )}
 
-      {canWrite && (
+      {!isCancelled && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${prio.cls}`}>{prio.label}</span>
+          {task.dueDate && (
+            <span className={`flex items-center gap-0.5 text-[11px] ${overdue && !isDone ? 'text-danger' : 'text-fg-muted'}`}>
+              <CalendarDaysIcon className="w-3 h-3 shrink-0" />
+              {new Date(task.dueDate).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
+            </span>
+          )}
+          {task.assignedTo && (
+            <span className="ml-auto flex items-center gap-1">
+              <TaskAvatar user={task.assignedTo} />
+              <span className="text-[11px] text-fg-muted">{task.assignedTo.name.split(' ')[0]}</span>
+            </span>
+          )}
+        </div>
+      )}
+
+      {canWrite && !isCancelled && (
         <div className="flex items-center gap-1 pt-1 border-t border-line opacity-0 group-hover:opacity-100 transition-opacity">
           <button disabled={!canPrev} onClick={() => canPrev && onMove(task, PREV_STATUS[task.status])}
             className="flex items-center gap-0.5 text-[10px] text-fg-muted hover:text-fg disabled:opacity-30 disabled:cursor-not-allowed px-1 py-0.5 rounded hover:bg-raised">
@@ -245,7 +258,9 @@ function ProjectTasksPanel({ tasks, canWrite, onAdd, onEdit, onDelete, onMove })
       ) : (
         <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-3">
           {TASK_COLS.map(col => {
-            const colTasks = tasks.filter(t => t.status === col.id)
+            const colTasks = tasks.filter(t => col.id === 'done'
+              ? t.status === 'done' || t.status === 'cancelled'
+              : t.status === col.id)
             return (
               <div key={col.id} className="flex flex-col gap-2">
                 <div className="flex items-center gap-1.5 px-0.5">
@@ -310,6 +325,52 @@ export default function ProjectDetailPage() {
     onError: (err) => toast(err.response?.data?.error || err.message || 'Error al cambiar estado', 'error')
   })
 
+  async function handleStatusChange(status) {
+    if (status !== 'finished' && status !== 'cancelled') {
+      changeStatus.mutate(status)
+      return
+    }
+
+    const isCancelling = status === 'cancelled'
+    const pending = isCancelling
+      ? projectTasks.filter(t => t.status !== 'done' && t.status !== 'cancelled')
+      : projectTasks.filter(t => t.status !== 'done')
+
+    if (pending.length === 0) {
+      changeStatus.mutate(status)
+      return
+    }
+
+    const body = (
+      <div className="text-sm space-y-1">
+        <p className="text-xs text-fg-muted font-medium mb-1">
+          {pending.length} tarea{pending.length !== 1 ? 's' : ''} {isCancelling ? 'en curso o pendiente:' : 'sin completar:'}
+        </p>
+        {pending.map(t => (
+          <div key={t.id} className="flex items-center gap-2 text-fg-soft">
+            <span className="w-1.5 h-1.5 rounded-full bg-fg-muted shrink-0" />
+            {t.title}
+          </div>
+        ))}
+      </div>
+    )
+
+    const ok = await confirm(
+      isCancelling
+        ? '¿Cancelar el proyecto? Las tareas pendientes también serán canceladas.'
+        : '¿Finalizar el proyecto? Las tareas pendientes se marcarán como completadas.',
+      { confirmLabel: isCancelling ? 'Cancelar proyecto' : 'Finalizar y completar', danger: isCancelling, body }
+    )
+    if (!ok) return
+
+    const newTaskStatus = isCancelling ? 'cancelled' : 'done'
+    for (const t of pending) {
+      try { await updateTask(t.id, { status: newTaskStatus }) } catch {}
+    }
+    changeStatus.mutate(status)
+    qc.invalidateQueries(['tasks', { projectId: id }])
+  }
+
   const { data: project, isLoading } = useQuery({
     queryKey: ['project', id],
     queryFn: () => getProjectById(id).then(r => r.data.data)
@@ -354,7 +415,7 @@ export default function ProjectDetailPage() {
         <div>
           <h1 className="text-2xl font-bold text-fg leading-tight mb-1">{project.title}</h1>
           <div className="flex items-center gap-2 flex-wrap">
-            <StatusDropdown project={project} onUpdate={(status) => changeStatus.mutate(status)} />
+            <StatusDropdown project={project} onUpdate={handleStatusChange} />
             {project.client && (
               <Link to={`/clients/${project.client.id}`} className="text-sm text-brand hover:underline">
                 {project.client.name}

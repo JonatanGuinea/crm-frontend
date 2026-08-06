@@ -31,8 +31,9 @@ import {
   ChevronDownIcon,
   ClockIcon,
   TableCellsIcon,
+  XCircleIcon,
 } from '@heroicons/react/24/outline'
-import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid'
+import { CheckCircleIcon as CheckCircleSolid, XCircleIcon as XCircleSolid } from '@heroicons/react/24/solid'
 
 // ── constants ─────────────────────────────────────────────────────────────────
 
@@ -48,8 +49,8 @@ const PRIORITY = {
   low:    { label: 'Baja',  cls: 'bg-raised text-fg-muted' },
 }
 
-const NEXT_STATUS = { todo: 'in_progress', in_progress: 'done', done: null }
-const PREV_STATUS = { todo: null, in_progress: 'todo', done: 'in_progress' }
+const NEXT_STATUS = { todo: 'in_progress', in_progress: 'done', done: null, cancelled: null }
+const PREV_STATUS = { todo: null, in_progress: 'todo', done: 'in_progress', cancelled: null }
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -85,21 +86,24 @@ const STATUS_LABELS = {
   todo:        'Pendiente',
   in_progress: 'En progreso',
   done:        'Completada',
+  cancelled:   'Cancelada',
 }
 
 const STATUS_COLORS = {
   todo:        'bg-raised text-fg-muted',
   in_progress: 'bg-warning-subtle text-warning',
   done:        'bg-success-subtle text-success',
+  cancelled:   'bg-danger-subtle text-danger',
 }
 
 function actionLabel(fromStatus, toStatus) {
   if (!fromStatus) return { verb: 'creó la tarea', color: 'text-fg-muted' }
   if (toStatus === 'done')                                 return { verb: 'completó la tarea',              color: 'text-success' }
+  if (toStatus === 'cancelled')                            return { verb: 'canceló la tarea',               color: 'text-danger' }
   if (toStatus === 'in_progress' && fromStatus === 'done') return { verb: 'regresó la tarea a en progreso', color: 'text-warning' }
   if (toStatus === 'in_progress')                          return { verb: 'inició la tarea',                color: 'text-warning' }
   if (toStatus === 'todo')                                 return { verb: 'regresó la tarea a pendiente',   color: 'text-fg-muted' }
-  return { verb: `movió a ${STATUS_LABELS[toStatus]}`, color: 'text-fg-muted' }
+  return { verb: `movió a ${STATUS_LABELS[toStatus] ?? toStatus}`, color: 'text-fg-muted' }
 }
 
 // ── HistoryView ───────────────────────────────────────────────────────────────
@@ -229,17 +233,18 @@ function HistoryView() {
 // ── TaskCard ──────────────────────────────────────────────────────────────────
 
 function TaskCard({ task, onEdit, onDelete, onMove, isOverlay = false, justCompleted = false }) {
-  const overdue = isOverdue(task.dueDate)
-  const prio    = PRIORITY[task.priority]
-  const isDone  = task.status === 'done'
-  const canNext = Boolean(NEXT_STATUS[task.status])
-  const canPrev = Boolean(PREV_STATUS[task.status])
+  const overdue     = isOverdue(task.dueDate)
+  const prio        = PRIORITY[task.priority]
+  const isDone      = task.status === 'done'
+  const isCancelled = task.status === 'cancelled'
+  const canNext     = Boolean(NEXT_STATUS[task.status])
+  const canPrev     = Boolean(PREV_STATUS[task.status])
 
   return (
     <div
       className={`
         relative group bg-surface border rounded-xl p-3.5 flex flex-col gap-2.5
-        ${isDone ? 'border-success/30 bg-success-subtle/10' : 'border-line'}
+        ${isCancelled ? 'border-danger/20 bg-raised/50 opacity-70' : isDone ? 'border-success/30 bg-success-subtle/10' : 'border-line'}
         ${!isOverlay ? 'transition-shadow duration-[200ms] hover:shadow-md' : ''}
       `}
     >
@@ -255,14 +260,16 @@ function TaskCard({ task, onEdit, onDelete, onMove, isOverlay = false, justCompl
 
       {/* Prioridad + acciones */}
       <div className="flex items-center justify-between gap-2">
-        {isDone ? (
+        {isCancelled ? (
+          <XCircleSolid className="w-4 h-4 text-danger shrink-0" />
+        ) : isDone ? (
           <CheckCircleSolid className="w-4 h-4 text-success shrink-0" />
         ) : (
           <span className={`text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full ${prio.cls}`}>
             {prio.label}
           </span>
         )}
-        {!isOverlay && (
+        {!isOverlay && !isCancelled && (
           <div className="flex items-center gap-1">
             <button
               onClick={() => onEdit(task)}
@@ -283,12 +290,19 @@ function TaskCard({ task, onEdit, onDelete, onMove, isOverlay = false, justCompl
       </div>
 
       {/* Título */}
-      <p className={`text-sm font-medium leading-snug ${isDone ? 'text-fg-muted' : 'text-fg'}`}>
+      <p className={`text-sm font-medium leading-snug ${isCancelled || isDone ? 'text-fg-muted' : 'text-fg'} ${isCancelled ? 'line-through' : ''}`}>
         {task.title}
       </p>
 
+      {/* Badge cancelada */}
+      {isCancelled && (
+        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-danger-subtle text-danger w-fit">
+          Proyecto cancelado
+        </span>
+      )}
+
       {/* Descripción */}
-      {task.description && !isDone && (
+      {task.description && !isDone && !isCancelled && (
         <p className="text-xs text-fg-muted leading-relaxed line-clamp-2">{task.description}</p>
       )}
 
@@ -332,7 +346,7 @@ function TaskCard({ task, onEdit, onDelete, onMove, isOverlay = false, justCompl
       )}
 
       {/* Botones de movimiento — solo en mobile (desktop usa DnD) */}
-      {!isOverlay && (
+      {!isOverlay && !isCancelled && (
         <div className="flex items-center gap-1.5 pt-1 border-t border-line md:hidden">
           <button
             disabled={!canPrev}
@@ -536,7 +550,7 @@ export default function TasksPage() {
 
     const task      = tasks.find(t => t.id === active.id)
     const newStatus = over.id
-    if (!task || task.status === newStatus) return
+    if (!task || task.status === newStatus || task.status === 'cancelled') return
 
     if (task.status === 'in_progress' && newStatus === 'done') {
       const ok = await confirm(
@@ -591,7 +605,9 @@ export default function TasksPage() {
   })
 
   const byStatus = (status) => {
-    const list = filtered.filter(t => t.status === status)
+    const list = status === 'done'
+      ? filtered.filter(t => t.status === 'done' || t.status === 'cancelled')
+      : filtered.filter(t => t.status === status)
     if (status === 'done') {
       list.sort((a, b) => new Date(b.completedAt ?? 0) - new Date(a.completedAt ?? 0))
     }

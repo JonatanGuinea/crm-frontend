@@ -64,7 +64,7 @@ export default function TaskModal({ task, defaultStatus = 'todo', defaultProject
   })
   const members = (membersData ?? []).filter(m => m.status === 'active')
 
-  const { data: productsData } = useQuery({
+  const { data: productsData, isLoading: productsLoading } = useQuery({
     queryKey: ['products', { limit: 200, status: 'active' }],
     queryFn: () => getProducts({ limit: 200, status: 'active' }).then(r => r.data.data),
     staleTime: 60_000,
@@ -269,60 +269,63 @@ export default function TaskModal({ task, defaultStatus = 'todo', defaultProject
             </div>
 
             {/* Materiales / Stock */}
-            {products.length > 0 && (
-              <div className="border-t border-line pt-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <CubeIcon className="w-4 h-4 text-fg-muted" />
-                  <p className="text-xs font-semibold text-fg-muted uppercase tracking-wide">Materiales</p>
-                  <p className="text-xs text-fg-muted ml-auto">Se descuentan al completar</p>
-                </div>
+            <div className="border-t border-line pt-4">
+              <div className="flex items-center gap-2 mb-3">
+                <CubeIcon className="w-4 h-4 text-fg-muted" />
+                <p className="text-xs font-semibold text-fg-muted uppercase tracking-wide">Materiales</p>
+                <p className="text-xs text-fg-muted ml-auto">Se descuentan al completar</p>
+              </div>
 
-                {/* Ítems agregados */}
-                {stockItems.length > 0 && (
-                  <div className="flex flex-col gap-1.5 mb-3">
-                    {stockItems.map(item => {
-                      const available    = availableFor(item.product)
-                      const outOfStock   = Number(item.product.stock) <= 0
-                      const insufficient = available < item.quantity
-                      return (
-                        <div key={item.productId} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${insufficient ? 'bg-warning-subtle border border-warning/30' : 'bg-raised'}`}>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <p className="text-sm font-medium text-fg truncate">{item.product.name}</p>
-                              {insufficient && (
-                                <ExclamationTriangleIcon className="w-3.5 h-3.5 text-warning shrink-0" />
-                              )}
-                            </div>
-                            <p className="text-xs text-fg-muted font-mono">
-                              {item.product.sku}
-                              {outOfStock
-                                ? <span className="ml-1.5 text-danger font-medium">· Sin stock</span>
-                                : insufficient
-                                  ? <span className="ml-1.5 text-warning font-medium">· Disponible: {available} {item.product.unit}</span>
-                                  : null
-                              }
-                            </p>
+              {/* Ítems agregados */}
+              {stockItems.length > 0 && (
+                <div className="flex flex-col gap-1.5 mb-3">
+                  {stockItems.map(item => {
+                    const available    = availableFor(item.product)
+                    const outOfStock   = Number(item.product.stock) <= 0
+                    const insufficient = available < item.quantity
+                    return (
+                      <div key={item.productId} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${insufficient ? 'bg-warning-subtle border border-warning/30' : 'bg-raised'}`}>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-sm font-medium text-fg truncate">{item.product.name}</p>
+                            {insufficient && (
+                              <ExclamationTriangleIcon className="w-3.5 h-3.5 text-warning shrink-0" />
+                            )}
                           </div>
-                          <span className="text-sm font-semibold text-fg shrink-0">
-                            {item.quantity} <span className="text-xs font-normal text-fg-muted">{item.product.unit}</span>
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => removeStockItem(item.productId)}
-                            className="p-1 rounded-md hover:bg-danger-subtle text-fg-muted hover:text-danger transition-colors shrink-0"
-                          >
-                            <TrashIcon className="w-3.5 h-3.5" />
-                          </button>
+                          <p className="text-xs text-fg-muted font-mono">
+                            {item.product.sku}
+                            {outOfStock
+                              ? <span className="ml-1.5 text-danger font-medium">· Sin stock</span>
+                              : insufficient
+                                ? <span className="ml-1.5 text-warning font-medium">· Disponible: {available} {item.product.unit}</span>
+                                : null
+                            }
+                          </p>
                         </div>
-                      )
-                    })}
-                  </div>
-                )}
+                        <span className="text-sm font-semibold text-fg shrink-0">
+                          {item.quantity} <span className="text-xs font-normal text-fg-muted">{item.product.unit}</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removeStockItem(item.productId)}
+                          className="p-1 rounded-md hover:bg-danger-subtle text-fg-muted hover:text-danger transition-colors shrink-0"
+                        >
+                          <TrashIcon className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
 
-                {/* Agregar ítem */}
-                {availableProducts.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 min-w-0">
+              {/* Agregar ítem */}
+              {productsLoading ? (
+                <p className="text-xs text-fg-muted py-1">Cargando productos...</p>
+              ) : availableProducts.length === 0 && stockItems.length === 0 ? (
+                <p className="text-xs text-fg-muted py-1">No hay productos activos en el inventario.</p>
+              ) : availableProducts.length > 0 ? (
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 min-w-0">
                     <select
                       value={selectedProductId}
                       onChange={e => setSelectedProductId(e.target.value)}
@@ -347,27 +350,26 @@ export default function TaskModal({ task, defaultStatus = 'todo', defaultProject
                         )
                       })}
                     </select>
-                    </div>
-                    <input
-                      type="number"
-                      min="0.01"
-                      step="0.01"
-                      value={selectedQty}
-                      onChange={e => setSelectedQty(e.target.value)}
-                      className="w-20 px-3 py-2 rounded-lg bg-raised border border-line text-sm text-fg focus:outline-none focus:border-brand transition-colors"
-                    />
-                    <button
-                      type="button"
-                      onClick={addStockItem}
-                      disabled={!selectedProductId || !selectedQty || Number(selectedQty) <= 0}
-                      className="p-2 rounded-lg bg-brand text-white hover:opacity-90 transition-opacity disabled:opacity-40 shrink-0"
-                    >
-                      <PlusIcon className="w-4 h-4" />
-                    </button>
                   </div>
-                )}
-              </div>
-            )}
+                  <input
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value={selectedQty}
+                    onChange={e => setSelectedQty(e.target.value)}
+                    className="w-20 px-3 py-2 rounded-lg bg-raised border border-line text-sm text-fg focus:outline-none focus:border-brand transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={addStockItem}
+                    disabled={!selectedProductId || !selectedQty || Number(selectedQty) <= 0}
+                    className="p-2 rounded-lg bg-brand text-white hover:opacity-90 transition-opacity disabled:opacity-40 shrink-0"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : null}
+            </div>
 
           </div>
 

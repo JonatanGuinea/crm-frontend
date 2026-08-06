@@ -3,9 +3,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { getClients, getAllClientsHistory } from '../../api/clients'
 import ClientModal from './ClientModal'
-import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
 import { EnvelopeIcon, PhoneIcon, BuildingOfficeIcon, EyeIcon, ClockIcon, TableCellsIcon } from '@heroicons/react/24/outline'
+
+const PAGE_SIZE = 15
 
 export default function ClientsPage() {
   const { user } = useAuth()
@@ -13,14 +14,14 @@ export default function ClientsPage() {
   const qc = useQueryClient()
   const [tab, setTab]         = useState('table')
   const [search, setSearch]   = useState('')
-  const [page, setPage]       = useState(1)
+  const [visible, setVisible] = useState(PAGE_SIZE)
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [historyVisible, setHistoryVisible] = useState(25)
 
   const { data, isLoading } = useQuery({
-    queryKey: ['clients', search, page],
-    queryFn: () => getClients({ ...(search ? { name: search } : {}), page }).then(r => r.data)
+    queryKey: ['clients', search],
+    queryFn: () => getClients({ ...(search ? { name: search } : {}), limit: 500 }).then(r => r.data)
   })
 
   const { data: historyData = [] } = useQuery({
@@ -30,7 +31,11 @@ export default function ClientsPage() {
   })
 
   function openCreate() { setEditing(null); setModalOpen(true) }
-  function handleSearch(val) { setSearch(val); setPage(1) }
+  function handleSearch(val) { setSearch(val); setVisible(PAGE_SIZE) }
+
+  const allClients = data?.data ?? []
+  const shownClients = allClients.slice(0, visible)
+  const hasMore = allClients.length > visible
 
   return (
     <div className="p-4 md:p-8 min-h-full">

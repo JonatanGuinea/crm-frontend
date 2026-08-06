@@ -3,11 +3,13 @@ import { createPortal } from 'react-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { getProjects, updateProject, getAllProjectsHistory } from '../../api/projects'
+import { getTasks, updateTask } from '../../api/tasks'
 import ProjectModal from './ProjectModal'
 import QuoteModal from '../quotes/QuoteModal'
 import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
+import { useConfirm } from '../../components/ConfirmDialog'
 import { ChevronDownIcon, UserIcon, CalendarDaysIcon, BanknotesIcon, EyeIcon, PaperClipIcon, XMarkIcon, ClockIcon, TableCellsIcon } from '@heroicons/react/24/outline'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 
@@ -27,12 +29,12 @@ const STATUS_DOT = {
   approved:    'bg-info',
   in_progress: 'bg-brand',
   finished:    'bg-brand',
-  cancelled:   'bg-fg-muted',
+  cancelled:   'bg-danger',
 }
 const ALLOWED_TRANSITIONS = {
   pending:     ['approved', 'cancelled'],
   approved:    ['in_progress', 'cancelled'],
-  in_progress: ['finished'],
+  in_progress: ['finished', 'cancelled'],
   finished:    [],
   cancelled:   [],
 }
@@ -127,6 +129,7 @@ function StatusDropdown({ project, onUpdate }) {
 export default function ProjectsPage() {
   const { user } = useAuth()
   const toast = useToast()
+  const confirm = useConfirm()
   const isMember = user?.role === 'member'
   const canWrite = !isMember
   const qc = useQueryClient()
@@ -162,6 +165,57 @@ export default function ProjectsPage() {
     onSuccess: () => qc.invalidateQueries(['projects']),
     onError: (err) => toast(err.response?.data?.error || err.message || 'Error al cambiar estado', 'error')
   })
+
+  async function handleStatusChange(projectId, status) {
+    if (status !== 'finished' && status !== 'cancelled') {
+      changeStatus.mutate({ id: projectId, status })
+      return
+    }
+
+    const isCancelling = status === 'cancelled'
+    let pending = []
+    try {
+      const res = await getTasks({ projectId })
+      const all = res.data.data || []
+      pending = isCancelling
+        ? all.filter(t => t.status !== 'done' && t.status !== 'cancelled')
+        : all.filter(t => t.status !== 'done')
+    } catch {}
+
+    if (pending.length === 0) {
+      changeStatus.mutate({ id: projectId, status })
+      return
+    }
+
+    const body = (
+      <div className="text-sm space-y-1">
+        <p className="text-xs text-fg-muted font-medium mb-1">
+          {pending.length} tarea{pending.length !== 1 ? 's' : ''} {isCancelling ? 'en curso o pendiente:' : 'sin completar:'}
+        </p>
+        {pending.map(t => (
+          <div key={t.id} className="flex items-center gap-2 text-fg-soft">
+            <span className="w-1.5 h-1.5 rounded-full bg-fg-muted shrink-0" />
+            {t.title}
+          </div>
+        ))}
+      </div>
+    )
+
+    const ok = await confirm(
+      isCancelling
+        ? '¿Cancelar el proyecto? Las tareas pendientes también serán canceladas.'
+        : '¿Finalizar el proyecto? Las tareas pendientes se marcarán como completadas.',
+      { confirmLabel: isCancelling ? 'Cancelar proyecto' : 'Finalizar y completar', danger: isCancelling, body }
+    )
+    if (!ok) return
+
+    const newTaskStatus = isCancelling ? 'cancelled' : 'done'
+    for (const t of pending) {
+      try { await updateTask(t.id, { status: newTaskStatus }) } catch {}
+    }
+    changeStatus.mutate({ id: projectId, status })
+    qc.invalidateQueries(['tasks'])
+  }
 
   return (
     <div className="p-4 md:p-8">
@@ -272,7 +326,7 @@ export default function ProjectsPage() {
                 {/* Header: estado */}
                 <div className="flex items-start justify-between gap-2 mb-3">
                   <div className="flex items-center gap-1.5">
-                    <StatusDropdown project={p} onUpdate={(status) => changeStatus.mutate({ id: p.id, status })} />
+                    <StatusDropdown project={p} onUpdate={(status) => handleStatusChange(p.id, status)} />
                     {(() => { const n = p.quotes?.reduce((acc, q) => acc + (q.installments?.length || 0), 0) || 0; return n > 0 ? (
                       <span title={`${n} cuota${n !== 1 ? 's' : ''} pendiente${n !== 1 ? 's' : ''}`}
                         className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-warning-subtle text-warning text-xs font-medium">
@@ -360,7 +414,7 @@ export default function ProjectsPage() {
                       <td className="px-4 py-3 text-fg-soft">{p.client?.name || '-'}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1.5">
-                          <StatusDropdown project={p} onUpdate={(status) => changeStatus.mutate({ id: p.id, status })} />
+                          <StatusDropdown project={p} onUpdate={(status) => handleStatusChange(p.id, status)} />
                           {(() => { const n = p.quotes?.reduce((acc, q) => acc + (q.installments?.length || 0), 0) || 0; return n > 0 ? (
                             <span title={`${n} cuota${n !== 1 ? 's' : ''} pendiente${n !== 1 ? 's' : ''}`}
                               className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-warning-subtle text-warning text-xs font-medium">
