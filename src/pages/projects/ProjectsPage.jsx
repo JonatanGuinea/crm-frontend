@@ -6,7 +6,6 @@ import { getProjects, updateProject, getAllProjectsHistory } from '../../api/pro
 import { getTasks, updateTask } from '../../api/tasks'
 import ProjectModal from './ProjectModal'
 import QuoteModal from '../quotes/QuoteModal'
-import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
@@ -140,19 +139,24 @@ export default function ProjectsPage() {
     qc.invalidateQueries(['new-projects-count'])
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+  const PAGE_SIZE = 15
   const [tab, setTab]             = useState('table')
   const [historyVisible, setHistoryVisible] = useState(25)
   const [statusFilter, setStatusFilter] = useState('')
-  const [page, setPage]           = useState(1)
+  const [visible, setVisible]     = useState(15)
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing]     = useState(null)
   const [quotingProject, setQuotingProject]   = useState(null)
   const [attachingProject, setAttachingProject] = useState(null)
 
   const { data, isLoading } = useQuery({
-    queryKey: ['projects', statusFilter, page],
-    queryFn: () => getProjects({ ...(statusFilter ? { status: statusFilter } : {}), page }).then(r => r.data)
+    queryKey: ['projects', statusFilter],
+    queryFn: () => getProjects({ ...(statusFilter ? { status: statusFilter } : {}), limit: 500 }).then(r => r.data)
   })
+
+  const allProjects = data?.data ?? []
+  const shownProjects = allProjects.slice(0, visible)
+  const hasMore = allProjects.length > visible
 
   const { data: historyData = [] } = useQuery({
     queryKey: ['projects-history'],
@@ -308,7 +312,7 @@ export default function ProjectsPage() {
       {tab === 'table' && <>
       <select
         value={statusFilter}
-        onChange={e => { setStatusFilter(e.target.value); setPage(1) }}
+        onChange={e => { setStatusFilter(e.target.value); setVisible(PAGE_SIZE) }}
         className="mb-4 w-full md:w-auto px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
       >
         <option value="">Todos los estados</option>
@@ -321,7 +325,7 @@ export default function ProjectsPage() {
         <>
           {/* Mobile: cards */}
           <div className="md:hidden grid grid-cols-1 gap-3">
-            {data?.data?.map(p => (
+            {shownProjects.map(p => (
               <div key={p.id} className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-4">
                 {/* Header: estado */}
                 <div className="flex items-start justify-between gap-2 mb-3">
@@ -387,7 +391,7 @@ export default function ProjectsPage() {
                 </div>
               </div>
             ))}
-            {!data?.data?.length && (
+            {!allProjects.length && (
               <p className="py-10 text-center text-sm text-fg-muted">Sin proyectos</p>
             )}
           </div>
@@ -408,7 +412,7 @@ export default function ProjectsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line">
-                  {data?.data?.map(p => (
+                  {shownProjects.map(p => (
                     <tr key={p.id} className="hover:bg-raised">
                       <td className="px-4 py-3 font-medium text-fg">{p.title}</td>
                       <td className="px-4 py-3 text-fg-soft">{p.client?.name || '-'}</td>
@@ -474,7 +478,7 @@ export default function ProjectsPage() {
                       </td>
                     </tr>
                   ))}
-                  {!data?.data?.length && (
+                  {!allProjects.length && (
                     <tr><td colSpan={7} className="px-4 py-6 text-center text-fg-muted">Sin proyectos</td></tr>
                   )}
                 </tbody>
@@ -484,7 +488,14 @@ export default function ProjectsPage() {
         </>
       )}
 
-      <Pagination pagination={data?.pagination} onPageChange={setPage} />
+      {hasMore && (
+        <button
+          onClick={() => setVisible(v => v + PAGE_SIZE)}
+          className="mt-4 w-full py-2.5 text-sm text-fg-muted hover:text-fg border border-dashed border-line rounded-xl transition-colors"
+        >
+          Ver más ({allProjects.length - visible} restante{allProjects.length - visible !== 1 ? 's' : ''})
+        </button>
+      )}
       </>}
 
       {modalOpen && (

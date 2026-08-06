@@ -6,10 +6,10 @@ import { getQuotes, updateQuote, sendQuote, downloadQuotePdf, getAllQuotesHistor
 import { getOrganizations } from '../../api/organizations'
 import QuoteModal from './QuoteModal'
 import QuoteModalPotential from './QuoteModalPotential'
-import Pagination from '../../components/Pagination'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
-import { ChevronDownIcon, UserIcon, ArrowDownTrayIcon, PaperAirplaneIcon, EyeIcon, UserPlusIcon, UsersIcon, TableCellsIcon, ClockIcon } from '@heroicons/react/24/outline'
+import DatePicker from '../../components/DatePicker'
+import { ChevronDownIcon, UserIcon, ArrowDownTrayIcon, PaperAirplaneIcon, EyeIcon, UserPlusIcon, UsersIcon, TableCellsIcon, ClockIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 const STATUS_LABELS = {
   draft: 'Borrador', sent: 'Enviado', approved: 'Aprobado',
@@ -214,7 +214,9 @@ export default function QuotesPage() {
   const qc = useQueryClient()
   const [tab, setTab] = useState('table')
   const [statusFilter, setStatusFilter] = useState('')
-  const [page, setPage] = useState(1)
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate]     = useState('')
+  const [visible, setVisible]   = useState(15)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [downloading, setDownloading] = useState(null)
@@ -226,9 +228,18 @@ export default function QuotesPage() {
   const newBtnRef = useRef(null)
 
   const { data, isLoading } = useQuery({
-    queryKey: ['quotes', statusFilter, page],
-    queryFn: () => getQuotes({ ...(statusFilter ? { status: statusFilter } : {}), page }).then(r => r.data)
+    queryKey: ['quotes', statusFilter, fromDate, toDate],
+    queryFn: () => getQuotes({
+      ...(statusFilter ? { status: statusFilter } : {}),
+      ...(fromDate ? { fromDate } : {}),
+      ...(toDate   ? { toDate }   : {}),
+    }).then(r => r.data)
   })
+
+  const allQuotes = data?.data ?? []
+  const shownQuotes = allQuotes.slice(0, visible)
+  const hasMore = allQuotes.length > visible
+  const hasDateFilter = fromDate || toDate
 
   const { data: historyData, isLoading: historyLoading } = useQuery({
     queryKey: ['quotes-history'],
@@ -431,17 +442,47 @@ export default function QuotesPage() {
       )}
 
       {tab === 'table' && <>
-      <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1) }}
-        className="mb-4 w-full md:w-auto px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg">
-        <option value="">Todos los estados</option>
-        {Object.entries(STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-      </select>
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setVisible(15) }}
+          className="px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg w-full md:w-auto">
+          <option value="">Todos los estados</option>
+          {Object.entries(STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+        </select>
+
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-fg-muted whitespace-nowrap">Desde</span>
+          <DatePicker
+            value={fromDate}
+            onChange={e => { setFromDate(e.target.value); setVisible(15) }}
+            placeholder="Fecha desde"
+            className="px-3 py-2 rounded-md bg-surface border border-line-soft text-sm text-fg focus:outline-none focus:ring-2 focus:ring-brand transition-colors"
+          />
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-fg-muted whitespace-nowrap">Hasta</span>
+          <DatePicker
+            value={toDate}
+            onChange={e => { setToDate(e.target.value); setVisible(15) }}
+            placeholder="Fecha hasta"
+            className="px-3 py-2 rounded-md bg-surface border border-line-soft text-sm text-fg focus:outline-none focus:ring-2 focus:ring-brand transition-colors"
+          />
+        </div>
+        {hasDateFilter && (
+          <button
+            onClick={() => { setFromDate(''); setToDate(''); setVisible(15) }}
+            className="flex items-center gap-1 text-xs text-fg-muted hover:text-fg transition-colors"
+          >
+            <XMarkIcon className="w-3.5 h-3.5" />
+            Limpiar fechas
+          </button>
+        )}
+      </div>
 
       {isLoading ? <p className="text-sm text-fg-soft">Cargando...</p> : (
         <>
           {/* Mobile: cards */}
           <div className="md:hidden grid grid-cols-1 gap-3">
-            {data?.data?.map(q => (
+            {shownQuotes.map(q => (
               <div key={q.id} className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-4">
                 {/* Header: número + estado */}
                 <div className="flex items-center justify-between gap-2 mb-3">
@@ -503,7 +544,7 @@ export default function QuotesPage() {
                 </div>
               </div>
             ))}
-            {!data?.data?.length && (
+            {!allQuotes.length && (
               <p className="py-10 text-center text-sm text-fg-muted">Sin presupuestos</p>
             )}
           </div>
@@ -524,7 +565,7 @@ export default function QuotesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line">
-                  {data?.data?.map(q => (
+                  {shownQuotes.map(q => (
                     <tr key={q.id} className="hover:bg-raised">
                       <td className="px-4 py-3 text-fg-muted">#{q.number}</td>
                       <td className="px-4 py-3 font-medium text-fg">
@@ -556,7 +597,7 @@ export default function QuotesPage() {
                       </td>
                     </tr>
                   ))}
-                  {!data?.data?.length && (
+                  {!allQuotes.length && (
                     <tr><td colSpan={7} className="px-4 py-6 text-center text-fg-muted">Sin presupuestos</td></tr>
                   )}
                 </tbody>
@@ -566,7 +607,14 @@ export default function QuotesPage() {
         </>
       )}
 
-      <Pagination pagination={data?.pagination} onPageChange={setPage} />
+      {hasMore && (
+        <button
+          onClick={() => setVisible(v => v + 15)}
+          className="mt-4 w-full py-2.5 text-sm text-fg-muted hover:text-fg border border-dashed border-line rounded-xl transition-colors"
+        >
+          Ver más ({allQuotes.length - visible} restante{allQuotes.length - visible !== 1 ? 's' : ''})
+        </button>
+      )}
       </>}
 
       {modalOpen && (

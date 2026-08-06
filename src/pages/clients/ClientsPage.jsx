@@ -139,7 +139,7 @@ export default function ClientsPage() {
         <>
           {/* Mobile: cards */}
           <div className="md:hidden grid grid-cols-1 gap-3">
-            {data?.data?.map(c => (
+            {shownClients.map(c => (
               <div key={c.id} className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-4">
                 {/* Avatar + nombre */}
                 <div className="flex items-center gap-3 mb-3">
@@ -181,7 +181,7 @@ export default function ClientsPage() {
                 </div>
               </div>
             ))}
-            {!data?.data?.length && (
+            {!allClients.length && (
               <p className="py-10 text-center text-sm text-fg-muted">Sin clientes</p>
             )}
           </div>
@@ -200,7 +200,7 @@ export default function ClientsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line">
-                  {data?.data?.map(c => (
+                  {shownClients.map(c => (
                     <tr key={c.id} className="hover:bg-raised">
                       <td className="px-4 py-3 font-medium text-fg">{c.name}</td>
                       <td className="px-4 py-3 text-fg-soft">{c.email || '-'}</td>
@@ -214,17 +214,24 @@ export default function ClientsPage() {
                       </td>
                     </tr>
                   ))}
-                  {!data?.data?.length && (
+                  {!allClients.length && (
                     <tr><td colSpan={5} className="px-4 py-6 text-center text-fg-muted">Sin clientes</td></tr>
                   )}
                 </tbody>
               </table>
             </div>
           </div>
+
+          {hasMore && (
+            <button
+              onClick={() => setVisible(v => v + PAGE_SIZE)}
+              className="mt-4 w-full py-2.5 text-sm text-fg-muted hover:text-fg border border-dashed border-line rounded-xl transition-colors"
+            >
+              Ver más ({allClients.length - visible} restante{allClients.length - visible !== 1 ? 's' : ''})
+            </button>
+          )}
         </>
       )}
-
-      <Pagination pagination={data?.pagination} onPageChange={setPage} />
       </>}
 
       {modalOpen && (
