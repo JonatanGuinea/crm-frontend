@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { createQuote, updateQuote, getQuoteById } from '../../api/quotes'
 import { getOrganizations } from '../../api/organizations'
+import { getProducts } from '../../api/stock'
 import { createInstallments, createCustomInstallments } from '../../api/installments'
 import DatePicker from '../../components/DatePicker'
 import LineItemsEditor from '../../components/LineItemsEditor'
@@ -87,6 +88,12 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
     queryKey: ['quote', quoteId],
     queryFn: () => getQuoteById(quoteId).then(r => r.data.data),
     enabled: isEditing,
+  })
+
+  const { data: productsData } = useQuery({
+    queryKey: ['products-for-quote'],
+    queryFn: () => getProducts({ limit: 200 }).then(r => r.data.data?.items ?? []),
+    staleTime: 5 * 60 * 1000,
   })
 
   useEffect(() => {
@@ -353,7 +360,7 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
               <div>
                 <label className={labelCls}>Ítems *</label>
                 <div className="border border-line rounded-lg p-3 bg-raised">
-                  <LineItemsEditor items={items} onChange={setItems} />
+                  <LineItemsEditor items={items} onChange={setItems} products={productsData ?? []} />
                 </div>
               </div>
 

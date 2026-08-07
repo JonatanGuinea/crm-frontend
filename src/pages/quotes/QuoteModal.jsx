@@ -4,6 +4,7 @@ import { getClients } from '../../api/clients'
 import { getProjects } from '../../api/projects'
 import { getQuoteById, createQuote, updateQuote } from '../../api/quotes'
 import { getOrganizations } from '../../api/organizations'
+import { getProducts } from '../../api/stock'
 import { createInstallments, createCustomInstallments } from '../../api/installments'
 import DatePicker from '../../components/DatePicker'
 import LineItemsEditor from '../../components/LineItemsEditor'
@@ -70,6 +71,12 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
     queryKey: ['quote', quoteId],
     queryFn: () => getQuoteById(quoteId).then(r => r.data.data),
     enabled: isEditing
+  })
+
+  const { data: productsData } = useQuery({
+    queryKey: ['products-for-quote'],
+    queryFn: () => getProducts({ limit: 200 }).then(r => r.data.data?.items ?? []),
+    staleTime: 5 * 60 * 1000,
   })
 
   useEffect(() => {
@@ -256,7 +263,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
           <div>
             <label className={labelCls}>Ítems *</label>
             <div className="border border-line rounded-lg p-3 bg-raised">
-              <LineItemsEditor items={items} onChange={setItems} />
+              <LineItemsEditor items={items} onChange={setItems} products={productsData ?? []} />
             </div>
           </div>
 
