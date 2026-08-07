@@ -9,7 +9,7 @@ import {
   BanknotesIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon,
   ChevronLeftIcon, ChevronRightIcon, BuildingLibraryIcon,
   ClockIcon, DevicePhoneMobileIcon, WalletIcon,
-  ChevronDownIcon, XMarkIcon, CheckCircleIcon,
+  ChevronDownIcon, CheckCircleIcon,
 } from '@heroicons/react/24/outline'
 
 
@@ -167,7 +167,6 @@ export default function FinancesDashboard() {
   const [selectedAccountId,  setSelectedAccountId]  = useState('')
   const [movementModal,      setMovementModal]      = useState(null)
   const [defaultApplied,     setDefaultApplied]     = useState(false)
-  const [showPending,        setShowPending]        = useState(false)
   const [confirmingId,       setConfirmingId]       = useState(null)
   const _now = new Date()
   const [selectedMonth, setSelectedMonth] = useState({ year: _now.getFullYear(), month: _now.getMonth() + 1 })
@@ -211,8 +210,9 @@ export default function FinancesDashboard() {
     qc.invalidateQueries(['pending-movements'])
   }
 
-  const pendingFrom = new Date(Date.UTC(selectedMonth.year, selectedMonth.month - 1, 1)).toISOString().slice(0, 10)
-  const pendingTo   = new Date(Date.UTC(selectedMonth.year, selectedMonth.month, 0)).toISOString().slice(0, 10)
+  const _pad        = n => String(n).padStart(2, '0')
+  const pendingFrom = `${selectedMonth.year}-${_pad(selectedMonth.month)}-01`
+  const pendingTo   = `${selectedMonth.year}-${_pad(selectedMonth.month)}-${_pad(new Date(selectedMonth.year, selectedMonth.month, 0).getDate())}`
 
   const { data: pendingMovements = [], isLoading: pendingLoading } = useQuery({
     queryKey: ['pending-movements', selectedAccountId, selectedMonth],
@@ -223,7 +223,7 @@ export default function FinancesDashboard() {
       to:   pendingTo,
       limit: 100,
     }).then(r => r.data.data?.items ?? []),
-    enabled: showPending,
+    enabled: true,
   })
 
   async function handleConfirmPending(id) {
@@ -367,33 +367,27 @@ export default function FinancesDashboard() {
       {/* ── Movimientos recientes ── */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-fg shrink-0">Movimientos de hoy</h2>
-            <button
-              onClick={() => setShowPending(true)}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-warning border border-warning/30 bg-warning/5 hover:bg-warning/10 transition-colors"
-            >
-              <ClockIcon className="w-3.5 h-3.5" />
-              Ver pendientes
-            </button>
-          </div>
+          <h2 className="text-sm font-semibold text-fg shrink-0">Movimientos de hoy</h2>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setMovementModal('expense')}
               disabled={allAccounts.length === 0}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-danger/10 text-danger border border-danger/20 text-xs font-medium hover:bg-danger/20 transition-colors disabled:opacity-40"
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-danger/10 text-danger border border-danger/20 text-xs font-medium hover:bg-danger/20 transition-colors disabled:opacity-40"
             >
-              <ArrowTrendingDownIcon className="w-10 h-7" /> Egreso
+              <ArrowTrendingDownIcon className="w-4 h-4" /> Egreso
             </button>
             <button
               onClick={() => setMovementModal('income')}
               disabled={allAccounts.length === 0}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success/10 text-success border border-success/20 text-xs font-medium hover:bg-success/20 transition-colors disabled:opacity-40"
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-success/10 text-success border border-success/20 text-xs font-medium hover:bg-success/20 transition-colors disabled:opacity-40"
             >
-              <ArrowTrendingUpIcon className="w-10 h-7" /> Ingreso
+              <ArrowTrendingUpIcon className="w-4 h-4" /> Ingreso
             </button>
-            <Link to="/finances/movements" className="text-xs text-fg-muted hover:text-fg flex items-center gap-0.5 transition-colors">
-              Ver movimientos del mes <ChevronRightIcon className="w-3 h-3" />
+            <Link
+              to="/finances/movements"
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg border border-brand/20 text-xs font-medium text-brand hover:text-brand/80 hover:bg-brand/5 transition-colors"
+            >
+              Ver todos <ChevronRightIcon className="w-3 h-3" />
             </Link>
           </div>
         </div>
@@ -447,12 +441,7 @@ export default function FinancesDashboard() {
             </div>
           </div>
         )}
-        <Link
-          to="/finances/movements"
-          className="self-center text-xs font-medium text-brand hover:text-brand/80 flex items-center gap-1 transition-colors py-1 px-3 rounded-lg border border-brand/20 hover:bg-brand/5"
-        >
-          Ver movimientos del mes <ChevronRightIcon className="w-3 h-3" />
-        </Link>
+       
       </div>
 
       {/* Seed prompt */}
@@ -465,80 +454,82 @@ export default function FinancesDashboard() {
         </div>
       )}
 
-      {showPending && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowPending(false)} />
-          <div className="relative z-10 w-full sm:max-w-lg bg-surface rounded-t-2xl sm:rounded-2xl border border-line shadow-2xl flex flex-col max-h-[85vh]">
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-line shrink-0">
-              <div>
-                <h3 className="text-sm font-semibold text-fg">Movimientos pendientes</h3>
-                <p className="text-xs text-fg-muted mt-0.5 capitalize">{monthLabel}</p>
-              </div>
-              <button onClick={() => setShowPending(false)} className="p-1.5 rounded-lg hover:bg-raised text-fg-muted hover:text-fg transition-colors">
-                <XMarkIcon className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Body */}
-            <div className="overflow-y-auto flex-1 px-5 py-4">
-              {pendingLoading ? (
-                <p className="text-center text-sm text-fg-muted py-10">Cargando…</p>
-              ) : pendingMovements.length === 0 ? (
-                <div className="flex flex-col items-center gap-2 py-12 text-fg-muted">
-                  <CheckCircleIcon className="w-8 h-8 opacity-30" />
-                  <p className="text-sm">Sin movimientos pendientes este mes.</p>
-                </div>
-              ) : (
-                <div className="flex flex-col divide-y divide-line">
-                  {pendingMovements.map(m => (
-                    <div key={m.id} className="flex items-center gap-3 py-3">
-                      <div className={`w-2 h-2 rounded-full shrink-0 ${m.type === 'income' || m.type === 'transfer_in' ? 'bg-success' : 'bg-danger'}`} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-fg truncate">{m.description || TYPE_LABELS[m.type]}</p>
-                        <p className="text-xs text-fg-muted mt-0.5">
-                          {new Date(m.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
-                          {m.account && ` · ${m.account.name}`}
-                          {m.client && ` · ${m.client.name}`}
-                        </p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className={`text-sm font-bold ${m.type === 'income' || m.type === 'transfer_in' ? 'text-success' : 'text-danger'}`}>
-                          {m.type === 'income' || m.type === 'transfer_in' ? '+' : '−'}${fmt(m.amount)}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleConfirmPending(m.id)}
-                        disabled={confirmingId === m.id}
-                        className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-success border border-success/30 hover:bg-success/5 transition-colors disabled:opacity-50"
-                      >
-                        <CheckCircleIcon className="w-3.5 h-3.5" />
-                        {confirmingId === m.id ? '…' : 'Confirmar'}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Footer */}
+      {/* ── Movimientos pendientes del mes ── */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold text-fg shrink-0">
+            Movimientos pendientes del mes
             {pendingMovements.length > 0 && (
-              <div className="px-5 py-3 border-t border-line shrink-0 flex items-center justify-between">
-                <p className="text-xs text-fg-muted">
-                  {pendingMovements.length} pendiente{pendingMovements.length !== 1 ? 's' : ''}
-                </p>
-                <Link
-                  to="/finances/movements"
-                  onClick={() => setShowPending(false)}
-                  className="text-xs text-brand hover:underline"
-                >
-                  Ver en movimientos
-                </Link>
-              </div>
+              <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-[11px] font-semibold bg-warning/15 text-warning">
+                {pendingMovements.length}
+              </span>
             )}
-          </div>
+          </h2>
+          <Link to="/finances/movements" className="text-xs text-fg-muted hover:text-fg flex items-center gap-0.5 transition-colors">
+            Ver todos <ChevronRightIcon className="w-3 h-3" />
+          </Link>
         </div>
-      )}
+
+        {pendingLoading ? (
+          <div className="py-10 text-center text-sm text-fg-muted">Cargando…</div>
+        ) : pendingMovements.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 py-10 border border-dashed border-line rounded-2xl text-center">
+            <CheckCircleIcon className="w-8 h-8 text-fg-muted/30" />
+            <p className="text-sm text-fg-muted">Sin movimientos pendientes este mes.</p>
+          </div>
+        ) : (
+          <div className="bg-surface/60 backdrop-blur-xl rounded-2xl border border-line overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-raised border-b border-line">
+                  <tr>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Fecha</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Tipo</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Descripción</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Cuenta</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Categoría</th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Monto</th>
+                    <th className="px-4 py-3" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {pendingMovements.map(m => (
+                    <tr key={m.id} className="hover:bg-raised/50 transition-colors">
+                      <td className="px-4 py-3 text-fg-muted whitespace-nowrap text-xs">
+                        {new Date(m.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' })}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${TYPE_COLORS[m.type]}`}>
+                          {TYPE_LABELS[m.type]}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 max-w-[200px]">
+                        <p className="text-sm text-fg truncate">{m.description || '—'}</p>
+                        {m.client && <p className="text-xs text-fg-muted truncate">{m.client.name}</p>}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-fg-muted">{m.account?.name ?? '—'}</td>
+                      <td className="px-4 py-3 text-sm text-fg-muted">{m.category?.name ?? '—'}</td>
+                      <td className={`px-4 py-3 font-semibold text-right whitespace-nowrap text-sm ${amountColor(m)}`}>
+                        {amountSign(m)}${fmt(m.amount)}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => handleConfirmPending(m.id)}
+                          disabled={confirmingId === m.id}
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-success border border-success/30 hover:bg-success/5 transition-colors disabled:opacity-50"
+                        >
+                          <CheckCircleIcon className="w-3.5 h-3.5" />
+                          {confirmingId === m.id ? '…' : 'Confirmar'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
 
       {movementModal && (
         <MovementModal

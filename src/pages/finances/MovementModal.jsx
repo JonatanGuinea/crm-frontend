@@ -5,7 +5,10 @@ import { useToast } from '../../components/Toast'
 import DatePicker from '../../components/DatePicker'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 
-const today = () => new Date().toISOString().slice(0, 10)
+const today = () => {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 
 const inputCls = 'w-full rounded-lg border border-line bg-raised text-fg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40'
 const labelCls = 'text-xs font-medium text-fg-muted'
