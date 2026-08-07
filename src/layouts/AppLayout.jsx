@@ -399,7 +399,7 @@ export default function AppLayout() {
         style={{ height: '100dvh' }}
       >
         <div className="flex items-center justify-between px-4 h-16 border-b border-line shrink-0">
-          <span className="text-xl font-black tracking-tight select-none"><span className="text-fg">DANTE</span><span className="text-brand">UP</span></span>
+          <span className="flex-1 text-center text-xl font-black tracking-tight select-none"><span className="text-fg">DANTE</span><span className="text-brand">UP</span></span>
           <button
             onClick={() => setMobileOpen(false)}
             className="p-1.5 rounded-md text-fg-muted hover:bg-raised"
@@ -423,8 +423,8 @@ export default function AppLayout() {
       >
         <div className={`flex items-center border-b border-line h-16 shrink-0 ${collapsed ? 'justify-center px-0' : 'px-4 justify-between'}`}>
           {collapsed
-            ? <span className="text-sm font-black select-none mx-auto"><span className="text-fg">D</span><span className="text-brand">U</span></span>
-            : <span className="text-xl font-black tracking-tight select-none mx-auto"><span className="text-fg">DANTE</span><span className="text-brand">UP</span></span>
+            ? <span className="text-sm font-black select-none"><span className="text-fg">D</span><span className="text-brand">U</span></span>
+            : <span className="flex-1 text-center text-xl font-black tracking-tight select-none"><span className="text-fg">DANTE</span><span className="text-brand">UP</span></span>
           }
           <button
             onClick={toggleSidebar}
