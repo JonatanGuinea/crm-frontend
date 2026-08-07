@@ -1,5 +1,4 @@
 import { Outlet } from 'react-router-dom'
-import logo from '../assets/logo-dark-mode.png'
 
 const features = [
   {
@@ -152,7 +151,7 @@ export default function AuthLayout() {
 
         {/* Logo */}
         <div className="relative">
-          <img src={logo} alt="Sofiapp" className="h-24 w-auto" />
+          <span className="text-4xl font-black tracking-tight select-none"><span className="text-white">DANTE</span><span className="text-cyan-400">UP</span></span>
         </div>
 
         {/* Texto central — centrado verticalmente */}
@@ -189,7 +188,7 @@ export default function AuthLayout() {
         <div className="w-full max-w-4xl relative my-auto">
           {/* Logo móvil */}
           <div className="flex justify-center mb-8 lg:hidden">
-            <img src={logo} alt="Sofiapp" className="h-12 w-auto" />
+            <span className="text-3xl font-black tracking-tight select-none"><span className="text-white">DANTE</span><span className="text-cyan-400">UP</span></span>
           </div>
 
           <Outlet />
