@@ -8,12 +8,7 @@ import { getTopClients } from '../../api/clients'
 import { getOrganizations } from '../../api/organizations'
 import { useAuth } from '../../context/AuthContext'
 import { fmt } from '../../utils/fmt'
-import {
-  generateFinancesPDF,
-  generateQuotesPDF,
-  generateProjectsPDF,
-  generateStockPDF,
-} from '../../utils/generateReport'
+import { generateFullReportPDF } from '../../utils/generateReport'
 import {
   ChevronLeftIcon, ChevronRightIcon, ArrowDownTrayIcon,
   BanknotesIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon,
@@ -544,59 +539,59 @@ export default function ReportsPage() {
   const orgName  = orgData?.name ?? 'CRM'
 
   // ── finances ──
-  const { data: finData } = useQuery({
+  const { data: finData, isLoading: finLoading } = useQuery({
     queryKey: ['report-finances', period.year, period.month],
     queryFn:  () => getFinancesDashboard({ year: period.year, month: period.month }).then(r => r.data.data),
-    enabled:  tab === 'finances',
   })
 
   // ── quotes ──
-  const { data: quotesData } = useQuery({
+  const { data: quotesData, isLoading: quotesLoading } = useQuery({
     queryKey: ['report-quotes', currency],
     queryFn:  () => getQuotesDashboard(currency).then(r => r.data.data),
-    enabled:  tab === 'quotes',
   })
-  const { data: topClients } = useQuery({
+  const { data: topClients, isLoading: topClientsLoading } = useQuery({
     queryKey: ['report-top-clients'],
     queryFn:  () => getTopClients().then(r => r.data.data),
-    enabled:  tab === 'quotes',
   })
 
   // ── projects ──
-  const { data: projectsData } = useQuery({
+  const { data: projectsData, isLoading: projectsLoading } = useQuery({
     queryKey: ['report-projects'],
     queryFn:  () => getProjectsDashboard().then(r => r.data.data),
-    enabled:  tab === 'projects',
   })
 
   // ── stock ──
-  const { data: stockSummary } = useQuery({
+  const { data: stockSummary, isLoading: stockLoading } = useQuery({
     queryKey: ['report-stock'],
     queryFn:  () => getStockDashboard().then(r => r.data.data),
-    enabled:  tab === 'stock',
   })
-  const { data: outOfStockProducts } = useQuery({
+  const { data: outOfStockProducts, isLoading: outLoading } = useQuery({
     queryKey: ['report-stock-out'],
     queryFn:  () => getProducts({ outOfStock: 'true', limit: 200 }).then(r => r.data.data?.items ?? []),
-    enabled:  tab === 'stock',
   })
-  const { data: lowStockProducts } = useQuery({
+  const { data: lowStockProducts, isLoading: lowLoading } = useQuery({
     queryKey: ['report-stock-low'],
     queryFn:  () => getProducts({ lowStock: 'true', limit: 200 }).then(r => r.data.data?.items ?? []),
-    enabled:  tab === 'stock',
   })
+
+  const isLoadingAll = finLoading || quotesLoading || topClientsLoading || projectsLoading || stockLoading || outLoading || lowLoading
 
   // ── PDF ──
   function handleDownload() {
-    if (tab === 'finances') {
-      generateFinancesPDF({ data: finData, year: period.year, month: period.month, currency, orgName })
-    } else if (tab === 'quotes') {
-      generateQuotesPDF({ data: quotesData, topClients, currency, orgName })
-    } else if (tab === 'projects') {
-      generateProjectsPDF({ data: projectsData, orgName })
-    } else if (tab === 'stock') {
-      generateStockPDF({ summary: stockSummary, outOfStock: outOfStockProducts, lowStock: lowStockProducts, orgName })
-    }
+    generateFullReportPDF({
+      finData,
+      quotesData,
+      topClients,
+      projectsData,
+      stockSummary,
+      outOfStock: outOfStockProducts,
+      lowStock:   lowStockProducts,
+      year:       period.year,
+      month:      period.month,
+      currency,
+      orgName,
+      userName:   user?.name ?? 'Administrador',
+    })
   }
 
   const activeTab = TABS.find(t => t.key === tab)
@@ -608,28 +603,31 @@ export default function ReportsPage() {
       <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-fg">Reportes</h1>
-          <p className="text-sm text-fg-muted mt-0.5 capitalize">{activeTab?.label} · {periodLabel(period.year, period.month)}</p>
+          <p className="text-sm text-fg-muted mt-0.5 capitalize">
+            {activeTab?.label} · {periodLabel(period.year, period.month)}
+          </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          {tab === 'finances' && (
-            <div className="flex items-center gap-1 bg-raised border border-line rounded-xl px-1 py-1">
-              <button onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-surface text-fg-muted hover:text-fg transition-colors">
-                <ChevronLeftIcon className="w-4 h-4" />
-              </button>
-              <span className="text-sm font-medium text-fg capitalize px-2 min-w-[130px] text-center">
-                {periodLabel(period.year, period.month)}
-              </span>
-              <button onClick={nextMonth} disabled={isCurrentMonth} className="p-1.5 rounded-lg hover:bg-surface text-fg-muted hover:text-fg transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-                <ChevronRightIcon className="w-4 h-4" />
-              </button>
-            </div>
-          )}
+          {/* Selector de período (siempre visible — afecta la sección de finanzas) */}
+          <div className="flex items-center gap-1 bg-raised border border-line rounded-xl px-1 py-1">
+            <button onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-surface text-fg-muted hover:text-fg transition-colors">
+              <ChevronLeftIcon className="w-4 h-4" />
+            </button>
+            <span className="text-sm font-medium text-fg capitalize px-2 min-w-[130px] text-center">
+              {periodLabel(period.year, period.month)}
+            </span>
+            <button onClick={nextMonth} disabled={isCurrentMonth} className="p-1.5 rounded-lg hover:bg-surface text-fg-muted hover:text-fg transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+              <ChevronRightIcon className="w-4 h-4" />
+            </button>
+          </div>
+
           <button
             onClick={handleDownload}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-line text-sm font-medium text-fg-muted hover:text-fg hover:bg-raised transition-colors"
+            disabled={isLoadingAll}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand text-white text-sm font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
           >
             <ArrowDownTrayIcon className="w-4 h-4" />
-            Descargar PDF
+            {isLoadingAll ? 'Preparando…' : 'Reporte Completo'}
           </button>
         </div>
       </div>
