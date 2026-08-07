@@ -124,67 +124,175 @@ function Spinner() {
 function FinancesTab({ data, year, month, currency }) {
   if (!data) return <Spinner />
 
-  const evolution     = buildEvolution(data?.monthlyEvolution)
-  const totalBalance  = Number(data?.totalBalance  ?? 0)
-  const incomeMonth   = Number(data?.incomeMonth   ?? 0)
-  const expenseMonth  = Number(data?.expenseMonth  ?? 0)
-  const netMonth      = incomeMonth - expenseMonth
+  const evolution      = buildEvolution(data?.monthlyEvolution)
+  const totalBalance   = Number(data?.totalBalance  ?? 0)
+  const incomeMonth    = Number(data?.incomeMonth   ?? 0)
+  const expenseMonth   = Number(data?.expenseMonth  ?? 0)
+  const netMonth       = incomeMonth - expenseMonth
   const pendingIncome  = Number(data?.pendingIncome  ?? 0)
   const pendingExpense = Number(data?.pendingExpense ?? 0)
+  const incomeCount    = Number(data?.incomeCount    ?? 0)
+  const expenseCount   = Number(data?.expenseCount   ?? 0)
+
+  // Resumen ejecutivo
+  const estimatedInitial = totalBalance - netMonth
+  const operatingMargin  = incomeMonth > 0 ? ((netMonth / incomeMonth) * 100).toFixed(1) : null
+  const coverageRatio    = expenseMonth > 0 ? (incomeMonth / expenseMonth).toFixed(2) : null
+  const topCategory      = data?.categoryBreakdown?.[0]?.name ?? '—'
+
+  // Liquidez
+  const resultadoPendiente = pendingIncome - pendingExpense
+  const saldoProyectado    = totalBalance + resultadoPendiente
+  const cashRunway         = expenseMonth > 0 ? (totalBalance / expenseMonth).toFixed(1) : null
+  const eficienciaCobro    = (incomeMonth + pendingIncome) > 0
+    ? ((incomeMonth / (incomeMonth + pendingIncome)) * 100).toFixed(1)
+    : '0'
+
+  // Indicadores
+  const ticketIngreso = incomeCount > 0 ? incomeMonth / incomeCount : 0
+  const ticketEgreso  = expenseCount > 0 ? expenseMonth / expenseCount : 0
+  const topMovs       = data?.topMovementsMonth ?? []
+  const mayorIngreso  = topMovs.find(m => m.type === 'income')?.amount ?? 0
+  const mayorEgreso   = topMovs.find(m => m.type === 'expense')?.amount ?? 0
 
   const totalEvo = evolution.reduce((a, m) => ({
-    income: a.income + m.income, expense: a.expense + m.expense
+    income: a.income + m.income, expense: a.expense + m.expense,
   }), { income: 0, expense: 0 })
 
   return (
     <div className="flex flex-col gap-8">
 
+      {/* Resumen ejecutivo */}
       <div>
-        <SectionTitle>Resumen del mes — {periodLabel(year, month)}</SectionTitle>
+        <SectionTitle>Resumen ejecutivo — {periodLabel(year, month)}</SectionTitle>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <KpiCard icon={BuildingLibraryIcon} iconBg="bg-raised" iconColor="text-fg-muted"
+            label="Saldo inicial (estimado)" value={fmt(estimatedInitial, currency)} />
           <KpiCard icon={BuildingLibraryIcon} iconBg="bg-brand-subtle" iconColor="text-brand"
-            label="Saldo en caja" value={fmt(totalBalance, currency)} />
+            label="Saldo final en caja" value={fmt(totalBalance, currency)} />
+          <KpiCard icon={BanknotesIcon} iconBg={netMonth >= 0 ? 'bg-success-subtle' : 'bg-danger-subtle'}
+            iconColor={netMonth >= 0 ? 'text-success' : 'text-danger'}
+            label="Resultado del mes" value={fmt(netMonth, currency)} />
           <KpiCard icon={ArrowTrendingUpIcon} iconBg="bg-success-subtle" iconColor="text-success"
             label="Ingresos confirmados" value={fmt(incomeMonth, currency)} />
           <KpiCard icon={ArrowTrendingDownIcon} iconBg="bg-danger-subtle" iconColor="text-danger"
             label="Egresos confirmados" value={fmt(expenseMonth, currency)} />
-          <KpiCard icon={BanknotesIcon} iconBg={netMonth >= 0 ? 'bg-success-subtle' : 'bg-danger-subtle'}
-            iconColor={netMonth >= 0 ? 'text-success' : 'text-danger'}
-            label="Balance neto" value={fmt(netMonth, currency)} />
-          <KpiCard icon={ClockIcon} iconBg="bg-warning-subtle" iconColor="text-warning"
-            label="Ingresos pendientes" value={fmt(pendingIncome, currency)} />
-          <KpiCard icon={ClockIcon} iconBg="bg-warning-subtle" iconColor="text-warning"
-            label="Egresos pendientes" value={fmt(pendingExpense, currency)} />
+          <KpiCard icon={ArrowTrendingUpIcon} iconBg="bg-brand-subtle" iconColor="text-brand"
+            label="Margen operativo" value={operatingMargin !== null ? `${operatingMargin}%` : '—'} />
+          <KpiCard icon={BuildingLibraryIcon} iconBg="bg-info-subtle" iconColor="text-info"
+            label="Ratio de cobertura" value={coverageRatio !== null ? `${coverageRatio}x` : '—'} />
+          <KpiCard icon={ClockIcon} iconBg="bg-raised" iconColor="text-fg-muted"
+            label="Movimientos del mes" value={`${incomeCount + expenseCount} ops`} />
+          <KpiCard icon={ArrowTrendingDownIcon} iconBg="bg-warning-subtle" iconColor="text-warning"
+            label="Categoría con mayor gasto" value={topCategory} />
         </div>
       </div>
 
+      {/* Liquidez y proyecciones */}
+      <div>
+        <SectionTitle>Liquidez y proyecciones</SectionTitle>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <KpiCard icon={ArrowTrendingUpIcon} iconBg="bg-success-subtle" iconColor="text-success"
+            label="A cobrar (pendiente)" value={fmt(pendingIncome, currency)} />
+          <KpiCard icon={ArrowTrendingDownIcon} iconBg="bg-danger-subtle" iconColor="text-danger"
+            label="A pagar (pendiente)" value={fmt(pendingExpense, currency)} />
+          <KpiCard icon={BanknotesIcon} iconBg={resultadoPendiente >= 0 ? 'bg-success-subtle' : 'bg-danger-subtle'}
+            iconColor={resultadoPendiente >= 0 ? 'text-success' : 'text-danger'}
+            label="Resultado pendiente" value={fmt(resultadoPendiente, currency)} />
+          <KpiCard icon={BuildingLibraryIcon} iconBg="bg-brand-subtle" iconColor="text-brand"
+            label="Saldo proyectado" value={fmt(saldoProyectado, currency)} />
+          <KpiCard icon={ClockIcon} iconBg="bg-info-subtle" iconColor="text-info"
+            label="Cash runway" value={cashRunway !== null ? `${cashRunway} meses` : '∞'} />
+          <KpiCard icon={ArrowTrendingUpIcon} iconBg="bg-brand-subtle" iconColor="text-brand"
+            label="Eficiencia de cobro" value={`${eficienciaCobro}%`} />
+        </div>
+      </div>
+
+      {/* Indicadores del mes */}
+      <div>
+        <SectionTitle>Indicadores del mes</SectionTitle>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <KpiCard icon={ArrowTrendingUpIcon} iconBg="bg-success-subtle" iconColor="text-success"
+            label="Ingresos — cantidad" value={`${incomeCount} movimientos`} />
+          <KpiCard icon={ArrowTrendingDownIcon} iconBg="bg-danger-subtle" iconColor="text-danger"
+            label="Egresos — cantidad" value={`${expenseCount} movimientos`} />
+          <KpiCard icon={BanknotesIcon} iconBg="bg-raised" iconColor="text-fg-muted"
+            label="Ticket promedio ingreso" value={fmt(ticketIngreso, currency)} />
+          <KpiCard icon={BanknotesIcon} iconBg="bg-raised" iconColor="text-fg-muted"
+            label="Ticket promedio egreso" value={fmt(ticketEgreso, currency)} />
+          <KpiCard icon={ArrowTrendingUpIcon} iconBg="bg-success-subtle" iconColor="text-success"
+            label="Mayor ingreso del mes" value={fmt(mayorIngreso, currency)} />
+          <KpiCard icon={ArrowTrendingDownIcon} iconBg="bg-danger-subtle" iconColor="text-danger"
+            label="Mayor egreso del mes" value={fmt(mayorEgreso, currency)} />
+        </div>
+      </div>
+
+      {/* Evolución mensual */}
       <div>
         <SectionTitle>Evolución últimos 6 meses</SectionTitle>
-        <div className="bg-surface border border-line rounded-xl p-5">
-          <div className="flex items-center gap-4 text-xs text-fg-muted mb-4">
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand inline-block" />Ingresos</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-danger inline-block" />Egresos</span>
+        <div className="bg-surface border border-line rounded-xl overflow-hidden">
+          <div className="p-5 border-b border-line">
+            <div className="flex items-center gap-4 text-xs text-fg-muted mb-4">
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand inline-block" />Ingresos</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-danger inline-block" />Egresos</span>
+            </div>
+            <MiniBarChart data={evolution} keyA="income" keyB="expense" colorA="bg-brand/70" colorB="bg-danger/70" />
           </div>
-          <MiniBarChart data={evolution} keyA="income" keyB="expense" colorA="bg-brand/70" colorB="bg-danger/70" />
-          <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-line">
-            <div>
-              <p className="text-xs text-fg-muted mb-0.5">Total ingresos</p>
-              <p className="text-sm font-semibold text-brand">{fmt(totalEvo.income, currency)}</p>
-            </div>
-            <div>
-              <p className="text-xs text-fg-muted mb-0.5">Total egresos</p>
-              <p className="text-sm font-semibold text-danger">{fmt(totalEvo.expense, currency)}</p>
-            </div>
-            <div>
-              <p className="text-xs text-fg-muted mb-0.5">Balance</p>
-              <p className={`text-sm font-semibold ${totalEvo.income - totalEvo.expense >= 0 ? 'text-success' : 'text-danger'}`}>
-                {fmt(totalEvo.income - totalEvo.expense, currency)}
-              </p>
-            </div>
-          </div>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-line bg-raised/60">
+                <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Mes</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Ingresos</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Egresos</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Neto</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Var. MoM</th>
+              </tr>
+            </thead>
+            <tbody>
+              {evolution.map((m, i) => {
+                const neto = m.income - m.expense
+                const prev = i > 0 ? evolution[i - 1] : null
+                const momPct = (prev && prev.income > 0)
+                  ? ((m.income - prev.income) / prev.income) * 100
+                  : null
+                const [y, mo] = m.month.split('-')
+                const label = new Date(parseInt(y), parseInt(mo) - 1, 1)
+                  .toLocaleDateString('es-AR', { month: 'short', year: '2-digit' })
+                return (
+                  <tr key={m.month} className="border-b border-line last:border-0">
+                    <td className="px-4 py-3 text-fg capitalize">{label}</td>
+                    <td className="px-4 py-3 text-right font-semibold text-brand">{fmt(m.income, currency)}</td>
+                    <td className="px-4 py-3 text-right font-semibold text-danger">{fmt(m.expense, currency)}</td>
+                    <td className={`px-4 py-3 text-right font-semibold ${neto >= 0 ? 'text-success' : 'text-danger'}`}>
+                      {fmt(neto, currency)}
+                    </td>
+                    <td className="px-4 py-3 text-right text-xs">
+                      {momPct === null ? <span className="text-fg-muted">—</span> : (
+                        <span className={momPct >= 0 ? 'text-success' : 'text-danger'}>
+                          {momPct >= 0 ? '+' : ''}{momPct.toFixed(1)}%
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+            <tfoot>
+              <tr className="bg-raised/60 border-t border-line">
+                <td className="px-4 py-3 text-xs font-semibold text-fg-muted uppercase">Total período</td>
+                <td className="px-4 py-3 text-right font-bold text-brand">{fmt(totalEvo.income, currency)}</td>
+                <td className="px-4 py-3 text-right font-bold text-danger">{fmt(totalEvo.expense, currency)}</td>
+                <td className={`px-4 py-3 text-right font-bold ${totalEvo.income - totalEvo.expense >= 0 ? 'text-success' : 'text-danger'}`}>
+                  {fmt(totalEvo.income - totalEvo.expense, currency)}
+                </td>
+                <td className="px-4 py-3" />
+              </tr>
+            </tfoot>
+          </table>
         </div>
       </div>
 
+      {/* Egresos por categoría */}
       {data?.categoryBreakdown?.length > 0 && (
         <div>
           <SectionTitle>Egresos por categoría — {periodLabel(year, month)}</SectionTitle>
@@ -217,66 +325,218 @@ function FinancesTab({ data, year, month, currency }) {
   )
 }
 
+const QUOTE_STATUS_LABELS = {
+  draft: 'Borrador', sent: 'Enviado', approved: 'Aprobado',
+  signed: 'Firmado', rejected: 'Rechazado', cancelled: 'Cancelado',
+}
+
 function QuotesTab({ data, topClients, currency }) {
   if (!data) return <Spinner />
 
-  const summary  = data?.summary ?? {}
-  const approved = Number(summary.approved ?? 0)
-  const sent     = Number(summary.sent     ?? 0)
-  const draft    = Number(summary.draft    ?? 0)
-  const rejected = Number(summary.rejected ?? 0)
-  const total    = approved + sent + draft + rejected
-  const totalValue = Number(summary.totalValue ?? 0)
-  const convRate = sent + approved > 0 ? ((approved / (sent + approved)) * 100).toFixed(1) : '0'
+  const summary  = data?.summary          ?? {}
+  const byStatus = data?.byStatus         ?? []
+  const monthly  = data?.monthly          ?? []
+  const reasons  = data?.rejectionReasons ?? []
 
-  const monthly   = data?.monthly ?? []
-  const chartData = monthly.map(m => ({ month: m.key, income: Number(m.approved ?? 0), expense: Number(m.issued ?? 0) }))
+  const totalCount    = Number(summary.totalQuotes   ?? 0)
+  const approvedCount = Number(summary.approvedCount ?? 0)
+  const sentCount     = Number(summary.sentCount     ?? 0)
+  const rejectedCount = Number(summary.rejectedCount ?? 0)
+  const totalValue    = Number(summary.totalValue    ?? 0)
+  const approvedValue = Number(summary.approved      ?? 0)
+  const sentAmt       = Number(summary.sent          ?? 0)
+  const draftAmt      = Number(summary.draft         ?? 0)
+  const rejectedAmt   = Number(summary.rejected      ?? 0)
+  const totalAmt      = approvedValue + sentAmt + draftAmt + rejectedAmt
+
+  const approvalRate  = (sentCount + approvedCount) > 0
+    ? ((approvedCount / (sentCount + approvedCount)) * 100).toFixed(1) : null
+  const rejectionRate = totalCount > 0
+    ? ((rejectedCount / totalCount) * 100).toFixed(1) : null
+
+  const monthlyWithData = monthly.filter(m => (m.issuedCount || 0) > 0)
 
   return (
     <div className="flex flex-col gap-8">
 
+      {/* Resumen general */}
       <div>
         <SectionTitle>Resumen general</SectionTitle>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <KpiCard icon={DocumentTextIcon} iconBg="bg-brand-subtle" iconColor="text-brand"
-            label="Total presupuestado" value={fmt(totalValue, currency)} />
+            label="Total emitidos" value={`${totalCount} presupuestos`} />
+          <KpiCard icon={BanknotesIcon} iconBg="bg-brand-subtle" iconColor="text-brand"
+            label="Monto total" value={fmt(totalValue, currency)} />
+          <KpiCard icon={ArrowTrendingUpIcon} iconBg="bg-success-subtle" iconColor="text-success"
+            label="Tasa de aprobación" value={approvalRate !== null ? `${approvalRate}%` : '—'}
+            sub="enviados → aprobados" />
           <KpiCard icon={CheckCircleIcon} iconBg="bg-success-subtle" iconColor="text-success"
-            label="Aprobados" value={fmt(approved, currency)} />
+            label="Aprobados" value={`${approvedCount} — ${fmt(approvedValue, currency)}`} />
+          <KpiCard icon={XCircleIcon} iconBg={rejectedCount > 0 ? 'bg-danger-subtle' : 'bg-raised'}
+            iconColor={rejectedCount > 0 ? 'text-danger' : 'text-fg-muted'}
+            label="Rechazados" value={`${rejectedCount}${rejectionRate !== null ? ` (${rejectionRate}%)` : ''}`} />
           <KpiCard icon={ClockIcon} iconBg="bg-info-subtle" iconColor="text-info"
-            label="Enviados" value={fmt(sent, currency)} />
-          <KpiCard icon={ArrowTrendingUpIcon} iconBg="bg-brand-subtle" iconColor="text-brand"
-            label="Tasa de conversión" value={`${convRate}%`} sub="enviados → aprobados" />
+            label="Enviados / Pendientes" value={`${sentCount} en espera`} />
         </div>
       </div>
 
-      <div>
-        <SectionTitle>Distribución por estado</SectionTitle>
-        <div className="bg-surface border border-line rounded-xl p-5">
-          <StatusBar total={total} items={[
-            { label: 'Aprobados', color: 'bg-brand',      value: approved, formatted: fmt(approved, currency) },
-            { label: 'Enviados',  color: 'bg-info',        value: sent,     formatted: fmt(sent,     currency) },
-            { label: 'Borradores',color: 'bg-fg-muted/40', value: draft,    formatted: fmt(draft,    currency) },
-            { label: 'Rechazados',color: 'bg-danger',      value: rejected, formatted: fmt(rejected, currency) },
-          ]} />
-        </div>
-      </div>
-
-      {chartData.length > 0 && (
+      {/* Distribución por estado */}
+      {byStatus.length > 0 && (
         <div>
-          <SectionTitle>Evolución mensual</SectionTitle>
-          <div className="bg-surface border border-line rounded-xl p-5">
-            <div className="flex items-center gap-4 text-xs text-fg-muted mb-4">
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand inline-block" />Aprobados</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-fg-muted/40 inline-block" />Emitidos</span>
+          <SectionTitle>Distribución por estado</SectionTitle>
+          <div className="bg-surface border border-line rounded-xl overflow-hidden">
+            <div className="p-5 border-b border-line">
+              <StatusBar total={totalAmt} items={[
+                { label: 'Aprobados',  color: 'bg-brand',      value: approvedValue, formatted: fmt(approvedValue, currency) },
+                { label: 'Enviados',   color: 'bg-info',        value: sentAmt,       formatted: fmt(sentAmt,       currency) },
+                { label: 'Borradores', color: 'bg-fg-muted/40', value: draftAmt,      formatted: fmt(draftAmt,      currency) },
+                { label: 'Rechazados', color: 'bg-danger',      value: rejectedAmt,   formatted: fmt(rejectedAmt,   currency) },
+              ]} />
             </div>
-            <MiniBarChart data={chartData} keyA="income" keyB="expense" colorA="bg-brand/70" colorB="bg-fg-muted/30" />
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-line bg-raised/60">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Estado</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Cant.</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Monto</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">% total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...byStatus].sort((a, b) => b.count - a.count).map(s => {
+                  const pct = totalCount ? ((s.count / totalCount) * 100).toFixed(1) : '—'
+                  return (
+                    <tr key={s.status} className="border-b border-line last:border-0">
+                      <td className="px-4 py-3 text-fg">{QUOTE_STATUS_LABELS[s.status] ?? s.status}</td>
+                      <td className="px-4 py-3 text-right text-fg">{s.count}</td>
+                      <td className="px-4 py-3 text-right font-semibold text-brand">{fmt(s.total, currency)}</td>
+                      <td className="px-4 py-3 text-right text-fg-muted">{pct}%</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
 
+      {/* Causas de rechazo */}
+      {reasons.length > 0 && (
+        <div>
+          <SectionTitle>Causas de rechazo ({rejectedCount} rechazados)</SectionTitle>
+          <div className="bg-surface border border-line rounded-xl overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-line bg-raised/60">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Motivo</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Cantidad</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">% rechazados</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reasons.map((r, i) => {
+                  const pct = rejectedCount ? ((r.count / rejectedCount) * 100).toFixed(1) : '—'
+                  return (
+                    <tr key={i} className="border-b border-line last:border-0">
+                      <td className="px-4 py-3 text-fg">{r.reason}</td>
+                      <td className="px-4 py-3 text-right text-fg">{r.count}</td>
+                      <td className="px-4 py-3 text-right text-fg-muted">{pct}%</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Evolución mensual */}
+      {monthlyWithData.length > 0 && (
+        <div>
+          <SectionTitle>Evolución mensual — últimos 12 meses</SectionTitle>
+          <div className="bg-surface border border-line rounded-xl overflow-hidden">
+            <div className="p-5 border-b border-line">
+              <div className="flex items-center gap-4 text-xs text-fg-muted mb-4">
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand inline-block" />Aprobados</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-fg-muted/40 inline-block" />Emitidos</span>
+              </div>
+              <MiniBarChart
+                data={monthlyWithData.map(m => ({ month: m.key, income: m.approvedCount ?? 0, expense: m.issuedCount ?? 0 }))}
+                keyA="income" keyB="expense" colorA="bg-brand/70" colorB="bg-fg-muted/30"
+              />
+            </div>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-line bg-raised/60">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Mes</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Emitidos</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Aprobados</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Rechazados</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">% Aprob.</th>
+                </tr>
+              </thead>
+              <tbody>
+                {monthly.map(m => {
+                  const issued   = m.issuedCount   || 0
+                  const approved = m.approvedCount || 0
+                  const rejected = m.rejectedCount || 0
+                  const pct      = issued > 0 ? `${((approved / issued) * 100).toFixed(0)}%` : '—'
+                  const [y, mo] = m.key.split('-')
+                  const label = new Date(parseInt(y), parseInt(mo) - 1, 1)
+                    .toLocaleDateString('es-AR', { month: 'short', year: '2-digit' })
+                  return (
+                    <tr key={m.key} className="border-b border-line last:border-0">
+                      <td className="px-4 py-3 text-fg capitalize">{label}</td>
+                      <td className="px-4 py-3 text-right text-fg">{issued}</td>
+                      <td className="px-4 py-3 text-right font-semibold text-brand">{approved}</td>
+                      <td className="px-4 py-3 text-right text-danger">{rejected}</td>
+                      <td className="px-4 py-3 text-right text-fg-muted">{pct}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Próximos a vencer */}
+      {data?.expiringSoon?.length > 0 && (
+        <div>
+          <SectionTitle>Próximos a vencer (7 días)</SectionTitle>
+          <div className="bg-surface border border-line rounded-xl overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-line bg-raised/60">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">#</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Título</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Cliente</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Vence</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Monto</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.expiringSoon.map(q => (
+                  <tr key={q.id} className="border-b border-line last:border-0">
+                    <td className="px-4 py-3 text-fg-muted font-bold text-xs">#{q.number}</td>
+                    <td className="px-4 py-3 text-fg">{q.title || '—'}</td>
+                    <td className="px-4 py-3 text-fg-muted">{q.client?.name ?? '—'}</td>
+                    <td className="px-4 py-3 text-right text-fg-muted text-xs">
+                      {new Date(q.validUntil).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
+                    </td>
+                    <td className="px-4 py-3 text-right font-semibold text-brand">{fmt(q.total, currency)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Top clientes */}
       {topClients?.length > 0 && (
         <div>
-          <SectionTitle>Top clientes por volumen</SectionTitle>
+          <SectionTitle>Top clientes por volumen aprobado</SectionTitle>
           <div className="bg-surface border border-line rounded-xl overflow-hidden">
             <table className="w-full text-sm">
               <thead>
