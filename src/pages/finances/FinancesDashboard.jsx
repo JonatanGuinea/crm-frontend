@@ -465,9 +465,6 @@ export default function FinancesDashboard() {
               </span>
             )}
           </h2>
-          <Link to="/finances/movements" className="text-xs text-fg-muted hover:text-fg flex items-center gap-0.5 transition-colors">
-            Ver todos <ChevronRightIcon className="w-3 h-3" />
-          </Link>
         </div>
 
         {pendingLoading ? (
