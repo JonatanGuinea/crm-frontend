@@ -178,7 +178,8 @@ export default function AccountsPage() {
 
   const { data: orgData } = useQuery({
     queryKey: ['organizations'],
-    queryFn: () => getOrganizations().then(r => r.data.data?.find(o => o.id === user?.org)),
+    queryFn: () => getOrganizations().then(r => r.data.data),
+    select: (orgs) => orgs?.find(o => o.id === user?.org),
   })
   const orgCurrency  = orgData?.defaultCurrency      ?? 'ARS'
   const defaultAccId = orgData?.defaultCashAccountId ?? null
