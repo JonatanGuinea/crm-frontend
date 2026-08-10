@@ -21,6 +21,32 @@ const STATUS_STYLES = {
 }
 const STATUS_LABELS = { active: 'Activo', inactive: 'Inactivo', discontinued: 'Descontinuado' }
 
+const INVENTORY_TYPE_STYLES = {
+  sale:         'bg-brand/10 text-brand',
+  internal:     'bg-warning-subtle text-warning',
+  raw_material: 'bg-success-subtle text-success',
+}
+const INVENTORY_TYPE_LABELS = {
+  sale:         'Para venta',
+  internal:     'Interno',
+  raw_material: 'Materia prima',
+}
+
+const INVENTORY_TABS = [
+  { value: '',             label: 'Todos' },
+  { value: 'sale',         label: 'Para venta' },
+  { value: 'internal',     label: 'Interno' },
+  { value: 'raw_material', label: 'Materia prima' },
+]
+
+function InventoryTypeBadge({ type }) {
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${INVENTORY_TYPE_STYLES[type] ?? 'bg-raised text-fg-muted'}`}>
+      {INVENTORY_TYPE_LABELS[type] ?? type}
+    </span>
+  )
+}
+
 function stockState(product) {
   const stock = Number(product.stock)
   const min   = Number(product.minStock)
@@ -37,12 +63,14 @@ export default function ProductsPage() {
   const [searchParams] = useSearchParams()
   const initialStock = searchParams.get('outOfStock') === 'true' ? 'out'
     : searchParams.get('lowStock') === 'true' ? 'low' : ''
+  const initialInventoryType = searchParams.get('inventoryType') ?? ''
 
-  const [search, setSearch]         = useState('')
-  const [filterStatus, setFilter]   = useState('')
-  const [filterCategory, setFilterCat] = useState('')
-  const [filterStock, setFilterStock]  = useState(initialStock)
-  const [modal, setModal]           = useState(null) // { type: 'product'|'in'|'out'|'adj', product? }
+  const [search, setSearch]             = useState('')
+  const [filterStatus, setFilter]       = useState('')
+  const [filterCategory, setFilterCat]  = useState('')
+  const [filterStock, setFilterStock]   = useState(initialStock)
+  const [filterType, setFilterType]     = useState(initialInventoryType)
+  const [modal, setModal]               = useState(null) // { type: 'product'|'in'|'out'|'adj', product? }
   const [showCategories, setShowCategories] = useState(false)
 
   const { data: categoriesData } = useQuery({
@@ -53,11 +81,12 @@ export default function ProductsPage() {
   const categories = categoriesData ?? []
 
   const params = {
-    search:     search   || undefined,
-    status:     filterStatus    || undefined,
-    categoryId: filterCategory  || undefined,
-    outOfStock: filterStock === 'out'  ? 'true' : undefined,
-    lowStock:   filterStock === 'low'  ? 'true' : undefined,
+    search:        search          || undefined,
+    status:        filterStatus    || undefined,
+    categoryId:    filterCategory  || undefined,
+    inventoryType: filterType      || undefined,
+    outOfStock:    filterStock === 'out'  ? 'true' : undefined,
+    lowStock:      filterStock === 'low'  ? 'true' : undefined,
     limit: 100,
   }
 
@@ -85,7 +114,7 @@ export default function ProductsPage() {
     if (ok) deleteMutation.mutate(product.id)
   }
 
-  const hasFilters = search || filterStatus || filterCategory || filterStock
+  const hasFilters = search || filterStatus || filterCategory || filterStock || filterType
 
   return (
     <div className="p-4 md:p-8 flex flex-col gap-6">
@@ -111,6 +140,23 @@ export default function ProductsPage() {
             Nuevo producto
           </button>
         </div>
+      </div>
+
+      {/* Tabs de tipo de inventario */}
+      <div className="flex items-center gap-1 border-b border-line -mb-2 overflow-x-auto no-scrollbar">
+        {INVENTORY_TABS.map(tab => (
+          <button
+            key={tab.value}
+            onClick={() => setFilterType(tab.value)}
+            className={`px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+              filterType === tab.value
+                ? 'border-brand text-brand'
+                : 'border-transparent text-fg-muted hover:text-fg'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* Filtros */}
@@ -146,7 +192,7 @@ export default function ProductsPage() {
           </select>
 
           {hasFilters && (
-            <button onClick={() => { setSearch(''); setFilter(''); setFilterCat(''); setFilterStock('') }} className="text-xs text-fg-muted hover:text-fg underline transition-colors">
+            <button onClick={() => { setSearch(''); setFilter(''); setFilterCat(''); setFilterStock(''); setFilterType('') }} className="text-xs text-fg-muted hover:text-fg underline transition-colors">
               Limpiar
             </button>
           )}
@@ -169,6 +215,7 @@ export default function ProductsPage() {
                 <tr className="border-b border-line bg-raised/60">
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">SKU</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Nombre</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Tipo</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Categoría</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Stock</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Costo</th>
@@ -189,6 +236,7 @@ export default function ProductsPage() {
                           <span className="font-medium text-fg">{p.name}</span>
                         </div>
                       </td>
+                      <td className="px-4 py-3"><InventoryTypeBadge type={p.inventoryType} /></td>
                       <td className="px-4 py-3 text-fg-muted">{p.category?.name ?? '—'}</td>
                       <td className="px-4 py-3 text-right">
                         <span className={`font-semibold ${state === 'out' ? 'text-danger' : state === 'low' ? 'text-warning' : 'text-fg'}`}>
@@ -264,7 +312,10 @@ export default function ProductsPage() {
                     <div>
                       <p className="font-mono text-xs text-fg-muted">{p.sku}</p>
                       <p className="font-semibold text-fg mt-0.5">{p.name}</p>
-                      {p.category && <p className="text-xs text-fg-muted mt-0.5">{p.category.name}</p>}
+                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                        <InventoryTypeBadge type={p.inventoryType} />
+                        {p.category && <p className="text-xs text-fg-muted">{p.category.name}</p>}
+                      </div>
                     </div>
                     {p.supplier && (
                       <div className="flex items-center gap-1 shrink-0">

@@ -6,6 +6,7 @@ import StockMovementModal from './StockMovementModal'
 import {
   CubeIcon, ExclamationTriangleIcon, XCircleIcon,
   ArrowDownTrayIcon, ArrowUpTrayIcon,
+  ShoppingCartIcon, WrenchScrewdriverIcon, BeakerIcon,
 } from '@heroicons/react/24/outline'
 
 const MOVEMENT_LABELS = {
@@ -15,6 +16,7 @@ const MOVEMENT_LABELS = {
   production_in: 'Producción', production_out: 'Consumo',
   transfer_in: 'Transf. entrada', transfer_out: 'Transf. salida',
   correction: 'Corrección',
+  internal_consumption: 'Consumo interno',
 }
 
 function fmtDateTime(iso) {
@@ -78,7 +80,7 @@ export default function StockDashboard() {
         </div>
       </div>
 
-      {/* Stats */}
+      {/* Stats — fila 1: totales y alertas */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard
           icon={CubeIcon}
@@ -104,6 +106,34 @@ export default function StockDashboard() {
           bg={data.lowStock > 0 ? 'bg-warning-subtle/10' : 'bg-surface'}
           border={data.lowStock > 0 ? 'border-warning/30' : 'border-line'}
           to={data.lowStock > 0 ? '/stock/products?lowStock=true' : undefined}
+        />
+      </div>
+
+      {/* Stats — fila 2: por tipo de inventario */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <StatCard
+          icon={ShoppingCartIcon}
+          label="Productos para venta"
+          value={data.productsByType?.sale ?? 0}
+          sub={data.valueByType?.sale ? `$${Number(data.valueByType.sale).toLocaleString('es-AR', { maximumFractionDigits: 0 })} en stock` : 'Sin valorización'}
+          color="text-brand"
+          to="/stock/products?inventoryType=sale"
+        />
+        <StatCard
+          icon={WrenchScrewdriverIcon}
+          label="Stock interno"
+          value={data.productsByType?.internal ?? 0}
+          sub={data.valueByType?.internal ? `$${Number(data.valueByType.internal).toLocaleString('es-AR', { maximumFractionDigits: 0 })} en stock` : 'Sin valorización'}
+          color="text-warning"
+          to="/stock/products?inventoryType=internal"
+        />
+        <StatCard
+          icon={BeakerIcon}
+          label="Materias primas"
+          value={data.productsByType?.raw_material ?? 0}
+          sub={data.valueByType?.raw_material ? `$${Number(data.valueByType.raw_material).toLocaleString('es-AR', { maximumFractionDigits: 0 })} en stock` : 'Sin valorización'}
+          color="text-success"
+          to="/stock/products?inventoryType=raw_material"
         />
       </div>
 

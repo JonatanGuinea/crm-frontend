@@ -75,7 +75,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
 
   const { data: productsData } = useQuery({
     queryKey: ['products-for-quote'],
-    queryFn: () => getProducts({ limit: 200 }).then(r => r.data.data?.items ?? []),
+    queryFn: () => getProducts({ limit: 200, inventoryType: 'sale' }).then(r => r.data.data?.items ?? []),
     staleTime: 5 * 60 * 1000,
   })
 

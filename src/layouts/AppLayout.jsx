@@ -42,6 +42,7 @@ import {
   BuildingStorefrontIcon,
   BanknotesIcon,
   ChartBarIcon,
+  QuestionMarkCircleIcon,
 } from '@heroicons/react/24/outline'
 
 
@@ -57,8 +58,8 @@ const navItemsTop = [
 ]
 
 const navItemsBottom = [
-  { to: '/finances',      label: 'Finanzas',        icon: BanknotesIcon,      memberHidden: true },
-  { to: '/reports',       label: 'Reportes',        icon: ChartBarIcon,       memberHidden: true },
+  { to: '/finances',      label: 'Finanzas',        icon: BanknotesIcon,           memberHidden: true },
+  { to: '/reports',       label: 'Reportes',        icon: ChartBarIcon,            memberHidden: true },
   { to: '/members',       label: 'Equipo',          icon: UserGroupIcon },
 ]
 
@@ -97,10 +98,11 @@ function ProfileDropdown({ profile, user }) {
 
   function go(path) { setOpen(false); navigate(path) }
 
-  const isMember = user?.role === 'member'
+  const isOwner = user?.role === 'owner'
   const items = [
-    { label: 'Perfil',   icon: UserCircleIcon,      action: () => go('/profile') },
-    ...(!isMember ? [{ label: 'Empresa', icon: BuildingOffice2Icon, action: () => go('/organization') }] : []),
+    { label: 'Perfil',   icon: UserCircleIcon,        action: () => go('/profile') },
+    ...(isOwner ? [{ label: 'Empresa', icon: BuildingOffice2Icon, action: () => go('/organization') }] : []),
+    { label: 'Manual',   icon: QuestionMarkCircleIcon, action: () => go('/help') },
   ]
 
   return (
@@ -474,7 +476,7 @@ export default function AppLayout() {
         <main className="flex-1 overflow-auto flex flex-col">
           <DBStatusBanner />
           <InvitationsBanner />
-          <div className="flex-1">
+          <div className="flex-1 flex flex-col min-h-0">
             <Outlet />
           </div>
         </main>

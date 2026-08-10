@@ -6,23 +6,30 @@ import { XMarkIcon } from '@heroicons/react/24/outline'
 
 const UNITS = ['unidad', 'kg', 'g', 'litro', 'ml', 'm', 'cm', 'm²', 'm³', 'caja', 'par', 'rollo', 'bolsa']
 
+const INVENTORY_TYPE_OPTIONS = [
+  { value: 'sale',         label: 'Producto para venta' },
+  { value: 'internal',     label: 'Insumo / material interno' },
+  { value: 'raw_material', label: 'Materia prima' },
+]
+
 export default function ProductModal({ product, onClose }) {
   const qc    = useQueryClient()
   const toast = useToast()
   const isEdit = Boolean(product)
 
   const [form, setForm] = useState({
-    sku:           product?.sku          ?? '',
-    name:          product?.name         ?? '',
-    description:   product?.description  ?? '',
-    unit:          product?.unit         ?? 'unidad',
-    categoryId:    product?.categoryId   ?? '',
-    supplierId:    product?.supplierId   ?? '',
-    costPrice:     product?.costPrice    ?? '',
-    salePrice:     product?.salePrice    ?? '',
-    minStock:      product?.minStock     ?? '0',
-    maxStock:      product?.maxStock     ?? '',
-    status:        product?.status       ?? 'active',
+    sku:           product?.sku           ?? '',
+    name:          product?.name          ?? '',
+    description:   product?.description   ?? '',
+    unit:          product?.unit          ?? 'unidad',
+    inventoryType: product?.inventoryType ?? 'sale',
+    categoryId:    product?.categoryId    ?? '',
+    supplierId:    product?.supplierId    ?? '',
+    costPrice:     product?.costPrice     ?? '',
+    salePrice:     product?.salePrice     ?? '',
+    minStock:      product?.minStock      ?? '0',
+    maxStock:      product?.maxStock      ?? '',
+    status:        product?.status        ?? 'active',
     initialStock:  '',
     initialReason: '',
   })
@@ -59,17 +66,18 @@ export default function ProductModal({ product, onClose }) {
   function handleSubmit(e) {
     e.preventDefault()
     const data = {
-      sku:         form.sku.trim(),
-      name:        form.name.trim(),
-      description: form.description.trim() || undefined,
-      unit:        form.unit,
-      categoryId:  form.categoryId  || undefined,
-      supplierId:  form.supplierId  || undefined,
-      costPrice:   form.costPrice !== '' ? Number(form.costPrice) : undefined,
-      salePrice:   form.salePrice !== '' ? Number(form.salePrice) : undefined,
-      minStock:    Number(form.minStock),
-      maxStock:    form.maxStock !== '' ? Number(form.maxStock) : undefined,
-      status:      form.status,
+      sku:           form.sku.trim(),
+      name:          form.name.trim(),
+      description:   form.description.trim() || undefined,
+      unit:          form.unit,
+      inventoryType: form.inventoryType,
+      categoryId:    form.categoryId  || undefined,
+      supplierId:    form.supplierId  || undefined,
+      costPrice:     form.costPrice !== '' ? Number(form.costPrice) : undefined,
+      salePrice:     form.salePrice !== '' ? Number(form.salePrice) : undefined,
+      minStock:      Number(form.minStock),
+      maxStock:      form.maxStock !== '' ? Number(form.maxStock) : undefined,
+      status:        form.status,
     }
     if (!isEdit) {
       data.initialStock  = form.initialStock !== '' ? Number(form.initialStock) : 0
@@ -112,6 +120,15 @@ export default function ProductModal({ product, onClose }) {
             <div>
               <label className={labelCls}>Nombre *</label>
               <input className={inputCls} placeholder="Nombre del producto" value={form.name} onChange={set('name')} required />
+            </div>
+
+            <div>
+              <label className={labelCls}>Tipo de inventario *</label>
+              <select className={inputCls} value={form.inventoryType} onChange={set('inventoryType')} required>
+                {INVENTORY_TYPE_OPTIONS.map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
             </div>
 
             <div>

@@ -685,7 +685,7 @@ function StockTab({ summary, outOfStock, lowStock }) {
 
       <div>
         <SectionTitle>Resumen del inventario</SectionTitle>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <KpiCard icon={CubeIcon} iconBg="bg-brand-subtle" iconColor="text-brand"
             label="Total productos" value={fmtN(summary?.totalProducts)} sub={`${summary?.activeProducts ?? 0} activos`} />
           <KpiCard icon={XCircleIcon} iconBg={summary?.outOfStock > 0 ? 'bg-danger-subtle' : 'bg-raised'}
@@ -694,8 +694,46 @@ function StockTab({ summary, outOfStock, lowStock }) {
           <KpiCard icon={ExclamationTriangleIcon} iconBg={summary?.lowStock > 0 ? 'bg-warning-subtle' : 'bg-raised'}
             iconColor={summary?.lowStock > 0 ? 'text-warning' : 'text-fg-muted'}
             label="Stock bajo" value={fmtN(summary?.lowStock)} />
+          <KpiCard icon={CubeIcon} iconBg="bg-raised" iconColor="text-fg-muted"
+            label="Valor total" value={`$${Number(summary?.totalInventoryValue ?? 0).toLocaleString('es-AR', { maximumFractionDigits: 0 })}`} sub="stock × costo" />
         </div>
       </div>
+
+      {(summary?.productsByType || summary?.valueByType) && (
+        <div>
+          <SectionTitle>Por tipo de inventario</SectionTitle>
+          <div className="bg-surface border border-line rounded-xl overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-line bg-raised/60">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Tipo</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Productos activos</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Valor en stock</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { key: 'sale',         label: 'Para venta',    cls: 'text-brand' },
+                  { key: 'internal',     label: 'Interno',       cls: 'text-warning' },
+                  { key: 'raw_material', label: 'Materia prima', cls: 'text-success' },
+                ].map(row => (
+                  <tr key={row.key} className="border-b border-line last:border-0">
+                    <td className="px-4 py-3">
+                      <span className={`text-sm font-medium ${row.cls}`}>{row.label}</span>
+                    </td>
+                    <td className="px-4 py-3 text-right text-fg">
+                      {fmtN(summary?.productsByType?.[row.key] ?? 0)}
+                    </td>
+                    <td className="px-4 py-3 text-right font-semibold text-fg">
+                      ${Number(summary?.valueByType?.[row.key] ?? 0).toLocaleString('es-AR', { maximumFractionDigits: 0 })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {outOfStock?.length > 0 && (
         <div>

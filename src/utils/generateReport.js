@@ -611,6 +611,25 @@ function drawStockContent(doc, y, { summary, outOfStock, lowStock }) {
     { label: 'Stock bajo',        value: String(summary?.lowStock       ?? 0) },
   ], y)
 
+  // Desglose por tipo de inventario
+  const pbt = summary?.productsByType ?? {}
+  const vbt = summary?.valueByType ?? {}
+  if (pbt.sale !== undefined || pbt.internal !== undefined || pbt.raw_material !== undefined) {
+    y = addSection(doc, 'Por tipo de inventario', y + 4)
+    autoTable(doc, {
+      startY: y,
+      head: [['Tipo', 'Productos', 'Valor en stock']],
+      body: [
+        ['Para venta',    String(pbt.sale ?? 0),         `$${Number(vbt.sale ?? 0).toLocaleString('es-AR', { maximumFractionDigits: 0 })}`],
+        ['Interno',       String(pbt.internal ?? 0),     `$${Number(vbt.internal ?? 0).toLocaleString('es-AR', { maximumFractionDigits: 0 })}`],
+        ['Materia prima', String(pbt.raw_material ?? 0), `$${Number(vbt.raw_material ?? 0).toLocaleString('es-AR', { maximumFractionDigits: 0 })}`],
+      ],
+      columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' } },
+      ...tableStyle(),
+    })
+    y = doc.lastAutoTable.finalY + 6
+  }
+
   if (outOfStock?.length > 0) {
     y = addSection(doc, 'Productos sin stock', y + 4)
     autoTable(doc, {

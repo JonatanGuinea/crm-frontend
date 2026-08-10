@@ -17,12 +17,19 @@ const IN_TYPES = [
 ]
 
 const OUT_TYPES = [
-  { value: 'sale',           label: 'Venta' },
-  { value: 'return_out',     label: 'Devolución a proveedor' },
-  { value: 'production_out', label: 'Consumo en producción' },
-  { value: 'transfer_out',   label: 'Transferencia enviada' },
-  { value: 'adjustment_out', label: 'Ajuste negativo' },
+  { value: 'sale',                 label: 'Venta' },
+  { value: 'internal_consumption', label: 'Consumo interno' },
+  { value: 'return_out',           label: 'Devolución a proveedor' },
+  { value: 'production_out',       label: 'Consumo en producción' },
+  { value: 'transfer_out',         label: 'Transferencia enviada' },
+  { value: 'adjustment_out',       label: 'Ajuste negativo' },
 ]
+
+const INVENTORY_TYPE_BADGES = {
+  sale:         { label: 'Para venta',   cls: 'bg-brand/10 text-brand' },
+  internal:     { label: 'Interno',      cls: 'bg-warning-subtle text-warning' },
+  raw_material: { label: 'Materia prima', cls: 'bg-success-subtle text-success' },
+}
 
 const titles = { in: 'Ingreso de stock', out: 'Egreso de stock', adjustment: 'Ajuste de inventario' }
 const icons  = {
@@ -105,7 +112,14 @@ function ProductPicker({ mode, onSelect, onClose }) {
             >
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-fg truncate">{p.name}</p>
-                <p className="text-xs text-fg-muted font-mono">{p.sku}</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <p className="text-xs text-fg-muted font-mono">{p.sku}</p>
+                  {p.inventoryType && INVENTORY_TYPE_BADGES[p.inventoryType] && (
+                    <span className={`text-xs px-1.5 py-0 rounded-full font-medium ${INVENTORY_TYPE_BADGES[p.inventoryType].cls}`}>
+                      {INVENTORY_TYPE_BADGES[p.inventoryType].label}
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="text-right shrink-0 flex items-center gap-1.5">
                 {state === 'out' && <ExclamationTriangleIcon className="w-3.5 h-3.5 text-danger shrink-0" />}
@@ -130,8 +144,11 @@ function MovementForm({ product, mode, onBack, onClose }) {
   const qc    = useQueryClient()
   const toast = useToast()
 
+  const defaultOutType = mode === 'out'
+    ? (product.inventoryType === 'sale' ? 'sale' : 'internal_consumption')
+    : ''
   const [form, setForm] = useState({
-    type:        mode === 'in' ? 'purchase' : mode === 'out' ? 'sale' : '',
+    type:        mode === 'in' ? 'purchase' : defaultOutType,
     quantity:    '',
     targetStock: '',
     unitCost:    '',
@@ -208,8 +225,15 @@ function MovementForm({ product, mode, onBack, onClose }) {
       <div className="px-6 pt-4 pb-2">
         <div className="flex items-center justify-between rounded-xl bg-raised border border-line px-4 py-3">
           <div>
-            <p className="text-xs text-fg-muted">{product.sku}</p>
-            <p className="text-sm font-semibold text-fg">{product.name}</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-xs text-fg-muted font-mono">{product.sku}</p>
+              {product.inventoryType && INVENTORY_TYPE_BADGES[product.inventoryType] && (
+                <span className={`text-xs px-1.5 py-0 rounded-full font-medium ${INVENTORY_TYPE_BADGES[product.inventoryType].cls}`}>
+                  {INVENTORY_TYPE_BADGES[product.inventoryType].label}
+                </span>
+              )}
+            </div>
+            <p className="text-sm font-semibold text-fg mt-0.5">{product.name}</p>
           </div>
           <div className="text-right">
             <p className="text-xs text-fg-muted">Stock actual</p>

@@ -18,9 +18,10 @@ const MOVEMENT_LABELS = {
   return_out:     'Devolución enviada',
   production_in:  'Producción',
   production_out: 'Consumo',
-  transfer_in:    'Transferencia entrada',
-  transfer_out:   'Transferencia salida',
-  correction:     'Corrección',
+  transfer_in:          'Transferencia entrada',
+  transfer_out:         'Transferencia salida',
+  correction:           'Corrección',
+  internal_consumption: 'Consumo interno',
 }
 
 function fmtDateTime(iso) {

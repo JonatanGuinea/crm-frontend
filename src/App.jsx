@@ -37,6 +37,7 @@ import ReportsPage from './pages/reports/ReportsPage'
 import ProductsPage from './pages/stock/ProductsPage'
 import ProductDetailPage from './pages/stock/ProductDetailPage'
 import ProvidersPage from './pages/stock/ProvidersPage'
+import HelpPage from './pages/help/HelpPage'
 
 const qc = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } }
@@ -67,6 +68,11 @@ function GuestRoute({ children }) {
 function AdminRoute({ children }) {
   const { user } = useAuth()
   return user?.role !== 'member' ? children : <Navigate to="/" replace />
+}
+
+function OwnerRoute({ children }) {
+  const { user } = useAuth()
+  return user?.role === 'owner' ? children : <Navigate to="/" replace />
 }
 
 export default function App() {
@@ -109,8 +115,9 @@ export default function App() {
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/members" element={<MembersPage />} />
               <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/organization" element={<AdminRoute><OrgSettingsPage /></AdminRoute>} />
+              <Route path="/organization" element={<OwnerRoute><OrgSettingsPage /></OwnerRoute>} />
               <Route path="/reports" element={<AdminRoute><ReportsPage /></AdminRoute>} />
+              <Route path="/help" element={<HelpPage />} />
             </Route>
 
             <Route path="/p/presupuesto/:id" element={<QuotePublicPage />} />
