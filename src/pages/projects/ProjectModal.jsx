@@ -16,8 +16,8 @@ function MemberPicker({ members, selected, onChange }) {
     onChange(selected.includes(id) ? selected.filter(x => x !== id) : [...selected, id])
   }
 
-  const selectedMembers = members.filter(m => selected.includes(m.user.id))
-  const unselected = members.filter(m => !selected.includes(m.user.id))
+  const selectedMembers = members.filter(m => selected.includes(m.userId))
+  const unselected = members.filter(m => !selected.includes(m.userId))
 
   return (
     <div className="flex flex-col gap-2">
@@ -26,13 +26,13 @@ function MemberPicker({ members, selected, onChange }) {
         <div className="flex flex-wrap gap-1.5">
           {selectedMembers.map(m => (
             <span
-              key={m.user.id}
+              key={m.userId}
               className="inline-flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-full text-xs font-medium bg-brand/10 text-brand border border-brand/20"
             >
-              {m.user.name}
+              {m.name}
               <button
                 type="button"
-                onClick={() => toggle(m.user.id)}
+                onClick={() => toggle(m.userId)}
                 className="ml-0.5 hover:text-danger transition-colors"
               >
                 <XMarkIcon className="w-3 h-3" />
@@ -47,12 +47,12 @@ function MemberPicker({ members, selected, onChange }) {
         <div className="flex flex-wrap gap-1.5">
           {unselected.map(m => (
             <button
-              key={m.user.id}
+              key={m.userId}
               type="button"
-              onClick={() => toggle(m.user.id)}
+              onClick={() => toggle(m.userId)}
               className="px-2.5 py-0.5 rounded-full text-xs border border-line text-fg-muted hover:border-brand hover:text-brand hover:bg-brand/5 transition-colors"
             >
-              + {m.user.name}
+              + {m.name}
             </button>
           ))}
         </div>
@@ -77,7 +77,7 @@ export default function ProjectModal({ project, onClose, onSaved }) {
     endDate: project?.endDate?.slice(0, 10) || '',
     client: project?.clientId || project?.client?.id || '',
     status: project?.status || undefined,
-    memberIds: project?.members?.map(m => m.userId) || []
+    memberIds: project?.members?.map(m => m.userId ?? m.user?.id).filter(Boolean) || []
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
