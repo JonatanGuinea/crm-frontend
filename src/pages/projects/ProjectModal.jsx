@@ -2,21 +2,82 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { createProject, updateProject } from '../../api/projects'
 import { getClients } from '../../api/clients'
+import { getMembers } from '../../api/members'
+import { useAuth } from '../../context/AuthContext'
 import DatePicker from '../../components/DatePicker'
 import { useToast } from '../../components/Toast'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 
 const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
 const labelCls = "block text-sm font-medium text-fg-soft mb-1"
 
+function MemberPicker({ members, selected, onChange }) {
+  function toggle(id) {
+    onChange(selected.includes(id) ? selected.filter(x => x !== id) : [...selected, id])
+  }
+
+  const selectedMembers = members.filter(m => selected.includes(m.user.id))
+  const unselected = members.filter(m => !selected.includes(m.user.id))
+
+  return (
+    <div className="flex flex-col gap-2">
+      {/* Chips de seleccionados */}
+      {selectedMembers.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {selectedMembers.map(m => (
+            <span
+              key={m.user.id}
+              className="inline-flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-full text-xs font-medium bg-brand/10 text-brand border border-brand/20"
+            >
+              {m.user.name}
+              <button
+                type="button"
+                onClick={() => toggle(m.user.id)}
+                className="ml-0.5 hover:text-danger transition-colors"
+              >
+                <XMarkIcon className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Lista de miembros disponibles */}
+      {unselected.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {unselected.map(m => (
+            <button
+              key={m.user.id}
+              type="button"
+              onClick={() => toggle(m.user.id)}
+              className="px-2.5 py-0.5 rounded-full text-xs border border-line text-fg-muted hover:border-brand hover:text-brand hover:bg-brand/5 transition-colors"
+            >
+              + {m.user.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {members.length === 0 && (
+        <p className="text-xs text-fg-muted">No hay miembros activos</p>
+      )}
+    </div>
+  )
+}
+
 export default function ProjectModal({ project, onClose, onSaved }) {
   const toast = useToast()
+  const { user } = useAuth()
+  const orgId = user?.org
+
   const [form, setForm] = useState({
     title: project?.title || '',
     description: project?.description || '',
     startDate: project?.startDate?.slice(0, 10) || '',
     endDate: project?.endDate?.slice(0, 10) || '',
     client: project?.clientId || project?.client?.id || '',
-    status: project?.status || undefined
+    status: project?.status || undefined,
+    memberIds: project?.members?.map(m => m.userId) || []
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -25,6 +86,14 @@ export default function ProjectModal({ project, onClose, onSaved }) {
     queryKey: ['clients-all'],
     queryFn: () => getClients({ limit: 100 }).then(r => r.data.data)
   })
+
+  const { data: membersData } = useQuery({
+    queryKey: ['members', orgId],
+    queryFn: () => getMembers(orgId).then(r => r.data.data),
+    enabled: Boolean(orgId),
+    staleTime: 60_000,
+  })
+  const activeMembers = (membersData ?? []).filter(m => m.status === 'active')
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -97,6 +166,15 @@ export default function ProjectModal({ project, onClose, onSaved }) {
             <textarea rows={2} value={form.description}
               onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
               className={inputCls} />
+          </div>
+
+          <div>
+            <label className={labelCls}>Responsables</label>
+            <MemberPicker
+              members={activeMembers}
+              selected={form.memberIds}
+              onChange={ids => setForm(f => ({ ...f, memberIds: ids }))}
+            />
           </div>
 
           {error && <p className="text-sm text-danger">{error}</p>}
