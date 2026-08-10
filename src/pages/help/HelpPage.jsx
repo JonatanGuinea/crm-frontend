@@ -4,7 +4,7 @@ import {
   HomeIcon, UsersIcon, FolderIcon, ClipboardDocumentListIcon,
   DocumentTextIcon, CubeIcon, BanknotesIcon, ChartBarIcon,
   UserGroupIcon, UserCircleIcon, QuestionMarkCircleIcon,
-  LightBulbIcon, ShieldCheckIcon,
+  LightBulbIcon, ShieldCheckIcon, BellIcon,
 } from '@heroicons/react/24/outline'
 
 // ── Datos del manual ──────────────────────────────────────────────────────────
@@ -59,6 +59,36 @@ const SECTIONS = [
       {
         q: '¿Puedo crear clientes o presupuestos desde el Dashboard?',
         a: 'Sí. Los botones de acceso rápido "Nuevo cliente" y "Nuevo presupuesto" están disponibles en el header del Dashboard para administradores.',
+      },
+    ],
+  },
+  {
+    id: 'notificaciones',
+    label: 'Notificaciones',
+    icon: BellIcon,
+    color: 'text-warning',
+    bg: 'bg-warning-subtle',
+    description: 'Alertas automáticas sobre eventos importantes del negocio.',
+    items: [
+      {
+        q: '¿Qué son las notificaciones?',
+        a: 'Son alertas automáticas que el sistema genera cuando ocurre algo importante: un presupuesto está por vencer, un proyecto se acerca a su fecha límite, te asignan una tarea, el stock de un producto cae, o se une un nuevo miembro.\n\nEl ícono de campana en el menú lateral muestra un badge con la cantidad de notificaciones no leídas.',
+      },
+      {
+        q: '¿Qué tipos de notificaciones existen y a quién le llegan?',
+        a: '• Presupuesto por vencer: cuando un presupuesto vence hoy o mañana → admins y owners\n• Proyecto por vencer (~5 días): cuando faltan 4–6 días para la fecha fin → todos los miembros\n• Proyecto por vencer (~1 día): cuando faltan 0–2 días para la fecha fin → todos los miembros\n• Presupuesto aprobado: cuando el cliente acepta → creador del presupuesto (o admins si lo confirma por el link público)\n• Presupuesto rechazado: cuando el cliente rechaza, con el motivo → creador (o admins si es por link público)\n• Tarea asignada: cuando alguien te asigna o reasigna una tarea → solo el asignado\n• Sin stock: cuando un producto llega a 0 unidades → todos los miembros activos\n• Stock bajo: cuando el stock cae al mínimo configurado del producto → todos los miembros activos\n• Nuevo miembro: cuando alguien acepta una invitación → solo el owner',
+      },
+      {
+        q: '¿Cada cuánto se actualizan las notificaciones?',
+        a: 'El sistema consulta nuevas notificaciones cada 60 segundos automáticamente, sin necesidad de recargar la página.\n\nLas alertas de vencimiento (presupuestos y proyectos) las calcula el servidor cada 6 horas en segundo plano. Si entrás a la página de Notificaciones, también se recalculan en ese momento.',
+      },
+      {
+        q: '¿Cómo funcionan las notificaciones de presupuesto aprobado o rechazado?',
+        a: 'Cuando el cliente responde desde el enlace público (aprueba o rechaza el presupuesto), recibís una notificación con el nombre del cliente, número de presupuesto y —en caso de rechazo— el motivo.\n\nLa notificación incluye un botón directo para contactar al cliente por WhatsApp con un mensaje preescrito según la respuesta.',
+      },
+      {
+        q: '¿Puedo eliminar o marcar como leídas las notificaciones?',
+        a: 'Al entrar a la página de Notificaciones, todas se marcan como leídas automáticamente.\n\nPodés eliminar una notificación individual con el ícono de papelera. No hay forma de eliminar todas de golpe, pero el badge del menú se actualiza al instante.',
       },
     ],
   },
@@ -171,7 +201,7 @@ const SECTIONS = [
       },
       {
         q: '¿Cómo envío un presupuesto al cliente?',
-        a: 'Desde el detalle del presupuesto podés enviarlo por:\n• Email: usando el email del cliente cargado en el sistema\n• WhatsApp: con el enlace público del presupuesto\n\nEl enlace público permite al cliente ver el presupuesto formateado, aprobarlo, rechazarlo y firmarlo digitalmente sin necesidad de tener cuenta.',
+        a: 'Desde el detalle del presupuesto podés enviarlo por:\n• Email: se envía un email con un botón que lleva al cliente a la página pública del presupuesto. No se adjunta ningún PDF.\n• WhatsApp: se comparte el enlace público del presupuesto directamente.\n\nDesde la página pública el cliente puede ver el presupuesto, aprobarlo, rechazarlo, firmarlo digitalmente y descargar el PDF si lo necesita. No requiere tener cuenta en el sistema.',
       },
       {
         q: '¿Qué es la firma digital?',
@@ -217,7 +247,7 @@ const SECTIONS = [
       },
       {
         q: '¿Qué son las alertas de stock bajo?',
-        a: 'Cada producto tiene un campo "Stock mínimo". Cuando el stock cae a ese nivel o menos, el sistema envía una notificación automática a todos los administradores de la organización.',
+        a: 'Cada producto tiene un campo "Stock mínimo". Cuando el stock cae a ese nivel o menos, el sistema envía una notificación automática a todos los miembros activos de la organización.',
       },
       {
         q: '¿Los productos internos aparecen en los presupuestos?',

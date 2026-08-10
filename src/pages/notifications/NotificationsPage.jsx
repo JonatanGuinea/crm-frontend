@@ -11,7 +11,10 @@ const TYPE_LABELS = {
   quote_approved:   'Presupuesto aprobado',
   quote_rejected:   'Presupuesto rechazado',
   project_deadline: 'Proyecto por vencer',
-  member_joined:    'Nuevo miembro'
+  member_joined:    'Nuevo miembro',
+  task_assigned:    'Tarea asignada',
+  stock_out:        'Sin stock',
+  stock_low:        'Stock bajo',
 }
 
 const TYPE_COLORS = {
@@ -19,7 +22,10 @@ const TYPE_COLORS = {
   quote_approved:   'bg-brand-subtle text-brand',
   quote_rejected:   'bg-danger-subtle text-danger',
   project_deadline: 'bg-warning-subtle text-warning',
-  member_joined:    'bg-info-subtle text-info'
+  member_joined:    'bg-info-subtle text-info',
+  task_assigned:    'bg-info-subtle text-info',
+  stock_out:        'bg-danger-subtle text-danger',
+  stock_low:        'bg-warning-subtle text-warning',
 }
 
 const TYPE_DOT = {
@@ -27,7 +33,10 @@ const TYPE_DOT = {
   quote_approved:   'bg-brand',
   quote_rejected:   'bg-danger',
   project_deadline: 'bg-warning',
-  member_joined:    'bg-info'
+  member_joined:    'bg-info',
+  task_assigned:    'bg-info',
+  stock_out:        'bg-danger',
+  stock_low:        'bg-warning',
 }
 
 function WaIcon({ className }) {
