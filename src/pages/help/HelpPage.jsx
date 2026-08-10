@@ -307,6 +307,10 @@ const SECTIONS = [
         q: '¿Puedo descargar el PDF de una sola sección?',
         a: 'No. El botón de descarga genera siempre el reporte completo con las 4 secciones (finanzas, presupuestos, proyectos, stock) en un único PDF.',
       },
+      {
+        q: '¿El sistema envía reportes automáticamente?',
+        a: 'Sí. El último día de cada mes a las 8 AM, el sistema genera automáticamente el informe mensual en PDF y lo envía por email al propietario (owner) de cada organización.\n\nEl PDF incluye:\n• Resumen financiero del mes (ingresos, egresos, balance, categorías, evolución 6 meses)\n• Estado de presupuestos (totales, por estado, tasa de aprobación)\n• Situación de proyectos (distribución por estado)\n• Inventario y alertas de stock (sin stock, stock bajo)\n\nEl reporte llega como archivo adjunto al email del propietario registrado en la cuenta.',
+      },
     ],
   },
   {
