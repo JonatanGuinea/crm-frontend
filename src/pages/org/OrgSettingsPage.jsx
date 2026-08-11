@@ -2,8 +2,8 @@ import { useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
-import { getOrganizations, updateOrganization, uploadOrgLogo } from '../../api/organizations'
-import { PhotoIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { getOrganizations, updateOrganization, uploadOrgLogo, deleteOrganization } from '../../api/organizations'
+import { PhotoIcon, TrashIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import ProvinceSelect from '../../components/ProvinceSelect'
 
 const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
@@ -11,7 +11,7 @@ const labelCls = "block text-sm font-medium text-fg-soft mb-1"
 const API_BASE  = import.meta.env.VITE_API_URL?.replace('/api', '')
 
 export default function OrgSettingsPage() {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const toast = useToast()
   const qc = useQueryClient()
   const orgId = user?.org
@@ -27,6 +27,8 @@ export default function OrgSettingsPage() {
   const [logoPreview,  setLogoPreview]  = useState(null)
   const [orgSignature, setOrgSignature] = useState(null)
   const [sigIsEmpty,   setSigIsEmpty]   = useState(true)
+  const [deleteModal,  setDeleteModal]  = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState('')
 
   const { data: orgData } = useQuery({
     queryKey: ['organization', orgId],
@@ -105,6 +107,15 @@ export default function OrgSettingsPage() {
     setSigIsEmpty(true)
     setOrgSignature(null)
   }
+
+  const deleteOrg = useMutation({
+    mutationFn: () => deleteOrganization(orgId),
+    onSuccess: () => {
+      toast('Organización eliminada', 'success')
+      logout()
+    },
+    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al eliminar', 'error')
+  })
 
   const saveOrg = useMutation({
     mutationFn: () => updateOrganization(orgId, {
@@ -317,6 +328,86 @@ export default function OrgSettingsPage() {
           {saveOrg.isPending ? 'Guardando...' : 'Guardar cambios'}
         </button>
       </form>
+
+      {/* Zona de peligro */}
+      <div className="mt-12 border border-danger/30 rounded-xl overflow-hidden">
+        <div className="px-5 py-4 bg-danger/5 flex items-center gap-3 border-b border-danger/20">
+          <ExclamationTriangleIcon className="w-5 h-5 text-danger shrink-0" />
+          <h2 className="text-sm font-semibold text-danger">Zona de peligro</h2>
+        </div>
+        <div className="px-5 py-4 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-fg">Eliminar organización</p>
+            <p className="text-xs text-fg-muted mt-0.5">Elimina permanentemente la organización y todos sus datos. Esta acción no se puede deshacer.</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => { setDeleteConfirm(''); setDeleteModal(true) }}
+            className="shrink-0 px-4 py-2 text-sm font-medium text-danger border border-danger/40 rounded-md hover:bg-danger/8 transition-colors"
+          >
+            Eliminar
+          </button>
+        </div>
+      </div>
+
+      {/* Modal de confirmación */}
+      {deleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setDeleteModal(false)} />
+          <div className="relative bg-surface border border-line rounded-xl shadow-2xl w-full max-w-md p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-danger/10 flex items-center justify-center shrink-0">
+                <ExclamationTriangleIcon className="w-5 h-5 text-danger" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-fg">Eliminar organización</h3>
+                <p className="text-xs text-fg-muted">Esta acción es permanente e irreversible</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-fg-muted mb-4 leading-relaxed">
+              Se eliminarán todos los datos de <strong className="text-fg">{orgData?.name}</strong>: clientes, proyectos, presupuestos, tareas, stock y movimientos financieros.
+            </p>
+
+            <div className="mb-5">
+              <label className="block text-xs text-fg-muted mb-1.5">
+                Escribí <span className="font-semibold text-fg">{orgData?.name}</span> para confirmar
+              </label>
+              <input
+                type="text"
+                value={deleteConfirm}
+                onChange={e => setDeleteConfirm(e.target.value)}
+                placeholder={orgData?.name}
+                className="w-full px-3 py-2 border border-line rounded-md text-sm bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-danger/40 focus:border-danger/60 transition-colors"
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={() => setDeleteModal(false)}
+                className="px-4 py-2 text-sm font-medium text-fg-muted border border-line rounded-md hover:bg-raised transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={deleteConfirm !== orgData?.name || deleteOrg.isPending}
+                onClick={() => deleteOrg.mutate()}
+                className="px-4 py-2 text-sm font-medium text-white bg-danger rounded-md hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity flex items-center gap-2"
+              >
+                {deleteOrg.isPending && (
+                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"/>
+                  </svg>
+                )}
+                {deleteOrg.isPending ? 'Eliminando...' : 'Eliminar organización'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

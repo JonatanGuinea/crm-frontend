@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { useNavigate, useSearchParams, Link } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
+import { useSearchParams, Link } from 'react-router-dom'
 import { register as registerApi } from '../../api/auth'
 import { isValidPhoneNumber } from 'libphonenumber-js'
 import {
@@ -185,8 +184,6 @@ const fields = [
 ]
 
 export default function RegisterPage() {
-  const { login } = useAuth()
-  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const inviteToken = searchParams.get('inviteToken')
   const invitePayload = inviteToken ? decodeJwtPayload(inviteToken) : null
@@ -198,6 +195,8 @@ export default function RegisterPage() {
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [registered, setRegistered] = useState(false)
+  const [registeredEmail, setRegisteredEmail] = useState('')
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -220,14 +219,45 @@ export default function RegisterPage() {
       const userCountryData = COUNTRIES.find(c => c.code === userCountry)
       const userPhone = `${userCountryData.dial} ${userPhoneNumber.trim()}`
       const { passwordConfirm: _, ...formData } = form
-      const res = await registerApi({ ...formData, userPhone, ...(inviteToken ? { inviteToken } : {}) })
-      login(res.data.data.token)
-      navigate('/')
+      await registerApi({ ...formData, userPhone, ...(inviteToken ? { inviteToken } : {}) })
+      setRegisteredEmail(form.email)
+      setRegistered(true)
     } catch (err) {
       setError(err.response?.data?.error || 'Error al registrarse')
     } finally {
       setLoading(false)
     }
+  }
+
+  if (registered) {
+    return (
+      <div className="relative max-w-sm mx-auto">
+        <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-cyan-500/20 via-transparent to-teal-500/10 blur-sm pointer-events-none" />
+        <div className="relative bg-[#080e1a]/30 backdrop-blur-xl rounded-2xl border border-cyan-500/20 shadow-[0_0_60px_rgba(6,182,212,0.07),inset_0_1px_0_rgba(6,182,212,0.08)] p-8 text-center">
+          <div className="w-14 h-14 rounded-full bg-teal-500/10 border border-teal-500/25 flex items-center justify-center mx-auto mb-5">
+            <svg className="w-7 h-7 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">Revisá tu email</h2>
+          <p className="text-sm text-slate-400 leading-relaxed mb-1">
+            Te enviamos un enlace de confirmación a
+          </p>
+          <p className="text-sm font-semibold text-cyan-400 mb-5 break-all">{registeredEmail}</p>
+          <p className="text-xs text-slate-600 leading-relaxed">
+            Hacé clic en el enlace del email para activar tu cuenta. Si no lo ves, revisá la carpeta de spam.
+          </p>
+          <div className="mt-7 pt-6 border-t border-slate-800">
+            <p className="text-sm text-slate-600">
+              ¿Ya confirmaste?{' '}
+              <Link to="/login" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors">
+                Iniciar sesión
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   function renderField({ key, label, type, icon: Icon, placeholder }) {

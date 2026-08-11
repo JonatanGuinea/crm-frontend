@@ -353,7 +353,9 @@ export default function QuotesPage() {
           title={q.sentByEmail ? 'Ya enviado por email' : 'Enviar por email'}
           className={`p-1.5 rounded-lg transition-colors ${emlDisabled ? 'text-brand/30 cursor-not-allowed' : 'text-brand hover:bg-brand-subtle'}`}
         >
-          <PaperAirplaneIcon className={`w-4 h-4 ${sendingEmailId === q.id ? 'animate-pulse' : ''}`} />
+          {sendingEmailId === q.id
+            ? <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"/></svg>
+            : <PaperAirplaneIcon className="w-4 h-4" />}
         </button>
       </div>
     )
@@ -533,7 +535,9 @@ export default function QuotesPage() {
                         title={q.sentByEmail ? 'Ya enviado por email' : 'Enviar por email'}
                         className={`p-1.5 rounded-lg transition-colors ${q.sentByEmail || sendingEmailId === q.id ? 'text-brand/30 cursor-not-allowed bg-raised' : 'text-brand hover:bg-brand-subtle bg-raised'}`}
                       >
-                        <PaperAirplaneIcon className={`w-4 h-4 ${sendingEmailId === q.id ? 'animate-pulse' : ''}`} />
+                        {sendingEmailId === q.id
+                          ? <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"/></svg>
+                          : <PaperAirplaneIcon className="w-4 h-4" />}
                       </button>
                     </>
                   )}
