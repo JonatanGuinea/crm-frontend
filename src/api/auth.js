@@ -4,6 +4,8 @@ import api from './client'
 export const login = (data) => api.post('/auth/login', data)
 export const register = (data) => api.post('/auth/register', data)
 export const verifyEmail = (token) => api.post('/auth/verify-email', { token })
+export const forgotPassword = (email) => api.post('/auth/forgot-password', { email })
+export const resetPassword = (token, password) => api.post('/auth/reset-password', { token, password })
 export const switchOrganization = (organizationId) => api.post('/auth/switch-organization', { organizationId })
 export const getOrganizations = () => api.get('/organizations')
 export const createOrganization = (data) => api.post('/organizations', data)

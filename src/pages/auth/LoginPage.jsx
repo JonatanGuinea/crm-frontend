@@ -1,14 +1,118 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { login as loginApi } from '../../api/auth'
+import { login as loginApi, forgotPassword as forgotPasswordApi } from '../../api/auth'
 import {
   EnvelopeIcon,
   LockClosedIcon,
   EyeIcon,
   EyeSlashIcon,
   ExclamationCircleIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline'
+
+function ForgotPasswordModal({ onClose }) {
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    try {
+      await forgotPasswordApi(email)
+      setSent(true)
+    } catch (err) {
+      setError(err.response?.data?.error || 'Error al enviar el email. Intentá de nuevo.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-sm bg-[#080e1a] border border-cyan-500/20 rounded-2xl shadow-[0_0_60px_rgba(6,182,212,0.10)] p-7"
+        onClick={e => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-slate-600 hover:text-slate-400 transition-colors"
+        >
+          <XMarkIcon className="w-5 h-5" />
+        </button>
+
+        {sent ? (
+          <div className="text-center py-2">
+            <div className="w-14 h-14 rounded-full bg-teal-500/10 border border-teal-500/25 flex items-center justify-center mx-auto mb-4">
+              <svg className="w-7 h-7 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">Revisá tu email</h3>
+            <p className="text-sm text-slate-400 mb-5">
+              Si ese email está registrado, te enviamos un enlace para restablecer tu contraseña. El enlace expira en 30 minutos.
+            </p>
+            <button
+              onClick={onClose}
+              className="px-5 py-2 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibold rounded-lg transition-colors"
+            >
+              Cerrar
+            </button>
+          </div>
+        ) : (
+          <>
+            <h3 className="text-lg font-bold text-white mb-1">Olvidé mi contraseña</h3>
+            <p className="text-sm text-slate-500 mb-6">Ingresá tu email y te enviamos un enlace para crear una nueva contraseña.</p>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-sans tracking-wide text-cyan-300/80 mb-2">Email</label>
+                <div className="relative group">
+                  <EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-500/40 group-focus-within:text-cyan-400/70 pointer-events-none transition-colors" />
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="tu@email.com"
+                    className="w-full pl-9 pr-3 py-2.5 bg-slate-950/70 border border-slate-700/50 rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all"
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <div className="flex items-center gap-2 px-3 py-2.5 bg-red-500/8 border border-red-500/20 rounded-lg">
+                  <ExclamationCircleIcon className="w-4 h-4 text-red-400 flex-shrink-0" />
+                  <p className="text-xs text-red-400">{error}</p>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-2.5 px-4 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-teal-500 hover:bg-teal-400 text-white shadow-[0_0_20px_rgba(20,184,166,0.25)]"
+              >
+                {loading && (
+                  <svg className="animate-spin w-4 h-4 text-white/70" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+                  </svg>
+                )}
+                {loading ? 'Enviando...' : 'Enviar enlace'}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
 
 export default function LoginPage() {
   const { login } = useAuth()
@@ -18,6 +122,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showForgot, setShowForgot] = useState(false)
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -35,124 +140,137 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative max-w-sm mx-auto">
-      {/* Glow detrás de la card */}
-      <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-cyan-500/20 via-transparent to-teal-500/10 blur-sm pointer-events-none" />
+    <>
+      {showForgot && <ForgotPasswordModal onClose={() => setShowForgot(false)} />}
 
-      <div className="relative bg-[#080e1a]/30 backdrop-blur-xl rounded-2xl border border-cyan-500/20 shadow-[0_0_60px_rgba(6,182,212,0.07),inset_0_1px_0_rgba(6,182,212,0.08)] p-8">
+      <div className="relative max-w-sm mx-auto">
+        {/* Glow detrás de la card */}
+        <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-cyan-500/20 via-transparent to-teal-500/10 blur-sm pointer-events-none" />
 
-        {/* Badge */}
-        <p className="text-[10px] font-mono tracking-[0.25em] text-cyan-400 uppercase mb-4">
-          ◈ &nbsp;Acceso al sistema
-        </p>
+        <div className="relative bg-[#080e1a]/30 backdrop-blur-xl rounded-2xl border border-cyan-500/20 shadow-[0_0_60px_rgba(6,182,212,0.07),inset_0_1px_0_rgba(6,182,212,0.08)] p-8">
 
-        {/* Header */}
-        <div className="mb-7">
-          <h2 className="text-2xl font-bold text-white leading-tight">Bienvenido</h2>
-          <p className="text-sm text-slate-500 mt-1">Ingresá tus credenciales para continuar</p>
-        </div>
+          {/* Badge */}
+          <p className="text-[10px] font-mono tracking-[0.25em] text-cyan-400 uppercase mb-4">
+            ◈ &nbsp;Acceso al sistema
+          </p>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Email */}
-          <div>
-            <label className="block text-xs font-sans tracking-wide text-cyan-300/80 mb-2">
-              Email
-            </label>
-            <div className="relative group">
-              <EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-500/40 group-focus-within:text-cyan-400/70 pointer-events-none transition-colors" />
-              <input
-                type="email"
-                required
-                value={form.email}
-                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                placeholder="tu@email.com"
-                className="w-full pl-9 pr-3 py-2.5 bg-slate-950/70 border border-slate-700/50 rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all"
-              />
-            </div>
+          {/* Header */}
+          <div className="mb-7">
+            <h2 className="text-2xl font-bold text-white leading-tight">Bienvenido</h2>
+            <p className="text-sm text-slate-500 mt-1">Ingresá tus credenciales para continuar</p>
           </div>
 
-          {/* Contraseña */}
-          <div>
-            <label className="block text-xs font-sans tracking-wide text-cyan-300/80 mb-2">
-              Contraseña
-            </label>
-            <div className="relative group">
-              <LockClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-500/40 group-focus-within:text-cyan-400/70 pointer-events-none transition-colors" />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                required
-                value={form.password}
-                onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                placeholder="••••••••"
-                className="w-full pl-9 pr-10 py-2.5 bg-slate-950/70 border border-slate-700/50 rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(v => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-cyan-400 transition-colors"
-              >
-                {showPassword ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-
-          {/* Recordarme */}
-          <label className="flex items-center gap-2.5 cursor-pointer group">
-            <div className="relative">
-              <input
-                type="checkbox"
-                checked={remember}
-                onChange={e => setRemember(e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-4 h-4 rounded border border-slate-700 bg-slate-950/70 peer-checked:bg-cyan-500 peer-checked:border-cyan-500 transition-all flex items-center justify-center">
-                {remember && (
-                  <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Email */}
+            <div>
+              <label className="block text-xs font-sans tracking-wide text-cyan-300/80 mb-2">
+                Email
+              </label>
+              <div className="relative group">
+                <EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-500/40 group-focus-within:text-cyan-400/70 pointer-events-none transition-colors" />
+                <input
+                  type="email"
+                  required
+                  value={form.email}
+                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                  placeholder="tu@email.com"
+                  className="w-full pl-9 pr-3 py-2.5 bg-slate-950/70 border border-slate-700/50 rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all"
+                />
               </div>
             </div>
-            <span className="text-xs text-slate-500 group-hover:text-slate-400 transition-colors select-none">
-              Recordarme
-            </span>
-          </label>
 
-          {/* Error */}
-          {error && (
-            <div className="flex items-center gap-2 px-3 py-2.5 bg-red-500/8 border border-red-500/20 rounded-lg">
-              <ExclamationCircleIcon className="w-4 h-4 text-red-400 flex-shrink-0" />
-              <p className="text-xs text-red-400">{error}</p>
+            {/* Contraseña */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-xs font-sans tracking-wide text-cyan-300/80">
+                  Contraseña
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowForgot(true)}
+                  className="text-xs text-slate-500 hover:text-cyan-400 transition-colors"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
+              <div className="relative group">
+                <LockClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-500/40 group-focus-within:text-cyan-400/70 pointer-events-none transition-colors" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={form.password}
+                  onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                  placeholder="••••••••"
+                  className="w-full pl-9 pr-10 py-2.5 bg-slate-950/70 border border-slate-700/50 rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-cyan-400 transition-colors"
+                >
+                  {showPassword ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
-          )}
 
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="relative w-full py-2.5 px-4 mt-1 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed bg-teal-500 hover:bg-teal-400 text-white shadow-[0_0_20px_rgba(20,184,166,0.25)] hover:shadow-[0_0_35px_rgba(20,184,166,0.45)]"
-          >
-            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
-            {loading && (
-              <svg className="animate-spin w-4 h-4 text-white/70" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
-              </svg>
+            {/* Recordarme */}
+            <label className="flex items-center gap-2.5 cursor-pointer group">
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={remember}
+                  onChange={e => setRemember(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-4 h-4 rounded border border-slate-700 bg-slate-950/70 peer-checked:bg-cyan-500 peer-checked:border-cyan-500 transition-all flex items-center justify-center">
+                  {remember && (
+                    <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+              </div>
+              <span className="text-xs text-slate-500 group-hover:text-slate-400 transition-colors select-none">
+                Recordarme
+              </span>
+            </label>
+
+            {/* Error */}
+            {error && (
+              <div className="flex items-center gap-2 px-3 py-2.5 bg-red-500/8 border border-red-500/20 rounded-lg">
+                <ExclamationCircleIcon className="w-4 h-4 text-red-400 flex-shrink-0" />
+                <p className="text-xs text-red-400">{error}</p>
+              </div>
             )}
-            {loading ? 'Entrando...' : 'Entrar'}
-          </button>
-        </form>
 
-        {/* Divider */}
-        <div className="mt-7 pt-6 border-t border-slate-800">
-          <p className="text-sm text-center text-slate-600">
-            ¿No tenés cuenta?{' '}
-            <Link to="/register" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors">
-              Registrarse
-            </Link>
-          </p>
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="relative w-full py-2.5 px-4 mt-1 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed bg-teal-500 hover:bg-teal-400 text-white shadow-[0_0_20px_rgba(20,184,166,0.25)] hover:shadow-[0_0_35px_rgba(20,184,166,0.45)]"
+            >
+              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
+              {loading && (
+                <svg className="animate-spin w-4 h-4 text-white/70" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+                </svg>
+              )}
+              {loading ? 'Entrando...' : 'Entrar'}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="mt-7 pt-6 border-t border-slate-800">
+            <p className="text-sm text-center text-slate-600">
+              ¿No tenés cuenta?{' '}
+              <Link to="/register" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors">
+                Registrarse
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
