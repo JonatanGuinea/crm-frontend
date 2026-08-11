@@ -205,7 +205,7 @@ const SECTIONS = [
       },
       {
         q: '¿Qué pasa si el cliente no responde el presupuesto?',
-        a: 'Si enviaste el presupuesto por email y el cliente no responde en 2 días, el sistema envía automáticamente un email de recordatorio con el mismo enlace al presupuesto.\n\nEl recordatorio se envía una sola vez por presupuesto. Si el presupuesto ya venció al momento de la verificación, no se envía ningún recordatorio.',
+        a: 'El sistema actúa automáticamente en dos momentos:\n\n• A las 48 hs de enviado sin respuesta: se envía un email de recordatorio al cliente con el mismo enlace al presupuesto. Se envía una sola vez por presupuesto.\n\n• 1 día antes de que venza (si sigue sin respuesta): el equipo completo recibe una notificación interna que dice "El cliente no respondió el presupuesto #X y vence mañana". Si para el día del vencimiento aún no hubo respuesta, la notificación se actualiza a "vence hoy" y se reactiva como no leída.\n\nSi el presupuesto ya venció al momento de la verificación, no se envía el email de recordatorio.',
       },
       {
         q: '¿Qué es la firma digital?',
