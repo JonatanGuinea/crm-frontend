@@ -204,6 +204,10 @@ const SECTIONS = [
         a: 'Desde el detalle del presupuesto podés enviarlo por:\n• Email: se envía un email con un botón que lleva al cliente a la página pública del presupuesto. No se adjunta ningún PDF.\n• WhatsApp: se comparte el enlace público del presupuesto directamente.\n\nDesde la página pública el cliente puede ver el presupuesto, aprobarlo, rechazarlo, firmarlo digitalmente y descargar el PDF si lo necesita. No requiere tener cuenta en el sistema.',
       },
       {
+        q: '¿Qué pasa si el cliente no responde el presupuesto?',
+        a: 'Si enviaste el presupuesto por email y el cliente no responde en 2 días, el sistema envía automáticamente un email de recordatorio con el mismo enlace al presupuesto.\n\nEl recordatorio se envía una sola vez por presupuesto. Si el presupuesto ya venció al momento de la verificación, no se envía ningún recordatorio.',
+      },
+      {
         q: '¿Qué es la firma digital?',
         a: 'El cliente puede firmar el presupuesto directamente desde el enlace público con su dedo (mobile) o mouse (desktop). La firma queda registrada con fecha y hora. El presupuesto pasa a estado "Firmado".',
       },
