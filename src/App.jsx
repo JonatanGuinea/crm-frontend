@@ -23,6 +23,7 @@ import NotificationsPage from './pages/notifications/NotificationsPage'
 import MembersPage from './pages/members/MembersPage'
 import AcceptInvitePage from './pages/auth/AcceptInvitePage'
 import VerifyEmailPage from './pages/auth/VerifyEmailPage'
+import ConfirmPasswordChangePage from './pages/auth/ConfirmPasswordChangePage'
 import ProfilePage from './pages/profile/ProfilePage'
 import OrgSettingsPage from './pages/org/OrgSettingsPage'
 import QuoteDetailPage from './pages/quotes/QuoteDetailPage'
@@ -92,6 +93,7 @@ export default function App() {
               <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
               <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
               <Route path="/verify-email" element={<VerifyEmailPage />} />
+              <Route path="/confirm-password-change" element={<ConfirmPasswordChangePage />} />
               <Route path="/accept-invite" element={<AcceptInvitePage />} />
             </Route>
 

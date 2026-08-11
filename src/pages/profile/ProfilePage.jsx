@@ -79,6 +79,7 @@ export default function ProfilePage() {
 
   const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirm: '' })
   const [pwMsg, setPwMsg] = useState(null)
+  const [pwEmailSent, setPwEmailSent] = useState(false)
 
   const [avatarMsg, setAvatarMsg] = useState(null)
   const [avatarModalOpen, setAvatarModalOpen] = useState(false)
@@ -98,7 +99,7 @@ export default function ProfilePage() {
     mutationFn: changePassword,
     onSuccess: () => {
       setPwForm({ currentPassword: '', newPassword: '', confirm: '' })
-      setPwMsg({ type: 'success', text: 'Contraseña actualizada correctamente.' })
+      setPwEmailSent(true)
     },
     onError: (err) => {
       setPwMsg({ type: 'error', text: err.response?.data?.error || 'Error al cambiar contraseña.' })
@@ -247,50 +248,78 @@ export default function ProfilePage() {
       {/* Cambiar contraseña */}
       <section>
         <h2 className="text-base font-semibold text-fg mb-4">Cambiar contraseña</h2>
-        <form onSubmit={handlePwSubmit} className="space-y-4">
-          <div>
-            <label className={labelCls}>Contraseña actual</label>
-            <input
-              type="password"
-              required
-              value={pwForm.currentPassword}
-              onChange={e => setPwForm(f => ({ ...f, currentPassword: e.target.value }))}
-              className={inputCls}
-            />
+
+        {pwEmailSent ? (
+          <div className="flex flex-col items-center gap-3 py-6 px-4 bg-raised rounded-xl border border-line text-center">
+            <div className="w-12 h-12 rounded-full bg-brand-subtle flex items-center justify-center">
+              <svg className="w-6 h-6 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-fg">Revisá tu email</p>
+              <p className="text-xs text-fg-muted mt-0.5">Te enviamos un enlace para confirmar el cambio de contraseña. Expira en 30 minutos.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => { setPwEmailSent(false); setPwMsg(null) }}
+              className="text-xs text-fg-muted underline hover:text-fg transition-colors"
+            >
+              Volver a intentar
+            </button>
           </div>
-          <div>
-            <label className={labelCls}>Nueva contraseña</label>
-            <input
-              type="password"
-              required
-              value={pwForm.newPassword}
-              onChange={e => setPwForm(f => ({ ...f, newPassword: e.target.value }))}
-              className={inputCls}
-            />
-          </div>
-          <div>
-            <label className={labelCls}>Confirmar nueva contraseña</label>
-            <input
-              type="password"
-              required
-              value={pwForm.confirm}
-              onChange={e => setPwForm(f => ({ ...f, confirm: e.target.value }))}
-              className={inputCls}
-            />
-          </div>
-          {pwMsg && (
-            <p className={`text-sm ${pwMsg.type === 'success' ? 'text-brand' : 'text-danger'}`}>
-              {pwMsg.text}
-            </p>
-          )}
-          <button
-            type="submit"
-            disabled={pwMut.isPending}
-            className="px-4 py-2 bg-brand text-white text-sm font-medium rounded-md hover:bg-brand-hover disabled:opacity-50 transition-colors"
-          >
-            {pwMut.isPending ? 'Guardando...' : 'Cambiar contraseña'}
-          </button>
-        </form>
+        ) : (
+          <form onSubmit={handlePwSubmit} className="space-y-4">
+            <div>
+              <label className={labelCls}>Contraseña actual</label>
+              <input
+                type="password"
+                required
+                value={pwForm.currentPassword}
+                onChange={e => setPwForm(f => ({ ...f, currentPassword: e.target.value }))}
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className={labelCls}>Nueva contraseña</label>
+              <input
+                type="password"
+                required
+                value={pwForm.newPassword}
+                onChange={e => setPwForm(f => ({ ...f, newPassword: e.target.value }))}
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className={labelCls}>Confirmar nueva contraseña</label>
+              <input
+                type="password"
+                required
+                value={pwForm.confirm}
+                onChange={e => setPwForm(f => ({ ...f, confirm: e.target.value }))}
+                className={inputCls}
+              />
+            </div>
+            {pwMsg && (
+              <p className={`text-sm ${pwMsg.type === 'success' ? 'text-brand' : 'text-danger'}`}>
+                {pwMsg.text}
+              </p>
+            )}
+            <button
+              type="submit"
+              disabled={pwMut.isPending}
+              className="px-4 py-2 bg-brand text-white text-sm font-medium rounded-md hover:bg-brand-hover disabled:opacity-50 transition-colors flex items-center gap-2"
+            >
+              {pwMut.isPending && (
+                <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"/>
+                </svg>
+              )}
+              {pwMut.isPending ? 'Enviando...' : 'Cambiar contraseña'}
+            </button>
+          </form>
+        )}
       </section>
 
       <hr className="border-line mt-8 mb-6" />
