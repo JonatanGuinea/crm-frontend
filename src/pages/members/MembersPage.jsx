@@ -1,9 +1,9 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../context/AuthContext'
+import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
 import { getMembers, inviteMember, updateMemberRole, removeMember } from '../../api/members'
-import { CheckIcon, ClipboardIcon } from '@heroicons/react/24/outline'
 
 
 const ROLE_LABELS = { owner: 'Owner', admin: 'Admin', member: 'Miembro' }
@@ -20,23 +20,14 @@ const STATUS_COLORS = {
 export default function MembersPage() {
   const { user } = useAuth()
   const confirm = useConfirm()
+  const toast = useToast()
   const orgId = user?.org
   const myRole = user?.role
   const qc = useQueryClient()
 
   const [inviteForm, setInviteForm] = useState({ email: '', role: 'member' })
   const [inviteError, setInviteError] = useState('')
-  const [inviteToken, setInviteToken] = useState(null)
   const [showInvite, setShowInvite] = useState(false)
-  const [copied, setCopied] = useState(false)
-  const copyTimer = useRef(null)
-
-  function handleCopy(text) {
-    navigator.clipboard.writeText(text)
-    setCopied(true)
-    clearTimeout(copyTimer.current)
-    copyTimer.current = setTimeout(() => setCopied(false), 2000)
-  }
 
   const { data, isLoading } = useQuery({
     queryKey: ['members', orgId],
@@ -46,10 +37,11 @@ export default function MembersPage() {
 
   const invite = useMutation({
     mutationFn: (form) => inviteMember(orgId, form),
-    onSuccess: (res) => {
-      setInviteToken(res.data.data.inviteToken)
+    onSuccess: (_, form) => {
+      toast(`Invitación enviada a ${form.email}`, 'success')
       setInviteForm({ email: '', role: 'member' })
       setInviteError('')
+      setShowInvite(false)
       qc.invalidateQueries(['members', orgId])
     },
     onError: (err) => setInviteError(err.response?.data?.error || err.message || 'Error al invitar')
@@ -117,35 +109,10 @@ export default function MembersPage() {
               disabled={invite.isPending}
               className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50"
             >
-              {invite.isPending ? 'Invitando...' : 'Invitar'}
+              {invite.isPending ? 'Enviando...' : 'Invitar'}
             </button>
           </form>
           {inviteError && <p className="mt-2 text-sm text-danger">{inviteError}</p>}
-
-          {inviteToken && (
-            <div className="mt-4 p-3 bg-brand-subtle border border-brand rounded-lg">
-              <p className="text-xs font-medium text-brand mb-1">Invitación creada. Comparte este enlace:</p>
-              <div className="flex gap-2 items-center">
-                <code className="flex-1 text-xs bg-surface border border-line rounded px-2 py-1.5 break-all text-fg">
-                  {`${window.location.origin}/accept-invite?token=${inviteToken}`}
-                </code>
-                <button
-                  onClick={() => handleCopy(`${window.location.origin}/accept-invite?token=${inviteToken}`)}
-                  className={`shrink-0 flex items-center gap-1 text-xs px-2 py-1.5 border rounded transition-colors ${
-                    copied
-                      ? 'border-brand bg-brand text-white'
-                      : 'border-brand text-brand hover:bg-brand-subtle'
-                  }`}
-                >
-                  {copied
-                    ? <><CheckIcon className="w-3.5 h-3.5" />Copiado</>
-                    : <><ClipboardIcon className="w-3.5 h-3.5" />Copiar</>
-                  }
-                </button>
-              </div>
-              <p className="text-xs text-fg-soft mt-1">El usuario solo tiene que abrir este enlace para unirse.</p>
-            </div>
-          )}
         </div>
       )}
 
