@@ -43,6 +43,9 @@ const amountColor = (m) => {
 const amountSign = (m) =>
   m.type === 'income' || m.type === 'transfer_in' ? '+' : '−'
 
+const todayISO = new Date().toISOString().slice(0, 10)
+const isOverdue = (m) => m.status === 'pending' && m.date?.slice(0, 10) < todayISO
+
 // ── StatCard ──────────────────────────────────────────────────────────────────
 function StatCard({ icon: Icon, label, value, sub, iconBg, iconColor, borderColor, valueColor = 'text-fg' }) {
   return (
@@ -472,8 +475,17 @@ export default function FinancesDashboard() {
                 <tbody className="divide-y divide-line">
                   {pendingMovements.map(m => (
                     <tr key={m.id} className="hover:bg-raised/50 transition-colors">
-                      <td className="px-4 py-3 text-fg-muted whitespace-nowrap text-xs">
-                        {new Date(m.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' })}
+                      <td className="px-4 py-3 whitespace-nowrap text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-fg-muted">
+                            {new Date(m.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' })}
+                          </span>
+                          {isOverdue(m) && (
+                            <span className="text-[10px] font-semibold uppercase tracking-wide bg-danger/10 text-danger px-1.5 py-0.5 rounded-full">
+                              Atrasado
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${TYPE_COLORS[m.type]}`}>

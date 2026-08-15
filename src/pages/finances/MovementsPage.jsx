@@ -36,6 +36,9 @@ const amountColor = (m) => {
 
 const fmt = (n) => Number(n ?? 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
+const todayISO = new Date().toISOString().slice(0, 10)
+const isOverdue = (m) => m.status === 'pending' && m.date?.slice(0, 10) < todayISO
+
 const selectCls = 'w-full rounded-lg border border-line bg-raised text-fg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40'
 
 function periodLabel(year, month) {
@@ -325,7 +328,14 @@ export default function MovementsPage() {
                   <td className="px-4 py-3 text-sm text-fg-muted">{m.account?.name ?? '—'}</td>
                   <td className="px-4 py-3 text-sm text-fg-muted">{m.category?.name ?? '—'}</td>
                   <td className="px-4 py-3">
-                    <span className={`text-xs font-medium ${STATUS_COLORS[m.status]}`}>{STATUS_LABELS[m.status]}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`text-xs font-medium ${STATUS_COLORS[m.status]}`}>{STATUS_LABELS[m.status]}</span>
+                      {isOverdue(m) && (
+                        <span className="text-[10px] font-semibold uppercase tracking-wide bg-danger/10 text-danger px-1.5 py-0.5 rounded-full">
+                          Atrasado
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className={`px-4 py-3 font-semibold text-right whitespace-nowrap text-sm ${amountColor(m)}`}>
                     {m.type === 'income' || m.type === 'transfer_in' ? '+' : '−'}${fmt(m.amount)}
@@ -383,7 +393,14 @@ export default function MovementsPage() {
                 <p className={`text-sm font-bold ${amountColor(m)}`}>
                   {m.type === 'income' || m.type === 'transfer_in' ? '+' : '−'}${fmt(m.amount)}
                 </p>
-                <span className={`text-xs ${STATUS_COLORS[m.status]}`}>{STATUS_LABELS[m.status]}</span>
+                <div className="flex items-center gap-1 justify-end">
+                  <span className={`text-xs ${STATUS_COLORS[m.status]}`}>{STATUS_LABELS[m.status]}</span>
+                  {isOverdue(m) && (
+                    <span className="text-[10px] font-semibold uppercase tracking-wide bg-danger/10 text-danger px-1.5 py-0.5 rounded-full">
+                      Atrasado
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 

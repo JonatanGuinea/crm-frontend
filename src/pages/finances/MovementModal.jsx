@@ -10,6 +10,11 @@ const today = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
+const isFuture = (dateStr) => {
+  const todayMid = new Date(); todayMid.setHours(0, 0, 0, 0)
+  return new Date(dateStr + 'T00:00:00') > todayMid
+}
+
 const inputCls = 'w-full rounded-lg border border-line bg-raised text-fg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40'
 const labelCls = 'text-xs font-medium text-fg-muted'
 
@@ -33,6 +38,10 @@ export default function MovementModal({ defaultType = 'expense', movement, accou
   useEffect(() => {
     setForm(p => ({ ...p, categoryId: '' }))
   }, [form.type])
+
+  useEffect(() => {
+    if (!isEdit) setForm(p => ({ ...p, pending: isFuture(p.date) }))
+  }, [form.date]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const { data: categories = [], isLoading: catsLoading } = useQuery({
     queryKey: ['financial-categories', form.type],
@@ -187,32 +196,37 @@ export default function MovementModal({ defaultType = 'expense', movement, accou
             />
           </div>
 
-          {/* Pendiente (solo egresos) */}
-          {!isIncome && (
-            <button
-              type="button"
-              onClick={() => set('pending', !form.pending)}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-colors ${
-                form.pending
-                  ? 'border-warning bg-warning/5 text-warning'
-                  : 'border-line text-fg-muted hover:bg-raised'
-              }`}
-            >
-              <div className="text-left">
+          {/* Pendiente */}
+          <button
+            type="button"
+            onClick={() => set('pending', !form.pending)}
+            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-colors ${
+              form.pending
+                ? 'border-warning bg-warning/5'
+                : 'border-line text-fg-muted hover:bg-raised'
+            }`}
+          >
+            <div className="text-left">
+              <div className="flex items-center gap-2">
                 <p className={`text-sm font-medium ${form.pending ? 'text-warning' : 'text-fg'}`}>
-                  Egreso pendiente
+                  {isIncome ? 'Ingreso pendiente' : 'Egreso pendiente'}
                 </p>
-                <p className="text-xs text-fg-muted mt-0.5">
-                  {form.pending
-                    ? 'No afecta el saldo hasta confirmar'
-                    : 'Se descuenta del saldo al registrar'}
-                </p>
+                {form.pending && isFuture(form.date) && (
+                  <span className="text-[10px] font-semibold uppercase tracking-wide bg-warning/15 text-warning px-1.5 py-0.5 rounded-full">
+                    Fecha futura
+                  </span>
+                )}
               </div>
-              <div className={`w-10 h-5.5 rounded-full transition-colors relative shrink-0 ${form.pending ? 'bg-warning' : 'bg-line'}`}>
-                <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${form.pending ? 'translate-x-5' : 'translate-x-0.5'}`} />
-              </div>
-            </button>
-          )}
+              <p className="text-xs text-fg-muted mt-0.5">
+                {form.pending
+                  ? 'No afecta el saldo hasta confirmar'
+                  : 'Afecta el saldo al registrar'}
+              </p>
+            </div>
+            <div className={`w-10 h-5.5 rounded-full transition-colors relative shrink-0 ${form.pending ? 'bg-warning' : 'bg-line'}`}>
+              <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${form.pending ? 'translate-x-5' : 'translate-x-0.5'}`} />
+            </div>
+          </button>
 
           {/* Acciones */}
           <div className="flex gap-3 pt-1 pb-2">
