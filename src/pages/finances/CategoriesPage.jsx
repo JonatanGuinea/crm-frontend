@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   getFinancialCategories, createFinancialCategory,
-  updateFinancialCategory, deleteFinancialCategory, seedFinancialCategories,
+  updateFinancialCategory, deleteFinancialCategory,
 } from '../../api/finances'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
 import {
   ChevronLeftIcon, PlusIcon, PencilIcon, TrashIcon, XMarkIcon,
-  ArrowTrendingUpIcon, ArrowTrendingDownIcon, SparklesIcon,
+  ArrowTrendingUpIcon, ArrowTrendingDownIcon,
 } from '@heroicons/react/24/outline'
 
 const inputCls = 'w-full rounded-lg border border-line bg-raised text-fg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40'
@@ -187,7 +187,6 @@ export default function CategoriesPage() {
   const confirm = useConfirm()
   const qc      = useQueryClient()
   const [modal,   setModal]   = useState(null)
-  const [seeding, setSeeding] = useState(false)
 
   const { data: categories = [], isLoading } = useQuery({
     queryKey: ['financial-categories-all'],
@@ -197,19 +196,6 @@ export default function CategoriesPage() {
   function invalidate() {
     qc.invalidateQueries(['financial-categories-all'])
     qc.invalidateQueries(['financial-categories'])
-  }
-
-  async function handleSeed() {
-    setSeeding(true)
-    try {
-      await seedFinancialCategories()
-      toast('Categorías inicializadas', 'success')
-      invalidate()
-    } catch (err) {
-      toast(err.response?.data?.error || err.message, 'error')
-    } finally {
-      setSeeding(false)
-    }
   }
 
   async function handleDelete(cat) {
@@ -245,16 +231,6 @@ export default function CategoriesPage() {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {categories.length === 0 && (
-            <button
-              onClick={handleSeed}
-              disabled={seeding}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-line text-sm font-medium text-fg-muted hover:text-fg hover:bg-raised transition-colors disabled:opacity-50"
-            >
-              <SparklesIcon className="w-4 h-4" />
-              <span className="hidden sm:inline">{seeding ? 'Inicializando…' : 'Cargar predeterminadas'}</span>
-            </button>
-          )}
           <button
             onClick={() => setModal({ create: true })}
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-brand text-white text-sm font-medium hover:opacity-90 transition-opacity"
@@ -284,20 +260,6 @@ export default function CategoriesPage() {
             onEdit={cat => setModal({ edit: cat })}
             onDelete={handleDelete}
           />
-        </div>
-      )}
-
-      {/* Seed si hay categorías */}
-      {!isLoading && categories.length > 0 && (
-        <div className="flex items-center justify-center pt-2">
-          <button
-            onClick={handleSeed}
-            disabled={seeding}
-            className="flex items-center gap-1.5 text-xs text-fg-muted hover:text-fg transition-colors disabled:opacity-50"
-          >
-            <SparklesIcon className="w-3.5 h-3.5" />
-            {seeding ? 'Inicializando…' : 'Recargar categorías predeterminadas'}
-          </button>
         </div>
       )}
 

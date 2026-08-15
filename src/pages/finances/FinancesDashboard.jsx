@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { getFinancesDashboard, getCashMovements, confirmCashMovement, seedFinancialCategories } from '../../api/finances'
+import { getFinancesDashboard, getCashMovements, confirmCashMovement } from '../../api/finances'
 import { useToast } from '../../components/Toast'
 import { fmt } from '../../utils/fmt'
 import MovementModal from './MovementModal'
@@ -239,16 +239,6 @@ export default function FinancesDashboard() {
     }
   }
 
-  async function handleSeed() {
-    try {
-      await seedFinancialCategories()
-      toast('Categorías inicializadas', 'success')
-      qc.invalidateQueries(['finances-dashboard'])
-    } catch (err) {
-      toast(err.response?.data?.error || err.message, 'error')
-    }
-  }
-
   if (isLoading) return (
     <div className="flex items-center justify-center py-24 text-fg-muted text-sm">Cargando…</div>
   )
@@ -443,16 +433,6 @@ export default function FinancesDashboard() {
         )}
        
       </div>
-
-      {/* Seed prompt */}
-      {data?.categoryBreakdown?.length === 0 && (
-        <div className="flex flex-col items-center gap-3 py-8 border border-dashed border-line rounded-2xl">
-          <p className="text-sm text-fg-muted">Sin categorías financieras configuradas.</p>
-          <button onClick={handleSeed} className="text-sm text-brand hover:underline">
-            Inicializar categorías por defecto
-          </button>
-        </div>
-      )}
 
       {/* ── Movimientos pendientes del mes ── */}
       <div className="flex flex-col gap-3">

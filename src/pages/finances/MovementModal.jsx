@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { createCashMovement, updateCashMovement, getFinancialCategories, seedFinancialCategories } from '../../api/finances'
+import { createCashMovement, updateCashMovement, getFinancialCategories } from '../../api/finances'
 import { useToast } from '../../components/Toast'
 import DatePicker from '../../components/DatePicker'
 import { XMarkIcon } from '@heroicons/react/24/outline'
@@ -29,7 +29,6 @@ export default function MovementModal({ defaultType = 'expense', movement, accou
     pending:     movement?.status === 'pending' ? true : false,
   })
   const [saving,  setSaving]  = useState(false)
-  const [seeding, setSeeding] = useState(false)
 
   useEffect(() => {
     setForm(p => ({ ...p, categoryId: '' }))
@@ -41,19 +40,6 @@ export default function MovementModal({ defaultType = 'expense', movement, accou
   })
 
   function set(field, val) { setForm(p => ({ ...p, [field]: val })) }
-
-  async function handleSeed() {
-    setSeeding(true)
-    try {
-      await seedFinancialCategories()
-      qc.invalidateQueries(['financial-categories'])
-      toast('Categorías inicializadas', 'success')
-    } catch (err) {
-      toast(err.response?.data?.error || err.message || 'Error al inicializar', 'error')
-    } finally {
-      setSeeding(false)
-    }
-  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -163,28 +149,14 @@ export default function MovementModal({ defaultType = 'expense', movement, accou
 
           {/* Categoría */}
           <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between">
-              <label className={labelCls}>Categoría</label>
-              {!catsLoading && categories.length === 0 && (
-                <button
-                  type="button"
-                  onClick={handleSeed}
-                  disabled={seeding}
-                  className="text-xs text-brand hover:underline disabled:opacity-50"
-                >
-                  {seeding ? 'Inicializando…' : 'Inicializar categorías'}
-                </button>
-              )}
-            </div>
+            <label className={labelCls}>Categoría</label>
             <select
               value={form.categoryId}
               onChange={e => set('categoryId', e.target.value)}
               className={inputCls}
-              disabled={catsLoading || categories.length === 0}
+              disabled={catsLoading}
             >
-              <option value="">
-                {catsLoading ? 'Cargando…' : categories.length === 0 ? 'Sin categorías — inicializá primero' : 'Sin categoría'}
-              </option>
+              <option value="">{catsLoading ? 'Cargando…' : 'Sin categoría'}</option>
               {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
