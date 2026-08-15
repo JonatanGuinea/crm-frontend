@@ -40,20 +40,25 @@ function AvatarModal({ src, name, onClose }) {
 }
 
 function AvatarCircle({ avatar, name, size = 'lg', onClick }) {
+  const [imgError, setImgError] = useState(false)
   const dim = size === 'lg' ? 'w-24 h-24 text-3xl' : 'w-8 h-8 text-sm'
-  if (avatar) {
+  const initials = name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
+  if (avatar && !imgError) {
     return (
       <img
         src={`${API_BASE}/uploads/${avatar}`}
         alt={name}
         onClick={onClick}
+        onError={() => setImgError(true)}
         className={`${dim} rounded-full object-cover ${onClick ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
       />
     )
   }
-  const initials = name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
   return (
-    <div className={`${dim} rounded-full bg-brand-subtle text-brand font-semibold flex items-center justify-center`}>
+    <div
+      className={`${dim} rounded-full bg-brand-subtle text-brand font-semibold flex items-center justify-center ${onClick ? 'cursor-pointer' : ''}`}
+      onClick={onClick}
+    >
       {initials}
     </div>
   )

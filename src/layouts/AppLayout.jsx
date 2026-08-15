@@ -162,10 +162,11 @@ function ProfileDropdown({ profile, user }) {
 }
 
 function SidebarAvatar({ avatar, name }) {
-  if (avatar) {
-    return <img src={`${API_BASE}/uploads/${avatar}`} alt={name} className="w-7 h-7 rounded-full object-cover shrink-0" />
-  }
+  const [imgError, setImgError] = useState(false)
   const initials = name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
+  if (avatar && !imgError) {
+    return <img src={`${API_BASE}/uploads/${avatar}`} alt={name} onError={() => setImgError(true)} className="w-7 h-7 rounded-full object-cover shrink-0" />
+  }
   return (
     <div className="w-7 h-7 rounded-full bg-brand-subtle text-brand text-xs font-semibold flex items-center justify-center shrink-0">
       {initials}
