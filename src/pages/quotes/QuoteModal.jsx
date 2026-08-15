@@ -14,7 +14,7 @@ import { useAuth } from '../../context/AuthContext'
 
 const EMPTY_ITEM = { description: '', quantity: 1, unitPrice: 0, amount: 0 }
 
-const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
+const inputCls = "w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/40 bg-raised text-fg"
 const labelCls = "block text-sm font-medium text-fg-soft mb-1"
 
 export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId = '', initialProjectId = '' }) {
@@ -28,7 +28,6 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
   })
   const toast = useToast()
   const [items, setItems] = useState([EMPTY_ITEM])
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   // Descuento
@@ -124,24 +123,19 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (items.some(i => !i.description.trim())) {
-      setError('Todos los ítems deben tener descripción')
-      return
-    }
+    if (items.some(i => !i.description.trim())) return toast('Todos los ítems deben tener descripción', 'error')
     if (withDownPayment) {
-      if (!effectiveDownPayment || effectiveDownPayment <= 0) { setError('Ingresá el monto del pago inicial'); return }
-      if (!downPaymentDate) { setError('Ingresá la fecha del pago inicial'); return }
-      if (effectiveDownPayment >= total) { setError('El pago inicial no puede ser igual o mayor al total'); return }
-      if (remainderType === 'second' && !secondPaymentDate) { setError('Ingresá la fecha del segundo pago'); return }
-      if (remainderType === 'second' && secondPaymentDate && downPaymentDate >= secondPaymentDate) { setError('La fecha del segundo pago debe ser posterior al pago inicial'); return }
-      if (remainderType === 'installments' && !installFirstDate) { setError('Seleccioná la fecha del primer vencimiento'); return }
-      if (remainderType === 'installments' && installFirstDate && downPaymentDate >= installFirstDate) { setError('La fecha de la primera cuota debe ser posterior al pago inicial'); return }
+      if (!effectiveDownPayment || effectiveDownPayment <= 0) return toast('Ingresá el monto del pago inicial', 'error')
+      if (!downPaymentDate) return toast('Ingresá la fecha del pago inicial', 'error')
+      if (effectiveDownPayment >= total) return toast('El pago inicial no puede ser igual o mayor al total', 'error')
+      if (remainderType === 'second' && !secondPaymentDate) return toast('Ingresá la fecha del segundo pago', 'error')
+      if (remainderType === 'second' && secondPaymentDate && downPaymentDate >= secondPaymentDate) return toast('La fecha del segundo pago debe ser posterior al pago inicial', 'error')
+      if (remainderType === 'installments' && !installFirstDate) return toast('Seleccioná la fecha del primer vencimiento', 'error')
+      if (remainderType === 'installments' && installFirstDate && downPaymentDate >= installFirstDate) return toast('La fecha de la primera cuota debe ser posterior al pago inicial', 'error')
     } else if (withInstallments && !installFirstDate) {
-      setError('Seleccioná la fecha del primer vencimiento')
-      return
+      return toast('Seleccioná la fecha del primer vencimiento', 'error')
     }
-    if (!form.clientId) { setError('Seleccioná un cliente'); return }
-    setError('')
+    if (!form.clientId) return toast('Seleccioná un cliente', 'error')
     setLoading(true)
     try {
       const hasDiscount = Boolean(discountValue) && parseFloat(discountValue) > 0
@@ -189,7 +183,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
       }
       onSaved()
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Error al guardar')
+      toast(err.response?.data?.error || err.message || 'Error al guardar', 'error')
     } finally {
       setLoading(false)
     }
@@ -197,9 +191,9 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50">
-      <div className="bg-surface/60 backdrop-blur-xl rounded-t-2xl sm:rounded-xl shadow-lg w-full sm:max-w-2xl sm:mx-4 max-h-[92vh] flex flex-col">
+      <div className="bg-surface border border-line rounded-t-2xl sm:rounded-xl shadow-lg w-full sm:max-w-2xl sm:mx-4 max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="shrink-0 bg-surface/80 backdrop-blur-xl border-b border-line px-5 py-4 flex items-center justify-between">
+        <div className="shrink-0 border-b border-line px-5 py-4 flex items-center justify-between">
           <h3 className="text-base font-semibold text-fg">
             {isEditing ? 'Editar presupuesto' : 'Nuevo presupuesto'}
             {quoteData && <span className="ml-2 text-sm font-normal text-fg-muted">#{quoteData.number}</span>}
@@ -301,7 +295,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
             {discountAmt > 0 && (
               <div className="text-fg-soft">
                 Descuento{discountMode === 'percent' ? ` (${discountValue}%)` : ''}:
-                <span className="text-emerald-600 font-medium ml-1">
+                <span className="text-success font-medium ml-1">
                   -${discountAmt.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
@@ -498,7 +492,6 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
             </div>
           )}
 
-          {error && <p className="text-sm text-danger">{error}</p>}
         </form>
 
         {isEditing && quoteData && (
@@ -519,8 +512,8 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
 
         {/* Footer fijo */}
         <div className="shrink-0 border-t border-line px-5 py-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
-          <button type="button" onClick={onClose} className="px-4 py-2.5 sm:py-2 text-sm text-fg-soft hover:text-fg border border-line-soft rounded-md sm:border-none">Cancelar</button>
-          <button type="submit" form="quote-form" disabled={loading} className="px-4 py-2.5 sm:py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50">
+          <button type="button" onClick={onClose} className="px-4 py-2.5 sm:py-2 text-sm text-fg-soft hover:text-fg border border-line rounded-md sm:border-none">Cancelar</button>
+          <button type="submit" form="quote-form" disabled={loading} className="px-4 py-2.5 sm:py-2 bg-brand text-white rounded-md text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50">
             {loading ? 'Guardando...' : 'Guardar'}
           </button>
         </div>

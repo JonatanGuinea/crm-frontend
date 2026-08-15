@@ -83,7 +83,7 @@ function StatusDropdown({ quote, onUpdate }) {
           <div className="fixed inset-0 z-[9998]" onClick={() => setOpen(false)} />
           <div
             style={{ top: dropPos.top, left: dropPos.left }}
-            className="fixed z-[9999] bg-surface/80 backdrop-blur-xl border border-line-soft rounded-lg shadow-lg py-1 min-w-[150px]"
+            className="fixed z-[9999] bg-surface/80 backdrop-blur-xl border border-line rounded-lg shadow-lg py-1 min-w-[150px]"
           >
             {allowed.map(s => (
               <button
@@ -148,13 +148,13 @@ function HistoryView({ historyData, isLoading }) {
   return (
     <div>
       <div className="flex flex-wrap gap-3 mb-6">
-        <input type="date" value={fromDate} onChange={e => { setFromDate(e.target.value); setVisible(HISTORY_STEP) }}
-          className="px-3 py-2 text-sm border border-line-soft rounded-md bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-brand" />
-        <input type="date" value={toDate} onChange={e => { setToDate(e.target.value); setVisible(HISTORY_STEP) }}
-          className="px-3 py-2 text-sm border border-line-soft rounded-md bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-brand" />
+        <DatePicker value={fromDate} onChange={e => { setFromDate(e.target.value); setVisible(HISTORY_STEP) }}
+          className="px-3 py-2 text-sm border border-line rounded-md bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-brand/40" />
+        <DatePicker value={toDate} onChange={e => { setToDate(e.target.value); setVisible(HISTORY_STEP) }}
+          className="px-3 py-2 text-sm border border-line rounded-md bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-brand/40" />
         {(fromDate || toDate) && (
           <button onClick={() => { setFromDate(''); setToDate(''); setVisible(HISTORY_STEP) }}
-            className="px-3 py-2 text-xs rounded-md border border-line-soft text-fg-muted hover:bg-raised transition-colors">
+            className="px-3 py-2 text-xs rounded-md border border-line text-fg-muted hover:bg-raised transition-colors">
             Limpiar
           </button>
         )}
@@ -189,7 +189,7 @@ function HistoryView({ historyData, isLoading }) {
           {visible < filtered.length && (
             <div className="flex justify-center mt-6">
               <button onClick={() => setVisible(v => v + HISTORY_STEP)}
-                className="px-4 py-2 text-sm rounded-lg border border-line-soft text-fg-muted hover:bg-raised transition-colors">
+                className="px-4 py-2 text-sm rounded-lg border border-line text-fg-muted hover:bg-raised transition-colors">
                 Mostrar más ({filtered.length - visible} restantes)
               </button>
             </div>
@@ -316,18 +316,16 @@ export default function QuotesPage() {
     if (!canWrite) {
       return <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[q.status]}`}>{STATUS_LABELS[q.status]}</span>
     }
-    const hasPendingInstallments = (q.status === 'approved' || q.status === 'signed') && q.installments?.length > 0
+    return <StatusDropdown quote={q} onUpdate={(status) => changeStatus.mutate({ id: q.id, status })} />
+  }
+
+  function renderCuotas(q) {
+    const n = q.installments?.length ?? 0
+    if (!n) return <span className="text-fg-muted">—</span>
     return (
-      <div className="flex items-center gap-1.5">
-        <StatusDropdown quote={q} onUpdate={(status) => changeStatus.mutate({ id: q.id, status })} />
-        {hasPendingInstallments && (
-          <span title={`${q.installments.length} cuota${q.installments.length !== 1 ? 's' : ''} pendiente${q.installments.length !== 1 ? 's' : ''}`}
-            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-warning-subtle text-warning text-xs font-medium">
-            <span>⏱</span>
-            {q.installments.length}
-          </span>
-        )}
-      </div>
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning-subtle text-warning text-xs font-medium">
+        {n} pendiente{n !== 1 ? 's' : ''}
+      </span>
     )
   }
 
@@ -398,7 +396,7 @@ export default function QuotesPage() {
             <button
               ref={newBtnRef}
               onClick={openNewMenu}
-              className="flex items-center gap-1.5 px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:opacity-90 transition-opacity"
             >
               + Nuevo presupuesto
               <ChevronDownIcon className="w-4 h-4 shrink-0" />
@@ -411,7 +409,7 @@ export default function QuotesPage() {
             <div className="fixed inset-0 z-[9998]" onClick={() => setNewMenuOpen(false)} />
             <div
               style={{ top: newMenuPos.top, left: newMenuPos.left }}
-              className="fixed z-[9999] bg-surface/90 backdrop-blur-xl border border-line-soft rounded-xl shadow-xl py-1.5 w-56"
+              className="fixed z-[9999] bg-surface/90 backdrop-blur-xl border border-line rounded-xl shadow-xl py-1.5 w-56"
             >
               <button
                 onClick={() => { setNewMenuOpen(false); openCreate() }}
@@ -446,7 +444,7 @@ export default function QuotesPage() {
       {tab === 'table' && <>
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setVisible(15) }}
-          className="px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg w-full md:w-auto">
+          className="px-3 py-2 border border-line rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg w-full md:w-auto">
           <option value="">Todos los estados</option>
           {Object.entries(STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
@@ -457,7 +455,7 @@ export default function QuotesPage() {
             value={fromDate}
             onChange={e => { setFromDate(e.target.value); setVisible(15) }}
             placeholder="Fecha desde"
-            className="px-3 py-2 rounded-md bg-surface border border-line-soft text-sm text-fg focus:outline-none focus:ring-2 focus:ring-brand transition-colors"
+            className="px-3 py-2 rounded-md bg-surface border border-line text-sm text-fg focus:outline-none focus:ring-2 focus:ring-brand transition-colors"
           />
         </div>
         <div className="flex items-center gap-1.5">
@@ -466,7 +464,7 @@ export default function QuotesPage() {
             value={toDate}
             onChange={e => { setToDate(e.target.value); setVisible(15) }}
             placeholder="Fecha hasta"
-            className="px-3 py-2 rounded-md bg-surface border border-line-soft text-sm text-fg focus:outline-none focus:ring-2 focus:ring-brand transition-colors"
+            className="px-3 py-2 rounded-md bg-surface border border-line text-sm text-fg focus:outline-none focus:ring-2 focus:ring-brand transition-colors"
           />
         </div>
         {hasDateFilter && (
@@ -491,7 +489,10 @@ export default function QuotesPage() {
                   <span className="text-xs font-mono font-medium text-fg-muted bg-raised px-2 py-0.5 rounded-md">
                     #{q.number}
                   </span>
-                  {renderStatus(q)}
+                  <div className="flex items-center gap-1.5">
+                    {renderCuotas(q)}
+                    {renderStatus(q)}
+                  </div>
                 </div>
                 {/* Título */}
                 <Link to={`/quotes/${q.id}`} className="block font-semibold text-fg hover:text-brand leading-snug mb-3">
@@ -564,6 +565,7 @@ export default function QuotesPage() {
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Cliente</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Envío</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Estado</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Cuotas</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Total</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide"></th>
                   </tr>
@@ -584,6 +586,7 @@ export default function QuotesPage() {
                       </td>
                       <td className="px-4 py-3">{renderEnvio(q)}</td>
                       <td className="px-4 py-3">{renderStatus(q)}</td>
+                      <td className="px-4 py-3">{renderCuotas(q)}</td>
                       <td className="px-4 py-3 text-fg-soft">${Number(q.total).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                       <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
                         <button
@@ -602,7 +605,7 @@ export default function QuotesPage() {
                     </tr>
                   ))}
                   {!allQuotes.length && (
-                    <tr><td colSpan={7} className="px-4 py-6 text-center text-fg-muted">Sin presupuestos</td></tr>
+                    <tr><td colSpan={8} className="px-4 py-6 text-center text-fg-muted">Sin presupuestos</td></tr>
                   )}
                 </tbody>
               </table>
