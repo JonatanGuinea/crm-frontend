@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getProfile, updateProfile, changePassword, uploadAvatar } from '../../api/profile'
 import { useAuth } from '../../context/AuthContext'
+import { useToast } from '../../components/Toast'
 
 const API_BASE = import.meta.env.VITE_API_URL.replace('/api', '')
 
@@ -60,6 +61,7 @@ function AvatarCircle({ avatar, name, size = 'lg', onClick }) {
 
 export default function ProfilePage() {
   const qc = useQueryClient()
+  const toast = useToast()
   const fileInputRef = useRef(null)
   const { logout } = useAuth()
   const navigate = useNavigate()
@@ -75,23 +77,18 @@ export default function ProfilePage() {
   })
 
   const [nameForm, setNameForm] = useState({ name: '', phone: '' })
-  const [nameMsg, setNameMsg] = useState(null)
-
   const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirm: '' })
-  const [pwMsg, setPwMsg] = useState(null)
   const [pwEmailSent, setPwEmailSent] = useState(false)
-
-  const [avatarMsg, setAvatarMsg] = useState(null)
   const [avatarModalOpen, setAvatarModalOpen] = useState(false)
 
   const nameMut = useMutation({
     mutationFn: updateProfile,
     onSuccess: () => {
       qc.invalidateQueries(['profile'])
-      setNameMsg({ type: 'success', text: 'Nombre actualizado correctamente.' })
+      toast('Nombre actualizado correctamente.', 'success')
     },
     onError: (err) => {
-      setNameMsg({ type: 'error', text: err.response?.data?.error || 'Error al actualizar.' })
+      toast(err.response?.data?.error || 'Error al actualizar.', 'error')
     }
   })
 
@@ -102,7 +99,7 @@ export default function ProfilePage() {
       setPwEmailSent(true)
     },
     onError: (err) => {
-      setPwMsg({ type: 'error', text: err.response?.data?.error || 'Error al cambiar contraseña.' })
+      toast(err.response?.data?.error || 'Error al cambiar contraseña.', 'error')
     }
   })
 
@@ -110,24 +107,22 @@ export default function ProfilePage() {
     mutationFn: uploadAvatar,
     onSuccess: () => {
       qc.invalidateQueries(['profile'])
-      setAvatarMsg({ type: 'success', text: 'Foto actualizada.' })
+      toast('Foto actualizada.', 'success')
     },
     onError: (err) => {
-      setAvatarMsg({ type: 'error', text: err.response?.data?.error || 'Error al subir la imagen.' })
+      toast(err.response?.data?.error || 'Error al subir la imagen.', 'error')
     }
   })
 
   function handleNameSubmit(e) {
     e.preventDefault()
-    setNameMsg(null)
     nameMut.mutate({ name: nameForm.name, phone: nameForm.phone })
   }
 
   function handlePwSubmit(e) {
     e.preventDefault()
-    setPwMsg(null)
     if (pwForm.newPassword !== pwForm.confirm) {
-      setPwMsg({ type: 'error', text: 'Las contraseñas nuevas no coinciden.' })
+      toast('Las contraseñas nuevas no coinciden.', 'error')
       return
     }
     pwMut.mutate({ currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword })
@@ -149,7 +144,7 @@ export default function ProfilePage() {
     )
   }
 
-  const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
+  const inputCls = "w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/40 bg-raised text-fg"
   const labelCls = "block text-sm font-medium text-fg-soft mb-1"
 
   return (
@@ -183,16 +178,11 @@ export default function ProfilePage() {
           <button
             onClick={() => fileInputRef.current.click()}
             disabled={avatarMut.isPending}
-            className="px-3 py-1.5 border border-line-soft rounded-md text-sm text-fg-soft hover:bg-raised disabled:opacity-50 transition-colors"
+            className="px-3 py-1.5 border border-line rounded-md text-sm text-fg-soft hover:bg-raised disabled:opacity-50 transition-colors"
           >
             {avatarMut.isPending ? 'Subiendo...' : 'Cambiar foto'}
           </button>
           <p className="mt-1 text-xs text-fg-muted">JPG, PNG, GIF o WEBP · máx. 5 MB</p>
-          {avatarMsg && (
-            <p className={`mt-1 text-xs ${avatarMsg.type === 'success' ? 'text-brand' : 'text-danger'}`}>
-              {avatarMsg.text}
-            </p>
-          )}
         </div>
       </div>
 
@@ -228,15 +218,10 @@ export default function ProfilePage() {
               className={inputCls}
             />
           </div>
-          {nameMsg && (
-            <p className={`text-sm ${nameMsg.type === 'success' ? 'text-brand' : 'text-danger'}`}>
-              {nameMsg.text}
-            </p>
-          )}
           <button
             type="submit"
             disabled={nameMut.isPending}
-            className="px-4 py-2 bg-brand text-white text-sm font-medium rounded-md hover:bg-brand-hover disabled:opacity-50 transition-colors"
+            className="px-4 py-2 bg-brand text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             {nameMut.isPending ? 'Guardando...' : 'Guardar cambios'}
           </button>
@@ -300,15 +285,10 @@ export default function ProfilePage() {
                 className={inputCls}
               />
             </div>
-            {pwMsg && (
-              <p className={`text-sm ${pwMsg.type === 'success' ? 'text-brand' : 'text-danger'}`}>
-                {pwMsg.text}
-              </p>
-            )}
             <button
               type="submit"
               disabled={pwMut.isPending}
-              className="px-4 py-2 bg-brand text-white text-sm font-medium rounded-md hover:bg-brand-hover disabled:opacity-50 transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-brand text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
             >
               {pwMut.isPending && (
                 <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
