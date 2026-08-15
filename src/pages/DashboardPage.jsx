@@ -23,6 +23,8 @@ import {
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   BuildingLibraryIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from '@heroicons/react/24/outline'
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -604,6 +606,118 @@ function ActivityFeed({ activity }) {
   )
 }
 
+function PendingMovementsPanel({ movements, currency }) {
+  const now = new Date()
+  const [sel, setSel] = useState({ year: now.getFullYear(), month: now.getMonth() + 1 })
+
+  const maxYear  = now.getFullYear()
+  const maxMonth = now.getMonth() + 1
+  const isMax    = sel.year === maxYear && sel.month === maxMonth
+
+  function prev() {
+    setSel(s => s.month === 1 ? { year: s.year - 1, month: 12 } : { year: s.year, month: s.month - 1 })
+  }
+  function next() {
+    if (isMax) return
+    setSel(s => s.month === 12 ? { year: s.year + 1, month: 1 } : { year: s.year, month: s.month + 1 })
+  }
+
+  const monthKey = `${sel.year}-${String(sel.month).padStart(2, '0')}`
+  const list     = (movements ?? []).filter(m => m.date?.slice(0, 7) === monthKey)
+
+  const isOverdue = (m) => m.status === 'pending' && m.date?.slice(0, 10) < new Date().toISOString().slice(0, 10)
+
+  const monthTitle = new Date(sel.year, sel.month - 1, 1)
+    .toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
+
+  const pendingIncome  = list.filter(m => m.type === 'income').reduce((a, m) => a + Number(m.amount), 0)
+  const pendingExpense = list.filter(m => m.type === 'expense').reduce((a, m) => a + Number(m.amount), 0)
+
+  return (
+    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h3 className="text-sm font-semibold text-fg">Movimientos pendientes</h3>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={prev}
+            className="p-1 rounded-lg hover:bg-raised text-fg-muted hover:text-fg transition-colors"
+          >
+            <ChevronLeftIcon className="w-4 h-4" />
+          </button>
+          <span className="text-xs font-medium text-fg capitalize min-w-[7.5rem] text-center">{monthTitle}</span>
+          <button
+            onClick={next}
+            disabled={isMax}
+            className="p-1 rounded-lg hover:bg-raised text-fg-muted hover:text-fg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <ChevronRightIcon className="w-4 h-4" />
+          </button>
+          <Link to="/finances/movements" className="flex items-center gap-1 text-xs text-brand hover:underline ml-3">
+            Ver todos <ArrowRightIcon className="w-3 h-3" />
+          </Link>
+        </div>
+      </div>
+
+      {list.length === 0 ? (
+        <p className="text-sm text-fg-muted text-center py-4">Sin movimientos pendientes este mes.</p>
+      ) : (
+        <>
+          <ul className="divide-y divide-line">
+            {list.map(m => {
+              const typeInfo = MOVEMENT_TYPE[m.type] ?? { label: m.type, cls: 'text-fg' }
+              const isIncome = m.type === 'income'
+              const overdue  = isOverdue(m)
+              return (
+                <li key={m.id} className="flex items-center gap-3 py-3">
+                  <div className="p-1.5 rounded-lg shrink-0 bg-warning/10">
+                    <BanknotesIcon className="w-4 h-4 text-warning/70" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-fg truncate">{m.description || typeInfo.label}</p>
+                    <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                      <p className="text-xs text-fg-muted">
+                        {m.date
+                          ? new Date(m.date + 'T00:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
+                          : ''}
+                        {m.client ? ` · ${m.client.name}` : ''}
+                      </p>
+                      {overdue && (
+                        <span className="text-[10px] font-semibold uppercase tracking-wide bg-danger-subtle text-danger px-1.5 py-0.5 rounded-full">
+                          Atrasado
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-sm font-semibold shrink-0 text-warning">
+                    {isIncome ? '+' : '-'}{fmt(m.amount, currency)}
+                  </p>
+                </li>
+              )
+            })}
+          </ul>
+
+          {(pendingIncome > 0 || pendingExpense > 0) && (
+            <div className="pt-3 border-t border-line grid grid-cols-2 gap-4">
+              {pendingIncome > 0 && (
+                <div>
+                  <p className="text-xs text-fg-muted mb-0.5">Ingresos pendientes</p>
+                  <p className="text-sm font-semibold text-warning/80">{fmt(pendingIncome, currency)}</p>
+                </div>
+              )}
+              {pendingExpense > 0 && (
+                <div>
+                  <p className="text-xs text-fg-muted mb-0.5">Egresos pendientes</p>
+                  <p className="text-sm font-semibold text-warning/80">{fmt(pendingExpense, currency)}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
 // ── main ──────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
@@ -775,6 +889,10 @@ export default function DashboardPage() {
               <RecentQuotes quotes={quotes} />
             </div>
             <RecentMovementsPanel movements={finData?.recentMovements} currency={currency} />
+          </div>
+
+          <div className="mb-6">
+            <PendingMovementsPanel movements={finData?.pendingMovements} currency={currency} />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">

@@ -36,8 +36,7 @@ const amountColor = (m) => {
 
 const fmt = (n) => Number(n ?? 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
-const todayISO = new Date().toISOString().slice(0, 10)
-const isOverdue = (m) => m.status === 'pending' && m.date?.slice(0, 10) < todayISO
+const isOverdue = (m) => m.status === 'pending' && m.date?.slice(0, 10) < new Date().toISOString().slice(0, 10)
 
 const selectCls = 'w-full rounded-lg border border-line bg-raised text-fg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40'
 

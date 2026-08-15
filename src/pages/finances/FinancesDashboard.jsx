@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { getFinancesDashboard, getCashMovements, confirmCashMovement } from '../../api/finances'
+import { getFinancesDashboard, confirmCashMovement } from '../../api/finances'
 import { useToast } from '../../components/Toast'
 import { fmt } from '../../utils/fmt'
 import MovementModal from './MovementModal'
@@ -43,8 +43,7 @@ const amountColor = (m) => {
 const amountSign = (m) =>
   m.type === 'income' || m.type === 'transfer_in' ? '+' : '−'
 
-const todayISO = new Date().toISOString().slice(0, 10)
-const isOverdue = (m) => m.status === 'pending' && m.date?.slice(0, 10) < todayISO
+const isOverdue = (m) => m.status === 'pending' && m.date?.slice(0, 10) < new Date().toISOString().slice(0, 10)
 
 // ── StatCard ──────────────────────────────────────────────────────────────────
 function StatCard({ icon: Icon, label, value, sub, iconBg, iconColor, borderColor, valueColor = 'text-fg' }) {
@@ -210,24 +209,10 @@ export default function FinancesDashboard() {
   function invalidate() {
     qc.invalidateQueries(['finances-dashboard'])
     qc.invalidateQueries(['cash-movements'])
-    qc.invalidateQueries(['pending-movements'])
   }
 
-  const _pad        = n => String(n).padStart(2, '0')
-  const pendingFrom = `${selectedMonth.year}-${_pad(selectedMonth.month)}-01`
-  const pendingTo   = `${selectedMonth.year}-${_pad(selectedMonth.month)}-${_pad(new Date(selectedMonth.year, selectedMonth.month, 0).getDate())}`
-
-  const { data: pendingMovements = [], isLoading: pendingLoading } = useQuery({
-    queryKey: ['pending-movements', selectedAccountId, selectedMonth],
-    queryFn: () => getCashMovements({
-      status: 'pending',
-      ...(selectedAccountId ? { accountId: selectedAccountId } : {}),
-      from: pendingFrom,
-      to:   pendingTo,
-      limit: 100,
-    }).then(r => r.data.data?.items ?? []),
-    enabled: true,
-  })
+  const pendingMovements = data?.pendingMovements ?? []
+  const pendingLoading   = isLoading
 
   async function handleConfirmPending(id) {
     setConfirmingId(id)
@@ -437,11 +422,11 @@ export default function FinancesDashboard() {
        
       </div>
 
-      {/* ── Movimientos pendientes del mes ── */}
+      {/* ── Movimientos pendientes ── */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-sm font-semibold text-fg shrink-0">
-            Movimientos pendientes del mes
+            Movimientos pendientes
             {pendingMovements.length > 0 && (
               <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-[11px] font-semibold bg-warning/15 text-warning">
                 {pendingMovements.length}
@@ -455,7 +440,7 @@ export default function FinancesDashboard() {
         ) : pendingMovements.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-10 border border-dashed border-line rounded-2xl text-center">
             <CheckCircleIcon className="w-8 h-8 text-fg-muted/30" />
-            <p className="text-sm text-fg-muted">Sin movimientos pendientes este mes.</p>
+            <p className="text-sm text-fg-muted">Sin movimientos pendientes.</p>
           </div>
         ) : (
           <div className="bg-surface/60 backdrop-blur-xl rounded-2xl border border-line overflow-hidden">
