@@ -8,7 +8,7 @@ import DatePicker from '../../components/DatePicker'
 import { useToast } from '../../components/Toast'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 
-const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
+const inputCls = "w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/40 bg-raised text-fg"
 const labelCls = "block text-sm font-medium text-fg-soft mb-1"
 
 function MemberPicker({ members, selected, onChange }) {
@@ -79,7 +79,6 @@ export default function ProjectModal({ project, onClose, onSaved }) {
     status: project?.status || undefined,
     memberIds: project?.members?.map(m => m.userId ?? m.user?.id).filter(Boolean) || []
   })
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   const { data: clientsData } = useQuery({
@@ -97,7 +96,6 @@ export default function ProjectModal({ project, onClose, onSaved }) {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    setError('')
     setLoading(true)
     try {
       const payload = { ...form }
@@ -110,7 +108,7 @@ export default function ProjectModal({ project, onClose, onSaved }) {
       }
       onSaved()
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Error al guardar')
+      toast(err.response?.data?.error || err.message || 'Error al guardar', 'error')
     } finally {
       setLoading(false)
     }
@@ -118,7 +116,7 @@ export default function ProjectModal({ project, onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-      <div className="bg-surface/60 backdrop-blur-xl rounded-xl shadow-lg w-full max-w-md max-h-[90vh] flex flex-col">
+      <div className="bg-surface rounded-xl shadow-lg w-full max-w-md max-h-[90vh] flex flex-col border border-line">
 
         {/* Header */}
         <div className="shrink-0 px-6 py-4 border-b border-line">
@@ -177,13 +175,12 @@ export default function ProjectModal({ project, onClose, onSaved }) {
             />
           </div>
 
-          {error && <p className="text-sm text-danger">{error}</p>}
         </form>
 
         {/* Footer */}
         <div className="shrink-0 px-6 py-4 border-t border-line flex justify-end gap-2">
           <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-fg-soft hover:text-fg">Cancelar</button>
-          <button type="submit" form="project-form" disabled={loading} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50">
+          <button type="submit" form="project-form" disabled={loading} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
             {loading ? 'Guardando...' : 'Guardar'}
           </button>
         </div>

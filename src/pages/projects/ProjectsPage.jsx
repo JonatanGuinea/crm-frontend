@@ -329,15 +329,7 @@ export default function ProjectsPage() {
               <div key={p.id} className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-4">
                 {/* Header: estado */}
                 <div className="flex items-start justify-between gap-2 mb-3">
-                  <div className="flex items-center gap-1.5">
-                    <StatusDropdown project={p} onUpdate={(status) => handleStatusChange(p.id, status)} />
-                    {(() => { const n = p.quotes?.reduce((acc, q) => acc + (q.installments?.length || 0), 0) || 0; return n > 0 ? (
-                      <span title={`${n} cuota${n !== 1 ? 's' : ''} pendiente${n !== 1 ? 's' : ''}`}
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-warning-subtle text-warning text-xs font-medium">
-                        <span>⏱</span>{n}
-                      </span>
-                    ) : null })()}
-                  </div>
+                  <StatusDropdown project={p} onUpdate={(status) => handleStatusChange(p.id, status)} />
                 </div>
                 {/* Título */}
                 <Link to={`/projects/${p.id}`} className="block font-semibold text-fg hover:text-brand leading-snug mb-3">
@@ -417,15 +409,7 @@ export default function ProjectsPage() {
                       <td className="px-4 py-3 font-medium text-fg">{p.title}</td>
                       <td className="px-4 py-3 text-fg-soft">{p.client?.name || '-'}</td>
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-1.5">
-                          <StatusDropdown project={p} onUpdate={(status) => handleStatusChange(p.id, status)} />
-                          {(() => { const n = p.quotes?.reduce((acc, q) => acc + (q.installments?.length || 0), 0) || 0; return n > 0 ? (
-                            <span title={`${n} cuota${n !== 1 ? 's' : ''} pendiente${n !== 1 ? 's' : ''}`}
-                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-warning-subtle text-warning text-xs font-medium">
-                              <span>⏱</span>{n}
-                            </span>
-                          ) : null })()}
-                        </div>
+                        <StatusDropdown project={p} onUpdate={(status) => handleStatusChange(p.id, status)} />
                       </td>
                       <td className="px-4 py-3">
                         <TaskProgress total={p.taskCount} done={p.doneTaskCount} />
