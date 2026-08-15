@@ -4,16 +4,22 @@ import { useToast } from '../../components/Toast'
 import DatePicker from '../../components/DatePicker'
 import { XMarkIcon, ArrowsRightLeftIcon } from '@heroicons/react/24/outline'
 
-const today = () => new Date().toISOString().slice(0, 10)
+const today = () => {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 
 const inputCls = 'w-full rounded-lg border border-line bg-raised text-fg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40'
 const labelCls = 'text-xs font-medium text-fg-muted'
 
 export default function TransferModal({ accounts, onClose, onSaved }) {
   const toast = useToast()
+
+  const activeAccounts = accounts.filter(a => a.status !== 'inactive')
+
   const [form, setForm] = useState({
-    fromAccountId: accounts[0]?.id ?? '',
-    toAccountId:   accounts[1]?.id ?? '',
+    fromAccountId: activeAccounts[0]?.id ?? '',
+    toAccountId:   activeAccounts[1]?.id ?? '',
     amount:        '',
     description:   '',
     date:          today(),
@@ -36,8 +42,6 @@ export default function TransferModal({ accounts, onClose, onSaved }) {
       setSaving(false)
     }
   }
-
-  const activeAccounts = accounts.filter(a => a.status !== 'inactive')
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm">
