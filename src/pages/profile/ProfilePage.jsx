@@ -136,7 +136,6 @@ export default function ProfilePage() {
   function handleFileChange(e) {
     const file = e.target.files[0]
     if (!file) return
-    setAvatarMsg(null)
     avatarMut.mutate(file)
     e.target.value = ''
   }
@@ -252,7 +251,7 @@ export default function ProfilePage() {
             </div>
             <button
               type="button"
-              onClick={() => { setPwEmailSent(false); setPwMsg(null) }}
+              onClick={() => setPwEmailSent(false)}
               className="text-xs text-fg-muted underline hover:text-fg transition-colors"
             >
               Volver a intentar
