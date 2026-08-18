@@ -77,7 +77,7 @@ export default function QuoteDetailPage() {
   const taxAmount = (subtotal - discountAmt) * (Number(quote.taxRate) / 100)
 
   return (
-    <div className="p-4 md:p-8 max-w-5xl mx-auto">
+    <div className="p-4 md:p-6">
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => navigate('/quotes')} className="text-sm text-fg-muted hover:text-fg-soft">
           ← Presupuestos
@@ -195,7 +195,7 @@ export default function QuoteDetailPage() {
               )}
               {quote.deliveryDate && (
                 <div>
-                  <dt className="text-xs text-fg-muted uppercase mb-0.5">Fecha de entrega</dt>
+                  <dt className="text-xs text-fg-muted uppercase mb-0.5">Fecha de entrega de pedido</dt>
                   <dd className="text-fg">{new Date(quote.deliveryDate).toLocaleDateString('es-AR')}</dd>
                 </div>
               )}

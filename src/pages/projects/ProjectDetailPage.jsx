@@ -406,7 +406,7 @@ export default function ProjectDetailPage() {
   const quotes = quotesRes?.data || []
 
   return (
-    <div className="p-4 md:p-8 max-w-5xl mx-auto">
+    <div className="p-4 md:p-6">
       <div className="flex items-center gap-2 mb-6 text-sm text-fg-muted">
         <button onClick={() => navigate('/projects')} className="hover:text-fg-soft">← Proyectos</button>
       </div>

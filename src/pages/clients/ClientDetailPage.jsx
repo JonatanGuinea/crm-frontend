@@ -83,7 +83,7 @@ export default function ClientDetailPage() {
   const quotes = quotesRes?.data || []
 
   return (
-    <div className="p-4 md:p-8 max-w-5xl mx-auto">
+    <div className="p-4 md:p-6">
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => navigate('/clients')} className="text-sm text-fg-muted hover:text-fg-soft">
           ← Clientes
