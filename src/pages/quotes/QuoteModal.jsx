@@ -24,7 +24,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
 
   const [form, setForm] = useState({
     title: '', clientId: initialClientId, projectId: initialProjectId,
-    validUntil: '', deliveryDate: '', taxRate: 21, currency: 'USD', notes: '', status: ''
+    validUntil: '', deliveryDate: '', paymentDueDate: '', taxRate: 21, currency: 'USD', notes: '', status: ''
   })
   const toast = useToast()
   const [items, setItems] = useState([EMPTY_ITEM])
@@ -90,8 +90,9 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
         title: quoteData.title,
         clientId: quoteData.clientId,
         projectId: quoteData.projectId || '',
-        validUntil:   quoteData.validUntil?.slice(0, 10)   || '',
-        deliveryDate: quoteData.deliveryDate?.slice(0, 10) || '',
+        validUntil:      quoteData.validUntil?.slice(0, 10)      || '',
+        deliveryDate:    quoteData.deliveryDate?.slice(0, 10)    || '',
+        paymentDueDate:  quoteData.paymentDueDate?.slice(0, 10)  || '',
         taxRate: quoteData.taxRate,
         currency: quoteData.currency,
         notes: quoteData.notes || '',
@@ -143,8 +144,9 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
         title: form.title,
         clientId: form.clientId,
         projectId: form.projectId || undefined,
-        validUntil:   form.validUntil   || undefined,
-        deliveryDate: form.deliveryDate || undefined,
+        validUntil:      form.validUntil      || undefined,
+        deliveryDate:    form.deliveryDate    || undefined,
+        paymentDueDate:  form.paymentDueDate  || undefined,
         taxRate: parseFloat(form.taxRate) || 0,
         currency: form.currency,
         notes: form.notes || undefined,
@@ -233,7 +235,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
               className={inputCls} />
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className={`grid gap-3 ${isEditing ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2 sm:grid-cols-3'}`}>
             <div>
               <label className={labelCls}>Válido hasta</label>
               <DatePicker value={form.validUntil}
@@ -246,7 +248,15 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
                 onChange={e => setForm(f => ({ ...f, deliveryDate: e.target.value }))}
                 className={inputCls} />
             </div>
-            <div className="col-span-2 sm:col-span-1">
+            {isEditing && (
+              <div>
+                <label className={labelCls}>Fecha de pago</label>
+                <DatePicker value={form.paymentDueDate}
+                  onChange={e => setForm(f => ({ ...f, paymentDueDate: e.target.value }))}
+                  className={inputCls} />
+              </div>
+            )}
+            <div className={isEditing ? '' : 'col-span-2 sm:col-span-1'}>
               <label className={labelCls}>IVA (%)</label>
               <input type="number" min="0" max="100" step="1" value={form.taxRate}
                 onChange={e => setForm(f => ({ ...f, taxRate: e.target.value }))}
@@ -450,6 +460,19 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
                       </div>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Fecha de pago única — solo si no hay anticipo ni cuotas */}
+              {!withDownPayment && !withInstallments && (
+                <div className="px-4 py-3 border-t border-line">
+                  <label className={labelCls}>Fecha de pago</label>
+                  <DatePicker
+                    value={form.paymentDueDate}
+                    onChange={e => setForm(f => ({ ...f, paymentDueDate: e.target.value }))}
+                    className={inputCls}
+                  />
+                  <p className="text-xs text-fg-muted mt-1">Se enviará un recordatorio al cliente el día del pago.</p>
                 </div>
               )}
 

@@ -43,7 +43,7 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
 
   // ── Presupuesto ───────────────────────────────────────────
   const [quote, setQuote] = useState({
-    title: '', validUntil: '', deliveryDate: '', taxRate: 21, notes: '', currency: 'USD'
+    title: '', validUntil: '', deliveryDate: '', paymentDueDate: '', taxRate: 21, notes: '', currency: 'USD'
   })
   const [items, setItems] = useState([EMPTY_ITEM])
 
@@ -110,8 +110,9 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
     setProjectTitle(quoteData.potentialProjectTitle || '')
     setQuote({
       title:      quoteData.title,
-      validUntil:   quoteData.validUntil   ? quoteData.validUntil.slice(0, 10)   : '',
-      deliveryDate: quoteData.deliveryDate ? quoteData.deliveryDate.slice(0, 10) : '',
+      validUntil:     quoteData.validUntil     ? quoteData.validUntil.slice(0, 10)     : '',
+      deliveryDate:   quoteData.deliveryDate   ? quoteData.deliveryDate.slice(0, 10)   : '',
+      paymentDueDate: quoteData.paymentDueDate ? quoteData.paymentDueDate.slice(0, 10) : '',
       taxRate:      quoteData.taxRate,
       notes:      quoteData.notes || '',
       currency:   quoteData.currency,
@@ -164,8 +165,9 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
       const fullPhone = phoneNumber.trim() ? `${dialCode} ${phoneNumber.trim()}` : null
       const payload = {
         title: quote.title.trim(),
-        validUntil:   quote.validUntil   || undefined,
-        deliveryDate: quote.deliveryDate || undefined,
+        validUntil:      quote.validUntil      || undefined,
+        deliveryDate:    quote.deliveryDate    || undefined,
+        paymentDueDate:  quote.paymentDueDate  || undefined,
         taxRate: parseFloat(quote.taxRate) || 0,
         currency: quote.currency,
         notes: quote.notes.trim() || undefined,
@@ -560,6 +562,19 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Fecha de pago única — solo si no hay anticipo ni cuotas */}
+            {!withDownPayment && !withInstallments && (
+              <div className="px-4 py-3 border-t border-line">
+                <label className={labelCls}>Fecha de pago</label>
+                <DatePicker
+                  value={quote.paymentDueDate}
+                  onChange={e => setQuote(q => ({ ...q, paymentDueDate: e.target.value }))}
+                  className={inputCls}
+                />
+                <p className="text-xs text-fg-muted mt-1">Se enviará un recordatorio al cliente el día del pago.</p>
               </div>
             )}
 
