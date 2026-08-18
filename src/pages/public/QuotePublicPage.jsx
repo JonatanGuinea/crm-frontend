@@ -232,8 +232,8 @@ export default function QuotePublicPage() {
           </div>
           <p className="text-center text-xs text-zinc-400 mt-4">
             Presupuesto generado por{' '}
-            <a href="https://sofiapp.dev" target="_blank" rel="noopener noreferrer" className="font-medium text-zinc-500 hover:text-zinc-700 underline underline-offset-2">
-              sofiapp.dev
+            <a href="https://danteup.com" target="_blank" rel="noopener noreferrer" className="font-medium text-zinc-500 hover:text-zinc-700 underline underline-offset-2">
+              danteup.com
             </a>
           </p>
         </div>
@@ -334,8 +334,8 @@ export default function QuotePublicPage() {
 
           <p className="text-center text-xs text-zinc-400 mt-8">
             Presupuesto generado por{' '}
-            <a href="https://sofiapp.dev" target="_blank" rel="noopener noreferrer" className="font-medium text-zinc-500 underline underline-offset-2">
-              sofiapp.dev
+            <a href="https://danteup.com" target="_blank" rel="noopener noreferrer" className="font-medium text-zinc-500 underline underline-offset-2">
+              danteup.com
             </a>
           </p>
         </div>
@@ -439,7 +439,7 @@ export default function QuotePublicPage() {
                 {quote.project      && <InfoRow label="Proyecto"       value={quote.project.title} />}
                 {validDays != null  && <InfoRow label="Válido por"     value={`${validDays} día${validDays !== 1 ? 's' : ''}`} />}
                 {quote.validUntil   && <InfoRow label="Válido hasta"   value={fmtDate(quote.validUntil)} />}
-                {quote.deliveryDate && <InfoRow label="Fecha de entrega" value={fmtDate(quote.deliveryDate)} />}
+                {quote.deliveryDate && <InfoRow label="Fecha de entrega de pedido" value={fmtDate(quote.deliveryDate)} />}
               </div>
             </div>
           </div>
@@ -659,8 +659,8 @@ export default function QuotePublicPage() {
         <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3">
           <p className="text-xs text-zinc-400 text-center sm:text-left">
             Presupuesto generado por{' '}
-            <a href="https://sofiapp.dev" target="_blank" rel="noopener noreferrer" className="font-medium text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 underline underline-offset-2 transition-colors">
-              sofiapp.dev
+            <a href="https://danteup.com" target="_blank" rel="noopener noreferrer" className="font-medium text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 underline underline-offset-2 transition-colors">
+              danteup.com
             </a>
           </p>
           <div className="flex flex-col sm:flex-row gap-2">
@@ -933,8 +933,8 @@ function SignatureStep({ quote, numStr, sym, total, fmt, clientName, onBack, onC
 
         <p className="text-center text-xs text-zinc-400 mt-6">
           Presupuesto generado por{' '}
-          <a href="https://sofiapp.dev" target="_blank" rel="noopener noreferrer" className="font-medium text-zinc-500 underline underline-offset-2">
-            sofiapp.dev
+          <a href="https://danteup.com" target="_blank" rel="noopener noreferrer" className="font-medium text-zinc-500 underline underline-offset-2">
+            danteup.com
           </a>
         </p>
       </div>

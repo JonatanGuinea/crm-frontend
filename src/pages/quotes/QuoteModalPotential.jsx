@@ -341,7 +341,7 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
                   />
                 </div>
                 <div>
-                  <label className={labelCls}>Fecha de entrega</label>
+                  <label className={labelCls}>Fecha de entrega de pedido</label>
                   <DatePicker
                     value={quote.deliveryDate}
                     onChange={e => setQuote(q => ({ ...q, deliveryDate: e.target.value }))}

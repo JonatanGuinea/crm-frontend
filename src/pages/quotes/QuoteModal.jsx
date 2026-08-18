@@ -243,7 +243,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
                 className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Fecha de entrega</label>
+              <label className={labelCls}>Fecha de entrega de pedido</label>
               <DatePicker value={form.deliveryDate}
                 onChange={e => setForm(f => ({ ...f, deliveryDate: e.target.value }))}
                 className={inputCls} />
