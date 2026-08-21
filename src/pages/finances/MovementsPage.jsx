@@ -298,6 +298,7 @@ export default function MovementsPage() {
                 <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Fecha</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Tipo</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Descripción</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Cliente</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Cuenta</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Categoría</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Estado</th>
@@ -307,9 +308,9 @@ export default function MovementsPage() {
             </thead>
             <tbody className="divide-y divide-line">
               {isLoading ? (
-                <tr><td colSpan={8} className="py-12 text-center text-fg-muted text-sm">Cargando…</td></tr>
+                <tr><td colSpan={9} className="py-12 text-center text-fg-muted text-sm">Cargando…</td></tr>
               ) : movements.length === 0 ? (
-                <tr><td colSpan={8} className="py-12 text-center text-fg-muted text-sm">Sin movimientos{hasActiveFilters ? ' con esos filtros' : ''} en {periodLabel(period.year, period.month)}.</td></tr>
+                <tr><td colSpan={9} className="py-12 text-center text-fg-muted text-sm">Sin movimientos{hasActiveFilters ? ' con esos filtros' : ''} en {periodLabel(period.year, period.month)}.</td></tr>
               ) : movements.map(m => (
                 <tr key={m.id} className={`group hover:bg-raised/50 transition-colors ${m.status === 'annulled' ? 'opacity-50' : ''}`}>
                   <td className="px-4 py-3 text-fg-muted whitespace-nowrap text-xs">
@@ -324,6 +325,7 @@ export default function MovementsPage() {
                     <p className="text-sm text-fg">{m.description || '—'}</p>
                     {m.reference && <p className="text-xs text-fg-muted">{m.reference}</p>}
                   </td>
+                  <td className="px-4 py-3 text-sm text-fg-muted">{m.client?.name ?? '—'}</td>
                   <td className="px-4 py-3 text-sm text-fg-muted">{m.account?.name ?? '—'}</td>
                   <td className="px-4 py-3 text-sm text-fg-muted">{m.category?.name ?? '—'}</td>
                   <td className="px-4 py-3">
@@ -385,6 +387,7 @@ export default function MovementsPage() {
                 <p className="text-sm font-medium text-fg">{m.description || TYPE_LABELS[m.type]}</p>
                 <p className="text-xs text-fg-muted mt-0.5">
                   {m.account?.name} · {new Date(m.date.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' })}
+                  {m.client && ` · ${m.client.name}`}
                   {m.category && ` · ${m.category.name}`}
                 </p>
               </div>

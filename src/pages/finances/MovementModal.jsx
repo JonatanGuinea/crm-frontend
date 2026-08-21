@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createCashMovement, updateCashMovement, getFinancialCategories } from '../../api/finances'
+import { getClients } from '../../api/clients'
 import { useToast } from '../../components/Toast'
 import DatePicker from '../../components/DatePicker'
 import { XMarkIcon } from '@heroicons/react/24/outline'
@@ -30,13 +31,14 @@ export default function MovementModal({ defaultType = 'expense', movement, accou
     description: movement?.description ?? '',
     date:        movement?.date ? movement.date.slice(0, 10) : today(),
     categoryId:  movement?.categoryId ?? '',
+    clientId:    movement?.clientId ?? '',
     reference:   movement?.reference ?? '',
     pending:     movement?.status === 'pending' ? true : false,
   })
   const [saving,  setSaving]  = useState(false)
 
   useEffect(() => {
-    setForm(p => ({ ...p, categoryId: '' }))
+    setForm(p => ({ ...p, categoryId: '', clientId: '' }))
   }, [form.type])
 
   useEffect(() => {
@@ -46,6 +48,12 @@ export default function MovementModal({ defaultType = 'expense', movement, accou
   const { data: categories = [], isLoading: catsLoading } = useQuery({
     queryKey: ['financial-categories', form.type],
     queryFn: () => getFinancialCategories({ type: form.type }).then(r => r.data.data),
+  })
+
+  const { data: clients = [] } = useQuery({
+    queryKey: ['clients-list'],
+    queryFn: () => getClients({ limit: 200 }).then(r => r.data.data ?? r.data),
+    enabled: form.type === 'income',
   })
 
   function set(field, val) { setForm(p => ({ ...p, [field]: val })) }
@@ -60,6 +68,7 @@ export default function MovementModal({ defaultType = 'expense', movement, accou
         ...form,
         amount:     Number(form.amount),
         categoryId: form.categoryId || undefined,
+        clientId:   form.clientId   || undefined,
         reference:  form.reference  || undefined,
         status:     form.pending ? 'pending' : undefined,
       }
@@ -169,6 +178,17 @@ export default function MovementModal({ defaultType = 'expense', movement, accou
               {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
+
+          {/* Cliente (solo ingresos) */}
+          {form.type === 'income' && (
+            <div className="flex flex-col gap-1.5">
+              <label className={labelCls}>Cliente <span className="font-normal text-fg-muted/70">(opcional)</span></label>
+              <select value={form.clientId} onChange={e => set('clientId', e.target.value)} className={inputCls}>
+                <option value="">Sin cliente</option>
+                {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+          )}
 
           {/* Descripción */}
           <div className="flex flex-col gap-1.5">
