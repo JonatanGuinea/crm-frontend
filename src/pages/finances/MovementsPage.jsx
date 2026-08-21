@@ -115,7 +115,7 @@ export default function MovementsPage() {
 
   async function handleAnnul(m) {
     const ok = await confirm(
-      `¿Anular "${m.description || TYPE_LABELS[m.type]}"? Se creará un movimiento inverso para revertir el saldo.`,
+      `¿Anular "${m.description || TYPE_LABELS[m.type]}"? El saldo de la cuenta se revertirá automáticamente.`,
       { confirmLabel: 'Anular', danger: true }
     )
     if (!ok) return
