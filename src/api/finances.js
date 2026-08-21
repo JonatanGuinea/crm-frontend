@@ -25,4 +25,5 @@ export const createTransfer = (data) => api.post('/cash-movements/transfer', dat
 export const updateCashMovement = (id, data) => api.patch(`/cash-movements/${id}`, data)
 export const confirmCashMovement = (id) => api.post(`/cash-movements/${id}/confirm`)
 export const annulCashMovement = (id, data) => api.post(`/cash-movements/${id}/annul`, data)
-export const deleteCashMovement = (id) => api.delete(`/cash-movements/${id}`)
+export const deleteCashMovement    = (id) => api.delete(`/cash-movements/${id}`)
+export const getFinancesHistory    = ()   => api.get('/cash-movements/history')

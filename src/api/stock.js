@@ -20,6 +20,7 @@ export const stockOut        = (data) => api.post('/stock/out', data)
 export const stockAdjustment = (data) => api.post('/stock/adjustment', data)
 export const getMovements    = (params) => api.get('/stock/movements', { params })
 export const getStockDashboard = () => api.get('/stock/dashboard')
+export const getStockHistory   = () => api.get('/stock/history')
 
 // Proveedores
 export const getSuppliers    = (params)     => api.get('/suppliers', { params })

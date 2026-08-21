@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   getCashMovements, getCashAccounts, confirmCashMovement, annulCashMovement, deleteCashMovement,
+  getFinancesHistory,
 } from '../../api/finances'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
@@ -10,7 +11,7 @@ import MovementModal from './MovementModal'
 import {
   ArrowTrendingUpIcon, ArrowTrendingDownIcon,
   ChevronLeftIcon, ChevronRightIcon, FunnelIcon, CheckCircleIcon, XCircleIcon,
-  TrashIcon, PencilIcon, TagIcon,
+  TrashIcon, PencilIcon, TagIcon, ClockIcon,
 } from '@heroicons/react/24/outline'
 
 const TYPE_LABELS = {
@@ -61,6 +62,8 @@ export default function MovementsPage() {
   const [movementModal, setMovementModal] = useState(null)
   const [editTarget,    setEditTarget]    = useState(null)
   const [showFilters,   setShowFilters]   = useState(false)
+  const [tab,           setTab]           = useState('movements')
+  const [historyVisible, setHistoryVisible] = useState(25)
 
   const [filters, setFilters] = useState({ accountId: '', type: '', status: '', reference: '' })
 
@@ -90,6 +93,12 @@ export default function MovementsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['cash-movements', filters, period],
     queryFn: () => getCashMovements({ ...filters, from, to, limit: 200 }).then(r => r.data.data),
+  })
+
+  const { data: historyData = [] } = useQuery({
+    queryKey: ['finances-history'],
+    queryFn: () => getFinancesHistory().then(r => r.data.data),
+    enabled: tab === 'history',
   })
 
   const movements = data?.items ?? []
@@ -161,8 +170,25 @@ export default function MovementsPage() {
           </div>
         </div>
 
+        {/* Tab switcher */}
+        <div className="flex items-center gap-0.5 bg-raised rounded-lg border border-line overflow-hidden">
+          <button
+            onClick={() => setTab('movements')}
+            className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${tab === 'movements' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'}`}
+          >
+            Movimientos
+          </button>
+          <button
+            onClick={() => setTab('history')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${tab === 'history' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'}`}
+          >
+            <ClockIcon className="w-4 h-4" />
+            Historial
+          </button>
+        </div>
+
         {/* Navegador de mes */}
-        <div className="flex items-center gap-1 bg-raised border border-line rounded-xl px-1 py-1">
+        <div className={`flex items-center gap-1 bg-raised border border-line rounded-xl px-1 py-1 ${tab === 'history' ? 'hidden' : ''}`}>
           <button
             onClick={prevMonth}
             className="p-1.5 rounded-lg hover:bg-surface text-fg-muted hover:text-fg transition-colors"
@@ -231,6 +257,75 @@ export default function MovementsPage() {
           </Link>
         </div>
       </div>
+
+      {/* ── Historial ── */}
+      {tab === 'history' && (
+        <div className="flex flex-col gap-4 max-w-2xl">
+          {historyData.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-3 text-fg-muted">
+              <ClockIcon className="w-10 h-10 opacity-30" />
+              <p className="text-sm">Sin movimientos registrados.</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-1">
+              {historyData.slice(0, historyVisible).map((entry, i) => {
+                const initials = entry.createdBy?.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() ?? '?'
+                const date = new Date(entry.createdAt)
+                const dateStr = date.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
+                const timeStr = date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+                const shown = historyData.slice(0, historyVisible)
+                const isIncome = entry.type === 'income' || entry.type === 'transfer_in'
+                const actionText = {
+                  income: 'registró un ingreso',
+                  expense: 'registró un egreso',
+                  transfer_out: 'registró una transferencia saliente',
+                  transfer_in: 'registró una transferencia entrante',
+                  adjustment: 'realizó un ajuste',
+                }[entry.type] ?? 'registró un movimiento'
+                return (
+                  <div key={entry.id} className="flex gap-4">
+                    <div className="flex flex-col items-center">
+                      <div className="w-8 h-8 rounded-full bg-brand-subtle text-brand text-[11px] font-bold flex items-center justify-center shrink-0">
+                        {initials}
+                      </div>
+                      {i < shown.length - 1 && <div className="w-px flex-1 bg-line mt-1 mb-1 min-h-[16px]" />}
+                    </div>
+                    <div className="pb-4 flex-1 min-w-0">
+                      <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                        <span className="text-sm font-semibold text-fg">{entry.createdBy?.name ?? 'Sistema'}</span>
+                        <span className="text-sm text-fg-muted">{actionText} de</span>
+                        <span className={`text-sm font-medium ${isIncome ? 'text-success' : 'text-danger'}`}>
+                          {isIncome ? '+' : '−'}${fmt(entry.amount)}
+                        </span>
+                        {entry.status === 'annulled' && (
+                          <span className="text-[10px] font-semibold uppercase tracking-wide bg-fg-muted/10 text-fg-muted px-1.5 py-0.5 rounded-full">Anulado</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-fg-muted mt-0.5">
+                        {entry.account?.name}
+                        {entry.client && ` · ${entry.client.name}`}
+                        {entry.description && ` · ${entry.description}`}
+                      </p>
+                      <p className="text-[11px] text-fg-muted/70 mt-0.5">{dateStr} · {timeStr}</p>
+                    </div>
+                  </div>
+                )
+              })}
+              {historyData.length > historyVisible && (
+                <button
+                  onClick={() => setHistoryVisible(v => v + 25)}
+                  className="mt-2 text-xs text-fg-muted hover:text-fg text-center py-2 border border-dashed border-line rounded-xl transition-colors"
+                >
+                  Mostrar más ({historyData.length - historyVisible} restante{historyData.length - historyVisible !== 1 ? 's' : ''})
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Movimientos ── */}
+      {tab === 'movements' && <>
 
       {/* Mobile FAB strip */}
       <div className="flex sm:hidden gap-2">
@@ -449,6 +544,8 @@ export default function MovementsPage() {
           </div>
         ))}
       </div>
+
+      </>}
 
       {movementModal && (
         <MovementModal
