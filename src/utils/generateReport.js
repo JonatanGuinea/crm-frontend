@@ -344,7 +344,7 @@ function drawFinancesContent(doc, y, { data, year, month, currency }) {
         const isInc = m.type === 'income'
         if (isInc) running += amt; else running -= amt
         return [
-          new Date(m.date).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' }),
+          new Date(m.date.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' }),
           m.description || '—',
           m.account?.name ?? '—',
           isInc  ? fmt(amt, currency) : '',
@@ -367,7 +367,7 @@ function drawFinancesContent(doc, y, { data, year, month, currency }) {
       startY: y,
       head: [['Fecha', 'Descripcion', 'Cliente', 'Categoria', 'Monto']],
       body: cobrar.map(m => [
-        new Date(m.date).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' }),
+        new Date(m.date.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' }),
         m.description || '—',
         m.client?.name   ?? '—',
         m.category?.name ?? '—',
@@ -390,7 +390,7 @@ function drawFinancesContent(doc, y, { data, year, month, currency }) {
       startY: y,
       head: [['Fecha', 'Descripcion', 'Categoria', 'Cuenta', 'Monto']],
       body: pagar.map(m => [
-        new Date(m.date).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' }),
+        new Date(m.date.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' }),
         m.description || '—',
         m.category?.name ?? '—',
         m.account?.name  ?? '—',
@@ -592,7 +592,7 @@ function drawProjectsContent(doc, y, { data }) {
       body: data.upcomingProjects.map(p => [
         p.title,
         p.client?.name ?? '—',
-        new Date(p.endDate).toLocaleDateString('es-AR'),
+        new Date(p.endDate.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR'),
       ]),
       ...tableStyle(),
     })

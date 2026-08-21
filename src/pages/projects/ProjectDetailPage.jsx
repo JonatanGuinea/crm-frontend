@@ -191,7 +191,7 @@ function MiniTaskCard({ task, canWrite, onEdit, onDelete, onMove }) {
           {task.dueDate && (
             <span className={`flex items-center gap-0.5 text-[11px] ${overdue && !isDone ? 'text-danger' : 'text-fg-muted'}`}>
               <CalendarDaysIcon className="w-3 h-3 shrink-0" />
-              {new Date(task.dueDate).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
+              {new Date(task.dueDate.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
             </span>
           )}
           {task.assignedTo && (
@@ -456,13 +456,13 @@ export default function ProjectDetailPage() {
               {project.startDate && (
                 <div>
                   <dt className="text-xs text-fg-muted uppercase mb-0.5">Fecha inicio</dt>
-                  <dd className="text-fg">{new Date(project.startDate).toLocaleDateString('es-AR')}</dd>
+                  <dd className="text-fg">{new Date(project.startDate.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR')}</dd>
                 </div>
               )}
               {project.endDate && (
                 <div>
                   <dt className="text-xs text-fg-muted uppercase mb-0.5">Fecha fin</dt>
-                  <dd className="text-fg">{new Date(project.endDate).toLocaleDateString('es-AR')}</dd>
+                  <dd className="text-fg">{new Date(project.endDate.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR')}</dd>
                 </div>
               )}
               {project.description && (

@@ -393,7 +393,7 @@ export default function FinancesDashboard() {
                   {(data?.recentMovements ?? []).map(m => (
                     <tr key={m.id} className={`hover:bg-raised/50 transition-colors ${m.status === 'annulled' ? 'opacity-50' : ''}`}>
                       <td className="px-4 py-3 text-fg-muted whitespace-nowrap text-xs">
-                        {new Date(m.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' })}
+                        {new Date(m.date.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' })}
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${TYPE_COLORS[m.type]}`}>
@@ -463,7 +463,7 @@ export default function FinancesDashboard() {
                       <td className="px-4 py-3 whitespace-nowrap text-xs">
                         <div className="flex items-center gap-1.5">
                           <span className="text-fg-muted">
-                            {new Date(m.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' })}
+                            {new Date(m.date.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' })}
                           </span>
                           {isOverdue(m) && (
                             <span className="text-[10px] font-semibold uppercase tracking-wide bg-danger/10 text-danger px-1.5 py-0.5 rounded-full">

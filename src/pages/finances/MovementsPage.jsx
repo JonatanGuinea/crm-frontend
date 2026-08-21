@@ -313,7 +313,7 @@ export default function MovementsPage() {
               ) : movements.map(m => (
                 <tr key={m.id} className={`group hover:bg-raised/50 transition-colors ${m.status === 'annulled' ? 'opacity-50' : ''}`}>
                   <td className="px-4 py-3 text-fg-muted whitespace-nowrap text-xs">
-                    {new Date(m.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' })}
+                    {new Date(m.date.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' })}
                   </td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${TYPE_COLORS[m.type]}`}>
@@ -384,7 +384,7 @@ export default function MovementsPage() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-fg">{m.description || TYPE_LABELS[m.type]}</p>
                 <p className="text-xs text-fg-muted mt-0.5">
-                  {m.account?.name} · {new Date(m.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' })}
+                  {m.account?.name} · {new Date(m.date.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' })}
                   {m.category && ` · ${m.category.name}`}
                 </p>
               </div>

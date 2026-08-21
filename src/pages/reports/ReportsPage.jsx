@@ -664,7 +664,7 @@ function ProjectsTab({ data }) {
                     <td className="px-4 py-3 font-medium text-fg">{p.title}</td>
                     <td className="px-4 py-3 text-fg-muted">{p.client?.name ?? '—'}</td>
                     <td className="px-4 py-3 text-right text-fg-muted text-xs">
-                      {new Date(p.endDate).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' })}
+                      {new Date(p.endDate.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' })}
                     </td>
                   </tr>
                 ))}

@@ -352,7 +352,7 @@ export default function ProjectsPage() {
                   {p.endDate && (
                     <p className="text-xs text-fg-soft flex items-center gap-2">
                       <CalendarDaysIcon className="w-3.5 h-3.5 shrink-0 text-fg-muted" />
-                      Vence: {new Date(p.endDate).toLocaleDateString('es-AR')}
+                      Vence: {new Date(p.endDate.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR')}
                     </p>
                   )}
                   <TaskProgress total={p.taskCount} done={p.doneTaskCount} />

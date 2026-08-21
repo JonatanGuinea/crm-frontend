@@ -540,7 +540,7 @@ function UpcomingProjectsPanel({ projects }) {
       ) : (
         <ul className="divide-y divide-line">
           {upcoming.map(p => {
-            const daysLeft = Math.max(0, Math.ceil((new Date(p.endDate) - new Date()) / (1000 * 60 * 60 * 24)))
+            const daysLeft = Math.max(0, Math.ceil((new Date(p.endDate.slice(0, 10) + 'T12:00:00') - new Date()) / (1000 * 60 * 60 * 24)))
             const urgent = daysLeft <= 2
             return (
               <li key={p.id} className="flex items-center gap-3 py-3">
@@ -677,7 +677,7 @@ function PendingMovementsPanel({ movements, currency }) {
                     <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
                       <p className="text-xs text-fg-muted">
                         {m.date
-                          ? new Date(m.date + 'T00:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
+                          ? new Date(m.date.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
                           : ''}
                         {m.client ? ` · ${m.client.name}` : ''}
                       </p>

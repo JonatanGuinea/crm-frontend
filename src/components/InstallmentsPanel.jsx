@@ -6,7 +6,7 @@ import DatePicker from './DatePicker'
 import { useConfirm } from './ConfirmDialog'
 
 const fmt = (n) => Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-const fmtDate = (d) => new Date(d).toLocaleDateString('es-AR')
+const fmtDate = (d) => new Date(String(d).slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR')
 
 const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
 const labelCls = "block text-sm font-medium text-fg-soft mb-1"
@@ -343,7 +343,7 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
         <ul className="space-y-2">
           {installments.map((inst) => {
             const isPaid    = inst.status === 'paid'
-            const isOverdue = !isPaid && new Date(inst.dueDate) < new Date()
+            const isOverdue = !isPaid && new Date(inst.dueDate.slice(0, 10) + 'T12:00:00') < new Date()
             const accent    = isPaid ? 'text-brand' : isOverdue ? 'text-danger' : 'text-fg'
             const bg        = isPaid ? 'border-brand/20 bg-brand-subtle' : isOverdue ? 'border-danger/20 bg-danger-subtle' : 'border-line bg-raised'
             return (

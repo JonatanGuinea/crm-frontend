@@ -196,7 +196,7 @@ export default function QuoteDetailPage() {
               {quote.deliveryDate && (
                 <div>
                   <dt className="text-xs text-fg-muted uppercase mb-0.5">Fecha de entrega de pedido</dt>
-                  <dd className="text-fg">{new Date(quote.deliveryDate).toLocaleDateString('es-AR')}</dd>
+                  <dd className="text-fg">{new Date(quote.deliveryDate.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR')}</dd>
                 </div>
               )}
               <div>
