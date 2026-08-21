@@ -8,7 +8,6 @@ const STATUS_LABELS = {
   pending:     'Pendiente',
   approved:    'Aprobado',
   in_progress: 'En curso',
-  finished:    'Finalizado',
   cancelled:   'Cancelado',
 }
 
@@ -16,7 +15,6 @@ const STATUS_COLORS = {
   pending:     'bg-warning-subtle text-warning',
   approved:    'bg-info-subtle text-info',
   in_progress: 'bg-brand-subtle text-brand',
-  finished:    'bg-raised text-fg-soft',
   cancelled:   'bg-raised text-fg-muted',
 }
 
@@ -24,7 +22,6 @@ const STATUS_BAR_COLORS = {
   pending:     'bg-warning text-fg font-semibold',
   approved:    'bg-info text-white',
   in_progress: 'bg-brand text-white',
-  finished:    'bg-overlay text-fg-soft border border-line-soft',
   cancelled:   'bg-raised text-fg-muted opacity-60',
 }
 
