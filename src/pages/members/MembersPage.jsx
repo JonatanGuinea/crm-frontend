@@ -6,7 +6,7 @@ import { useConfirm } from '../../components/ConfirmDialog'
 import { getMembers, inviteMember, updateMemberRole, removeMember } from '../../api/members'
 
 
-const ROLE_LABELS = { owner: 'Owner', admin: 'Admin', member: 'Miembro' }
+const ROLE_LABELS = { owner: 'Dueño', admin: 'Administrador', member: 'Miembro' }
 const ROLE_COLORS = {
   owner:  'bg-brand-subtle text-brand',
   admin:  'bg-info-subtle text-info',
@@ -101,7 +101,7 @@ export default function MembersPage() {
                 className="w-full sm:w-auto px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
               >
                 <option value="member">Miembro</option>
-                {myRole === 'owner' && <option value="admin">Admin</option>}
+                {myRole === 'owner' && <option value="admin">Administrador</option>}
               </select>
             </div>
             <button
@@ -181,7 +181,7 @@ export default function MembersPage() {
                             onChange={e => changeRole.mutate({ userId: m.userId, role: e.target.value })}
                             className="text-xs px-2 py-1 border border-line rounded-md focus:outline-none focus:ring-1 focus:ring-brand bg-surface text-fg"
                           >
-                            <option value="admin">Admin</option>
+                            <option value="admin">Administrador</option>
                             <option value="member">Miembro</option>
                           </select>
                         ) : (

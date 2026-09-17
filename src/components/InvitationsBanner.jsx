@@ -76,7 +76,7 @@ export default function InvitationsBanner() {
             <p className="text-sm text-fg">
               <span className="font-semibold">{inv.organization.name}</span>
               {' '}te invitó a unirte como{' '}
-              <span className="font-medium">{inv.role === 'member' ? 'Miembro' : 'Admin'}</span>.
+              <span className="font-medium">{inv.role === 'member' ? 'Miembro' : inv.role === 'owner' ? 'Dueño' : 'Administrador'}</span>.
             </p>
             <div className="flex gap-2 shrink-0">
               <button
