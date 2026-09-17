@@ -867,7 +867,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Paneles exclusivos de owner/admin */}
+      {/* Paneles exclusivos de owner/Administrador*/}
       {!isMember && (
         <>
           <div className="mb-6">

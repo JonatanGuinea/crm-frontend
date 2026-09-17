@@ -28,11 +28,11 @@ const SECTIONS = [
       },
       {
         q: '¿Cómo invitar miembros al equipo?',
-        a: 'Ir a Equipo → "Invitar miembro". Ingresás el email y el rol (Admin o Miembro). La persona recibe un email con un link para aceptar la invitación y crear su cuenta.',
+        a: 'Ir a Equipo → "Invitar miembro". Ingresás el email y el rol (Administradoro Miembro). La persona recibe un email con un link para aceptar la invitación y crear su cuenta.',
       },
       {
         q: '¿Qué diferencia hay entre los roles?',
-        a: '• Propietario (owner): acceso total. Es el único que puede ver y modificar la configuración de la empresa (/organization).\n• Administrador (admin): acceso total excepto la configuración de la empresa.\n• Miembro (member): puede ver clientes, proyectos, tareas y stock. No ve finanzas, presupuestos ni reportes.',
+        a: '• Dueño (owner): acceso total. Es el único que puede ver y modificar la configuración de la empresa (/organization).\n• Administrador (admin): acceso total excepto la configuración de la empresa.\n• Miembro (member): puede ver clientes, proyectos, tareas y stock. No ve finanzas, presupuestos ni reportes.',
       },
       {
         q: '¿Cómo cambio entre modo claro y oscuro?',
@@ -313,7 +313,7 @@ const SECTIONS = [
       },
       {
         q: '¿El sistema envía reportes automáticamente?',
-        a: 'Sí. El último día de cada mes a las 8 AM, el sistema genera automáticamente el informe mensual en PDF y lo envía por email al propietario (owner) de cada organización.\n\nEl PDF incluye:\n• Resumen financiero del mes (ingresos, egresos, balance, categorías, evolución 6 meses)\n• Estado de presupuestos (totales, por estado, tasa de aprobación)\n• Situación de proyectos (distribución por estado)\n• Inventario y alertas de stock (sin stock, stock bajo)\n\nEl reporte llega como archivo adjunto al email del propietario registrado en la cuenta.',
+        a: 'Sí. El último día de cada mes a las 8 AM, el sistema genera automáticamente el informe mensual en PDF y lo envía por email al Dueño (owner) de cada organización.\n\nEl PDF incluye:\n• Resumen financiero del mes (ingresos, egresos, balance, categorías, evolución 6 meses)\n• Estado de presupuestos (totales, por estado, tasa de aprobación)\n• Situación de proyectos (distribución por estado)\n• Inventario y alertas de stock (sin stock, stock bajo)\n\nEl reporte llega como archivo adjunto al email del Dueño registrado en la cuenta.',
       },
     ],
   },
@@ -331,15 +331,15 @@ const SECTIONS = [
       },
       {
         q: '¿Puedo cambiar el rol de un miembro?',
-        a: 'Sí, los administradores y propietarios pueden cambiar el rol de cualquier miembro desde la pantalla de Equipo haciendo clic en el rol actual.',
+        a: 'Sí, los administradores y Dueños pueden cambiar el rol de cualquier miembro desde la pantalla de Equipo haciendo clic en el rol actual.',
       },
       {
         q: '¿Cómo elimino a un miembro?',
         a: 'Desde la pantalla de Equipo, usá el menú de acciones del miembro → "Eliminar". El miembro pierde acceso inmediatamente pero sus datos históricos (tareas, movimientos, etc.) se conservan.',
       },
       {
-        q: '¿Qué puede hacer un Miembro vs un Admin vs un Propietario?',
-        a: 'Miembro: Dashboard limitado, Clientes, Proyectos (ver y cambiar estado), Tareas, Stock.\n\nAdministrador: todo lo anterior + Presupuestos, Finanzas, Reportes, Equipo.\n\nPropietario: todo lo anterior + Configuración de la empresa (único rol con acceso).',
+        q: '¿Qué puede hacer un Miembro vs un Administradorvs un Dueño?',
+        a: 'Miembro: Dashboard limitado, Clientes, Proyectos (ver y cambiar estado), Tareas, Stock.\n\nAdministrador: todo lo anterior + Presupuestos, Finanzas, Reportes, Equipo.\n\nDueño: todo lo anterior + Configuración de la empresa (único rol con acceso).',
       },
     ],
   },
@@ -354,7 +354,7 @@ const SECTIONS = [
     items: [
       {
         q: '¿Qué configuro en Organización?',
-        a: 'Nombre de la empresa, logo, moneda predeterminada, datos de contacto y la cuenta financiera predeterminada para movimientos automáticos de presupuestos aprobados.\n\nEsta sección es exclusiva del Propietario (owner). Los administradores no tienen acceso.',
+        a: 'Nombre de la empresa, logo, moneda predeterminada, datos de contacto y la cuenta financiera predeterminada para movimientos automáticos de presupuestos aprobados.\n\nEsta sección es exclusiva del Dueño (owner). Los administradores no tienen acceso.',
       },
       {
         q: '¿Cómo cambio mi contraseña?',

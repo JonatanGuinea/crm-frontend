@@ -494,7 +494,7 @@ export default function ProjectDetailPage() {
             onMove={(t, status) => moveTaskMutation.mutate({ taskId: t.id, status })}
           />
 
-          {/* Presupuestos — solo owner/admin */}
+          {/* Presupuestos — solo owner/Administrador*/}
           {!isMember && (
             <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line overflow-hidden">
               <div className="flex items-center justify-between px-5 py-4 border-b border-line">
