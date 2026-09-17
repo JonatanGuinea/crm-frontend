@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { createQuote, updateQuote, getQuoteById } from '../../api/quotes'
+import { createQuote, updateQuote, getQuoteById, getNextQuoteNumber } from '../../api/quotes'
 import { getOrganizations } from '../../api/organizations'
 import { getProducts } from '../../api/stock'
 import { createInstallments, createCustomInstallments } from '../../api/installments'
@@ -43,7 +43,7 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
 
   // ── Presupuesto ───────────────────────────────────────────
   const [quote, setQuote] = useState({
-    title: '', validUntil: '', deliveryDate: '', paymentDueDate: '', taxRate: 21, notes: '', currency: 'USD'
+    number: '', title: '', validUntil: '', deliveryDate: '', paymentDueDate: '', taxRate: 21, notes: '', currency: 'USD'
   })
   const [items, setItems] = useState([EMPTY_ITEM])
 
@@ -96,6 +96,19 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
     staleTime: 5 * 60 * 1000,
   })
 
+  const { data: nextNumberData } = useQuery({
+    queryKey: ['quote-next-number'],
+    queryFn: () => getNextQuoteNumber().then(r => r.data.data),
+    enabled: !isEditing,
+    staleTime: 0,
+  })
+
+  useEffect(() => {
+    if (!isEditing && nextNumberData?.nextNumber !== undefined) {
+      setQuote(q => ({ ...q, number: String(nextNumberData.nextNumber) }))
+    }
+  }, [nextNumberData, isEditing])
+
   useEffect(() => {
     if (!quoteData || !isEditing) return
     setClient({
@@ -109,6 +122,7 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
     setWithProject(Boolean(quoteData.potentialProjectTitle))
     setProjectTitle(quoteData.potentialProjectTitle || '')
     setQuote({
+      number:     String(quoteData.number),
       title:      quoteData.title,
       validUntil:     quoteData.validUntil     ? quoteData.validUntil.slice(0, 10)     : '',
       deliveryDate:   quoteData.deliveryDate   ? quoteData.deliveryDate.slice(0, 10)   : '',
@@ -164,6 +178,7 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
       const dialCode = PHONE_COUNTRIES.find(c => c.code === phoneCountry)?.dial || ''
       const fullPhone = phoneNumber.trim() ? `${dialCode} ${phoneNumber.trim()}` : null
       const payload = {
+        number: parseInt(quote.number),
         title: quote.title.trim(),
         validUntil:      quote.validUntil      || undefined,
         deliveryDate:    quote.deliveryDate    || undefined,
@@ -322,13 +337,23 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
               Presupuesto
             </h4>
             <div className="space-y-3">
-              <div>
-                <label className={labelCls}>Título *</label>
-                <input
-                  type="text" required value={quote.title}
-                  onChange={e => setQuote(q => ({ ...q, title: e.target.value }))}
-                  className={inputCls}
-                />
+              <div className="grid grid-cols-[100px_1fr] gap-3">
+                <div>
+                  <label className={labelCls}>Nº presupuesto</label>
+                  <input
+                    type="number" min="1" step="1" required value={quote.number}
+                    onChange={e => setQuote(q => ({ ...q, number: e.target.value }))}
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Título *</label>
+                  <input
+                    type="text" required value={quote.title}
+                    onChange={e => setQuote(q => ({ ...q, title: e.target.value }))}
+                    className={inputCls}
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
