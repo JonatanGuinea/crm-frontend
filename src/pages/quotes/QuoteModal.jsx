@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getClients } from '../../api/clients'
 import { getProjects } from '../../api/projects'
-import { getQuoteById, createQuote, updateQuote } from '../../api/quotes'
+import { getQuoteById, createQuote, updateQuote, getNextQuoteNumber } from '../../api/quotes'
 import { getOrganizations } from '../../api/organizations'
 import { getProducts } from '../../api/stock'
 import { createInstallments, createCustomInstallments } from '../../api/installments'
@@ -23,7 +23,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
   const canWrite = user?.role !== 'member'
 
   const [form, setForm] = useState({
-    title: '', clientId: initialClientId, projectId: initialProjectId,
+    number: '', title: '', clientId: initialClientId, projectId: initialProjectId,
     validUntil: '', deliveryDate: '', paymentDueDate: '', taxRate: 21, currency: 'USD', notes: '', status: ''
   })
   const toast = useToast()
@@ -78,6 +78,13 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
     staleTime: 5 * 60 * 1000,
   })
 
+  const { data: nextNumberData } = useQuery({
+    queryKey: ['quote-next-number'],
+    queryFn: () => getNextQuoteNumber().then(r => r.data.data),
+    enabled: !isEditing,
+    staleTime: 0,
+  })
+
   useEffect(() => {
     if (!isEditing && orgData?.defaultCurrency) {
       setForm(f => ({ ...f, currency: orgData.defaultCurrency }))
@@ -85,8 +92,15 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
   }, [orgData, isEditing])
 
   useEffect(() => {
+    if (!isEditing && nextNumberData?.nextNumber !== undefined) {
+      setForm(f => ({ ...f, number: String(nextNumberData.nextNumber) }))
+    }
+  }, [nextNumberData, isEditing])
+
+  useEffect(() => {
     if (quoteData) {
       setForm({
+        number: String(quoteData.number),
         title: quoteData.title,
         clientId: quoteData.clientId,
         projectId: quoteData.projectId || '',
@@ -141,6 +155,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
     try {
       const hasDiscount = Boolean(discountValue) && parseFloat(discountValue) > 0
       const payload = {
+        number: parseInt(form.number),
         title: form.title,
         clientId: form.clientId,
         projectId: form.projectId || undefined,
@@ -228,11 +243,19 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
             </div>
           </div>
 
-          <div>
-            <label className={labelCls}>Título *</label>
-            <input type="text" required value={form.title}
-              onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-              className={inputCls} />
+          <div className="grid grid-cols-[100px_1fr] gap-3">
+            <div>
+              <label className={labelCls}>Nº presupuesto</label>
+              <input type="number" min="1" step="1" required value={form.number}
+                onChange={e => setForm(f => ({ ...f, number: e.target.value }))}
+                className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Título *</label>
+              <input type="text" required value={form.title}
+                onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                className={inputCls} />
+            </div>
           </div>
 
           <div className={`grid gap-3 ${isEditing ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2 sm:grid-cols-3'}`}>
