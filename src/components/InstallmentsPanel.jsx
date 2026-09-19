@@ -75,6 +75,8 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
       qc.invalidateQueries(queryKey)
       qc.invalidateQueries([entityType, entityId])
       qc.invalidateQueries(['quotes'])
+      qc.invalidateQueries(['cash-movements'])
+      qc.invalidateQueries(['finances-dashboard'])
     }
   })
 
