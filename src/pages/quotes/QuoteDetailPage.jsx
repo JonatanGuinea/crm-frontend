@@ -134,6 +134,8 @@ export default function QuoteDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {/* ── Sidebar ── */}
         <div className="space-y-6">
           <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-5">
             <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide mb-4">Información</h3>
@@ -196,7 +198,7 @@ export default function QuoteDetailPage() {
               )}
               {quote.deliveryDate && (
                 <div>
-                  <dt className="text-xs text-fg-muted uppercase mb-0.5">Fecha de entrega de pedido</dt>
+                  <dt className="text-xs text-fg-muted uppercase mb-0.5">Fecha de entrega</dt>
                   <dd className="text-fg">{new Date(quote.deliveryDate.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR')}</dd>
                 </div>
               )}
@@ -237,45 +239,37 @@ export default function QuoteDetailPage() {
               total={total}
             />
           </div>
-
-          <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-5">
-            <QuoteImagesPanel
-              quoteId={id}
-              images={quote.images ?? []}
-              canWrite={canWrite}
-            />
-          </div>
-
-          <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-5">
-            <AttachmentsPanel entityType="quote" entityId={id} />
-          </div>
         </div>
 
-        <div className="lg:col-span-2">
+        {/* ── Contenido principal ── */}
+        <div className="lg:col-span-2 space-y-6">
+
+          {/* Tabla de ítems */}
           <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line overflow-hidden">
             <div className="px-5 py-4 border-b border-line">
               <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide">Ítems</h3>
             </div>
-            <table className="w-full text-sm">
-              <thead className="bg-raised">
-                <tr>
-                  {['Descripción', 'Cant.', 'Precio unit.', 'Total'].map(h => (
-                    <th key={h} className="text-left px-5 py-2 text-xs font-medium text-fg-soft uppercase">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {quote.items?.map((item, i) => (
-                  <tr key={i}>
-                    <td className="px-5 py-3 text-fg">{item.description}</td>
-                    <td className="px-5 py-3 text-fg-soft">{item.quantity}</td>
-                    <td className="px-5 py-3 text-fg-soft">${Number(item.unitPrice).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    <td className="px-5 py-3 font-medium text-fg">${Number(item.amount).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[480px]">
+                <thead className="bg-raised">
+                  <tr>
+                    {['Descripción', 'Cant.', 'Precio unit.', 'Total'].map(h => (
+                      <th key={h} className="text-left px-5 py-2 text-xs font-medium text-fg-soft uppercase">{h}</th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {quote.items?.map((item, i) => (
+                    <tr key={i}>
+                      <td className="px-5 py-3 text-fg">{item.description}</td>
+                      <td className="px-5 py-3 text-fg-soft">{item.quantity}</td>
+                      <td className="px-5 py-3 text-fg-soft">${Number(item.unitPrice).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td className="px-5 py-3 font-medium text-fg">${Number(item.amount).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <div className="border-t border-line px-5 py-4 space-y-1 text-sm text-right">
               <div className="text-fg-soft">
                 Subtotal: <span className="text-fg font-medium">${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -298,6 +292,21 @@ export default function QuoteDetailPage() {
               </div>
             </div>
           </div>
+
+          {/* Imágenes + Adjuntos */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-5">
+              <QuoteImagesPanel
+                quoteId={id}
+                images={quote.images ?? []}
+                canWrite={canWrite}
+              />
+            </div>
+            <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-5">
+              <AttachmentsPanel entityType="quote" entityId={id} />
+            </div>
+          </div>
+
         </div>
       </div>
 

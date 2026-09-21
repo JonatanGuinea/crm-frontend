@@ -89,7 +89,54 @@ export default function LineItemsEditor({ items, onChange, products = [] }) {
 
   return (
     <div>
-      <table className="w-full text-sm">
+      {/* ── Mobile: tarjeta por ítem ── */}
+      <div className="sm:hidden space-y-2">
+        {items.map((item, i) => (
+          <div key={i} className="rounded-md border border-line p-2.5 space-y-2 bg-surface">
+            <input
+              type="text"
+              required
+              placeholder="Descripción del ítem"
+              value={item.description}
+              onChange={e => update(i, 'description', e.target.value)}
+              onFocus={e => handleFocus(e, i)}
+              onBlur={handleBlur}
+              className={inputCls}
+              autoComplete="off"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <p className="text-[10px] uppercase tracking-wide text-fg-muted mb-1">Cantidad</p>
+                <input type="number" min="1" step="1" required value={item.quantity}
+                  onChange={e => update(i, 'quantity', e.target.value)}
+                  className={`${inputCls} text-right`}
+                />
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-wide text-fg-muted mb-1">P. unitario</p>
+                <input type="number" min="0" step="0.01" required value={item.unitPrice}
+                  onChange={e => update(i, 'unitPrice', e.target.value)}
+                  className={`${inputCls} text-right`}
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-between pt-0.5">
+              <span className="text-xs font-semibold text-fg">
+                = ${(parseFloat(item.amount) || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+              {items.length > 1 && (
+                <button type="button" onClick={() => remove(i)}
+                  className="text-xs text-fg-muted hover:text-danger transition-colors">
+                  Quitar ×
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Desktop: tabla ── */}
+      <table className="hidden sm:table w-full text-sm">
         <thead>
           <tr className="text-xs text-fg-muted uppercase tracking-wide">
             <th className="text-left pb-2 pr-2 font-medium">Descripción</th>
@@ -116,23 +163,13 @@ export default function LineItemsEditor({ items, onChange, products = [] }) {
                 />
               </td>
               <td className="py-1.5 pr-2">
-                <input
-                  type="number"
-                  min="1"
-                  step="1"
-                  required
-                  value={item.quantity}
+                <input type="number" min="1" step="1" required value={item.quantity}
                   onChange={e => update(i, 'quantity', e.target.value)}
                   className={`${inputCls} text-right`}
                 />
               </td>
               <td className="py-1.5 pr-2">
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  required
-                  value={item.unitPrice}
+                <input type="number" min="0" step="0.01" required value={item.unitPrice}
                   onChange={e => update(i, 'unitPrice', e.target.value)}
                   className={`${inputCls} text-right`}
                 />
@@ -142,13 +179,8 @@ export default function LineItemsEditor({ items, onChange, products = [] }) {
               </td>
               <td className="py-1.5 pl-2">
                 {items.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => remove(i)}
-                    className="text-fg-muted hover:text-danger text-lg leading-none"
-                  >
-                    ×
-                  </button>
+                  <button type="button" onClick={() => remove(i)}
+                    className="text-fg-muted hover:text-danger text-lg leading-none">×</button>
                 )}
               </td>
             </tr>
@@ -156,11 +188,7 @@ export default function LineItemsEditor({ items, onChange, products = [] }) {
         </tbody>
       </table>
 
-      <button
-        type="button"
-        onClick={add}
-        className="mt-2 text-sm text-brand hover:underline"
-      >
+      <button type="button" onClick={add} className="mt-2 text-sm text-brand hover:underline">
         + Agregar ítem
       </button>
 

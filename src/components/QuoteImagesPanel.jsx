@@ -2,14 +2,15 @@ import { useState, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { uploadQuoteImage, updateQuoteImage, deleteQuoteImage } from '../api/quotes'
 import { useToast } from './Toast'
-import { PlusIcon, TrashIcon, PencilIcon, CheckIcon, XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, TrashIcon, PencilIcon, CheckIcon, XMarkIcon, PhotoIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 
 const UPLOADS_BASE = import.meta.env.VITE_API_URL
 
 export default function QuoteImagesPanel({ quoteId, images = [], canWrite }) {
   const toast = useToast()
   const qc    = useQueryClient()
-  const fileRef = useRef(null)
+  const fileRef     = useRef(null)
+  const editFileRef = useRef(null)
 
   const [uploading, setUploading]     = useState(false)
   const [pendingFile, setPendingFile] = useState(null)  // { file, previewUrl }
@@ -19,6 +20,7 @@ export default function QuoteImagesPanel({ quoteId, images = [], canWrite }) {
   const [editingId, setEditingId]         = useState(null)
   const [editTitle, setEditTitle]         = useState('')
   const [editDesc, setEditDesc]           = useState('')
+  const [editFile, setEditFile]           = useState(null)   // { file, previewUrl }
 
   function handleFileChange(e) {
     const file = e.target.files?.[0]
@@ -72,11 +74,38 @@ export default function QuoteImagesPanel({ quoteId, images = [], canWrite }) {
     setEditingId(img.id)
     setEditTitle(img.title || '')
     setEditDesc(img.description || '')
+    setEditFile(null)
+  }
+
+  function cancelEdit() {
+    if (editFile?.previewUrl) URL.revokeObjectURL(editFile.previewUrl)
+    setEditFile(null)
+    setEditingId(null)
+  }
+
+  function handleEditFileChange(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (editFile?.previewUrl) URL.revokeObjectURL(editFile.previewUrl)
+    setEditFile({ file, previewUrl: URL.createObjectURL(file) })
+    e.target.value = ''
   }
 
   async function saveEdit(imageId) {
     try {
-      await updateQuoteImage(imageId, { title: editTitle, description: editDesc })
+      let payload
+      if (editFile) {
+        const fd = new FormData()
+        fd.append('file', editFile.file)
+        fd.append('title', editTitle)
+        fd.append('description', editDesc)
+        payload = fd
+      } else {
+        payload = { title: editTitle, description: editDesc }
+      }
+      await updateQuoteImage(imageId, payload)
+      if (editFile?.previewUrl) URL.revokeObjectURL(editFile.previewUrl)
+      setEditFile(null)
       qc.invalidateQueries(['quote', quoteId])
       setEditingId(null)
       toast('Imagen actualizada', 'success')
@@ -87,7 +116,7 @@ export default function QuoteImagesPanel({ quoteId, images = [], canWrite }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-1">
         <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide">Imágenes</h3>
         {canWrite && !pendingFile && (
           <>
@@ -108,6 +137,7 @@ export default function QuoteImagesPanel({ quoteId, images = [], canWrite }) {
           </>
         )}
       </div>
+      <p className="text-xs text-fg-muted mb-4">Se muestran en el presupuesto enviado al cliente</p>
 
       {/* Vista previa antes de subir */}
       {pendingFile && (
@@ -167,6 +197,28 @@ export default function QuoteImagesPanel({ quoteId, images = [], canWrite }) {
               <div className="p-3">
                 {editingId === img.id ? (
                   <div className="space-y-2">
+                    {/* Preview de la imagen actual o la nueva */}
+                    <div className="relative">
+                      <img
+                        src={editFile ? editFile.previewUrl : `${UPLOADS_BASE}/uploads/${img.storedName}`}
+                        alt=""
+                        className="w-full h-auto block rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => editFileRef.current?.click()}
+                        className="absolute bottom-2 right-2 flex items-center gap-1 px-2 py-1 text-xs rounded-md bg-black/60 text-white hover:bg-black/80 transition-colors"
+                      >
+                        <ArrowPathIcon className="w-3 h-3" /> Cambiar
+                      </button>
+                      <input
+                        ref={editFileRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        className="hidden"
+                        onChange={handleEditFileChange}
+                      />
+                    </div>
                     <input
                       type="text"
                       value={editTitle}
@@ -183,7 +235,7 @@ export default function QuoteImagesPanel({ quoteId, images = [], canWrite }) {
                     />
                     <div className="flex gap-2">
                       <button
-                        onClick={() => setEditingId(null)}
+                        onClick={cancelEdit}
                         className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg border border-line text-fg-muted hover:bg-raised transition-colors"
                       >
                         <XMarkIcon className="w-3 h-3" /> Cancelar

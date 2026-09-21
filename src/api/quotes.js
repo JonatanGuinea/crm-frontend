@@ -13,5 +13,8 @@ export const getNextQuoteNumber  = ()      => api.get('/quotes/next-number')
 
 export const uploadQuoteImage  = (quoteId, formData) =>
   api.post(`/quote-images/${quoteId}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
-export const updateQuoteImage  = (imageId, data) => api.patch(`/quote-images/${imageId}`, data)
+export const updateQuoteImage  = (imageId, data) =>
+  data instanceof FormData
+    ? api.patch(`/quote-images/${imageId}`, data, { headers: { 'Content-Type': 'multipart/form-data' } })
+    : api.patch(`/quote-images/${imageId}`, data)
 export const deleteQuoteImage  = (imageId)       => api.delete(`/quote-images/${imageId}`)
