@@ -86,6 +86,9 @@ export default function QuotePublicPage() {
   const org         = quote.organization || {}
   const numStr      = String(quote.number).padStart(3, '0')
   const orgLogoUrl  = org.logo ? `${UPLOADS_BASE}/uploads/${org.logo}` : null
+  const brandP  = org.brandPrimary   || '#0f172a'
+  const brandS  = org.brandSecondary || '#334155'
+  const brandGradient = `linear-gradient(135deg, ${brandP}, ${brandS})`
 
   const validDays = (quote.validUntil && quote.createdAt)
     ? Math.round((new Date(quote.validUntil) - new Date(quote.createdAt)) / (1000 * 60 * 60 * 24))
@@ -370,7 +373,7 @@ export default function QuotePublicPage() {
         <div className="rounded-2xl overflow-hidden shadow-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 mb-4 sm:mb-5">
 
           {/* ── Header ─────────────────────────────────────────── */}
-          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 px-5 py-5 sm:px-7 sm:py-6">
+          <div className="px-5 py-5 sm:px-7 sm:py-6" style={{ background: brandGradient }}>
 
             {/* Mobile */}
             <div className="sm:hidden">
@@ -503,7 +506,7 @@ export default function QuotePublicPage() {
                   <span className="font-medium">{sym}{fmt(taxAmount)}</span>
                 </div>
               )}
-              <div className="rounded-xl bg-gradient-to-r from-slate-900 to-slate-700 flex items-center justify-between px-4 py-3.5 mt-1">
+              <div className="rounded-xl flex items-center justify-between px-4 py-3.5 mt-1" style={{ background: brandGradient }}>
                 <div>
                   <p className="text-slate-400 text-xs uppercase tracking-wider font-semibold">Total</p>
                   <p className="text-slate-500 text-xs">{quote.currency}</p>
@@ -603,7 +606,7 @@ export default function QuotePublicPage() {
 
           {/* ── Firmas ──────────────────────────────────────────── */}
           {quote.clientSignature && (
-            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 px-5 py-6 sm:px-10 sm:py-7">
+            <div className="px-5 py-6 sm:px-10 sm:py-7" style={{ background: brandGradient }}>
               <p className="text-sm text-slate-400 leading-relaxed mb-5 border-b border-slate-700 pb-5">
                 Las partes declaran haber leído y aceptado el presente presupuesto en todas sus condiciones.
                 La firma a continuación implica conformidad con los servicios, plazos y valores detallados en este documento.

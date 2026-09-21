@@ -20,9 +20,13 @@ export default function OrgSettingsPage() {
   const sigDrawing    = useRef(false)
   const sigHasDrawing = useRef(false)
 
+  const DEFAULT_PRIMARY   = '#0f172a'
+  const DEFAULT_SECONDARY = '#334155'
+
   const [form, setForm] = useState({
     name: '', cuit: '', email: '', website: '', phone: '',
-    address: '', province: '', city: '', postalCode: '', signatureOwnerName: ''
+    address: '', province: '', city: '', postalCode: '', signatureOwnerName: '',
+    brandPrimary: DEFAULT_PRIMARY, brandSecondary: DEFAULT_SECONDARY,
   })
   const [logoPreview,  setLogoPreview]  = useState(null)
   const [orgSignature, setOrgSignature] = useState(null)
@@ -50,6 +54,8 @@ export default function OrgSettingsPage() {
         city:               orgData.city               || '',
         postalCode:         orgData.postalCode         || '',
         signatureOwnerName: orgData.signatureOwnerName || '',
+        brandPrimary:   orgData.brandPrimary   || DEFAULT_PRIMARY,
+        brandSecondary: orgData.brandSecondary || DEFAULT_SECONDARY,
       })
       setLogoPreview(orgData.logo ? `${UPLOADS_BASE}/uploads/${orgData.logo}` : null)
     }
@@ -121,6 +127,8 @@ export default function OrgSettingsPage() {
     mutationFn: () => updateOrganization(orgId, {
       ...form,
       website: form.website && !/^https?:\/\//i.test(form.website) ? `https://${form.website}` : form.website,
+      brandPrimary:   form.brandPrimary   || null,
+      brandSecondary: form.brandSecondary || null,
       ...(orgSignature !== null && { signature: orgSignature }),
     }),
     onSuccess: () => {
@@ -316,6 +324,61 @@ export default function OrgSettingsPage() {
                 <TrashIcon className="w-4 h-4" />
                 Limpiar canvas
               </button>
+            </div>
+          </div>
+        </section>
+
+        <hr className="border-line mb-8" />
+
+        {/* Identidad de marca */}
+        <section className="mb-8">
+          <h2 className="text-base font-semibold text-fg mb-1">Identidad de marca</h2>
+          <p className="text-sm text-fg-muted mb-5">Se aplican al header y banda de total de los presupuestos.</p>
+          <div className="flex flex-wrap gap-6 mb-5">
+            <div>
+              <label className={labelCls}>Color primario</label>
+              <div className="flex items-center gap-3 mt-1">
+                <input
+                  type="color"
+                  value={form.brandPrimary}
+                  onChange={e => setForm(f => ({ ...f, brandPrimary: e.target.value }))}
+                  className="w-10 h-10 rounded-lg cursor-pointer border border-line-soft p-0.5 bg-surface"
+                />
+                <span className="text-sm font-mono text-fg-muted">{form.brandPrimary}</span>
+                <button type="button" onClick={() => setForm(f => ({ ...f, brandPrimary: DEFAULT_PRIMARY }))}
+                  className="text-xs text-fg-muted hover:text-fg transition-colors">Reset</button>
+              </div>
+            </div>
+            <div>
+              <label className={labelCls}>Color secundario</label>
+              <div className="flex items-center gap-3 mt-1">
+                <input
+                  type="color"
+                  value={form.brandSecondary}
+                  onChange={e => setForm(f => ({ ...f, brandSecondary: e.target.value }))}
+                  className="w-10 h-10 rounded-lg cursor-pointer border border-line-soft p-0.5 bg-surface"
+                />
+                <span className="text-sm font-mono text-fg-muted">{form.brandSecondary}</span>
+                <button type="button" onClick={() => setForm(f => ({ ...f, brandSecondary: DEFAULT_SECONDARY }))}
+                  className="text-xs text-fg-muted hover:text-fg transition-colors">Reset</button>
+              </div>
+            </div>
+          </div>
+          {/* Preview */}
+          <div
+            className="rounded-xl overflow-hidden"
+            style={{ background: `linear-gradient(135deg, ${form.brandPrimary}, ${form.brandSecondary})` }}
+          >
+            <div className="px-5 py-4 flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.55)' }}>Presupuesto</p>
+                <p className="text-white font-bold text-base">{form.name || 'Nombre de empresa'}</p>
+              </div>
+              <p className="text-white font-bold text-2xl opacity-90">#001</p>
+            </div>
+            <div className="px-5 py-3 flex items-center justify-between" style={{ background: 'rgba(0,0,0,0.25)' }}>
+              <span className="text-xs uppercase tracking-widest font-semibold" style={{ color: 'rgba(255,255,255,0.55)' }}>Total</span>
+              <span className="text-white font-bold text-lg">$10.000,00</span>
             </div>
           </div>
         </section>
