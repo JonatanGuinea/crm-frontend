@@ -5,7 +5,7 @@ import { getProfile, updateProfile, changePassword, uploadAvatar } from '../../a
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 
-const API_BASE = import.meta.env.VITE_API_URL.replace('/api', '')
+const UPLOADS_BASE = import.meta.env.VITE_API_URL
 
 function AvatarModal({ src, name, onClose }) {
   useEffect(() => {
@@ -46,7 +46,7 @@ function AvatarCircle({ avatar, name, size = 'lg', onClick }) {
   if (avatar && !imgError) {
     return (
       <img
-        src={`${API_BASE}/uploads/${avatar}`}
+        src={`${UPLOADS_BASE}/uploads/${avatar}`}
         alt={name}
         onClick={onClick}
         onError={() => setImgError(true)}
@@ -157,7 +157,7 @@ export default function ProfilePage() {
 
       {avatarModalOpen && data?.avatar && (
         <AvatarModal
-          src={`${API_BASE}/uploads/${data.avatar}`}
+          src={`${UPLOADS_BASE}/uploads/${data.avatar}`}
           name={data.name}
           onClose={() => setAvatarModalOpen(false)}
         />

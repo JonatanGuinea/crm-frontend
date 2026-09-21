@@ -4,7 +4,7 @@ import { uploadQuoteImage, updateQuoteImage, deleteQuoteImage } from '../api/quo
 import { useToast } from './Toast'
 import { PlusIcon, TrashIcon, PencilIcon, CheckIcon, XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline'
 
-const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '')
+const UPLOADS_BASE = import.meta.env.VITE_API_URL
 
 export default function QuoteImagesPanel({ quoteId, images = [], canWrite }) {
   const toast = useToast()
@@ -160,7 +160,7 @@ export default function QuoteImagesPanel({ quoteId, images = [], canWrite }) {
           {images.map(img => (
             <div key={img.id} className="rounded-xl border border-line overflow-hidden">
               <img
-                src={`${API_BASE}${img.url}`}
+                src={`${UPLOADS_BASE}/uploads/${img.storedName}`}
                 alt={img.title || 'Imagen'}
                 className="w-full h-auto block"
               />

@@ -6,7 +6,7 @@ import { ArrowDownTrayIcon, CheckCircleIcon, CheckIcon, ArrowLeftIcon, TrashIcon
 import ProvinceSelect from '../../components/ProvinceSelect'
 import PhoneInput, { PHONE_COUNTRIES } from '../../components/PhoneInput'
 
-const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '')
+const UPLOADS_BASE = import.meta.env.VITE_API_URL
 
 const STATUS_INST = { pending: 'Pendiente', paid: 'Pagado', overdue: 'Vencido' }
 const STATUS_INST_COLORS = {
@@ -85,7 +85,7 @@ export default function QuotePublicPage() {
   const sym         = quote.currency === 'USD' ? 'US$' : '$'
   const org         = quote.organization || {}
   const numStr      = String(quote.number).padStart(3, '0')
-  const orgLogoUrl  = org.logo ? `${API_BASE}/uploads/${org.logo}` : null
+  const orgLogoUrl  = org.logo ? `${UPLOADS_BASE}/uploads/${org.logo}` : null
 
   const validDays = (quote.validUntil && quote.createdAt)
     ? Math.round((new Date(quote.validUntil) - new Date(quote.createdAt)) / (1000 * 60 * 60 * 24))
@@ -581,7 +581,7 @@ export default function QuotePublicPage() {
                 {quote.images.map(img => (
                   <div key={img.id} className="rounded-xl overflow-hidden border border-zinc-100 dark:border-zinc-800">
                     <img
-                      src={`${API_BASE}/uploads/${img.storedName}`}
+                      src={`${UPLOADS_BASE}/uploads/${img.storedName}`}
                       alt={img.title || 'Imagen'}
                       className="w-full h-auto block"
                     />

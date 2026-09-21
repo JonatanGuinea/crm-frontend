@@ -8,7 +8,7 @@ import ProvinceSelect from '../../components/ProvinceSelect'
 
 const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
 const labelCls = "block text-sm font-medium text-fg-soft mb-1"
-const API_BASE  = import.meta.env.VITE_API_URL?.replace('/api', '')
+const UPLOADS_BASE = import.meta.env.VITE_API_URL
 
 export default function OrgSettingsPage() {
   const { user, logout } = useAuth()
@@ -51,7 +51,7 @@ export default function OrgSettingsPage() {
         postalCode:         orgData.postalCode         || '',
         signatureOwnerName: orgData.signatureOwnerName || '',
       })
-      setLogoPreview(orgData.logo ? `${API_BASE}/uploads/${orgData.logo}` : null)
+      setLogoPreview(orgData.logo ? `${UPLOADS_BASE}/uploads/${orgData.logo}` : null)
     }
   }, [orgData])
 
@@ -135,7 +135,7 @@ export default function OrgSettingsPage() {
     onSuccess: (res) => {
       qc.invalidateQueries(['organization', orgId])
       const filename = res.data.data?.logo
-      if (filename) setLogoPreview(`${API_BASE}/uploads/${filename}`)
+      if (filename) setLogoPreview(`${UPLOADS_BASE}/uploads/${filename}`)
       toast('Logo actualizado', 'success')
     },
     onError: (err) => toast(err.response?.data?.error || err.message || 'Error al subir logo', 'error')

@@ -46,7 +46,7 @@ import {
 } from '@heroicons/react/24/outline'
 
 
-const API_BASE = import.meta.env.VITE_API_URL.replace('/api', '')
+const UPLOADS_BASE = import.meta.env.VITE_API_URL
 
 const navItemsTop = [
   { to: '/',              label: 'Dashboard',      icon: HomeIcon,           exact: true },
@@ -165,7 +165,7 @@ function SidebarAvatar({ avatar, name }) {
   const [imgError, setImgError] = useState(false)
   const initials = name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
   if (avatar && !imgError) {
-    return <img src={`${API_BASE}/uploads/${avatar}`} alt={name} onError={() => setImgError(true)} className="w-7 h-7 rounded-full object-cover shrink-0" />
+    return <img src={`${UPLOADS_BASE}/uploads/${avatar}`} alt={name} onError={() => setImgError(true)} className="w-7 h-7 rounded-full object-cover shrink-0" />
   }
   return (
     <div className="w-7 h-7 rounded-full bg-brand-subtle text-brand text-xs font-semibold flex items-center justify-center shrink-0">

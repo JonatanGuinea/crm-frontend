@@ -11,7 +11,7 @@ import { useToast } from '../../components/Toast'
 import { useAuth } from '../../context/AuthContext'
 import { PlusIcon, TrashIcon, PhotoIcon } from '@heroicons/react/24/outline'
 
-const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '')
+const UPLOADS_BASE = import.meta.env.VITE_API_URL
 
 const EMPTY_ITEM = { description: '', quantity: 1, unitPrice: 0, amount: 0 }
 
@@ -535,7 +535,7 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
                     {existingImages.filter(img => !img._deleted).map(img => (
                       <div key={img.id} className="rounded-lg border border-line overflow-hidden">
                         <img
-                          src={`${API_BASE}${img.url}`}
+                          src={`${UPLOADS_BASE}/uploads/${img.storedName}`}
                           alt={img.title || ''}
                           className="w-full h-auto block"
                         />
