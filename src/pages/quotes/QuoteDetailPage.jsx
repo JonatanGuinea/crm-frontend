@@ -79,44 +79,45 @@ export default function QuoteDetailPage() {
 
   return (
     <div className="p-4 md:p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate('/quotes')} className="text-sm text-fg-muted hover:text-fg-soft">
-          ← Presupuestos
-        </button>
-      </div>
+      <button onClick={() => navigate('/quotes')} className="text-sm text-fg-muted hover:text-fg-soft mb-4 block">
+        ← Presupuestos
+      </button>
 
-      <div className="flex items-start justify-between mb-8">
-        <div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl font-bold text-fg">{quote.title}</h1>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-8">
+        {/* Título + número + estado */}
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-fg leading-snug">{quote.title}</h1>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-sm text-fg-muted">#{quote.number}</span>
             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[quote.status]}`}>
               {STATUS_LABELS[quote.status]}
             </span>
           </div>
-          <p className="text-fg-muted mt-0.5 text-sm">#{quote.number}</p>
         </div>
-        <div className="flex gap-2 flex-wrap justify-end">
+
+        {/* Acciones — scroll horizontal en mobile si no entran */}
+        <div className="flex items-center gap-2 overflow-x-auto shrink-0 -mx-4 px-4 sm:mx-0 sm:px-0 pb-0.5">
           <button
             onClick={() => {
               const url = `${window.location.origin}/p/presupuesto/${id}`
               navigator.clipboard.writeText(url)
               toast('Enlace copiado al portapapeles', 'success')
             }}
-            className="px-4 py-2 border border-line-soft rounded-md text-sm font-medium text-fg-soft hover:bg-raised transition-colors"
+            className="shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 border border-line-soft rounded-md text-xs sm:text-sm font-medium text-fg-soft hover:bg-raised transition-colors"
           >
             Compartir
           </button>
           <button
             onClick={handleDownloadPdf}
             disabled={downloading}
-            className="px-4 py-2 border border-line-soft rounded-md text-sm font-medium text-fg-soft hover:bg-raised disabled:opacity-50 transition-colors"
+            className="shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 border border-line-soft rounded-md text-xs sm:text-sm font-medium text-fg-soft hover:bg-raised disabled:opacity-50 transition-colors"
           >
             {downloading ? 'Generando...' : 'Descargar PDF'}
           </button>
           {canWrite && (
             <button
               onClick={() => isSigned ? toast('El presupuesto fue firmado, no se puede modificar') : setEditOpen(true)}
-              className="px-4 py-2 border border-line-soft rounded-md text-sm font-medium text-fg-soft hover:bg-raised transition-colors"
+              className="shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 border border-line-soft rounded-md text-xs sm:text-sm font-medium text-fg-soft hover:bg-raised transition-colors"
             >
               Editar
             </button>
@@ -125,7 +126,7 @@ export default function QuoteDetailPage() {
             <button
               onClick={async () => { if (await confirm('¿Eliminar este presupuesto? Esta acción no se puede deshacer.', { confirmLabel: 'Eliminar', danger: true })) del.mutate() }}
               disabled={del.isPending}
-              className="px-4 py-2 rounded-md text-sm font-medium bg-danger-subtle text-danger hover:opacity-80 disabled:opacity-50 transition-opacity"
+              className="shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium bg-danger-subtle text-danger hover:opacity-80 disabled:opacity-50 transition-opacity"
             >
               Eliminar
             </button>
