@@ -9,6 +9,7 @@ import QuoteModal from './QuoteModal'
 import QuoteModalPotential from './QuoteModalPotential'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import InstallmentsPanel from '../../components/InstallmentsPanel'
+import QuoteImagesPanel from '../../components/QuoteImagesPanel'
 
 const STATUS_LABELS = {
   draft: 'Borrador', sent: 'Enviado', approved: 'Aprobado',
@@ -234,6 +235,14 @@ export default function QuoteDetailPage() {
               canWrite={canWrite}
               currency={quote.currency}
               total={total}
+            />
+          </div>
+
+          <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-5">
+            <QuoteImagesPanel
+              quoteId={id}
+              images={quote.images ?? []}
+              canWrite={canWrite}
             />
           </div>
 

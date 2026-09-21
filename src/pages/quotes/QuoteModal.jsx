@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getClients } from '../../api/clients'
 import { getProjects } from '../../api/projects'
-import { getQuoteById, createQuote, updateQuote, getNextQuoteNumber } from '../../api/quotes'
+import { getQuoteById, createQuote, updateQuote, getNextQuoteNumber, uploadQuoteImage, updateQuoteImage, deleteQuoteImage } from '../../api/quotes'
 import { getOrganizations } from '../../api/organizations'
 import { getProducts } from '../../api/stock'
 import { createInstallments, createCustomInstallments } from '../../api/installments'
@@ -11,6 +11,9 @@ import LineItemsEditor from '../../components/LineItemsEditor'
 import InstallmentsPanel from '../../components/InstallmentsPanel'
 import { useToast } from '../../components/Toast'
 import { useAuth } from '../../context/AuthContext'
+import { PlusIcon, TrashIcon, PhotoIcon } from '@heroicons/react/24/outline'
+
+const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '')
 
 const EMPTY_ITEM = { description: '', quantity: 1, unitPrice: 0, amount: 0 }
 
@@ -29,6 +32,13 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
   const toast = useToast()
   const [items, setItems] = useState([EMPTY_ITEM])
   const [loading, setLoading] = useState(false)
+
+  // Imágenes
+  // existingImages: { id, storedName, url, title, description, _deleted, _titleOrig, _descOrig }
+  // newImages:      { key, file, previewUrl, title, description }
+  const [existingImages, setExistingImages] = useState([])
+  const [newImages, setNewImages]           = useState([])
+  const imgFileRef = useRef(null)
 
   // Descuento
   const [discountMode, setDiscountMode] = useState('percent') // 'percent' | 'amount'
@@ -122,6 +132,12 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
         setDiscountMode(quoteData.discountType)
         setDiscountValue(String(quoteData.discountValue ?? ''))
       }
+      setExistingImages((quoteData.images ?? []).map(img => ({
+        ...img,
+        _deleted: false,
+        _titleOrig: img.title ?? '',
+        _descOrig:  img.description ?? '',
+      })))
     }
   }, [quoteData])
 
@@ -170,12 +186,45 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
         discountValue: hasDiscount ? parseFloat(discountValue) : 0,
         ...(form.status ? { status: form.status } : {})
       }
+      let savedId = quoteId
       if (isEditing) {
         await updateQuote(quoteId, payload)
-        toast('Presupuesto actualizado', 'success')
       } else {
         const res = await createQuote(payload)
-        const newId = res.data.data?.id
+        savedId = res.data.data?.id
+      }
+
+      // Operaciones de imágenes
+      if (savedId) {
+        // Nuevas imágenes
+        for (const img of newImages) {
+          const fd = new FormData()
+          fd.append('file', img.file)
+          if (img.title.trim())       fd.append('title', img.title.trim())
+          if (img.description.trim()) fd.append('description', img.description.trim())
+          await uploadQuoteImage(savedId, fd)
+        }
+        // Imágenes existentes modificadas o borradas
+        for (const img of existingImages) {
+          if (img._deleted) {
+            await deleteQuoteImage(img.id)
+          } else {
+            const titleChanged = (img.title ?? '') !== img._titleOrig
+            const descChanged  = (img.description ?? '') !== img._descOrig
+            if (titleChanged || descChanged) {
+              await updateQuoteImage(img.id, { title: img.title, description: img.description })
+            }
+          }
+        }
+      }
+
+      // Limpiar previews
+      newImages.forEach(img => URL.revokeObjectURL(img.previewUrl))
+
+      if (isEditing) {
+        toast('Presupuesto actualizado', 'success')
+      } else {
+        const newId = savedId
         if (newId && withDownPayment) {
           const dpAmt = effectiveDownPayment
           const remaining = parseFloat((total - dpAmt).toFixed(2))
@@ -344,6 +393,126 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
             <textarea rows={2} value={form.notes}
               onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
               className={inputCls} />
+          </div>
+
+          {/* Imágenes */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className={labelCls + ' mb-0'}>Imágenes</label>
+              <button
+                type="button"
+                onClick={() => imgFileRef.current?.click()}
+                className="flex items-center gap-1 text-xs text-brand hover:opacity-80 transition-opacity"
+              >
+                <PlusIcon className="w-3.5 h-3.5" /> Agregar imagen
+              </button>
+              <input
+                ref={imgFileRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={e => {
+                  const file = e.target.files?.[0]
+                  if (!file) return
+                  setNewImages(prev => [...prev, {
+                    key: crypto.randomUUID(),
+                    file,
+                    previewUrl: URL.createObjectURL(file),
+                    title: '',
+                    description: '',
+                  }])
+                  e.target.value = ''
+                }}
+              />
+            </div>
+
+            {/* Imágenes existentes (edición) */}
+            {existingImages.filter(img => !img._deleted).length > 0 && (
+              <div className="space-y-3 mb-2">
+                {existingImages.filter(img => !img._deleted).map(img => (
+                  <div key={img.id} className="rounded-lg border border-line overflow-hidden">
+                    <img
+                      src={`${API_BASE}${img.url}`}
+                      alt={img.title || ''}
+                      className="w-full h-auto block"
+                    />
+                    <div className="p-2 bg-raised space-y-1.5">
+                      <input
+                        type="text"
+                        value={img.title ?? ''}
+                        onChange={e => setExistingImages(prev => prev.map(i => i.id === img.id ? { ...i, title: e.target.value } : i))}
+                        placeholder="Título"
+                        className="w-full px-2.5 py-1 text-xs border border-line rounded-md bg-surface text-fg focus:outline-none focus:ring-1 focus:ring-brand/40"
+                      />
+                      <textarea
+                        value={img.description ?? ''}
+                        onChange={e => setExistingImages(prev => prev.map(i => i.id === img.id ? { ...i, description: e.target.value } : i))}
+                        placeholder="Descripción"
+                        rows={2}
+                        className="w-full px-2.5 py-1 text-xs border border-line rounded-md bg-surface text-fg focus:outline-none focus:ring-1 focus:ring-brand/40 resize-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setExistingImages(prev => prev.map(i => i.id === img.id ? { ...i, _deleted: true } : i))}
+                        className="flex items-center gap-1 text-xs text-danger/60 hover:text-danger transition-colors"
+                        title="Eliminar"
+                      >
+                        <TrashIcon className="w-3.5 h-3.5" /> Eliminar
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Nuevas imágenes pendientes */}
+            {newImages.length > 0 && (
+              <div className="space-y-3 mb-2">
+                {newImages.map(img => (
+                  <div key={img.key} className="rounded-lg border border-brand/30 overflow-hidden">
+                    <img
+                      src={img.previewUrl}
+                      alt=""
+                      className="w-full h-auto block"
+                    />
+                    <div className="p-2 bg-brand-subtle/10 space-y-1.5">
+                      <input
+                        type="text"
+                        value={img.title}
+                        onChange={e => setNewImages(prev => prev.map(i => i.key === img.key ? { ...i, title: e.target.value } : i))}
+                        placeholder="Título"
+                        className="w-full px-2.5 py-1 text-xs border border-line rounded-md bg-surface text-fg focus:outline-none focus:ring-1 focus:ring-brand/40"
+                      />
+                      <textarea
+                        value={img.description}
+                        onChange={e => setNewImages(prev => prev.map(i => i.key === img.key ? { ...i, description: e.target.value } : i))}
+                        placeholder="Descripción"
+                        rows={2}
+                        className="w-full px-2.5 py-1 text-xs border border-line rounded-md bg-surface text-fg focus:outline-none focus:ring-1 focus:ring-brand/40 resize-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          URL.revokeObjectURL(img.previewUrl)
+                          setNewImages(prev => prev.filter(i => i.key !== img.key))
+                        }}
+                        className="flex items-center gap-1 text-xs text-danger/60 hover:text-danger transition-colors"
+                        title="Quitar"
+                      >
+                        <TrashIcon className="w-3.5 h-3.5" /> Quitar
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {existingImages.filter(img => !img._deleted).length === 0 && newImages.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-5 rounded-lg border border-dashed border-line text-fg-muted gap-1.5">
+                <PhotoIcon className="w-6 h-6 opacity-40" />
+                <p className="text-xs">Sin imágenes — hacé clic en "Agregar imagen"</p>
+              </div>
+            )}
           </div>
 
           {/* Pagos — solo al crear */}

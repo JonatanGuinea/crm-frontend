@@ -573,6 +573,34 @@ export default function QuotePublicPage() {
             </>
           )}
 
+          {/* ── Imágenes ────────────────────────────────────────── */}
+          {quote.images?.length > 0 && (
+            <>
+              <SectionLabel label="Imágenes" />
+              <div className="px-5 pb-6 sm:px-7 grid grid-cols-1 gap-5 pt-4">
+                {quote.images.map(img => (
+                  <div key={img.id} className="rounded-xl overflow-hidden border border-zinc-100 dark:border-zinc-800">
+                    <img
+                      src={`${API_BASE}/uploads/${img.storedName}`}
+                      alt={img.title || 'Imagen'}
+                      className="w-full h-auto block"
+                    />
+                    {(img.title || img.description) && (
+                      <div className="px-4 py-3 bg-zinc-50 dark:bg-zinc-800/40">
+                        {img.title && (
+                          <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100 leading-snug">{img.title}</p>
+                        )}
+                        {img.description && (
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">{img.description}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
           {/* ── Firmas ──────────────────────────────────────────── */}
           {quote.clientSignature && (
             <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 px-5 py-6 sm:px-10 sm:py-7">
