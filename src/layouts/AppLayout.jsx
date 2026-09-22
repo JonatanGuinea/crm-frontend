@@ -8,6 +8,7 @@ import GlobalSearch from '../components/GlobalSearch'
 import OrgSwitcher from '../components/OrgSwitcher'
 import InvitationsBanner from '../components/InvitationsBanner'
 import DBStatusBanner from '../components/DBStatusBanner'
+import AnnouncementBanner from '../components/AnnouncementBanner'
 import { SetupOrgModal } from '../components/OrgModal'
 import { getProfile } from '../api/profile'
 import { getNotifications } from '../api/notifications'
@@ -477,6 +478,7 @@ export default function AppLayout() {
         <main className="flex-1 overflow-auto flex flex-col">
           <DBStatusBanner />
           <InvitationsBanner />
+          <AnnouncementBanner />
           <div className="flex-1 flex flex-col min-h-0">
             <Outlet />
           </div>
