@@ -226,6 +226,7 @@ export default function QuotesPage() {
   const [newMenuPos, setNewMenuPos] = useState({ top: 0, left: 0 })
   const [potentialOpen, setPotentialOpen] = useState(false)
   const newBtnRef = useRef(null)
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
   const { data, isLoading } = useQuery({
     queryKey: ['quotes', statusFilter, fromDate, toDate],
@@ -240,6 +241,7 @@ export default function QuotesPage() {
   const shownQuotes = allQuotes.slice(0, visible)
   const hasMore = allQuotes.length > visible
   const hasDateFilter = fromDate || toDate
+  const activeFilterCount = (statusFilter ? 1 : 0) + (fromDate ? 1 : 0) + (toDate ? 1 : 0)
 
   const { data: historyData, isLoading: historyLoading } = useQuery({
     queryKey: ['quotes-history'],
@@ -375,34 +377,54 @@ export default function QuotesPage() {
 
   return (
     <div className="p-4 md:p-8">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-fg">Presupuestos</h2>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-0.5 bg-raised rounded-lg border border-line overflow-hidden">
+      <div className="mb-6">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <h2 className="text-xl font-semibold text-fg">Presupuestos</h2>
+          <div className="shrink-0 flex items-center gap-0.5 p-1 bg-raised rounded-lg border border-line">
             <button
               onClick={() => setTab('table')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${tab === 'table' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'}`}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${tab === 'table' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'}`}
             >
               <TableCellsIcon className="w-4 h-4" /> Tabla
             </button>
             <button
               onClick={() => setTab('history')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${tab === 'history' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'}`}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${tab === 'history' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'}`}
             >
               <ClockIcon className="w-4 h-4" /> Historial
             </button>
           </div>
-          {canWrite && tab === 'table' && (
-            <button
-              ref={newBtnRef}
-              onClick={openNewMenu}
-              className="flex items-center gap-1.5 px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:opacity-90 transition-opacity"
-            >
-              + Nuevo presupuesto
-              <ChevronDownIcon className="w-4 h-4 shrink-0" />
-            </button>
-          )}
         </div>
+        {tab === 'table' && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setFiltersOpen(v => !v)}
+              className={`md:hidden flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-medium transition-colors ${
+                activeFilterCount > 0
+                  ? 'border-brand bg-brand-subtle text-brand'
+                  : 'border-line bg-raised text-fg-muted hover:text-fg'
+              }`}
+            >
+              Filtros
+              {activeFilterCount > 0 && (
+                <span className="w-4 h-4 flex items-center justify-center rounded-full bg-brand text-white text-[10px] font-bold">
+                  {activeFilterCount}
+                </span>
+              )}
+              <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform ${filtersOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {canWrite && (
+              <button
+                ref={newBtnRef}
+                onClick={openNewMenu}
+                className="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-brand text-white rounded-md text-xs font-medium hover:opacity-90 transition-opacity"
+              >
+                + Nuevo presupuesto
+                <ChevronDownIcon className="w-4 h-4 shrink-0" />
+              </button>
+            )}
+          </div>
+        )}
 
         {newMenuOpen && createPortal(
           <>
@@ -442,13 +464,56 @@ export default function QuotesPage() {
       )}
 
       {tab === 'table' && <>
-      <div className="flex flex-wrap items-center gap-2 mb-4">
+      {/* Mobile: panel expandido de filtros */}
+      {filtersOpen && (
+        <div className="md:hidden mb-4 p-3 rounded-xl border border-line bg-surface space-y-2">
+          <select
+            value={statusFilter}
+            onChange={e => { setStatusFilter(e.target.value); setVisible(15) }}
+            className="w-full px-3 py-2 border border-line rounded-lg text-sm bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-brand"
+          >
+            <option value="">Todos los estados</option>
+            {Object.entries(STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+          </select>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <p className="text-[10px] text-fg-muted mb-1">Desde</p>
+              <DatePicker
+                value={fromDate}
+                onChange={e => { setFromDate(e.target.value); setVisible(15) }}
+                placeholder="Fecha desde"
+                className="w-full px-3 py-2 rounded-lg bg-surface border border-line text-sm text-fg focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+            </div>
+            <div>
+              <p className="text-[10px] text-fg-muted mb-1">Hasta</p>
+              <DatePicker
+                value={toDate}
+                onChange={e => { setToDate(e.target.value); setVisible(15) }}
+                placeholder="Fecha hasta"
+                className="w-full px-3 py-2 rounded-lg bg-surface border border-line text-sm text-fg focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+            </div>
+          </div>
+          {activeFilterCount > 0 && (
+            <button
+              onClick={() => { setStatusFilter(''); setFromDate(''); setToDate(''); setVisible(15) }}
+              className="flex items-center gap-1 text-xs text-danger/70 hover:text-danger transition-colors"
+            >
+              <XMarkIcon className="w-3.5 h-3.5" />
+              Limpiar filtros
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Desktop: filtros inline */}
+      <div className="hidden md:flex flex-wrap items-center gap-2 mb-4">
         <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setVisible(15) }}
-          className="px-3 py-2 border border-line rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg w-full md:w-auto">
+          className="px-3 py-2 border border-line rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg">
           <option value="">Todos los estados</option>
           {Object.entries(STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
-
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-fg-muted whitespace-nowrap">Desde</span>
           <DatePicker

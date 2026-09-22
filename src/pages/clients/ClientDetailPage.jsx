@@ -84,22 +84,21 @@ export default function ClientDetailPage() {
 
   return (
     <div className="p-4 md:p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate('/clients')} className="text-sm text-fg-muted hover:text-fg-soft">
-          ← Clientes
-        </button>
-      </div>
+      <button onClick={() => navigate('/clients')} className="text-sm text-fg-muted hover:text-fg-soft mb-4 block">
+        ← Clientes
+      </button>
 
-      <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold text-fg">{client.name}</h1>
-          {client.company && <p className="text-fg-soft mt-0.5">{client.company}</p>}
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 p-1 bg-raised rounded-lg border border-line">
+      <div className="mb-8">
+        {/* Fila 1: título + tabs */}
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-fg leading-snug">{client.name}</h1>
+            {client.company && <p className="text-fg-soft mt-0.5 text-sm">{client.company}</p>}
+          </div>
+          <div className="shrink-0 flex items-center gap-1 p-1 bg-raised rounded-lg border border-line">
             <button
               onClick={() => setTab('table')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
                 tab === 'table' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'
               }`}
             >
@@ -108,7 +107,7 @@ export default function ClientDetailPage() {
             </button>
             <button
               onClick={() => setTab('history')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
                 tab === 'history' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'
               }`}
             >
@@ -116,15 +115,19 @@ export default function ClientDetailPage() {
               Historial
             </button>
           </div>
-          {canWrite && (
+        </div>
+
+        {/* Fila 2: acciones */}
+        {canWrite && (
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => setEditOpen(true)}
-              className="px-4 py-2 border border-line-soft rounded-md text-sm font-medium text-fg-soft hover:bg-raised transition-colors"
+              className="px-3 py-1.5 border border-line-soft rounded-md text-xs font-medium text-fg-soft hover:bg-raised transition-colors"
             >
               Editar
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {tab === 'table' && <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

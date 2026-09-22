@@ -83,9 +83,9 @@ export default function QuoteDetailPage() {
         ← Presupuestos
       </button>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-8">
-        {/* Título + número + estado */}
-        <div className="min-w-0">
+      <div className="mb-8">
+        {/* Fila 1: título + metadata */}
+        <div className="mb-3">
           <h1 className="text-xl sm:text-2xl font-bold text-fg leading-snug">{quote.title}</h1>
           <div className="flex items-center gap-2 mt-1">
             <span className="text-sm text-fg-muted">#{quote.number}</span>
@@ -95,29 +95,29 @@ export default function QuoteDetailPage() {
           </div>
         </div>
 
-        {/* Acciones — scroll horizontal en mobile si no entran */}
-        <div className="flex items-center gap-2 overflow-x-auto shrink-0 -mx-4 px-4 sm:mx-0 sm:px-0 pb-0.5">
+        {/* Fila 2: acciones */}
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => {
               const url = `${window.location.origin}/p/presupuesto/${id}`
               navigator.clipboard.writeText(url)
               toast('Enlace copiado al portapapeles', 'success')
             }}
-            className="shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 border border-line-soft rounded-md text-xs sm:text-sm font-medium text-fg-soft hover:bg-raised transition-colors"
+            className="px-3 py-1.5 border border-line-soft rounded-md text-xs font-medium text-fg-soft hover:bg-raised transition-colors"
           >
             Compartir
           </button>
           <button
             onClick={handleDownloadPdf}
             disabled={downloading}
-            className="shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 border border-line-soft rounded-md text-xs sm:text-sm font-medium text-fg-soft hover:bg-raised disabled:opacity-50 transition-colors"
+            className="px-3 py-1.5 border border-line-soft rounded-md text-xs font-medium text-fg-soft hover:bg-raised disabled:opacity-50 transition-colors"
           >
             {downloading ? 'Generando...' : 'Descargar PDF'}
           </button>
           {canWrite && (
             <button
               onClick={() => isSigned ? toast('El presupuesto fue firmado, no se puede modificar') : setEditOpen(true)}
-              className="shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 border border-line-soft rounded-md text-xs sm:text-sm font-medium text-fg-soft hover:bg-raised transition-colors"
+              className="px-3 py-1.5 border border-line-soft rounded-md text-xs font-medium text-fg-soft hover:bg-raised transition-colors"
             >
               Editar
             </button>
@@ -126,7 +126,7 @@ export default function QuoteDetailPage() {
             <button
               onClick={async () => { if (await confirm('¿Eliminar este presupuesto? Esta acción no se puede deshacer.', { confirmLabel: 'Eliminar', danger: true })) del.mutate() }}
               disabled={del.isPending}
-              className="shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium bg-danger-subtle text-danger hover:opacity-80 disabled:opacity-50 transition-opacity"
+              className="px-3 py-1.5 rounded-md text-xs font-medium bg-danger-subtle text-danger hover:opacity-80 disabled:opacity-50 transition-opacity"
             >
               Eliminar
             </button>

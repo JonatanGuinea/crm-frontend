@@ -63,15 +63,17 @@ export default function MembersPage() {
   return (
     <div className="p-4 md:p-8 max-w-3xl mx-auto min-h-full">
 
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-fg">Equipo</h2>
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold text-fg mb-3">Equipo</h2>
         {canInvite && (
-          <button
-            onClick={() => { setShowInvite(v => !v); setInviteToken(null); setInviteError('') }}
-            className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition-colors"
-          >
-            + Invitar miembro
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { setShowInvite(v => !v); setInviteToken(null); setInviteError('') }}
+              className="ml-auto px-3 py-1.5 rounded-md bg-brand text-white text-xs font-medium hover:opacity-90 transition-opacity"
+            >
+              + Invitar miembro
+            </button>
+          </div>
         )}
       </div>
 

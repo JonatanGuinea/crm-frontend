@@ -70,22 +70,25 @@ export default function ProductDetailPage() {
       </Link>
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
+      <div>
+        {/* Fila 1: título */}
+        <div className="mb-3">
           <p className="font-mono text-xs text-fg-muted">{product.sku}</p>
-          <h1 className="text-2xl font-bold text-fg mt-0.5">{product.name}</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-fg mt-0.5">{product.name}</h1>
           {product.description && <p className="text-sm text-fg-muted mt-1">{product.description}</p>}
         </div>
+
+        {/* Fila 2: acciones de stock */}
         <div className="flex items-center gap-2 flex-wrap">
-          <button onClick={() => setModal('in')} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-success-subtle text-success text-sm font-medium hover:opacity-80 transition-opacity">
+          <button onClick={() => setModal('in')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success-subtle text-success text-xs font-medium hover:opacity-80 transition-opacity">
             <ArrowDownTrayIcon className="w-4 h-4" />
             Ingresar
           </button>
-          <button onClick={() => setModal('out')} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-danger-subtle text-danger text-sm font-medium hover:opacity-80 transition-opacity">
+          <button onClick={() => setModal('out')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-danger-subtle text-danger text-xs font-medium hover:opacity-80 transition-opacity">
             <ArrowUpTrayIcon className="w-4 h-4" />
             Egresar
           </button>
-          <button onClick={() => setModal('adj')} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-warning-subtle text-warning text-sm font-medium hover:opacity-80 transition-opacity">
+          <button onClick={() => setModal('adj')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-warning-subtle text-warning text-xs font-medium hover:opacity-80 transition-opacity">
             <AdjustmentsHorizontalIcon className="w-4 h-4" />
             Ajustar
           </button>

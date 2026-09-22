@@ -32,6 +32,7 @@ import {
   ClockIcon,
   TableCellsIcon,
   XCircleIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline'
 import { CheckCircleIcon as CheckCircleSolid, XCircleIcon as XCircleSolid } from '@heroicons/react/24/solid'
 
@@ -451,6 +452,7 @@ export default function TasksPage() {
   const [filterProject, setFilterProject] = useState('')
   const [onlyMine, setOnlyMine]           = useState(false)
   const [doneCollapsed, setDoneCollapsed] = useState(false)
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [doneVisible, setDoneVisible]     = useState(10)
   const [activeTask, setActiveTask]       = useState(null)
   const [justCompletedId, setJustCompletedId] = useState(null)
@@ -615,6 +617,7 @@ export default function TasksPage() {
   }
 
   const hasFilters = filterPriority || filterMember || filterProject || onlyMine
+  const activeFilterCount = (onlyMine ? 1 : 0) + (filterPriority ? 1 : 0) + (filterMember ? 1 : 0) + (filterProject ? 1 : 0)
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
@@ -631,18 +634,18 @@ export default function TasksPage() {
       `}</style>
 
       {/* Header */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold text-fg">Tareas</h1>
-          <p className="text-sm text-fg-muted mt-0.5">
-            {filtered.length} tarea{filtered.length !== 1 ? 's' : ''}{hasFilters ? ' (filtradas)' : ' en total'}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-0.5 bg-raised rounded-lg border border-line overflow-hidden">
+      <div className="mb-6">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="min-w-0">
+            <h2 className="text-xl font-semibold text-fg">Tareas</h2>
+            <p className="text-sm text-fg-muted mt-0.5">
+              {filtered.length} tarea{filtered.length !== 1 ? 's' : ''}{hasFilters ? ' (filtradas)' : ' en total'}
+            </p>
+          </div>
+          <div className="shrink-0 flex items-center gap-0.5 p-1 bg-raised rounded-lg border border-line">
             <button
               onClick={() => setTab('board')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
                 tab === 'board' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'
               }`}
             >
@@ -651,7 +654,7 @@ export default function TasksPage() {
             </button>
             <button
               onClick={() => setTab('history')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
                 tab === 'history' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'
               }`}
             >
@@ -659,76 +662,145 @@ export default function TasksPage() {
               Historial
             </button>
           </div>
-          {tab === 'board' && (
+        </div>
+        {tab === 'board' && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setFiltersOpen(v => !v)}
+              className={`md:hidden flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-medium transition-colors ${
+                activeFilterCount > 0
+                  ? 'border-brand bg-brand-subtle text-brand'
+                  : 'border-line bg-raised text-fg-muted hover:text-fg'
+              }`}
+            >
+              Filtros
+              {activeFilterCount > 0 && (
+                <span className="w-4 h-4 flex items-center justify-center rounded-full bg-brand text-white text-[10px] font-bold">
+                  {activeFilterCount}
+                </span>
+              )}
+              <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform ${filtersOpen ? 'rotate-180' : ''}`} />
+            </button>
             <button
               onClick={() => setModal({ defaultStatus: 'todo' })}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+              className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand text-white text-xs font-medium hover:opacity-90 transition-opacity"
             >
               <PlusIcon className="w-4 h-4" />
               Nueva tarea
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {tab === 'history' && <HistoryView />}
 
       {/* Filtros */}
       {tab === 'board' && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={() => setOnlyMine(v => !v)}
-            className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${
-              onlyMine
-                ? 'bg-brand text-white border-brand'
-                : 'bg-raised border-line text-fg-soft hover:border-brand hover:text-brand'
-            }`}
-          >
-            Mis tareas
-          </button>
-          <select
-            value={filterPriority}
-            onChange={e => setFilterPriority(e.target.value)}
-            className="px-3 py-1.5 rounded-lg bg-raised border border-line text-sm text-fg-soft focus:outline-none focus:border-brand transition-colors"
-          >
-            <option value="">Todas las prioridades</option>
-            <option value="high">Alta</option>
-            <option value="medium">Media</option>
-            <option value="low">Baja</option>
-          </select>
-          {members.length > 0 && (
-            <select
-              value={filterMember}
-              onChange={e => setFilterMember(e.target.value)}
-              className="px-3 py-1.5 rounded-lg bg-raised border border-line text-sm text-fg-soft focus:outline-none focus:border-brand transition-colors"
-            >
-              <option value="">Todos los responsables</option>
-              {members.map(m => (
-                <option key={m.userId} value={m.userId}>{m.name}</option>
-              ))}
-            </select>
+        <>
+          {/* Mobile: panel expandido */}
+          {filtersOpen && (
+            <div className="md:hidden mb-2 p-3 rounded-xl border border-line bg-surface space-y-2">
+              <button
+                onClick={() => setOnlyMine(v => !v)}
+                className={`w-full px-3 py-2 rounded-lg border text-sm font-medium transition-colors text-left ${
+                  onlyMine ? 'bg-brand text-white border-brand' : 'bg-raised border-line text-fg-soft'
+                }`}
+              >
+                Mis tareas
+              </button>
+              <select
+                value={filterPriority}
+                onChange={e => setFilterPriority(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg bg-surface border border-line text-sm text-fg focus:outline-none focus:ring-2 focus:ring-brand"
+              >
+                <option value="">Todas las prioridades</option>
+                <option value="high">Alta</option>
+                <option value="medium">Media</option>
+                <option value="low">Baja</option>
+              </select>
+              {members.length > 0 && (
+                <select
+                  value={filterMember}
+                  onChange={e => setFilterMember(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg bg-surface border border-line text-sm text-fg focus:outline-none focus:ring-2 focus:ring-brand"
+                >
+                  <option value="">Todos los responsables</option>
+                  {members.map(m => <option key={m.userId} value={m.userId}>{m.name}</option>)}
+                </select>
+              )}
+              {projects.length > 0 && (
+                <select
+                  value={filterProject}
+                  onChange={e => setFilterProject(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg bg-surface border border-line text-sm text-fg focus:outline-none focus:ring-2 focus:ring-brand"
+                >
+                  <option value="">Todos los proyectos</option>
+                  {projects.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+                </select>
+              )}
+              {hasFilters && (
+                <button
+                  onClick={() => { setFilterPriority(''); setFilterMember(''); setFilterProject(''); setOnlyMine(false); setDoneVisible(10) }}
+                  className="flex items-center gap-1 text-xs text-danger/70 hover:text-danger transition-colors"
+                >
+                  <XMarkIcon className="w-3.5 h-3.5" />
+                  Limpiar filtros
+                </button>
+              )}
+            </div>
           )}
-          {projects.length > 0 && (
-            <select
-              value={filterProject}
-              onChange={e => setFilterProject(e.target.value)}
-              className="px-3 py-1.5 rounded-lg bg-raised border border-line text-sm text-fg-soft focus:outline-none focus:border-brand transition-colors"
-            >
-              <option value="">Todos los proyectos</option>
-              {projects.map(p => (
-                <option key={p.id} value={p.id}>{p.title}</option>
-              ))}
-            </select>
-          )}
-          {hasFilters && (
+          {/* Desktop: filtros inline */}
+          <div className="hidden md:flex items-center gap-2 flex-wrap mb-2">
             <button
-              onClick={() => { setFilterPriority(''); setFilterMember(''); setFilterProject(''); setOnlyMine(false); setDoneVisible(10) }}
-              className="text-xs text-fg-muted hover:text-fg underline transition-colors"
+              onClick={() => setOnlyMine(v => !v)}
+              className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${
+                onlyMine
+                  ? 'bg-brand text-white border-brand'
+                  : 'bg-raised border-line text-fg-soft hover:border-brand hover:text-brand'
+              }`}
             >
-              Limpiar filtros
+              Mis tareas
             </button>
-          )}
-        </div>
+            <select
+              value={filterPriority}
+              onChange={e => setFilterPriority(e.target.value)}
+              className="px-3 py-1.5 rounded-lg bg-raised border border-line text-sm text-fg-soft focus:outline-none focus:border-brand transition-colors"
+            >
+              <option value="">Todas las prioridades</option>
+              <option value="high">Alta</option>
+              <option value="medium">Media</option>
+              <option value="low">Baja</option>
+            </select>
+            {members.length > 0 && (
+              <select
+                value={filterMember}
+                onChange={e => setFilterMember(e.target.value)}
+                className="px-3 py-1.5 rounded-lg bg-raised border border-line text-sm text-fg-soft focus:outline-none focus:border-brand transition-colors"
+              >
+                <option value="">Todos los responsables</option>
+                {members.map(m => <option key={m.userId} value={m.userId}>{m.name}</option>)}
+              </select>
+            )}
+            {projects.length > 0 && (
+              <select
+                value={filterProject}
+                onChange={e => setFilterProject(e.target.value)}
+                className="px-3 py-1.5 rounded-lg bg-raised border border-line text-sm text-fg-soft focus:outline-none focus:border-brand transition-colors"
+              >
+                <option value="">Todos los proyectos</option>
+                {projects.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+              </select>
+            )}
+            {hasFilters && (
+              <button
+                onClick={() => { setFilterPriority(''); setFilterMember(''); setFilterProject(''); setOnlyMine(false); setDoneVisible(10) }}
+                className="text-xs text-fg-muted hover:text-fg underline transition-colors"
+              >
+                Limpiar filtros
+              </button>
+            )}
+          </div>
+        </>
       )}
 
       {/* Kanban */}
