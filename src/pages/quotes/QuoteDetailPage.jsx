@@ -83,9 +83,9 @@ export default function QuoteDetailPage() {
         ← Presupuestos
       </button>
 
-      <div className="mb-8">
-        {/* Fila 1: título + metadata */}
-        <div className="mb-3">
+      <div className="mb-8 flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+        {/* Título + metadata */}
+        <div className="min-w-0">
           <h1 className="text-xl sm:text-2xl font-bold text-fg leading-snug">{quote.title}</h1>
           <div className="flex items-center gap-2 mt-1">
             <span className="text-sm text-fg-muted">#{quote.number}</span>
@@ -95,8 +95,8 @@ export default function QuoteDetailPage() {
           </div>
         </div>
 
-        {/* Fila 2: acciones */}
-        <div className="flex items-center gap-2 flex-wrap">
+        {/* Acciones */}
+        <div className="flex items-center gap-2 flex-wrap shrink-0">
           <button
             onClick={() => {
               const url = `${window.location.origin}/p/presupuesto/${id}`
