@@ -5,6 +5,7 @@ import { useToast } from '../../components/Toast'
 import { getOrganizations, updateOrganization, uploadOrgLogo, deleteOrganization } from '../../api/organizations'
 import { PhotoIcon, TrashIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import ProvinceSelect from '../../components/ProvinceSelect'
+import DefaultTasksSection from './DefaultTasksSection'
 
 const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
 const labelCls = "block text-sm font-medium text-fg-soft mb-1"
@@ -391,6 +392,8 @@ export default function OrgSettingsPage() {
           {saveOrg.isPending ? 'Guardando...' : 'Guardar cambios'}
         </button>
       </form>
+
+      <DefaultTasksSection />
 
       {/* Zona de peligro */}
       <div className="mt-12 border border-danger/30 rounded-xl overflow-hidden">
