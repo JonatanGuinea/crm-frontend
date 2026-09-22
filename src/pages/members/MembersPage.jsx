@@ -5,16 +5,29 @@ import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
 import { getMembers, inviteMember, updateMemberRole, removeMember } from '../../api/members'
 
-
 const ROLE_LABELS = { owner: 'Dueño', admin: 'Administrador', member: 'Miembro' }
 const ROLE_COLORS = {
   owner:  'bg-brand-subtle text-brand',
   admin:  'bg-info-subtle text-info',
-  member: 'bg-raised text-fg-soft'
+  member: 'bg-raised text-fg-soft',
 }
-const STATUS_COLORS = {
-  active:  'bg-brand-subtle text-brand',
-  invited: 'bg-warning-subtle text-warning'
+
+const AVATAR_PALETTE = [
+  'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+  'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+  'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
+  'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+  'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
+  'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300',
+]
+
+function getInitials(name = '') {
+  return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+}
+function avatarColor(name = '') {
+  let n = 0
+  for (let i = 0; i < name.length; i++) n += name.charCodeAt(i)
+  return AVATAR_PALETTE[n % AVATAR_PALETTE.length]
 }
 
 export default function MembersPage() {
@@ -32,7 +45,7 @@ export default function MembersPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['members', orgId],
     queryFn: () => getMembers(orgId).then(r => r.data.data),
-    enabled: Boolean(orgId)
+    enabled: Boolean(orgId),
   })
 
   const invite = useMutation({
@@ -44,31 +57,34 @@ export default function MembersPage() {
       setShowInvite(false)
       qc.invalidateQueries(['members', orgId])
     },
-    onError: (err) => setInviteError(err.response?.data?.error || err.message || 'Error al invitar')
+    onError: (err) => setInviteError(err.response?.data?.error || err.message || 'Error al invitar'),
   })
 
   const changeRole = useMutation({
     mutationFn: ({ userId, role }) => updateMemberRole(orgId, userId, role),
-    onSuccess: () => qc.invalidateQueries(['members', orgId])
+    onSuccess: () => qc.invalidateQueries(['members', orgId]),
   })
 
   const remove = useMutation({
     mutationFn: (userId) => removeMember(orgId, userId),
-    onSuccess: () => qc.invalidateQueries(['members', orgId])
+    onSuccess: () => qc.invalidateQueries(['members', orgId]),
   })
 
   const canInvite = ['owner', 'admin'].includes(myRole)
   const canManage = myRole === 'owner'
 
   return (
-    <div className="p-4 md:p-8 max-w-3xl mx-auto min-h-full">
+    <div className="p-4 md:p-8 min-h-full">
 
+      {/* Header */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-fg mb-3">Equipo</h2>
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <h2 className="text-xl font-semibold text-fg">Equipo</h2>
+        </div>
         {canInvite && (
           <div className="flex items-center gap-2">
             <button
-              onClick={() => { setShowInvite(v => !v); setInviteToken(null); setInviteError('') }}
+              onClick={() => { setShowInvite(v => !v); setInviteError('') }}
               className="ml-auto px-3 py-1.5 rounded-md bg-brand text-white text-xs font-medium hover:opacity-90 transition-opacity"
             >
               + Invitar miembro
@@ -77,6 +93,7 @@ export default function MembersPage() {
         )}
       </div>
 
+      {/* Formulario de invitación */}
       {showInvite && (
         <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-5 mb-6">
           <h3 className="text-sm font-semibold text-fg-soft mb-4">Invitar usuario</h3>
@@ -109,7 +126,7 @@ export default function MembersPage() {
             <button
               type="submit"
               disabled={invite.isPending}
-              className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50"
+              className="px-4 py-2 rounded-md bg-brand text-white text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
             >
               {invite.isPending ? 'Enviando...' : 'Invitar'}
             </button>
@@ -118,107 +135,82 @@ export default function MembersPage() {
         </div>
       )}
 
+      {/* Contenido */}
       {isLoading ? (
         <p className="text-sm text-fg-soft">Cargando...</p>
+      ) : !data?.length ? (
+        <div className="flex flex-col items-center justify-center py-20 text-fg-muted">
+          <p className="text-sm">Sin miembros en el equipo.</p>
+        </div>
       ) : (
-        <>
-          {/* Mobile: cards */}
-          <div className="sm:hidden bg-surface/60 backdrop-blur-xl rounded-xl border border-line divide-y divide-line">
-            {data?.map(m => (
-              <div key={m.userId} className="p-4 flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="font-medium text-fg truncate">
-                    {m.name}
-                    {m.userId === user?.uid && <span className="ml-1 text-xs text-fg-muted">(tú)</span>}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${ROLE_COLORS[m.role]}`}>
-                      {ROLE_LABELS[m.role]}
-                    </span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[m.status]}`}>
-                      {m.status === 'active' ? 'Activo' : 'Invitado'}
-                    </span>
-                  </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {data.map(m => {
+            const isMe      = m.userId === user?.uid
+            const canEdit   = canManage && m.role !== 'owner' && m.status === 'active'
+            const canRemove = canManage && m.role !== 'owner' && !isMe
+
+            return (
+              <div key={m.userId} className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-5 flex flex-col items-center text-center gap-3">
+
+                {/* Avatar */}
+                <div className="relative mt-1">
+                  {m.avatarUrl ? (
+                    <img
+                      src={m.avatarUrl}
+                      alt={m.name}
+                      className="w-20 h-20 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className={`w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold ${avatarColor(m.name)}`}>
+                      {getInitials(m.name)}
+                    </div>
+                  )}
+                  <span className={`absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full border-2 border-surface ${
+                    m.status === 'active' ? 'bg-success' : 'bg-warning'
+                  }`} />
                 </div>
-                {canManage && m.role !== 'owner' && m.userId !== user?.uid && (
-                  <button
-                    onClick={async () => { if (await confirm(`¿Remover a ${m.name}?`, { confirmLabel: 'Remover' })) remove.mutate(m.userId) }}
-                    className="px-2.5 py-1 rounded-md text-xs bg-danger-subtle text-danger shrink-0"
+
+                {/* Info */}
+                <div className="w-full min-w-0">
+                  <p className="text-sm font-semibold text-fg leading-snug">
+                    {m.name}
+                    {isMe && <span className="ml-1 text-xs font-normal text-fg-muted">(tú)</span>}
+                  </p>
+                  <p className="text-xs text-fg-muted mt-0.5 truncate">{m.email}</p>
+                </div>
+
+                {/* Rol */}
+                {canEdit ? (
+                  <select
+                    value={m.role}
+                    onChange={e => changeRole.mutate({ userId: m.userId, role: e.target.value })}
+                    className="w-full text-xs px-2.5 py-1.5 border border-line rounded-md bg-surface text-fg focus:outline-none focus:ring-1 focus:ring-brand"
                   >
-                    Remover
+                    <option value="admin">Administrador</option>
+                    <option value="member">Miembro</option>
+                  </select>
+                ) : (
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${ROLE_COLORS[m.role]}`}>
+                    {ROLE_LABELS[m.role]}
+                  </span>
+                )}
+
+                {/* Remover */}
+                {canRemove && (
+                  <button
+                    onClick={async () => {
+                      if (await confirm(`¿Remover a ${m.name} del equipo?`, { confirmLabel: 'Remover', danger: true }))
+                        remove.mutate(m.userId)
+                    }}
+                    className="text-xs text-danger/60 hover:text-danger transition-colors"
+                  >
+                    Remover del equipo
                   </button>
                 )}
               </div>
-            ))}
-            {!data?.length && (
-              <p className="p-6 text-center text-sm text-fg-muted">Sin miembros</p>
-            )}
-          </div>
-
-          {/* Desktop: tabla */}
-          <div className="hidden sm:block bg-surface/60 backdrop-blur-xl rounded-xl border border-line overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-raised border-b border-line">
-                  <tr>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Nombre</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Email</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Rol</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Estado</th>
-                    {canManage && <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide"></th>}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-line">
-                  {data?.map(m => (
-                    <tr key={m.userId} className="hover:bg-raised">
-                      <td className="px-4 py-3 font-medium text-fg">
-                        {m.name}
-                        {m.userId === user?.uid && <span className="ml-1 text-xs text-fg-muted">(tú)</span>}
-                      </td>
-                      <td className="px-4 py-3 text-fg-soft">{m.email}</td>
-                      <td className="px-4 py-3">
-                        {canManage && m.role !== 'owner' && m.status === 'active' ? (
-                          <select
-                            value={m.role}
-                            onChange={e => changeRole.mutate({ userId: m.userId, role: e.target.value })}
-                            className="text-xs px-2 py-1 border border-line rounded-md focus:outline-none focus:ring-1 focus:ring-brand bg-surface text-fg"
-                          >
-                            <option value="admin">Administrador</option>
-                            <option value="member">Miembro</option>
-                          </select>
-                        ) : (
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${ROLE_COLORS[m.role]}`}>
-                            {ROLE_LABELS[m.role]}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[m.status]}`}>
-                          {m.status === 'active' ? 'Activo' : 'Invitado'}
-                        </span>
-                      </td>
-                      {canManage && (
-                        <td className="px-4 py-3 text-right">
-                          {m.role !== 'owner' && m.userId !== user?.uid && (
-                            <button
-                              onClick={async () => { if (await confirm(`¿Remover a ${m.name}?`, { confirmLabel: 'Remover' })) remove.mutate(m.userId) }}
-                              className="text-danger hover:underline text-xs"
-                            >
-                              Remover
-                            </button>
-                          )}
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                  {!data?.length && (
-                    <tr><td colSpan={5} className="px-4 py-6 text-center text-fg-muted">Sin miembros</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </>
+            )
+          })}
+        </div>
       )}
     </div>
   )
