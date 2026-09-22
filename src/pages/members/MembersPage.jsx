@@ -5,6 +5,8 @@ import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
 import { getMembers, inviteMember, updateMemberRole, removeMember } from '../../api/members'
 
+const UPLOADS_BASE = import.meta.env.VITE_API_URL
+
 const ROLE_LABELS = { owner: 'Dueño', admin: 'Administrador', member: 'Miembro' }
 const ROLE_COLORS = {
   owner:  'bg-brand-subtle text-brand',
@@ -154,9 +156,9 @@ export default function MembersPage() {
 
                 {/* Avatar */}
                 <div className="relative mt-1">
-                  {m.avatarUrl ? (
+                  {m.avatar ? (
                     <img
-                      src={m.avatarUrl}
+                      src={`${UPLOADS_BASE}/uploads/${m.avatar}`}
                       alt={m.name}
                       className="w-20 h-20 rounded-full object-cover"
                     />
