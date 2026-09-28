@@ -15,6 +15,7 @@ const TYPE_LABELS = {
   task_assigned:    'Tarea asignada',
   stock_out:        'Sin stock',
   stock_low:        'Stock bajo',
+  announcement:     'Novedad',
 }
 
 const TYPE_COLORS = {
@@ -26,6 +27,7 @@ const TYPE_COLORS = {
   task_assigned:    'bg-info-subtle text-info',
   stock_out:        'bg-danger-subtle text-danger',
   stock_low:        'bg-warning-subtle text-warning',
+  announcement:     'bg-brand-subtle text-brand',
 }
 
 const TYPE_DOT = {
@@ -37,6 +39,7 @@ const TYPE_DOT = {
   task_assigned:    'bg-info',
   stock_out:        'bg-danger',
   stock_low:        'bg-warning',
+  announcement:     'bg-brand',
 }
 
 function WaIcon({ className }) {
