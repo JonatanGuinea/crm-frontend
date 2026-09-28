@@ -221,10 +221,17 @@ export default function QuoteDetailPage() {
                   </dd>
                 </div>
               )}
-              {quote.notes && (
+              {quote.quoteNotes?.length > 0 && (
                 <div>
-                  <dt className="text-xs text-fg-muted uppercase mb-0.5">Notas</dt>
-                  <dd className="text-fg whitespace-pre-line">{quote.notes}</dd>
+                  <dt className="text-xs text-fg-muted uppercase mb-2">Notas</dt>
+                  <dd className="space-y-3">
+                    {quote.quoteNotes.map(note => (
+                      <div key={note.id}>
+                        {note.title && <p className="text-sm font-semibold text-fg mb-0.5">{note.title}</p>}
+                        <p className="text-sm text-fg whitespace-pre-line">{note.description}</p>
+                      </div>
+                    ))}
+                  </dd>
                 </div>
               )}
             </dl>

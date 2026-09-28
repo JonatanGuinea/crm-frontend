@@ -18,3 +18,7 @@ export const updateQuoteImage  = (imageId, data) =>
     ? api.patch(`/quote-images/${imageId}`, data, { headers: { 'Content-Type': 'multipart/form-data' } })
     : api.patch(`/quote-images/${imageId}`, data)
 export const deleteQuoteImage  = (imageId)       => api.delete(`/quote-images/${imageId}`)
+
+export const createQuoteNote   = (quoteId, data) => api.post(`/quote-notes/${quoteId}`, data)
+export const updateQuoteNote   = (noteId, data)  => api.patch(`/quote-notes/${noteId}`, data)
+export const deleteQuoteNote   = (noteId)        => api.delete(`/quote-notes/${noteId}`)

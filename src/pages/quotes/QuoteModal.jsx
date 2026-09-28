@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getClients } from '../../api/clients'
 import { getProjects } from '../../api/projects'
-import { getQuoteById, createQuote, updateQuote, getNextQuoteNumber, uploadQuoteImage, updateQuoteImage, deleteQuoteImage } from '../../api/quotes'
+import { getQuoteById, createQuote, updateQuote, getNextQuoteNumber, uploadQuoteImage, updateQuoteImage, deleteQuoteImage, createQuoteNote, updateQuoteNote, deleteQuoteNote } from '../../api/quotes'
 import { getOrganizations } from '../../api/organizations'
 import { getProducts } from '../../api/stock'
 import { createInstallments, createCustomInstallments } from '../../api/installments'
@@ -39,6 +39,12 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
   const [existingImages, setExistingImages] = useState([])
   const [newImages, setNewImages]           = useState([])
   const imgFileRef = useRef(null)
+
+  // Notas
+  // existingNotes: { id, title, description, _deleted, _titleOrig, _descOrig }
+  // newNotes:      { key, title, description }
+  const [existingNotes, setExistingNotes] = useState([])
+  const [newNotes, setNewNotes]           = useState([])
 
   // Descuento
   const [discountMode, setDiscountMode] = useState('percent') // 'percent' | 'amount'
@@ -138,6 +144,12 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
         _titleOrig: img.title ?? '',
         _descOrig:  img.description ?? '',
       })))
+      setExistingNotes((quoteData.quoteNotes ?? []).map(n => ({
+        ...n,
+        _deleted:   false,
+        _titleOrig: n.title ?? '',
+        _descOrig:  n.description ?? '',
+      })))
     }
   }, [quoteData])
 
@@ -213,6 +225,25 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
             const descChanged  = (img.description ?? '') !== img._descOrig
             if (titleChanged || descChanged) {
               await updateQuoteImage(img.id, { title: img.title, description: img.description })
+            }
+          }
+        }
+
+        // Nuevas notas
+        for (const note of newNotes) {
+          if (note.description.trim()) {
+            await createQuoteNote(savedId, { title: note.title.trim() || undefined, description: note.description.trim() })
+          }
+        }
+        // Notas existentes modificadas o borradas
+        for (const note of existingNotes) {
+          if (note._deleted) {
+            await deleteQuoteNote(note.id)
+          } else {
+            const titleChanged = (note.title ?? '') !== note._titleOrig
+            const descChanged  = (note.description ?? '') !== note._descOrig
+            if (titleChanged || descChanged) {
+              await updateQuoteNote(note.id, { title: note.title, description: note.description })
             }
           }
         }
@@ -388,11 +419,96 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
             <div className="text-base font-semibold text-fg">Total {form.currency}: ${total.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           </div>
 
+          {/* Notas */}
           <div>
-            <label className={labelCls}>Notas</label>
-            <textarea rows={2} value={form.notes}
-              onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-              className={inputCls} />
+            <div className="flex items-center justify-between mb-2">
+              <label className={labelCls + ' mb-0'}>Notas</label>
+              <button
+                type="button"
+                onClick={() => setNewNotes(prev => [...prev, { key: crypto.randomUUID(), title: '', description: '' }])}
+                className="flex items-center gap-1 text-xs text-brand hover:opacity-80 transition-opacity"
+              >
+                <PlusIcon className="w-3.5 h-3.5" /> Agregar nota
+              </button>
+            </div>
+
+            {/* Notas existentes */}
+            {existingNotes.filter(n => !n._deleted).length > 0 && (
+              <div className="space-y-2 mb-2">
+                {existingNotes.filter(n => !n._deleted).map(note => (
+                  <div key={note.id} className="rounded-lg border border-line bg-raised p-3 space-y-2">
+                    <input
+                      type="text"
+                      value={note.title ?? ''}
+                      onChange={e => setExistingNotes(prev => prev.map(n => n.id === note.id ? { ...n, title: e.target.value } : n))}
+                      placeholder="Título (opcional)"
+                      className="w-full px-2.5 py-1.5 text-sm border border-line rounded-md bg-surface text-fg focus:outline-none focus:ring-1 focus:ring-brand/40"
+                    />
+                    <textarea
+                      ref={el => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px' } }}
+                      value={note.description ?? ''}
+                      onChange={e => {
+                        e.target.style.height = 'auto'
+                        e.target.style.height = e.target.scrollHeight + 'px'
+                        setExistingNotes(prev => prev.map(n => n.id === note.id ? { ...n, description: e.target.value } : n))
+                      }}
+                      placeholder="Descripción *"
+                      rows={1}
+                      className="w-full px-2.5 py-1.5 text-sm border border-line rounded-md bg-surface text-fg focus:outline-none focus:ring-1 focus:ring-brand/40 resize-none overflow-hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setExistingNotes(prev => prev.map(n => n.id === note.id ? { ...n, _deleted: true } : n))}
+                      className="flex items-center gap-1 text-xs text-danger/60 hover:text-danger transition-colors"
+                    >
+                      <TrashIcon className="w-3.5 h-3.5" /> Eliminar
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Nuevas notas pendientes */}
+            {newNotes.length > 0 && (
+              <div className="space-y-2 mb-2">
+                {newNotes.map(note => (
+                  <div key={note.key} className="rounded-lg border border-brand/30 bg-brand-subtle/10 p-3 space-y-2">
+                    <input
+                      type="text"
+                      value={note.title}
+                      onChange={e => setNewNotes(prev => prev.map(n => n.key === note.key ? { ...n, title: e.target.value } : n))}
+                      placeholder="Título (opcional)"
+                      className="w-full px-2.5 py-1.5 text-sm border border-line rounded-md bg-surface text-fg focus:outline-none focus:ring-1 focus:ring-brand/40"
+                    />
+                    <textarea
+                      ref={el => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px' } }}
+                      value={note.description}
+                      onChange={e => {
+                        e.target.style.height = 'auto'
+                        e.target.style.height = e.target.scrollHeight + 'px'
+                        setNewNotes(prev => prev.map(n => n.key === note.key ? { ...n, description: e.target.value } : n))
+                      }}
+                      placeholder="Descripción *"
+                      rows={1}
+                      className="w-full px-2.5 py-1.5 text-sm border border-line rounded-md bg-surface text-fg focus:outline-none focus:ring-1 focus:ring-brand/40 resize-none overflow-hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setNewNotes(prev => prev.filter(n => n.key !== note.key))}
+                      className="flex items-center gap-1 text-xs text-danger/60 hover:text-danger transition-colors"
+                    >
+                      <TrashIcon className="w-3.5 h-3.5" /> Quitar
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {existingNotes.filter(n => !n._deleted).length === 0 && newNotes.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-line text-fg-muted gap-1">
+                <p className="text-xs">Sin notas — hacé clic en "Agregar nota"</p>
+              </div>
+            )}
           </div>
 
           {/* Imágenes */}
