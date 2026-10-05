@@ -570,13 +570,13 @@ export default function QuotePublicPage() {
           {quote.quoteNotes?.length > 0 && (
             <>
               <SectionLabel label="Notas" />
-              <div className="px-5 pb-5 sm:px-7 sm:pb-6 space-y-4">
+              <div className="px-5 pb-5 sm:px-7 sm:pb-6 space-y-4 min-w-0">
                 {quote.quoteNotes.map(note => (
-                  <div key={note.id}>
+                  <div key={note.id} className="min-w-0">
                     {note.title && (
-                      <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100 mb-1 break-words">{note.title}</p>
+                      <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100 mb-1 [overflow-wrap:anywhere]">{note.title}</p>
                     )}
-                    <p className="text-sm text-zinc-600 dark:text-zinc-300 whitespace-pre-line leading-relaxed break-words">{note.description}</p>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-300 whitespace-pre-line leading-relaxed [overflow-wrap:anywhere]">{note.description}</p>
                   </div>
                 ))}
               </div>
