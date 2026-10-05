@@ -226,9 +226,9 @@ export default function QuoteDetailPage() {
                   <dt className="text-xs text-fg-muted uppercase mb-2">Notas</dt>
                   <dd className="space-y-3">
                     {quote.quoteNotes.map(note => (
-                      <div key={note.id}>
-                        {note.title && <p className="text-sm font-semibold text-fg mb-0.5">{note.title}</p>}
-                        <p className="text-sm text-fg whitespace-pre-line">{note.description}</p>
+                      <div key={note.id} className="min-w-0">
+                        {note.title && <p className="text-sm font-semibold text-fg mb-0.5 [overflow-wrap:anywhere]">{note.title}</p>}
+                        <p className="text-sm text-fg whitespace-pre-line [overflow-wrap:anywhere]">{note.description}</p>
                       </div>
                     ))}
                   </dd>

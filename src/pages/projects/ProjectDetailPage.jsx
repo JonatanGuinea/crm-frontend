@@ -473,7 +473,7 @@ export default function ProjectDetailPage() {
               {project.description && (
                 <div>
                   <dt className="text-xs text-fg-muted uppercase mb-0.5">Descripción</dt>
-                  <dd className="text-fg whitespace-pre-line">{project.description}</dd>
+                  <dd className="text-fg whitespace-pre-line [overflow-wrap:anywhere]">{project.description}</dd>
                 </div>
               )}
             </dl>

@@ -387,7 +387,7 @@ function AccordionItem({ q, a }) {
       </button>
       {open && (
         <div className="px-5 pb-4">
-          <p className="text-sm text-fg-muted leading-relaxed whitespace-pre-line">{a}</p>
+          <p className="text-sm text-fg-muted leading-relaxed whitespace-pre-line [overflow-wrap:anywhere]">{a}</p>
         </div>
       )}
     </div>

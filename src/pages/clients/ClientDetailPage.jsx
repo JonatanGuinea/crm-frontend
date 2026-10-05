@@ -150,7 +150,7 @@ export default function ClientDetailPage() {
               {client.notes && (
                 <div>
                   <dt className="text-xs text-fg-muted uppercase mb-0.5">Notas</dt>
-                  <dd className="text-fg whitespace-pre-line">{client.notes}</dd>
+                  <dd className="text-fg whitespace-pre-line [overflow-wrap:anywhere]">{client.notes}</dd>
                 </div>
               )}
             </dl>
