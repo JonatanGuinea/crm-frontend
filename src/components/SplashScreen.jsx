@@ -30,7 +30,7 @@ export default function SplashScreen({ onDone }) {
         style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
           background: `url(${tramaUrl}) 0 0/768px 768px repeat`,
-          opacity: 0.18,
+          opacity: 0.45,
         }}
       />
 
