@@ -2,14 +2,11 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { login as loginApi, forgotPassword as forgotPasswordApi } from '../../api/auth'
-import {
-  EnvelopeIcon,
-  LockClosedIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  ExclamationCircleIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline'
+
+const C = {
+  negro: '#0B0B0C', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E',
+  linea: '#2C2C2F', grafito: '#1E1E20', err: '#E58373',
+}
 
 function ForgotPasswordModal({ onClose }) {
   const [email, setEmail] = useState('')
@@ -33,75 +30,61 @@ function ForgotPasswordModal({ onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.65)', padding: 16 }}
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-sm bg-[#080e1a] border border-cyan-500/20 rounded-2xl shadow-[0_0_60px_rgba(6,182,212,0.10)] p-7"
+        style={{ position: 'relative', width: '100%', maxWidth: 400, background: C.grafito, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', padding: 28 }}
         onClick={e => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-600 hover:text-slate-400 transition-colors"
+          style={{ position: 'absolute', top: 14, right: 14, background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, padding: 4 }}
         >
-          <XMarkIcon className="w-5 h-5" />
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
 
         {sent ? (
-          <div className="text-center py-2">
-            <div className="w-14 h-14 rounded-full bg-teal-500/10 border border-teal-500/25 flex items-center justify-center mx-auto mb-4">
-              <svg className="w-7 h-7 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+          <div style={{ textAlign: 'center', padding: '8px 0' }}>
+            <div style={{ width: 52, height: 52, borderRadius: '0 16px 16px 0', background: '#1E1E20', border: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={C.crema} strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-white mb-2">Revisá tu email</h3>
-            <p className="text-sm text-slate-400 mb-5">
+            <h3 style={{ fontSize: 20, fontWeight: 600, color: C.crema, marginBottom: 8 }}>Revisá tu email</h3>
+            <p style={{ fontSize: 14, color: C.arena, lineHeight: 1.55, marginBottom: 20 }}>
               Si ese email está registrado, te enviamos un enlace para restablecer tu contraseña. El enlace expira en 30 minutos.
             </p>
-            <button
-              onClick={onClose}
-              className="px-5 py-2 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibold rounded-lg transition-colors"
-            >
-              Cerrar
-            </button>
+            <button onClick={onClose} className="du-btn-pri" style={{ height: 40 }}>Cerrar</button>
           </div>
         ) : (
           <>
-            <h3 className="text-lg font-bold text-white mb-1">Olvidé mi contraseña</h3>
-            <p className="text-sm text-slate-500 mb-6">Ingresá tu email y te enviamos un enlace para crear una nueva contraseña.</p>
+            <h3 style={{ fontSize: 20, fontWeight: 600, color: C.crema, marginBottom: 6 }}>Olvidé mi contraseña</h3>
+            <p style={{ fontSize: 14, color: C.piedra, marginBottom: 24, lineHeight: 1.5 }}>Ingresá tu email y te enviamos un enlace para crear una nueva contraseña.</p>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <label className="block text-xs font-sans tracking-wide text-cyan-300/80 mb-2">Email</label>
-                <div className="relative group">
-                  <EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-500/40 group-focus-within:text-cyan-400/70 pointer-events-none transition-colors" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="tu@email.com"
-                    className="w-full pl-9 pr-3 py-2.5 bg-slate-950/70 border border-slate-700/50 rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all"
-                  />
-                </div>
+                <label style={{ fontSize: 13, color: C.arena, fontWeight: 500, display: 'block', marginBottom: 7 }}>Email</label>
+                <input
+                  type="email" required value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="tu@email.com"
+                  className="du-input"
+                />
               </div>
 
               {error && (
-                <div className="flex items-center gap-2 px-3 py-2.5 bg-red-500/8 border border-red-500/20 rounded-lg">
-                  <ExclamationCircleIcon className="w-4 h-4 text-red-400 flex-shrink-0" />
-                  <p className="text-xs text-red-400">{error}</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'rgba(229,131,115,.08)', border: `1px solid rgba(229,131,115,.25)`, borderRadius: '0 10px 10px 0' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={C.err} strokeWidth={2} style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <p style={{ fontSize: 13, color: C.err }}>{error}</p>
                 </div>
               )}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-2.5 px-4 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-teal-500 hover:bg-teal-400 text-white shadow-[0_0_20px_rgba(20,184,166,0.25)]"
-              >
+              <button type="submit" disabled={loading} className="du-btn-pri" style={{ height: 40 }}>
                 {loading && (
-                  <svg className="animate-spin w-4 h-4 text-white/70" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+                  <svg style={{ animation: 'spin 1s linear infinite', width: 15, height: 15 }} viewBox="0 0 24 24" fill="none">
+                    <circle style={{ opacity: .25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path style={{ opacity: .75 }} fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"/>
                   </svg>
                 )}
                 {loading ? 'Enviando...' : 'Enviar enlace'}
@@ -143,134 +126,110 @@ export default function LoginPage() {
     <>
       {showForgot && <ForgotPasswordModal onClose={() => setShowForgot(false)} />}
 
-      <div className="relative max-w-sm mx-auto">
-        {/* Glow detrás de la card */}
-        <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-cyan-500/20 via-transparent to-teal-500/10 blur-sm pointer-events-none" />
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-        <div className="relative bg-[#080e1a]/30 backdrop-blur-xl rounded-2xl border border-cyan-500/20 shadow-[0_0_60px_rgba(6,182,212,0.07),inset_0_1px_0_rgba(6,182,212,0.08)] p-8">
+        {/* Header */}
+        <div>
+          <h2 style={{ fontSize: 30, fontWeight: 600, letterSpacing: '-0.025em', lineHeight: 1.1, color: C.crema }}>
+            Ingresar
+          </h2>
+          <p style={{ fontSize: 15, color: C.piedra, marginTop: 6 }}>Con el email de tu cuenta.</p>
+        </div>
 
-          {/* Badge */}
-          <p className="text-[10px] font-mono tracking-[0.25em] text-cyan-400 uppercase mb-4">
-            ◈ &nbsp;Acceso al sistema
-          </p>
+        {/* Email */}
+        <div>
+          <label style={{ fontSize: 13, color: C.arena, fontWeight: 500, display: 'block', marginBottom: 7 }}>Email</label>
+          <input
+            type="email" required value={form.email}
+            onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+            placeholder="tu@email.com"
+            className="du-input"
+          />
+        </div>
 
-          {/* Header */}
-          <div className="mb-7">
-            <h2 className="text-2xl font-bold text-white leading-tight">Bienvenido</h2>
-            <p className="text-sm text-slate-500 mt-1">Ingresá tus credenciales para continuar</p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email */}
-            <div>
-              <label className="block text-xs font-sans tracking-wide text-cyan-300/80 mb-2">
-                Email
-              </label>
-              <div className="relative group">
-                <EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-500/40 group-focus-within:text-cyan-400/70 pointer-events-none transition-colors" />
-                <input
-                  type="email"
-                  required
-                  value={form.email}
-                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                  placeholder="tu@email.com"
-                  className="w-full pl-9 pr-3 py-2.5 bg-slate-950/70 border border-slate-700/50 rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all"
-                />
-              </div>
-            </div>
-
-            {/* Contraseña */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-xs font-sans tracking-wide text-cyan-300/80">
-                  Contraseña
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setShowForgot(true)}
-                  className="text-xs text-slate-500 hover:text-cyan-400 transition-colors"
-                >
-                  ¿Olvidaste tu contraseña?
-                </button>
-              </div>
-              <div className="relative group">
-                <LockClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-500/40 group-focus-within:text-cyan-400/70 pointer-events-none transition-colors" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={form.password}
-                  onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                  placeholder="••••••••"
-                  className="w-full pl-9 pr-10 py-2.5 bg-slate-950/70 border border-slate-700/50 rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-cyan-400 transition-colors"
-                >
-                  {showPassword ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            {/* Recordarme */}
-            <label className="flex items-center gap-2.5 cursor-pointer group">
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  checked={remember}
-                  onChange={e => setRemember(e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-4 h-4 rounded border border-slate-700 bg-slate-950/70 peer-checked:bg-cyan-500 peer-checked:border-cyan-500 transition-all flex items-center justify-center">
-                  {remember && (
-                    <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                </div>
-              </div>
-              <span className="text-xs text-slate-500 group-hover:text-slate-400 transition-colors select-none">
-                Recordarme
-              </span>
-            </label>
-
-            {/* Error */}
-            {error && (
-              <div className="flex items-center gap-2 px-3 py-2.5 bg-red-500/8 border border-red-500/20 rounded-lg">
-                <ExclamationCircleIcon className="w-4 h-4 text-red-400 flex-shrink-0" />
-                <p className="text-xs text-red-400">{error}</p>
-              </div>
-            )}
-
-            {/* Submit */}
+        {/* Contraseña */}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 }}>
+            <label style={{ fontSize: 13, color: C.arena, fontWeight: 500 }}>Contraseña</label>
             <button
-              type="submit"
-              disabled={loading}
-              className="relative w-full py-2.5 px-4 mt-1 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed bg-teal-500 hover:bg-teal-400 text-white shadow-[0_0_20px_rgba(20,184,166,0.25)] hover:shadow-[0_0_35px_rgba(20,184,166,0.45)]"
+              type="button"
+              onClick={() => setShowForgot(true)}
+              style={{ fontSize: 13, color: C.piedra, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
             >
-              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
-              {loading && (
-                <svg className="animate-spin w-4 h-4 text-white/70" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
-                </svg>
-              )}
-              {loading ? 'Entrando...' : 'Entrar'}
+              ¿Olvidaste tu contraseña?
             </button>
-          </form>
-
-          {/* Divider */}
-          <div className="mt-7 pt-6 border-t border-slate-800">
-            <p className="text-sm text-center text-slate-600">
-              ¿No tenés cuenta?{' '}
-              <Link to="/register" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors">
-                Registrarse
-              </Link>
-            </p>
+          </div>
+          <div style={{ position: 'relative' }}>
+            <input
+              type={showPassword ? 'text' : 'password'} required
+              value={form.password}
+              onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+              placeholder="••••••••"
+              className="du-input"
+              style={{ paddingRight: 40 }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(v => !v)}
+              style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, padding: 0 }}
+            >
+              {showPassword
+                ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
+                : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              }
+            </button>
           </div>
         </div>
-      </div>
+
+        {/* Recordarme */}
+        <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+          <div
+            onClick={() => setRemember(v => !v)}
+            style={{
+              width: 16, height: 16, borderRadius: '0 5px 5px 0',
+              border: `1px solid ${remember ? C.crema : C.linea}`,
+              background: remember ? C.crema : 'transparent',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0, transition: 'all 0.15s', cursor: 'pointer',
+            }}
+          >
+            {remember && (
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={C.negro} strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+              </svg>
+            )}
+          </div>
+          <span style={{ fontSize: 13, color: C.piedra }}>Recordarme</span>
+        </label>
+
+        {/* Error */}
+        {error && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'rgba(229,131,115,.08)', border: `1px solid rgba(229,131,115,.25)`, borderRadius: '0 10px 10px 0' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={C.err} strokeWidth={2} style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <p style={{ fontSize: 13, color: C.err }}>{error}</p>
+          </div>
+        )}
+
+        {/* Submit */}
+        <button type="submit" disabled={loading} className="du-btn-pri">
+          {loading && (
+            <svg style={{ animation: 'spin 1s linear infinite', width: 16, height: 16 }} viewBox="0 0 24 24" fill="none">
+              <circle style={{ opacity: .25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+              <path style={{ opacity: .75 }} fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"/>
+            </svg>
+          )}
+          {loading ? 'Entrando...' : 'Ingresar'}
+        </button>
+
+        {/* Footer */}
+        <div style={{ height: 1, background: C.linea }} />
+        <p style={{ fontSize: 14.5, color: C.piedra, textAlign: 'center' }}>
+          ¿Todavía no tenés cuenta?{' '}
+          <Link to="/register" style={{ color: C.crema, textDecoration: 'none', fontWeight: 500 }}>
+            Crear cuenta
+          </Link>
+        </p>
+      </form>
     </>
   )
 }

@@ -26,6 +26,10 @@
   from { opacity: 1; }
   to   { opacity: 0; }
 }
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
 @keyframes crm-fade-up {
   from { opacity: 0; transform: translateY(18px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -64,11 +68,51 @@ input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px #080e1a inset !important;
-  -webkit-text-fill-color: #ffffff !important;
-  caret-color: #ffffff;
+  -webkit-box-shadow: 0 0 0 1000px #0B0B0C inset !important;
+  -webkit-text-fill-color: #F2EDE3 !important;
+  caret-color: #F2EDE3;
   transition: background-color 5000s ease-in-out 0s;
 }
+
+/* ── DanteUP design system — auth pages ───────────────────── */
+.du-input {
+  height: 42px;
+  padding: 0 14px;
+  background: #0B0B0C;
+  border: 1px solid #2C2C2F;
+  border-radius: 0 10px 10px 0;
+  color: #F2EDE3;
+  font-size: 14.5px;
+  font-family: inherit;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.du-input::placeholder { color: #8C877E; }
+.du-input:focus { border-color: #B9B4AA; box-shadow: 0 0 0 3px rgba(242,237,227,.06); }
+.du-input.du-error { border-color: #E58373; }
+.du-input.du-ok { border-color: #7DBE93; }
+.du-input[readonly] { color: #B9B4AA; cursor: default; }
+.du-btn-pri {
+  height: 46px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 0 10px 10px 0;
+  background: #F2EDE3;
+  color: #0B0B0C;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.du-btn-pri:hover:not(:disabled) { background: #E8E3D9; }
+.du-btn-pri:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ── Scrollbar styling ──────────────────────────────────── */
 ::-webkit-scrollbar {

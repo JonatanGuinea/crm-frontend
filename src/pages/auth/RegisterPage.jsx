@@ -3,15 +3,7 @@ import { createPortal } from 'react-dom'
 import { useSearchParams, Link } from 'react-router-dom'
 import { register as registerApi } from '../../api/auth'
 import { isValidPhoneNumber } from 'libphonenumber-js'
-import {
-  UserIcon,
-  EnvelopeIcon,
-  LockClosedIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  ExclamationCircleIcon,
-  ChevronDownIcon,
-} from '@heroicons/react/24/outline'
+import { ChevronDownIcon } from '@heroicons/react/24/outline'
 
 const COUNTRIES = [
   { code: 'AR', name: 'Argentina',      dial: '+54',  flag: '🇦🇷' },
@@ -57,17 +49,11 @@ function PhoneInputField({ countryCode, phoneNumber, onChangeCountry, onChangeNu
 
   const selected = COUNTRIES.find(c => c.code === countryCode) || COUNTRIES[0]
   const filtered = COUNTRIES.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase()) ||
-    c.dial.includes(search)
+    c.name.toLowerCase().includes(search.toLowerCase()) || c.dial.includes(search)
   )
-
   const digits = phoneNumber.replace(/\D/g, '')
   const isPhoneValid = checkPhone(digits, countryCode)
-
   const hasError = touched && (digits.length === 0 || !isPhoneValid)
-  const errorMsg = digits.length === 0
-    ? 'El teléfono es obligatorio'
-    : `Número inválido para ${selected.name}`
 
   function handleOpen() {
     if (!open && btnRef.current) {
@@ -80,88 +66,84 @@ function PhoneInputField({ countryCode, phoneNumber, onChangeCountry, onChangeNu
 
   return (
     <div>
-      <label className="block text-xs font-sans tracking-wide text-cyan-300/80 mb-2">
+      <label style={{ fontSize: 13, color: '#B9B4AA', fontWeight: 500, display: 'block', marginBottom: 7 }}>
         Teléfono
       </label>
-      <div className="flex">
+      <div style={{ display: 'flex' }}>
         <button
           ref={btnRef}
           type="button"
           onClick={handleOpen}
-          className="flex items-center gap-1.5 px-3 py-2.5 bg-slate-950/70 border border-r-0 border-slate-700/50 rounded-l-lg hover:bg-slate-900/60 transition-colors shrink-0"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '0 12px', height: 42,
+            background: '#0B0B0C', border: '1px solid #2C2C2F', borderRight: 'none',
+            borderRadius: '0 0 0 0', cursor: 'pointer', flexShrink: 0,
+          }}
         >
-          <span className="text-base leading-none text-cyan-400">{selected.flag}</span>
-          <span className="text-white/80 text-xs font-mono">{selected.dial}</span>
-          <ChevronDownIcon className={`w-3 h-3 text-slate-600 transition-transform ${open ? 'rotate-180' : ''}`} />
+          <span style={{ fontSize: 16, lineHeight: 1 }}>{selected.flag}</span>
+          <span style={{ color: '#B9B4AA', fontSize: 13, fontFamily: 'Geist Mono, monospace' }}>{selected.dial}</span>
+          <ChevronDownIcon style={{ width: 12, height: 12, color: '#8C877E', transition: 'transform 0.15s', transform: open ? 'rotate(180deg)' : 'none' }} />
         </button>
-
         <input
           type="tel"
           value={phoneNumber}
           onChange={e => onChangeNumber(formatPhoneNumber(e.target.value))}
           onBlur={() => setTouched(true)}
           placeholder="11 1234-5678"
-          className={`flex-1 px-3 py-2.5 bg-slate-950/70 border rounded-r-lg text-sm text-white placeholder-slate-600 focus:outline-none transition-all ${
-            hasError
-              ? 'border-red-500/60 focus:border-red-500/80 focus:ring-1 focus:ring-red-500/20'
-              : digits.length > 0 && touched && isPhoneValid
-                ? 'border-teal-500/50 focus:border-teal-500/70 focus:ring-1 focus:ring-teal-500/20'
-                : 'border-slate-700/50 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20'
-          }`}
+          className={`du-input${hasError ? ' du-error' : digits.length > 0 && touched && isPhoneValid ? ' du-ok' : ''}`}
+          style={{ borderRadius: '0 10px 10px 0' }}
         />
       </div>
-
       {hasError && (
-        <p className="mt-1.5 text-[11px] text-red-400 flex items-center gap-1">
-          <ExclamationCircleIcon className="w-3.5 h-3.5 shrink-0" />
-          {errorMsg}
+        <p style={{ marginTop: 6, fontSize: 12, color: '#E58373', display: 'flex', alignItems: 'center', gap: 5 }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          {digits.length === 0 ? 'El teléfono es obligatorio' : `Número inválido para ${selected.name}`}
         </p>
       )}
       {touched && digits.length > 0 && isPhoneValid && (
-        <p className="mt-1.5 text-[11px] text-teal-400 flex items-center gap-1">
-          <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-          </svg>
+        <p style={{ marginTop: 6, fontSize: 12, color: '#7DBE93', display: 'flex', alignItems: 'center', gap: 5 }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
           Número válido
         </p>
       )}
 
       {open && createPortal(
         <>
-          <div className="fixed inset-0 z-[9998]" onClick={() => setOpen(false)} />
-          <div
-            style={{ top: dropPos.top, left: dropPos.left, width: '220px' }}
-            className="fixed z-[9999] bg-[#0d1524] border border-slate-700/50 rounded-xl shadow-2xl overflow-hidden"
-          >
-            <div className="p-2 border-b border-slate-800">
+          <div style={{ position: 'fixed', inset: 0, zIndex: 9998 }} onClick={() => setOpen(false)} />
+          <div style={{ position: 'fixed', top: dropPos.top, left: dropPos.left, width: 220, zIndex: 9999, background: '#141415', border: '1px solid #2C2C2F', borderRadius: '0 10px 10px 10px', boxShadow: '0 8px 32px rgba(0,0,0,.6)', overflow: 'hidden' }}>
+            <div style={{ padding: 8, borderBottom: '1px solid #2C2C2F' }}>
               <input
                 autoFocus
                 type="text"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Buscar país..."
-                className="w-full px-2.5 py-1.5 bg-slate-950/70 border border-slate-700/50 rounded-lg text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 transition-all"
+                className="du-input"
+                style={{ height: 34, fontSize: 13, borderRadius: '0 7px 7px 0' }}
               />
             </div>
-            <div className="max-h-52 overflow-y-auto">
+            <div style={{ maxHeight: 210, overflowY: 'auto' }}>
               {filtered.map(c => (
                 <button
                   key={c.code}
                   type="button"
                   onClick={() => { onChangeCountry(c.code); setOpen(false) }}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs transition-colors ${
-                    c.code === countryCode
-                      ? 'bg-cyan-500/10 text-cyan-300'
-                      : 'text-white hover:bg-slate-800/60'
-                  }`}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '8px 12px', background: c.code === countryCode ? 'rgba(242,237,227,.08)' : 'transparent',
+                    border: 'none', cursor: 'pointer', fontSize: 13,
+                    color: c.code === countryCode ? '#F2EDE3' : '#B9B4AA',
+                    fontFamily: 'inherit',
+                  }}
                 >
-                  <span className="text-base leading-none text-cyan-400">{c.flag}</span>
-                  <span className="flex-1 text-left">{c.name}</span>
-                  <span className="font-mono text-white/60">{c.dial}</span>
+                  <span style={{ fontSize: 16 }}>{c.flag}</span>
+                  <span style={{ flex: 1, textAlign: 'left' }}>{c.name}</span>
+                  <span style={{ fontFamily: 'Geist Mono, monospace', color: '#8C877E', fontSize: 12 }}>{c.dial}</span>
                 </button>
               ))}
               {!filtered.length && (
-                <p className="px-3 py-4 text-xs text-slate-600 text-center">Sin resultados</p>
+                <p style={{ padding: '16px 12px', fontSize: 13, color: '#8C877E', textAlign: 'center' }}>Sin resultados</p>
               )}
             </div>
           </div>
@@ -176,12 +158,10 @@ function decodeJwtPayload(token) {
   try { return JSON.parse(atob(token.split('.')[1])) } catch { return null }
 }
 
-const fields = [
-  { key: 'name',            label: 'Tu nombre',           type: 'text',     icon: UserIcon,       placeholder: 'Juan García' },
-  { key: 'email',           label: 'Tu email',            type: 'email',    icon: EnvelopeIcon,   placeholder: 'tu@email.com' },
-  { key: 'password',        label: 'Contraseña',          type: 'password', icon: LockClosedIcon, placeholder: '••••••••' },
-  { key: 'passwordConfirm', label: 'Confirmar contraseña', type: 'password', icon: LockClosedIcon, placeholder: '••••••••' },
-]
+const C = {
+  negro: '#0B0B0C', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E',
+  linea: '#2C2C2F', grafito: '#1E1E20', ok: '#7DBE93', err: '#E58373',
+}
 
 export default function RegisterPage() {
   const [searchParams] = useSearchParams()
@@ -231,169 +211,184 @@ export default function RegisterPage() {
 
   if (registered) {
     return (
-      <div className="relative max-w-sm mx-auto">
-        <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-cyan-500/20 via-transparent to-teal-500/10 blur-sm pointer-events-none" />
-        <div className="relative bg-[#080e1a]/30 backdrop-blur-xl rounded-2xl border border-cyan-500/20 shadow-[0_0_60px_rgba(6,182,212,0.07),inset_0_1px_0_rgba(6,182,212,0.08)] p-8 text-center">
-          <div className="w-14 h-14 rounded-full bg-teal-500/10 border border-teal-500/25 flex items-center justify-center mx-auto mb-5">
-            <svg className="w-7 h-7 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-bold text-white mb-2">Revisá tu email</h2>
-          <p className="text-sm text-slate-400 leading-relaxed mb-1">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20, textAlign: 'center' }}>
+        <div style={{ width: 56, height: 56, borderRadius: '0 18px 18px 0', background: C.grafito, border: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={C.crema} strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+          </svg>
+        </div>
+        <div>
+          <h2 style={{ fontSize: 24, fontWeight: 600, letterSpacing: '-0.025em', color: C.crema }}>Revisá tu email</h2>
+          <p style={{ fontSize: 14.5, color: C.arena, marginTop: 8, lineHeight: 1.5 }}>
             Te enviamos un enlace de confirmación a
           </p>
-          <p className="text-sm font-semibold text-cyan-400 mb-5 break-all">{registeredEmail}</p>
-          <p className="text-xs text-slate-600 leading-relaxed">
-            Hacé clic en el enlace del email para activar tu cuenta. Si no lo ves, revisá la carpeta de spam.
-          </p>
-          <div className="mt-7 pt-6 border-t border-slate-800">
-            <p className="text-sm text-slate-600">
-              ¿Ya confirmaste?{' '}
-              <Link to="/login" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors">
-                Iniciar sesión
-              </Link>
-            </p>
-          </div>
+          <p style={{ fontSize: 14.5, fontWeight: 600, color: C.crema, marginTop: 4 }}>{registeredEmail}</p>
         </div>
+        <p style={{ fontSize: 13, color: C.piedra, lineHeight: 1.6 }}>
+          Hacé clic en el enlace del email para activar tu cuenta. Si no lo ves, revisá la carpeta de spam.
+        </p>
+        <div style={{ height: 1, background: C.linea }} />
+        <p style={{ fontSize: 14.5, color: C.piedra }}>
+          ¿Ya confirmaste?{' '}
+          <Link to="/login" style={{ color: C.crema, textDecoration: 'none', fontWeight: 500 }}>
+            Iniciar sesión
+          </Link>
+        </p>
       </div>
     )
   }
 
-  function renderField({ key, label, type, icon: Icon, placeholder }) {
-    const isPassword = type === 'password'
-    const isConfirm = key === 'passwordConfirm'
-    const isEmailLocked = key === 'email' && Boolean(invitePayload)
-    const visible = isConfirm ? showPasswordConfirm : showPassword
-    const inputType = isPassword ? (visible ? 'text' : 'password') : type
-    const mismatch = isConfirm && form.passwordConfirm.length > 0 && form.password !== form.passwordConfirm
-    const matched  = isConfirm && form.passwordConfirm.length > 0 && form.password === form.passwordConfirm
+  const mismatch = form.passwordConfirm.length > 0 && form.password !== form.passwordConfirm
+  const matched  = form.passwordConfirm.length > 0 && form.password === form.passwordConfirm
 
-    return (
-      <div key={key}>
-        <label className="block text-xs font-sans tracking-wide text-cyan-300/80 mb-2">
-          {label}
-          {isEmailLocked && <span className="ml-2 text-cyan-500/60">(pre-completado)</span>}
+  return (
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+      {/* Header */}
+      <div>
+        <h2 style={{ fontSize: 30, fontWeight: 600, letterSpacing: '-0.025em', lineHeight: 1.1, color: C.crema }}>
+          Crear cuenta
+        </h2>
+        {invitePayload ? (
+          <div style={{ marginTop: 14, padding: '12px 14px', background: C.grafito, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.arena} strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <div>
+              <p style={{ fontSize: 13, color: C.arena }}>Fuiste invitado a unirte a</p>
+              <p style={{ fontSize: 14.5, fontWeight: 600, color: C.crema, marginTop: 2 }}>{invitePayload.orgName}</p>
+              <p style={{ fontSize: 12, color: C.piedra, marginTop: 2 }}>Rol: {invitePayload.role === 'admin' ? 'Administrador' : 'Miembro'}</p>
+            </div>
+          </div>
+        ) : (
+          <p style={{ fontSize: 15, color: C.piedra, marginTop: 6 }}>Empezá gratis, sin tarjeta requerida.</p>
+        )}
+      </div>
+
+      {/* Nombre */}
+      <div>
+        <label style={{ fontSize: 13, color: C.arena, fontWeight: 500, display: 'block', marginBottom: 7 }}>Tu nombre</label>
+        <input
+          type="text" required value={form.name}
+          onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+          placeholder="Juan García"
+          className="du-input"
+        />
+      </div>
+
+      {/* Email */}
+      <div>
+        <label style={{ fontSize: 13, color: C.arena, fontWeight: 500, display: 'block', marginBottom: 7 }}>
+          Tu email
+          {invitePayload && <span style={{ marginLeft: 8, fontSize: 12, color: C.piedra }}>(pre-completado)</span>}
         </label>
-        <div className="relative group">
-          <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-500/40 group-focus-within:text-cyan-400/70 pointer-events-none transition-colors" />
+        <input
+          type="email" required
+          readOnly={Boolean(invitePayload)}
+          value={form.email}
+          onChange={invitePayload ? undefined : e => setForm(f => ({ ...f, email: e.target.value }))}
+          placeholder="tu@email.com"
+          className="du-input"
+        />
+      </div>
+
+      {/* Contraseña */}
+      <div>
+        <label style={{ fontSize: 13, color: C.arena, fontWeight: 500, display: 'block', marginBottom: 7 }}>Contraseña</label>
+        <div style={{ position: 'relative' }}>
           <input
-            type={inputType}
-            required
-            readOnly={isEmailLocked}
-            value={form[key]}
-            onChange={isEmailLocked ? undefined : e => setForm(f => ({ ...f, [key]: e.target.value }))}
-            placeholder={placeholder}
-            className={`w-full pl-9 pr-9 py-2.5 bg-slate-950/70 border rounded-lg text-sm placeholder-slate-600 focus:outline-none focus:ring-1 transition-all ${
-              isEmailLocked
-                ? 'border-teal-500/30 text-teal-300/80 cursor-default select-none'
-                : mismatch
-                  ? 'border-red-500/60 focus:border-red-500/80 focus:ring-red-500/20 text-white'
-                  : matched
-                    ? 'border-teal-500/50 focus:border-teal-500/70 focus:ring-teal-500/20 text-white'
-                    : 'border-slate-700/50 focus:border-cyan-500/50 focus:ring-cyan-500/20 text-white'
-            }`}
+            type={showPassword ? 'text' : 'password'} required
+            value={form.password}
+            onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+            placeholder="••••••••"
+            className="du-input"
+            style={{ paddingRight: 40 }}
           />
-          {isPassword && (
-            <button
-              type="button"
-              onClick={() => isConfirm ? setShowPasswordConfirm(v => !v) : setShowPassword(v => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-cyan-400 transition-colors"
-            >
-              {visible ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setShowPassword(v => !v)}
+            style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, padding: 0 }}
+          >
+            {showPassword
+              ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
+              : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            }
+          </button>
+        </div>
+      </div>
+
+      {/* Confirmar contraseña */}
+      <div>
+        <label style={{ fontSize: 13, color: C.arena, fontWeight: 500, display: 'block', marginBottom: 7 }}>Confirmar contraseña</label>
+        <div style={{ position: 'relative' }}>
+          <input
+            type={showPasswordConfirm ? 'text' : 'password'} required
+            value={form.passwordConfirm}
+            onChange={e => setForm(f => ({ ...f, passwordConfirm: e.target.value }))}
+            placeholder="••••••••"
+            className={`du-input${mismatch ? ' du-error' : matched ? ' du-ok' : ''}`}
+            style={{ paddingRight: 40 }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPasswordConfirm(v => !v)}
+            style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, padding: 0 }}
+          >
+            {showPasswordConfirm
+              ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
+              : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            }
+          </button>
         </div>
         {mismatch && (
-          <p className="mt-1.5 text-[11px] text-red-400 flex items-center gap-1">
-            <ExclamationCircleIcon className="w-3.5 h-3.5 shrink-0" />
+          <p style={{ marginTop: 6, fontSize: 12, color: C.err, display: 'flex', alignItems: 'center', gap: 5 }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             Las contraseñas no coinciden
           </p>
         )}
         {matched && (
-          <p className="mt-1.5 text-[11px] text-teal-400 flex items-center gap-1">
-            <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-            </svg>
+          <p style={{ marginTop: 6, fontSize: 12, color: C.ok, display: 'flex', alignItems: 'center', gap: 5 }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
             Las contraseñas coinciden
           </p>
         )}
       </div>
-    )
-  }
 
-  return (
-    <div className="relative max-w-sm mx-auto">
-      <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-cyan-500/20 via-transparent to-teal-500/10 blur-sm pointer-events-none" />
+      {/* Teléfono */}
+      <PhoneInputField
+        countryCode={userCountry}
+        phoneNumber={userPhoneNumber}
+        onChangeCountry={setUserCountry}
+        onChangeNumber={setUserPhoneNumber}
+      />
 
-      <div className="relative bg-[#080e1a]/30 backdrop-blur-xl rounded-2xl border border-cyan-500/20 shadow-[0_0_60px_rgba(6,182,212,0.07),inset_0_1px_0_rgba(6,182,212,0.08)] p-8">
-
-        <p className="text-[10px] font-mono tracking-[0.25em] text-cyan-400 uppercase mb-4">
-          ◈ &nbsp;Nuevo registro
-        </p>
-
-        {invitePayload ? (
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-white leading-tight">Crear cuenta</h2>
-            <div className="mt-3 px-3 py-2.5 rounded-lg bg-teal-500/10 border border-teal-500/25 flex items-start gap-2">
-              <svg className="w-4 h-4 text-teal-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              <div>
-                <p className="text-xs font-medium text-teal-300">Fuiste invitado a unirte a</p>
-                <p className="text-sm font-bold text-white mt-0.5">{invitePayload.orgName}</p>
-                <p className="text-[11px] text-teal-400/70 mt-0.5">Rol: {invitePayload.role === 'admin' ? 'Administrador' : 'Miembro'}</p>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-white leading-tight">Crear cuenta</h2>
-            <p className="text-sm text-slate-500 mt-1">Empezá gratis, sin tarjeta requerida</p>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {fields.map(renderField)}
-          <PhoneInputField
-            countryCode={userCountry}
-            phoneNumber={userPhoneNumber}
-            onChangeCountry={setUserCountry}
-            onChangeNumber={setUserPhoneNumber}
-          />
-
-          {error && (
-            <div className="flex items-center gap-2 px-3 py-2.5 bg-red-500/8 border border-red-500/20 rounded-lg">
-              <ExclamationCircleIcon className="w-4 h-4 text-red-400 flex-shrink-0" />
-              <p className="text-xs text-red-400">{error}</p>
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="relative w-full py-2.5 px-4 mt-2 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed bg-teal-500 hover:bg-teal-400 text-white shadow-[0_0_20px_rgba(20,184,166,0.25)] hover:shadow-[0_0_35px_rgba(20,184,166,0.45)]"
-          >
-            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
-            {loading && (
-              <svg className="animate-spin w-4 h-4 text-white/70" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
-              </svg>
-            )}
-            {loading ? 'Registrando...' : invitePayload ? 'Crear cuenta y unirme' : 'Crear cuenta'}
-          </button>
-        </form>
-
-        <div className="mt-7 pt-6 border-t border-slate-800">
-          <p className="text-sm text-center text-slate-600">
-            ¿Ya tenés cuenta?{' '}
-            <Link to="/login" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors">
-              Iniciar sesión
-            </Link>
-          </p>
+      {/* Error general */}
+      {error && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'rgba(229,131,115,.08)', border: `1px solid rgba(229,131,115,.25)`, borderRadius: '0 10px 10px 0' }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={C.err} strokeWidth={2} style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <p style={{ fontSize: 13, color: C.err }}>{error}</p>
         </div>
-      </div>
-    </div>
+      )}
+
+      {/* Submit */}
+      <button type="submit" disabled={loading} className="du-btn-pri">
+        {loading && (
+          <svg style={{ animation: 'spin 1s linear infinite', width: 16, height: 16 }} viewBox="0 0 24 24" fill="none">
+            <circle style={{ opacity: .25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+            <path style={{ opacity: .75 }} fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"/>
+          </svg>
+        )}
+        {loading ? 'Registrando...' : invitePayload ? 'Crear cuenta y unirme' : 'Crear cuenta'}
+      </button>
+
+      {/* Footer */}
+      <div style={{ height: 1, background: C.linea }} />
+      <p style={{ fontSize: 14.5, color: C.piedra, textAlign: 'center' }}>
+        ¿Ya tenés cuenta?{' '}
+        <Link to="/login" style={{ color: C.crema, textDecoration: 'none', fontWeight: 500 }}>
+          Iniciar sesión
+        </Link>
+      </p>
+    </form>
   )
 }
