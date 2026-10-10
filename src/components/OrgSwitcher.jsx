@@ -4,6 +4,19 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getOrganizations, switchOrganization } from '../api/auth'
 import { SetupOrgModal } from './OrgModal'
+import { AdjustmentsHorizontalIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
+
+const C = {
+  bg:    '#0B0B0C',
+  s2:    '#1E1E20',
+  s3:    '#26262A',
+  linea: '#2C2C2F',
+  crema: '#F2EDE3',
+  arena: '#B9B4AA',
+  piedra:'#8C877E',
+}
+
+const ROLE_LABEL = { owner: 'Dueño', admin: 'Admin', member: 'Miembro' }
 
 export default function OrgSwitcher() {
   const { user, switchOrg } = useAuth()
@@ -19,12 +32,9 @@ export default function OrgSwitcher() {
     queryFn: () => getOrganizations().then(r => r.data.data)
   })
 
-
   useEffect(() => {
     function handleClick(e) {
-      if (ref.current && !ref.current.contains(e.target)) {
-        setOpen(false)
-      }
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
@@ -59,62 +69,91 @@ export default function OrgSwitcher() {
   const hasMultiple = orgs && orgs.length > 1
   const hasNoOrgs = orgs !== undefined && orgs.length === 0
 
+  const triggerStyle = {
+    width: '100%', padding: '10px 14px',
+    background: 'none', border: 'none',
+    cursor: 'pointer', fontFamily: 'inherit',
+    display: 'flex', alignItems: 'center', gap: 8,
+    borderBottom: `1px solid ${C.linea}`,
+    transition: 'background-color 0.12s',
+  }
+
   if (hasNoOrgs) {
     return (
-      <div ref={ref} className="relative border-b border-line">
+      <div ref={ref} style={{ position: 'relative' }}>
         <button
           onClick={() => setShowNewOrgModal(true)}
-          className="w-full px-6 py-4 text-left hover:bg-raised transition-colors"
+          style={triggerStyle}
+          onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(242,237,227,0.04)'}
+          onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
         >
-          <p className="text-xs text-fg-muted uppercase tracking-wide mb-0.5">Organización</p>
-          <p className="text-sm font-semibold text-brand">Agregar empresa +</p>
+          <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+            <p style={{ color: C.arena, fontSize: 12.5, fontWeight: 600 }}>+ Agregar empresa</p>
+          </div>
         </button>
         {showNewOrgModal && (
-          <SetupOrgModal
-            onClose={() => setShowNewOrgModal(false)}
-            onCreated={handleCreated}
-          />
+          <SetupOrgModal onClose={() => setShowNewOrgModal(false)} onCreated={handleCreated} />
         )}
       </div>
     )
   }
 
   return (
-    <div ref={ref} className="relative border-b border-line">
+    <div ref={ref} style={{ position: 'relative' }}>
       <button
         onClick={() => setOpen(v => !v)}
-        className="w-full px-6 py-4 text-left hover:bg-raised transition-colors"
+        style={triggerStyle}
+        onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(242,237,227,0.04)'}
+        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
       >
-        <p className="text-xs text-fg-muted uppercase tracking-wide mb-0.5">Organización</p>
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold text-fg truncate">{currentOrg?.name || '...'}</p>
-          <span className="text-fg-muted text-xs ml-1">{open ? '▲' : '▼'}</span>
+        <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+          <p style={{ color: C.crema, fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {currentOrg?.name || '…'}
+          </p>
+          <p style={{ color: C.piedra, fontSize: 11 }}>
+            {ROLE_LABEL[user?.role] || user?.role}
+          </p>
         </div>
-        <p className="text-xs text-fg-muted capitalize">{user?.role}</p>
+        {hasMultiple && (
+          <AdjustmentsHorizontalIcon style={{
+            width: 14, height: 14, flexShrink: 0, color: C.piedra,
+            transform: open ? 'rotate(90deg)' : 'rotate(0deg)',
+            transition: 'transform 0.2s',
+          }} />
+        )}
       </button>
 
-      <div className={`absolute top-full left-0 w-full bg-overlay border border-line rounded-b-xl shadow-lg z-50 transition-all duration-200 origin-top ${
-        open ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-1 pointer-events-none'
-      }`}>
+      {open && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, right: 0,
+          background: C.s2, border: `1px solid ${C.linea}`,
+          borderTop: 'none', borderRadius: '0 0 10px 0',
+          zIndex: 50, boxShadow: '0 8px 24px rgba(0,0,0,.4)',
+        }}>
           {hasMultiple && (
             <>
-              <p className="px-4 py-2 text-xs text-fg-muted uppercase tracking-wide border-b border-line">
+              <p style={{ padding: '8px 14px', fontSize: 10, fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.piedra, borderBottom: `1px solid ${C.linea}` }}>
                 Cambiar a...
               </p>
-              <ul className="max-h-48 overflow-y-auto">
+              <ul style={{ maxHeight: 160, overflowY: 'auto', listStyle: 'none', padding: 0, margin: 0 }}>
                 {orgs.map(org => (
                   <li key={org.id}>
                     <button
                       onClick={() => handleSwitch(org.id)}
                       disabled={switching || org.id === user?.org}
-                      className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                        org.id === user?.org
-                          ? 'text-brand font-medium bg-brand-subtle'
-                          : 'text-fg-soft hover:bg-raised'
-                      }`}
+                      style={{
+                        width: '100%', padding: '9px 14px',
+                        background: org.id === user?.org ? 'rgba(242,237,227,0.05)' : 'none',
+                        border: 'none', cursor: org.id === user?.org ? 'default' : 'pointer',
+                        textAlign: 'left', fontFamily: 'inherit',
+                        color: org.id === user?.org ? C.crema : C.arena,
+                        fontSize: 13, transition: 'background-color 0.12s',
+                      }}
+                      onMouseEnter={e => { if (org.id !== user?.org) e.currentTarget.style.backgroundColor = 'rgba(242,237,227,0.04)' }}
+                      onMouseLeave={e => { if (org.id !== user?.org) e.currentTarget.style.backgroundColor = 'transparent' }}
                     >
-                      <span className="block truncate">{org.name}</span>
-                      <span className="text-xs text-fg-muted capitalize">{org.role}</span>
+                      <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{org.name}</span>
+                      <span style={{ fontSize: 11, color: C.piedra }}>{ROLE_LABEL[org.role] || org.role}</span>
                     </button>
                   </li>
                 ))}
@@ -122,21 +161,26 @@ export default function OrgSwitcher() {
             </>
           )}
 
-          <div className="border-t border-line">
+          <div style={{ borderTop: `1px solid ${C.linea}` }}>
             <button
               onClick={() => { setOpen(false); setShowNewOrgModal(true) }}
-              className="w-full text-left px-4 py-2.5 text-sm text-brand hover:bg-brand-subtle transition-colors"
+              style={{
+                width: '100%', padding: '9px 14px',
+                background: 'none', border: 'none', cursor: 'pointer',
+                textAlign: 'left', fontFamily: 'inherit',
+                color: C.arena, fontSize: 13, transition: 'background-color 0.12s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(242,237,227,0.04)'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
             >
               + Nueva organización
             </button>
           </div>
         </div>
+      )}
 
       {showNewOrgModal && (
-        <SetupOrgModal
-          onClose={() => setShowNewOrgModal(false)}
-          onCreated={handleCreated}
-        />
+        <SetupOrgModal onClose={() => setShowNewOrgModal(false)} onCreated={handleCreated} />
       )}
     </div>
   )

@@ -3,6 +3,19 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { acceptInvite } from '../../api/auth'
 
+const C = {
+  s1: '#141415', linea: '#2C2C2F',
+  crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E',
+  ok: '#7DBE93', err: '#E58373', info: '#8EB1DE',
+}
+
+const iconWrap = (bg, bd) => ({
+  width: 56, height: 56, borderRadius: '50%',
+  background: bg, border: `1px solid ${bd}`,
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  margin: '0 auto 20px',
+})
+
 function decodeJwtPayload(token) {
   try { return JSON.parse(atob(token.split('.')[1])) } catch { return null }
 }
@@ -18,7 +31,6 @@ export default function AcceptInvitePage() {
     const token = searchParams.get('token')
 
     if (!token) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setError('No se encontró el token de invitación en el enlace.')
       setStatus('error')
       return
@@ -26,13 +38,11 @@ export default function AcceptInvitePage() {
 
     const payload = decodeJwtPayload(token)
 
-    // Invitación para usuario sin cuenta → redirigir al registro
     if (payload?.type === 'pre-invite') {
       navigate(`/register?inviteToken=${token}`, { replace: true })
       return
     }
 
-    // Invitación para usuario existente → aceptar directamente
     acceptInvite(token)
       .then(res => {
         login(res.data.data.token)
@@ -46,38 +56,63 @@ export default function AcceptInvitePage() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="bg-surface/60 backdrop-blur-xl rounded-xl shadow-sm border border-line p-8 text-center">
+    <div style={{
+      background: C.s1, border: `1px solid ${C.linea}`,
+      borderRadius: '0 20px 20px 0', padding: '40px 32px', textAlign: 'center',
+    }}>
+
       {status === 'loading' && (
         <>
-          <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-fg-soft text-sm">Procesando invitación...</p>
+          <div style={iconWrap('rgba(142,177,222,.1)', 'rgba(142,177,222,.2)')}>
+            <svg style={{ width: 24, height: 24, color: C.info, animation: 'spin 1s linear infinite' }} fill="none" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.25" />
+              <path fill="currentColor" opacity="0.75" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+            </svg>
+          </div>
+          <h2 style={{ color: C.crema, fontSize: 22, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 8 }}>
+            Procesando invitación...
+          </h2>
+          <p style={{ color: C.piedra, fontSize: 14 }}>Un momento por favor.</p>
         </>
       )}
 
       {status === 'success' && (
         <>
-          <div className="w-12 h-12 bg-brand-subtle rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-6 h-6 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          <div style={iconWrap('rgba(125,190,147,.1)', 'rgba(125,190,147,.2)')}>
+            <svg style={{ width: 28, height: 28, color: C.ok }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>
           </div>
-          <h2 className="text-lg font-semibold text-fg mb-1">¡Invitación aceptada!</h2>
-          <p className="text-sm text-fg-soft">Redirigiendo al dashboard...</p>
+          <h2 style={{ color: C.crema, fontSize: 22, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 8 }}>
+            ¡Invitación aceptada!
+          </h2>
+          <p style={{ color: C.arena, fontSize: 14, lineHeight: 1.6 }}>
+            Redirigiendo al dashboard...
+          </p>
         </>
       )}
 
       {status === 'error' && (
         <>
-          <div className="w-12 h-12 bg-danger-subtle rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-6 h-6 text-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <div style={iconWrap('rgba(229,131,115,.1)', 'rgba(229,131,115,.2)')}>
+            <svg style={{ width: 28, height: 28, color: C.err }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
           </div>
-          <h2 className="text-lg font-semibold text-fg mb-1">No se pudo aceptar la invitación</h2>
-          <p className="text-sm text-danger mb-6">{error}</p>
+          <h2 style={{ color: C.crema, fontSize: 22, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 8 }}>
+            No se pudo aceptar la invitación
+          </h2>
+          <p style={{ color: C.arena, fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>{error}</p>
           <Link
             to="/login"
-            className="inline-block px-4 py-2 bg-brand text-white text-sm font-medium rounded-md hover:bg-brand-hover transition-colors"
+            style={{
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              padding: '10px 28px', background: C.crema, color: '#0B0B0C',
+              fontSize: 13.5, fontWeight: 600, borderRadius: '0 10px 10px 0',
+              textDecoration: 'none', fontFamily: 'inherit', transition: 'background 0.15s',
+            }}
           >
             Ir al login
           </Link>

@@ -114,6 +114,34 @@ input:-webkit-autofill:active {
 .du-btn-pri:hover:not(:disabled) { background: #E8E3D9; }
 .du-btn-pri:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* ── DanteUP nav items ────────────────────────────────────── */
+.du-nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 14px;
+  color: #8C877E;
+  font-size: 13.5px;
+  font-weight: 400;
+  text-decoration: none;
+  transition: color 0.12s, background-color 0.12s;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.du-nav-item:hover { color: #B9B4AA; background-color: rgba(242,237,227,0.04); }
+.du-nav-item.du-active { color: #F2EDE3; font-weight: 500; background-color: rgba(242,237,227,0.05); }
+.du-nav-item.du-collapsed { padding: 8px 0; justify-content: center; }
+
+.du-section-label {
+  padding: 14px 14px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #8C877E;
+}
+
 /* ── Scrollbar styling ──────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;

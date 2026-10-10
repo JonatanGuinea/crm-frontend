@@ -58,7 +58,13 @@ function PhoneInputField({ countryCode, phoneNumber, onChangeCountry, onChangeNu
   function handleOpen() {
     if (!open && btnRef.current) {
       const r = btnRef.current.getBoundingClientRect()
-      setDropPos({ top: r.bottom + 4, left: r.left })
+      const dropH = 268
+      const spaceBelow = window.innerHeight - r.bottom - 8
+      const top = spaceBelow >= dropH
+        ? r.bottom + 4
+        : Math.max(8, r.top - dropH - 4)
+      const left = Math.min(r.left, window.innerWidth - 228)
+      setDropPos({ top, left })
     }
     setOpen(v => !v)
     setSearch('')

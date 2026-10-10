@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom'
 import { NavLink, Link, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext'
-import { useTheme } from '../context/ThemeContext'
 import GlobalSearch from '../components/GlobalSearch'
 import OrgSwitcher from '../components/OrgSwitcher'
 import InvitationsBanner from '../components/InvitationsBanner'
@@ -15,66 +14,213 @@ import { getNotifications } from '../api/notifications'
 import { getPendingInvitations } from '../api/invitations'
 import { getOrganizations, switchOrganization } from '../api/auth'
 import { getNewProjectsCount } from '../api/projects'
-import logo from '../assets/logo.png'
-import logoDark from '../assets/logo-dark-mode.png'
-import favicon from '../assets/favicon.png'
+import logoUrl from '../assets/danteup/logotipo-crema.svg'
+import isotipoUrl from '../assets/danteup/isotipo-crema.svg'
 import {
-  HomeIcon,
-  UsersIcon,
-  FolderIcon,
-  DocumentTextIcon,
-  ReceiptRefundIcon,
-  ArrowTrendingDownIcon,
-  BellIcon,
-  UserGroupIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  SunIcon,
-  MoonIcon,
-  Bars3Icon,
-  XMarkIcon,
-  CalendarDaysIcon,
-  ClipboardDocumentListIcon,
-  UserCircleIcon,
-  BuildingOffice2Icon,
-  ArrowRightStartOnRectangleIcon,
-  CubeIcon,
-  ChevronDownIcon,
-  BuildingStorefrontIcon,
-  BanknotesIcon,
-  ChartBarIcon,
-  QuestionMarkCircleIcon,
+  HomeIcon, UsersIcon, FolderIcon, DocumentTextIcon,
+  BellIcon, UserGroupIcon, Bars3Icon, XMarkIcon,
+  CalendarDaysIcon, ClipboardDocumentListIcon,
+  UserCircleIcon, BuildingOffice2Icon,
+  ArrowRightStartOnRectangleIcon, CubeIcon,
+  ChevronDownIcon, BuildingStorefrontIcon,
+  BanknotesIcon, ChartBarIcon, QuestionMarkCircleIcon,
+  ReceiptRefundIcon, ChevronLeftIcon,
 } from '@heroicons/react/24/outline'
-
 
 const UPLOADS_BASE = import.meta.env.VITE_API_URL
 
-const navItemsTop = [
-  { to: '/',              label: 'Dashboard',      icon: HomeIcon,           exact: true },
-  { to: '/clients',       label: 'Clientes',        icon: UsersIcon },
-  { to: '/projects',      label: 'Proyectos',       icon: FolderIcon },
-  { to: '/tasks',         label: 'Tareas',          icon: ClipboardDocumentListIcon },
-  { to: '/projects/calendar', label: 'Agenda',      icon: CalendarDaysIcon },
-  { to: '/quotes',        label: 'Presupuestos',    icon: DocumentTextIcon,   memberHidden: true },
+const C = {
+  bg:    '#0B0B0C',
+  s1:    '#141415',
+  s2:    '#1E1E20',
+  linea: '#2C2C2F',
+  crema: '#F2EDE3',
+  arena: '#B9B4AA',
+  piedra:'#8C877E',
+  err:   '#E58373',
+}
+
+const ROLE_LABEL = { owner: 'Dueño', admin: 'Admin', member: 'Miembro' }
+
+const navTop = [
+  { to: '/',                  label: 'Inicio',       icon: HomeIcon,                   exact: true },
+  { to: '/clients',           label: 'Clientes',     icon: UsersIcon },
+  { to: '/quotes',            label: 'Presupuestos', icon: DocumentTextIcon,            memberHidden: true },
+  { to: '/projects',          label: 'Proyectos',    icon: FolderIcon },
+  { to: '/tasks',             label: 'Tareas',       icon: ClipboardDocumentListIcon },
+  { to: '/projects/calendar', label: 'Agenda',       icon: CalendarDaysIcon },
 ]
 
-const navItemsBottom = [
-  { to: '/finances',      label: 'Finanzas',        icon: BanknotesIcon,           memberHidden: true },
-  { to: '/reports',       label: 'Reportes',        icon: ChartBarIcon,            memberHidden: true },
-  { to: '/members',       label: 'Equipo',          icon: UserGroupIcon },
+const navBottom = [
+  { to: '/finances', label: 'Finanzas', icon: BanknotesIcon,  memberHidden: true },
+  { to: '/reports',  label: 'Reportes', icon: ChartBarIcon,   memberHidden: true },
+  { to: '/members',  label: 'Equipo',   icon: UserGroupIcon },
 ]
 
-const stockSubItems = [
-  { to: '/stock',           label: 'Datos', icon: CubeIcon,                  exact: true },
-  { to: '/stock/products',  label: 'Productos',        icon: ReceiptRefundIcon },
-  { to: '/stock/providers', label: 'Proveedores',      icon: BuildingStorefrontIcon },
+const stockSub = [
+  { to: '/stock',           label: 'Dashboard',   icon: CubeIcon,              exact: true },
+  { to: '/stock/products',  label: 'Productos',   icon: ReceiptRefundIcon },
+  { to: '/stock/providers', label: 'Proveedores', icon: BuildingStorefrontIcon },
 ]
+
+function NavItem({ to, label, icon: Icon, exact, collapsed, onNavClick, badge }) {
+  return (
+    <NavLink
+      to={to}
+      end={exact}
+      onClick={onNavClick}
+      title={collapsed ? label : undefined}
+      className={({ isActive }) =>
+        `du-nav-item${collapsed ? ' du-collapsed' : ''}${isActive ? ' du-active' : ''}`
+      }
+    >
+      {({ isActive }) => (
+        <>
+          {isActive && (
+            <div style={{
+              position: 'absolute', left: 0, top: 4, bottom: 4,
+              width: 2, background: C.crema, borderRadius: '0 2px 2px 0',
+            }} />
+          )}
+          <Icon style={{ width: 18, height: 18, flexShrink: 0 }} />
+          {!collapsed && (
+            <>
+              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>
+              {badge > 0 && (
+                <span style={{ color: C.piedra, fontSize: 12, flexShrink: 0 }}>{badge}</span>
+              )}
+            </>
+          )}
+        </>
+      )}
+    </NavLink>
+  )
+}
+
+function StockGroup({ collapsed, onNavClick }) {
+  const location = useLocation()
+  const isOnStock = location.pathname.startsWith('/stock')
+  const [open, setOpen] = useState(isOnStock)
+
+  return (
+    <div>
+      <button
+        onClick={() => !collapsed && setOpen(o => !o)}
+        title={collapsed ? 'Stock' : undefined}
+        className={`du-nav-item${collapsed ? ' du-collapsed' : ''}${isOnStock ? ' du-active' : ''}`}
+        style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+      >
+        {isOnStock && (
+          <div style={{
+            position: 'absolute', left: 0, top: 4, bottom: 4,
+            width: 2, background: C.crema, borderRadius: '0 2px 2px 0',
+          }} />
+        )}
+        <CubeIcon style={{ width: 18, height: 18, flexShrink: 0 }} />
+        {!collapsed && (
+          <>
+            <span style={{ flex: 1, textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis' }}>Stock</span>
+            <ChevronDownIcon style={{
+              width: 13, height: 13, flexShrink: 0,
+              transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s',
+            }} />
+          </>
+        )}
+      </button>
+
+      {!collapsed && open && (
+        <div style={{ marginTop: 2, marginLeft: 12, paddingLeft: 12, borderLeft: `1px solid ${C.linea}` }}>
+          {stockSub.map(({ to, label, icon: Icon, exact }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={exact}
+              onClick={onNavClick}
+              className={({ isActive }) =>
+                `du-nav-item${isActive ? ' du-active' : ''}`
+              }
+              style={{ fontSize: 13, padding: '6px 10px', gap: 8 }}
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <div style={{
+                      position: 'absolute', left: 0, top: 3, bottom: 3,
+                      width: 2, background: C.crema, borderRadius: '0 2px 2px 0',
+                    }} />
+                  )}
+                  <Icon style={{ width: 15, height: 15, flexShrink: 0 }} />
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>
+                </>
+              )}
+            </NavLink>
+          ))}
+        </div>
+      )}
+
+      {collapsed && (
+        <div style={{ marginTop: 2 }}>
+          {stockSub.map(({ to, label, icon: Icon, exact }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={exact}
+              title={label}
+              onClick={onNavClick}
+              className={({ isActive }) =>
+                `du-nav-item du-collapsed${isActive ? ' du-active' : ''}`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <div style={{
+                      position: 'absolute', left: 0, top: 4, bottom: 4,
+                      width: 2, background: C.crema, borderRadius: '0 2px 2px 0',
+                    }} />
+                  )}
+                  <Icon style={{ width: 15, height: 15, flexShrink: 0 }} />
+                </>
+              )}
+            </NavLink>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function SidebarAvatar({ avatar, name }) {
+  const [imgError, setImgError] = useState(false)
+  const initials = name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
+  if (avatar && !imgError) {
+    return (
+      <img
+        src={`${UPLOADS_BASE}/uploads/${avatar}`}
+        alt={name}
+        onError={() => setImgError(true)}
+        style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+      />
+    )
+  }
+  return (
+    <div style={{
+      width: 32, height: 32, borderRadius: '50%',
+      background: C.s2, border: `1px solid ${C.linea}`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      flexShrink: 0,
+    }}>
+      <span style={{ color: C.crema, fontSize: 11, fontWeight: 600 }}>{initials}</span>
+    </div>
+  )
+}
 
 function ProfileDropdown({ profile, user }) {
   const { logout } = useAuth()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
-  const [menuPos, setMenuPos] = useState({ top: 0, right: 0 })
+  const [menuPos, setMenuPos] = useState({ bottom: 0, left: 0 })
   const btnRef = useRef()
   const menuRef = useRef()
 
@@ -92,7 +238,7 @@ function ProfileDropdown({ profile, user }) {
   function handleOpen() {
     if (!open && btnRef.current) {
       const r = btnRef.current.getBoundingClientRect()
-      setMenuPos({ top: r.bottom + 6, right: window.innerWidth - r.right })
+      setMenuPos({ bottom: window.innerHeight - r.top + 6, left: r.left })
     }
     setOpen(v => !v)
   }
@@ -101,219 +247,152 @@ function ProfileDropdown({ profile, user }) {
 
   const isOwner = user?.role === 'owner'
   const items = [
-    { label: 'Perfil',   icon: UserCircleIcon,        action: () => go('/profile') },
+    { label: 'Perfil',   icon: UserCircleIcon,         action: () => go('/profile') },
     ...(isOwner ? [{ label: 'Empresa', icon: BuildingOffice2Icon, action: () => go('/organization') }] : []),
-    { label: 'Manual',   icon: QuestionMarkCircleIcon, action: () => go('/help') },
+    { label: 'Ayuda',    icon: QuestionMarkCircleIcon,  action: () => go('/help') },
   ]
 
   return (
-    <div className="shrink-0">
+    <div>
       <button
         ref={btnRef}
         onClick={handleOpen}
-        className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-raised transition-colors"
+        style={{
+          display: 'flex', alignItems: 'center', gap: 10, width: '100%',
+          padding: '12px 14px', background: 'none', border: 'none',
+          cursor: 'pointer', fontFamily: 'inherit',
+          transition: 'background-color 0.12s',
+        }}
+        onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(242,237,227,0.04)'}
+        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
       >
         <SidebarAvatar avatar={profile?.avatar} name={profile?.name || user?.name} />
-        <span className="hidden sm:block text-sm text-fg-soft truncate max-w-[120px]">
-          {profile?.name || user?.name || 'Mi perfil'}
-        </span>
+        <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+          <p style={{ color: C.crema, fontSize: 13, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {profile?.name || user?.name || 'Mi perfil'}
+          </p>
+          <p style={{ color: C.piedra, fontSize: 11 }}>
+            {ROLE_LABEL[user?.role] || user?.role}
+          </p>
+        </div>
       </button>
 
       {createPortal(
         <div
           ref={menuRef}
-          style={{ top: menuPos.top, right: menuPos.right, position: 'fixed' }}
-          className={`w-52 bg-surface border border-line rounded-xl shadow-xl z-[9999] overflow-hidden transition-all duration-150 origin-top-right ${
-            open ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'
-          }`}
+          style={{
+            position: 'fixed', bottom: menuPos.bottom, left: menuPos.left,
+            width: 200, background: C.s2, border: `1px solid ${C.linea}`,
+            borderRadius: '0 12px 12px 0', overflow: 'hidden',
+            boxShadow: '0 8px 32px rgba(0,0,0,.5)',
+            zIndex: 9999, transition: 'opacity 0.15s, transform 0.15s',
+            opacity: open ? 1 : 0,
+            transform: open ? 'scale(1)' : 'scale(0.96)',
+            pointerEvents: open ? 'auto' : 'none',
+            transformOrigin: 'bottom left',
+          }}
         >
-          <div className="px-4 py-3 border-b border-line">
-            <p className="text-sm font-semibold text-fg truncate">{profile?.name || user?.name}</p>
-            <p className="text-xs text-fg-muted truncate">{profile?.email || user?.email}</p>
+          <div style={{ padding: '12px 14px', borderBottom: `1px solid ${C.linea}` }}>
+            <p style={{ color: C.crema, fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {profile?.name || user?.name}
+            </p>
+            <p style={{ color: C.piedra, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {profile?.email || user?.email}
+            </p>
           </div>
 
-          <div className="py-1">
+          <div style={{ padding: '4px 0' }}>
             {items.map(({ label, icon: Icon, action }) => (
               <button
                 key={label}
                 onClick={action}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-fg-soft hover:bg-raised hover:text-fg transition-colors"
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '9px 14px', background: 'none', border: 'none',
+                  cursor: 'pointer', color: C.arena, fontSize: 13, fontFamily: 'inherit',
+                  transition: 'background-color 0.12s, color 0.12s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(242,237,227,0.05)'; e.currentTarget.style.color = C.crema }}
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = C.arena }}
               >
-                <Icon className="w-4 h-4 shrink-0" />
+                <Icon style={{ width: 15, height: 15, flexShrink: 0 }} />
                 {label}
               </button>
             ))}
           </div>
 
-          <div className="border-t border-line py-1">
+          <div style={{ borderTop: `1px solid ${C.linea}`, padding: '4px 0' }}>
             <button
               onClick={() => { setOpen(false); logout() }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-danger hover:bg-danger-subtle transition-colors"
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                padding: '9px 14px', background: 'none', border: 'none',
+                cursor: 'pointer', color: C.err, fontSize: 13, fontFamily: 'inherit',
+                transition: 'background-color 0.12s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(229,131,115,0.08)'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
             >
-              <ArrowRightStartOnRectangleIcon className="w-4 h-4 shrink-0" />
+              <ArrowRightStartOnRectangleIcon style={{ width: 15, height: 15, flexShrink: 0 }} />
               Cerrar sesión
             </button>
           </div>
         </div>,
         document.body
       )}
-
     </div>
   )
 }
 
-function SidebarAvatar({ avatar, name }) {
-  const [imgError, setImgError] = useState(false)
-  const initials = name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
-  if (avatar && !imgError) {
-    return <img src={`${UPLOADS_BASE}/uploads/${avatar}`} alt={name} onError={() => setImgError(true)} className="w-7 h-7 rounded-full object-cover shrink-0" />
-  }
-  return (
-    <div className="w-7 h-7 rounded-full bg-brand-subtle text-brand text-xs font-semibold flex items-center justify-center shrink-0">
-      {initials}
-    </div>
-  )
-}
-
-function NavItem({ to, label, icon: Icon, exact, collapsed, onNavClick, badge = 0 }) {
-  return (
-    <NavLink
-      to={to}
-      end={exact}
-      onClick={onNavClick}
-      title={collapsed ? label : undefined}
-      className={({ isActive }) =>
-        `relative flex items-center gap-3 px-2 py-1.5 rounded-md text-sm font-medium transition-colors ${
-          isActive ? 'bg-brand-subtle text-brand' : 'text-fg-soft hover:bg-raised hover:text-fg'
-        } ${collapsed ? 'justify-center' : ''}`
-      }
-    >
-      <div className="relative shrink-0">
-        <Icon className="w-5 h-5" />
-        {badge > 0 && collapsed && (
-          <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none">
-            {badge > 99 ? '99+' : badge}
-          </span>
-        )}
-      </div>
-      {!collapsed && <span className="truncate flex-1">{label}</span>}
-      {!collapsed && badge > 0 && (
-        <span className="ml-auto min-w-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
-          {badge > 99 ? '99+' : badge}
-        </span>
-      )}
-    </NavLink>
-  )
-}
-
-function SidebarContent({ collapsed, onNavClick, dark, onToggleTheme, newProjectsCount, user }) {
-  const location = useLocation()
-  const isOnStock = location.pathname.startsWith('/stock')
-  const [stockOpen, setStockOpen] = useState(isOnStock)
+function SidebarContent({ collapsed, onNavClick, newProjectsCount, user, profile }) {
   const isMember = user?.role === 'member'
 
-  const stockGroup = (
-    <div key="stock-group">
-      {/* Botón padre Stock */}
-      <button
-        onClick={() => !collapsed && setStockOpen(o => !o)}
-        title={collapsed ? 'Stock' : undefined}
-        className={`w-full flex items-center gap-3 px-2 py-1.5 rounded-md text-sm font-medium transition-colors ${
-          isOnStock && !stockOpen ? 'bg-brand-subtle text-brand' : 'text-fg-soft hover:bg-raised hover:text-fg'
-        } ${collapsed ? 'justify-center' : ''}`}
-      >
-        <CubeIcon className="w-5 h-5 shrink-0" />
-        {!collapsed && (
-          <>
-            <span className="truncate flex-1 text-left">Stock</span>
-            <ChevronDownIcon className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${stockOpen ? 'rotate-180' : ''}`} />
-          </>
-        )}
-      </button>
-
-      {/* Sub-items expandido */}
-      {!collapsed && stockOpen && (
-        <div className="mt-0.5 ml-3 pl-3 border-l border-line flex flex-col gap-0.5">
-          {stockSubItems.map(({ to, label, icon: Icon, exact }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={exact}
-              onClick={onNavClick}
-              className={({ isActive }) =>
-                `flex items-center gap-2.5 px-2 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  isActive ? 'bg-brand-subtle text-brand' : 'text-fg-soft hover:bg-raised hover:text-fg'
-                }`
-              }
-            >
-              <Icon className="w-4 h-4 shrink-0" />
-              <span className="truncate">{label}</span>
-            </NavLink>
-          ))}
-        </div>
-      )}
-
-      {/* Sub-items colapsado: iconos individuales */}
-      {collapsed && (
-        <div className="mt-0.5 flex flex-col gap-0.5">
-          {stockSubItems.map(({ to, label, icon: Icon, exact }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={exact}
-              title={label}
-              onClick={onNavClick}
-              className={({ isActive }) =>
-                `flex items-center justify-center px-2 py-1.5 rounded-md text-sm transition-colors ${
-                  isActive ? 'bg-brand-subtle text-brand' : 'text-fg-soft hover:bg-raised hover:text-fg'
-                }`
-              }
-            >
-              <Icon className="w-4 h-4 shrink-0" />
-            </NavLink>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-
   return (
-    <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+      {/* Org switcher */}
       {!collapsed && <OrgSwitcher />}
 
-      <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-        {/* Items superiores (hasta Presupuestos) */}
-        {navItemsTop.filter(item => !(isMember && item.memberHidden)).map(({ to, label, icon: Icon, exact }) => (
-          <NavItem
-            key={to}
-            to={to} label={label} icon={Icon} exact={exact}
-            collapsed={collapsed} onNavClick={onNavClick}
-            badge={to === '/projects' && newProjectsCount > 0 ? newProjectsCount : 0}
-          />
-        ))}
+      {/* Nav */}
+      <nav style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
+        {navTop
+          .filter(item => !(isMember && item.memberHidden))
+          .map(({ to, label, icon: Icon, exact }) => (
+            <NavItem
+              key={to}
+              to={to} label={label} icon={Icon} exact={exact}
+              collapsed={collapsed} onNavClick={onNavClick}
+              badge={to === '/projects' && newProjectsCount > 0 ? newProjectsCount : 0}
+            />
+          ))
+        }
 
-        {/* Stock justo debajo de Presupuestos */}
-        {stockGroup}
+        {!collapsed && (
+          <p className="du-section-label">Gestión</p>
+        )}
 
-        {/* Items inferiores (Finanzas, Reportes, Equipo) */}
-        {navItemsBottom.filter(item => !(isMember && item.memberHidden)).map(({ to, label, icon: Icon, exact }) => (
-          <NavItem
-            key={to}
-            to={to} label={label} icon={Icon} exact={exact}
-            collapsed={collapsed} onNavClick={onNavClick}
-          />
-        ))}
+        <StockGroup collapsed={collapsed} onNavClick={onNavClick} />
+
+        {navBottom
+          .filter(item => !(isMember && item.memberHidden))
+          .map(({ to, label, icon: Icon }) => (
+            <NavItem
+              key={to}
+              to={to} label={label} icon={Icon}
+              collapsed={collapsed} onNavClick={onNavClick}
+            />
+          ))
+        }
       </nav>
 
-      <div className="px-2 py-4 border-t border-line space-y-1 shrink-0">
-        <button
-          onClick={onToggleTheme}
-          title={collapsed ? (dark ? 'Modo claro' : 'Modo oscuro') : undefined}
-          className={`w-full flex items-center gap-2 px-2 py-2 rounded-md text-sm text-fg-soft hover:bg-raised hover:text-fg transition-colors ${collapsed ? 'justify-center' : ''}`}
-        >
-          {dark ? <SunIcon className="w-5 h-5 shrink-0" /> : <MoonIcon className="w-5 h-5 shrink-0" />}
-          {!collapsed && <span>{dark ? 'Modo claro' : 'Modo oscuro'}</span>}
-        </button>
+      {/* Profile */}
+      <div style={{ borderTop: `1px solid ${C.linea}`, flexShrink: 0 }}>
+        {collapsed ? (
+          <div style={{ padding: '12px 0', display: 'flex', justifyContent: 'center' }}>
+            <SidebarAvatar avatar={profile?.avatar} name={profile?.name || user?.name} />
+          </div>
+        ) : (
+          <ProfileDropdown profile={profile} user={user} />
+        )}
       </div>
     </div>
   )
@@ -321,7 +400,6 @@ function SidebarContent({ collapsed, onNavClick, dark, onToggleTheme, newProject
 
 export default function AppLayout() {
   const { user, switchOrg } = useAuth()
-  const { dark, toggle } = useTheme()
   const qc = useQueryClient()
   const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('sidebar') === 'collapsed')
@@ -341,7 +419,6 @@ export default function AppLayout() {
       qc.clear()
       navigate('/')
     } catch {
-      // si el switch falla, invalida la query para que reaparezca el modal
       await qc.invalidateQueries(['organizations'])
     }
   }
@@ -379,107 +456,164 @@ export default function AppLayout() {
     })
   }
 
+  const sidebarShared = {
+    display: 'flex', flexDirection: 'column',
+    background: C.bg,
+    borderRight: `1px solid ${C.linea}`,
+    height: '100dvh',
+  }
+
   return (
-    <div className={`flex h-dvh relative overflow-hidden ${dark ? 'bg-slate-950' : 'bg-base'}`}>
+    <div className="dark" style={{ display: 'flex', height: '100dvh', overflow: 'hidden', background: C.bg, fontFamily: 'Geist, system-ui, sans-serif', WebkitFontSmoothing: 'antialiased' }}>
       {needsOrg && <SetupOrgModal onCreated={handleOrgCreated} />}
 
-      {/* Glows de fondo */}
-      <div className={`absolute top-[-80px] left-[-80px] w-[600px] h-[500px] rounded-full blur-[130px] pointer-events-none z-0 ${dark ? 'bg-teal-400/20' : 'bg-teal-400/[0.07]'}`} />
-      <div className={`absolute bottom-[-80px] right-[-80px] w-[400px] h-[400px] rounded-full blur-[100px] pointer-events-none z-0 ${dark ? 'bg-teal-400/10' : 'bg-teal-400/[0.04]'}`} />
-
-      {/* Mobile overlay backdrop */}
+      {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/40 md:hidden"
+          style={{ position: 'fixed', inset: 0, zIndex: 40, background: 'rgba(0,0,0,.6)' }}
+          className="md:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       {/* Mobile sidebar (drawer) */}
       <aside
-        className={`fixed top-0 left-0 bottom-0 z-50 w-64 bg-surface/60 backdrop-blur-xl border-r border-line flex flex-col transition-transform duration-300 ease-in-out md:hidden ${
-          mobileOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-        style={{ height: '100dvh' }}
+        className="md:hidden"
+        style={{
+          ...sidebarShared,
+          position: 'fixed', top: 0, left: 0, bottom: 0,
+          zIndex: 50, width: 240,
+          transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)',
+          transition: 'transform 0.28s ease',
+        }}
       >
-        <div className="flex items-center justify-between px-4 h-16 border-b border-line shrink-0">
-          <span className="flex-1 text-center text-xl font-black tracking-tight select-none"><span className="text-fg">DANTE</span><span className="text-brand">UP</span></span>
+        {/* Logo mobile */}
+        <div style={{ padding: '18px 20px 16px', borderBottom: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+          <img src={logoUrl} alt="DANTEUP" style={{ height: 24, width: 'auto' }} />
           <button
             onClick={() => setMobileOpen(false)}
-            className="p-1.5 rounded-md text-fg-muted hover:bg-raised"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, padding: 4 }}
           >
-            <XMarkIcon className="w-5 h-5" />
+            <XMarkIcon style={{ width: 18, height: 18 }} />
           </button>
         </div>
         <SidebarContent
           collapsed={false}
           onNavClick={() => setMobileOpen(false)}
-          dark={dark}
-          onToggleTheme={toggle}
           newProjectsCount={newProjectsCount}
           user={user}
+          profile={profile}
         />
       </aside>
 
       {/* Desktop sidebar */}
       <aside
-        className={`relative z-10 hidden md:flex ${collapsed ? 'w-16' : 'w-56'} bg-surface/60 backdrop-blur-xl border-r border-line flex-col transition-all duration-300 ease-in-out overflow-hidden shrink-0`}
+        className="hidden md:flex"
+        style={{
+          ...sidebarShared,
+          flexDirection: 'column',
+          width: collapsed ? 56 : 220,
+          flexShrink: 0,
+          transition: 'width 0.25s ease',
+          overflow: 'hidden',
+          position: 'relative',
+        }}
       >
-        <div className={`flex items-center border-b border-line h-16 shrink-0 ${collapsed ? 'justify-center px-0' : 'px-4 justify-between'}`}>
-          {collapsed
-            ? <span className="text-sm font-black select-none"><span className="text-fg">D</span><span className="text-brand">U</span></span>
-            : <span className="flex-1 text-center text-xl font-black tracking-tight select-none"><span className="text-fg">DANTE</span><span className="text-brand">UP</span></span>
-          }
-          <button
-            onClick={toggleSidebar}
-            className="p-1.5 rounded-md text-fg-muted hover:bg-raised hover:text-fg-soft transition-colors shrink-0"
-          >
-            {collapsed
-              ? <ChevronRightIcon className="w-4 h-4" />
-              : <ChevronLeftIcon className="w-4 h-4" />
-            }
-          </button>
+        {/* Logo desktop */}
+        <div style={{
+          padding: collapsed ? '18px 0' : '18px 20px 16px',
+          borderBottom: `1px solid ${C.linea}`,
+          display: 'flex', alignItems: 'center',
+          justifyContent: collapsed ? 'center' : 'space-between',
+          flexShrink: 0, minHeight: 58,
+        }}>
+          {collapsed ? (
+            <button
+              onClick={toggleSidebar}
+              title="Expandir menú"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}
+            >
+              <img src={isotipoUrl} alt="D" style={{ height: 24, width: 'auto' }} />
+            </button>
+          ) : (
+            <>
+              <img src={logoUrl} alt="DANTEUP" style={{ height: 24, width: 'auto' }} />
+              <button
+                onClick={toggleSidebar}
+                title="Colapsar menú"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, padding: 4, flexShrink: 0 }}
+                onMouseEnter={e => e.currentTarget.style.color = C.arena}
+                onMouseLeave={e => e.currentTarget.style.color = C.piedra}
+              >
+                <ChevronLeftIcon style={{ width: 15, height: 15 }} />
+              </button>
+            </>
+          )}
         </div>
+
         <SidebarContent
           collapsed={collapsed}
           onNavClick={undefined}
-          dark={dark}
-          onToggleTheme={toggle}
           newProjectsCount={newProjectsCount}
           user={user}
+          profile={profile}
         />
+
       </aside>
 
-      {/* Main */}
-      <div className="relative z-10 flex-1 flex flex-col overflow-hidden min-w-0">
-        <header className="h-14 bg-surface/60 backdrop-blur-xl border-b border-line flex items-center px-4 md:px-6 shrink-0 gap-3">
+      {/* Main content */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+
+        {/* Topbar */}
+        <header style={{
+          height: 56, flexShrink: 0,
+          background: C.bg, borderBottom: `1px solid ${C.linea}`,
+          display: 'flex', alignItems: 'center',
+          padding: '0 20px', gap: 12,
+        }}>
+          {/* Hamburger mobile */}
           <button
+            className="md:hidden"
             onClick={() => setMobileOpen(true)}
-            className="md:hidden p-2 rounded-md text-fg-muted hover:bg-raised transition-colors shrink-0"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, padding: 4, flexShrink: 0 }}
           >
-            <Bars3Icon className="w-5 h-5" />
+            <Bars3Icon style={{ width: 20, height: 20 }} />
           </button>
-          <div className="flex-1">
+
+          {/* Search */}
+          <div style={{ flex: 1 }}>
             <GlobalSearch />
           </div>
+
+          {/* Bell */}
           <Link
             to="/notifications"
-            className="relative p-2 rounded-md text-fg-muted hover:bg-raised hover:text-fg transition-colors shrink-0"
+            style={{ position: 'relative', color: C.piedra, padding: 6, display: 'flex', flexShrink: 0, transition: 'color 0.12s' }}
+            onMouseEnter={e => e.currentTarget.style.color = C.arena}
+            onMouseLeave={e => e.currentTarget.style.color = C.piedra}
           >
-            <BellIcon className="w-5 h-5" />
+            <BellIcon style={{ width: 20, height: 20 }} />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 min-w-[16px] h-4 px-0.5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
+              <span style={{
+                position: 'absolute', top: 4, right: 4,
+                minWidth: 15, height: 15, padding: '0 3px',
+                borderRadius: 99, background: C.err,
+                color: '#fff', fontSize: 9, fontWeight: 700,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                lineHeight: 1,
+              }}>
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}
           </Link>
-          <ProfileDropdown profile={profile} user={user} />
         </header>
-        <main className="flex-1 overflow-auto flex flex-col">
+
+        {/* Page content */}
+        <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
           <DBStatusBanner />
           <InvitationsBanner />
           <AnnouncementBanner />
-          <div className="flex-1 flex flex-col min-h-0">
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             <Outlet />
           </div>
         </main>

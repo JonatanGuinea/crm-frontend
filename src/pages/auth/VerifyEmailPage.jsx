@@ -2,7 +2,19 @@ import { useEffect, useState } from 'react'
 import { useSearchParams, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { verifyEmail } from '../../api/auth'
-import { ExclamationCircleIcon } from '@heroicons/react/24/outline'
+
+const C = {
+  s1: '#141415', linea: '#2C2C2F',
+  crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E',
+  ok: '#7DBE93', err: '#E58373', info: '#8EB1DE',
+}
+
+const iconWrap = (bg, bd) => ({
+  width: 56, height: 56, borderRadius: '50%',
+  background: bg, border: `1px solid ${bd}`,
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  margin: '0 auto 20px',
+})
 
 export default function VerifyEmailPage() {
   const [searchParams] = useSearchParams()
@@ -10,7 +22,7 @@ export default function VerifyEmailPage() {
   const navigate = useNavigate()
   const token = searchParams.get('token')
 
-  const [status, setStatus] = useState('loading') // loading | success | error
+  const [status, setStatus] = useState('loading')
   const [errorMsg, setErrorMsg] = useState('')
 
   useEffect(() => {
@@ -19,7 +31,6 @@ export default function VerifyEmailPage() {
       setErrorMsg('El enlace no contiene un token válido.')
       return
     }
-
     verifyEmail(token)
       .then(res => {
         login(res.data.data.token)
@@ -30,57 +41,72 @@ export default function VerifyEmailPage() {
         setStatus('error')
         setErrorMsg(err.response?.data?.error || 'El enlace no es válido o ya fue usado.')
       })
-  // solo al montar
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
-    <div className="relative max-w-sm mx-auto">
-      <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-cyan-500/20 via-transparent to-teal-500/10 blur-sm pointer-events-none" />
-      <div className="relative bg-[#080e1a]/30 backdrop-blur-xl rounded-2xl border border-cyan-500/20 shadow-[0_0_60px_rgba(6,182,212,0.07),inset_0_1px_0_rgba(6,182,212,0.08)] p-8 text-center">
+    <div style={{
+      background: C.s1, border: `1px solid ${C.linea}`,
+      borderRadius: '0 20px 20px 0', padding: '40px 32px', textAlign: 'center',
+    }}>
 
-        {status === 'loading' && (
-          <>
-            <div className="w-14 h-14 rounded-full bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center mx-auto mb-5">
-              <svg className="animate-spin w-6 h-6 text-cyan-400" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold text-white mb-2">Verificando...</h2>
-            <p className="text-sm text-slate-500">Confirmando tu dirección de email.</p>
-          </>
-        )}
+      {status === 'loading' && (
+        <>
+          <div style={iconWrap('rgba(142,177,222,.1)', 'rgba(142,177,222,.2)')}>
+            <svg style={{ width: 24, height: 24, color: C.info, animation: 'spin 1s linear infinite' }} fill="none" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.25" />
+              <path fill="currentColor" opacity="0.75" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+            </svg>
+          </div>
+          <h2 style={{ color: C.crema, fontSize: 22, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 8 }}>
+            Verificando...
+          </h2>
+          <p style={{ color: C.piedra, fontSize: 14 }}>Confirmando tu dirección de email.</p>
+        </>
+      )}
 
-        {status === 'success' && (
-          <>
-            <div className="w-14 h-14 rounded-full bg-teal-500/10 border border-teal-500/25 flex items-center justify-center mx-auto mb-5">
-              <svg className="w-7 h-7 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold text-white mb-2">¡Cuenta activada!</h2>
-            <p className="text-sm text-slate-400">Tu email fue confirmado. Redirigiendo al inicio...</p>
-          </>
-        )}
+      {status === 'success' && (
+        <>
+          <div style={iconWrap('rgba(125,190,147,.1)', 'rgba(125,190,147,.2)')}>
+            <svg style={{ width: 28, height: 28, color: C.ok }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+            </svg>
+          </div>
+          <h2 style={{ color: C.crema, fontSize: 22, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 8 }}>
+            ¡Cuenta activada!
+          </h2>
+          <p style={{ color: C.arena, fontSize: 14, lineHeight: 1.6 }}>
+            Tu email fue confirmado. Redirigiendo al inicio...
+          </p>
+        </>
+      )}
 
-        {status === 'error' && (
-          <>
-            <div className="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/25 flex items-center justify-center mx-auto mb-5">
-              <ExclamationCircleIcon className="w-7 h-7 text-red-400" />
-            </div>
-            <h2 className="text-xl font-bold text-white mb-2">Enlace inválido</h2>
-            <p className="text-sm text-slate-400 mb-6">{errorMsg}</p>
-            <Link
-              to="/login"
-              className="inline-block px-5 py-2.5 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibold rounded-lg transition-colors"
-            >
-              Ir al inicio de sesión
-            </Link>
-          </>
-        )}
-
-      </div>
+      {status === 'error' && (
+        <>
+          <div style={iconWrap('rgba(229,131,115,.1)', 'rgba(229,131,115,.2)')}>
+            <svg style={{ width: 28, height: 28, color: C.err }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+          </div>
+          <h2 style={{ color: C.crema, fontSize: 22, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 8 }}>
+            Enlace inválido
+          </h2>
+          <p style={{ color: C.arena, fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>{errorMsg}</p>
+          <Link
+            to="/login"
+            style={{
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              padding: '10px 28px', background: C.crema, color: '#0B0B0C',
+              fontSize: 13.5, fontWeight: 600, borderRadius: '0 10px 10px 0',
+              textDecoration: 'none', fontFamily: 'inherit', transition: 'background 0.15s',
+            }}
+          >
+            Ir al inicio de sesión
+          </Link>
+        </>
+      )}
     </div>
   )
 }

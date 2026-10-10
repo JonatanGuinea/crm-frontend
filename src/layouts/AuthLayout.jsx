@@ -14,7 +14,6 @@ export default function AuthLayout() {
           flex: '1 1 560px',
           minHeight: '100vh',
           padding: '56px 64px',
-          display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
           borderRight: '1px solid #2C2C2F',
@@ -40,20 +39,27 @@ export default function AuthLayout() {
         style={{
           flex: '1 1 480px',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
-          padding: '56px 24px',
           overflowY: 'auto',
+          padding: '24px',
+          minHeight: '100vh',
         }}
       >
-        {/* Logo mobile */}
-        <div className="lg:hidden" style={{ position: 'absolute', top: 32, left: '50%', transform: 'translateX(-50%)' }}>
+        {/* Logo — solo mobile, en flujo normal */}
+        <div className="lg:hidden" style={{ flexShrink: 0, marginBottom: 36, marginTop: 20 }}>
           <img src={logoUrl} alt="DANTEUP" style={{ height: 26, width: 'auto' }} />
         </div>
 
-        <div style={{ width: '100%', maxWidth: 400 }}>
+        {/* Spacer superior — solo desktop, centra verticalmente */}
+        <div className="hidden lg:block" style={{ flex: 1 }} />
+
+        <div style={{ width: '100%', maxWidth: 400, flexShrink: 0 }}>
           <Outlet />
         </div>
+
+        {/* Spacer inferior — solo desktop */}
+        <div className="hidden lg:block" style={{ flex: 1 }} />
       </div>
 
     </div>
