@@ -1,6 +1,66 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ── DanteUP Cifras ──────────────────────────────────────── */
+@font-face {
+  font-family: 'DanteUP Cifras';
+  src: url('/fonts/DanteUPCifras-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DanteUP Cifras';
+  src: url('/fonts/DanteUPCifras-Display.woff2') format('woff2');
+  font-weight: 600 700;
+  font-display: swap;
+}
+
+/* ── Geist Sans ──────────────────────────────────────────── */
+@font-face {
+  font-family: 'Geist';
+  src: url('/fonts/geist-sans-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist';
+  src: url('/fonts/geist-sans-latin-500-normal.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist';
+  src: url('/fonts/geist-sans-latin-600-normal.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist';
+  src: url('/fonts/geist-sans-latin-700-normal.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── Geist Mono ──────────────────────────────────────────── */
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('/fonts/geist-mono-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('/fonts/geist-mono-latin-500-normal.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ── Animations ─────────────────────────────────────────── */
 @keyframes toast-in {
   from { opacity: 0; transform: translateX(calc(100% + 1rem)); }

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { getProjectsDashboard } from '../api/projects'
 import { getQuotesDashboard } from '../api/quotes'
@@ -12,20 +12,47 @@ import { getFinancesDashboard } from '../api/finances'
 import { useAuth } from '../context/AuthContext'
 import { fmt } from '../utils/fmt'
 import {
-  BanknotesIcon,
-  FolderOpenIcon,
   ArrowRightIcon,
-  DocumentTextIcon,
-  ExclamationCircleIcon,
-  ClipboardDocumentListIcon,
-  CalendarDaysIcon,
-  PlusIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
-  BuildingLibraryIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from '@heroicons/react/24/outline'
+import {
+  AgendaIcon,
+  CarpetaIcon,
+  ClienteIcon,
+  CobroIcon,
+  MasIcon,
+  PresupuestoIcon,
+  ProyectoIcon,
+  RecorridoIcon,
+  RecorridoDownIcon,
+} from '../components/DuIcons'
+
+// ── palette ───────────────────────────────────────────────────────────────────
+
+const CIFRAS = "'DanteUP Cifras', Geist, sans-serif"
+const MONO   = "'Geist Mono', monospace"
+
+const C = {
+  bg:    '#0B0B0C',
+  s1:    '#141415',
+  s2:    '#1E1E20',
+  s3:    '#26262A',
+  linea: '#2C2C2F',
+  crema: '#F2EDE3',
+  arena: '#B9B4AA',
+  piedra:'#8C877E',
+  ok:    '#7DBE93',
+  warn:  '#E2B663',
+  err:   '#E58373',
+  info:  '#8EB1DE',
+}
+
+const card = {
+  background: C.s1,
+  border: `1px solid ${C.linea}`,
+  borderRadius: '0 16px 16px 0',
+}
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -41,9 +68,9 @@ function fmtDate() {
 
 function fmtRelative(date) {
   const diff = Math.floor((new Date() - new Date(date)) / 1000)
-  if (diff < 60) return 'Hace un momento'
-  if (diff < 3600) return `Hace ${Math.floor(diff / 60)}m`
-  if (diff < 86400) return `Hace ${Math.floor(diff / 3600)}h`
+  if (diff < 60)     return 'Hace un momento'
+  if (diff < 3600)   return `Hace ${Math.floor(diff / 60)}m`
+  if (diff < 86400)  return `Hace ${Math.floor(diff / 3600)}h`
   if (diff < 604800) return `Hace ${Math.floor(diff / 86400)}d`
   return new Date(date).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
 }
@@ -67,11 +94,11 @@ function buildMonthlyEvolution(apiData) {
 // ── constants ─────────────────────────────────────────────────────────────────
 
 const PROJECT_STATUS = {
-  pending:     { label: 'Pendiente',  dot: 'bg-warning' },
-  approved:    { label: 'Aprobado',   dot: 'bg-info' },
-  in_progress: { label: 'En curso',   dot: 'bg-brand' },
-  finished:    { label: 'Finalizado', dot: 'bg-brand opacity-60' },
-  cancelled:   { label: 'Cancelado',  dot: 'bg-fg-muted' },
+  pending:     { label: 'Pendiente',  color: C.warn },
+  approved:    { label: 'Aprobado',   color: C.info },
+  in_progress: { label: 'En curso',   color: C.ok },
+  finished:    { label: 'Finalizado', color: 'rgba(125,190,147,0.5)' },
+  cancelled:   { label: 'Cancelado',  color: C.piedra },
 }
 
 const PROJECT_STATUS_LABEL = {
@@ -80,54 +107,117 @@ const PROJECT_STATUS_LABEL = {
 }
 
 const QUOTE_STATUS = {
-  draft:    { label: 'Borrador',   cls: 'bg-raised text-fg-soft' },
-  sent:     { label: 'Enviado',    cls: 'bg-info-subtle text-info' },
-  approved: { label: 'Aprobado',  cls: 'bg-brand-subtle text-brand' },
-  rejected: { label: 'Rechazado', cls: 'bg-danger-subtle text-danger' },
-  expired:  { label: 'Vencido',   cls: 'bg-raised text-fg-muted' },
+  draft:     { label: 'Borrador',   bg: 'rgba(242,237,227,0.07)', color: C.piedra },
+  sent:      { label: 'Enviado',    bg: 'rgba(142,177,222,0.12)', color: C.info },
+  approved:  { label: 'Aprobado',  bg: 'rgba(125,190,147,0.12)', color: C.ok },
+  signed:    { label: 'Firmado',   bg: 'rgba(125,190,147,0.18)', color: C.ok },
+  rejected:  { label: 'Rechazado', bg: 'rgba(229,131,115,0.12)', color: C.err },
+  cancelled: { label: 'Cancelado', bg: 'rgba(229,131,115,0.08)', color: C.err },
+  expired:   { label: 'Vencido',   bg: 'rgba(242,237,227,0.05)', color: C.piedra },
 }
 
 const MOVEMENT_TYPE = {
-  income:       { label: 'Ingreso',      cls: 'text-success' },
-  expense:      { label: 'Egreso',       cls: 'text-danger' },
-  transfer_in:  { label: 'Transferencia', cls: 'text-info' },
-  transfer_out: { label: 'Transferencia', cls: 'text-info' },
+  income:       { label: 'Ingreso',       color: C.ok },
+  expense:      { label: 'Egreso',        color: C.err },
+  transfer_in:  { label: 'Transferencia', color: C.info },
+  transfer_out: { label: 'Transferencia', color: C.info },
 }
 
 const MOVEMENT_STATUS = {
-  pending:   { label: 'Pendiente', cls: 'bg-warning-subtle text-warning' },
-  confirmed: { label: 'Confirmado', cls: 'bg-brand-subtle text-brand' },
+  pending:   { label: 'Pendiente',  bg: 'rgba(226,182,99,0.12)',  color: C.warn },
+  confirmed: { label: 'Confirmado', bg: 'rgba(125,190,147,0.12)', color: C.ok },
 }
 
 const ACTIVITY_CONFIG = {
   quote: {
-    icon: DocumentTextIcon,
-    iconBg: 'bg-info-subtle',
-    iconColor: 'text-info',
+    icon: PresupuestoIcon,
+    iconBg:    'rgba(142,177,222,0.1)',
+    iconColor: C.info,
     label: 'Presupuesto',
     to: '/quotes',
   },
   project: {
-    icon: ClipboardDocumentListIcon,
-    iconBg: 'bg-warning-subtle',
-    iconColor: 'text-warning',
+    icon: ProyectoIcon,
+    iconBg:    'rgba(226,182,99,0.1)',
+    iconColor: C.warn,
     label: 'Proyecto',
     to: '/projects',
   },
 }
 
+// ── shared atoms ──────────────────────────────────────────────────────────────
+
+function SeeAllLink({ to, label = 'Ver todos' }) {
+  return (
+    <Link
+      to={to}
+      style={{ display: 'flex', alignItems: 'center', gap: 4, color: C.piedra, fontSize: 12, textDecoration: 'none', transition: 'color 0.12s', flexShrink: 0 }}
+      onMouseEnter={e => e.currentTarget.style.color = C.arena}
+      onMouseLeave={e => e.currentTarget.style.color = C.piedra}
+    >
+      {label} <ArrowRightIcon style={{ width: 11, height: 11 }} />
+    </Link>
+  )
+}
+
+const SECTION_TITLE = {
+  fontSize: 10.5, fontWeight: 600,
+  textTransform: 'uppercase', letterSpacing: '0.1em',
+  color: C.arena,
+}
+
+function PanelHead({ title, to, linkLabel }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <h3 style={SECTION_TITLE}>{title}</h3>
+      {to && <SeeAllLink to={to} label={linkLabel} />}
+    </div>
+  )
+}
+
+function Track({ pct, color = C.crema, opacity = 0.3 }) {
+  return (
+    <div style={{ height: 3, background: C.s3, borderRadius: 2, overflow: 'hidden', marginTop: 6 }}>
+      <div style={{
+        height: '100%', background: color, opacity,
+        width: `${pct}%`, borderRadius: 2,
+        transition: 'width 0.7s cubic-bezier(0.4,0,0.2,1)',
+      }} />
+    </div>
+  )
+}
+
+function Badge({ bg, color, label }) {
+  return (
+    <span style={{
+      fontSize: 11, fontWeight: 500, padding: '2px 8px',
+      borderRadius: '0 5px 5px 0', background: bg, color,
+    }}>
+      {label}
+    </span>
+  )
+}
+
 // ── sub-components ────────────────────────────────────────────────────────────
 
-function KpiCard({ icon: Icon, iconBg, iconColor, label, value, sub, valueColor = 'text-fg' }) {
+function KpiCard({ icon: Icon, iconBg, iconColor, label, value, sub, valueColor }) {
   return (
-    <div className="bg-surface border border-line rounded-xl p-3 md:p-5 flex flex-col gap-2 md:gap-3">
-      <div className={`p-2 md:p-2.5 rounded-xl self-start ${iconBg}`}>
-        <Icon className={`w-4 h-4 md:w-5 md:h-5 ${iconColor}`} />
+    <div style={{ ...card, padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{
+        width: 38, height: 38, flexShrink: 0, alignSelf: 'flex-start',
+        background: iconBg, borderRadius: '0 10px 10px 0',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <Icon style={{ width: 18, height: 18, color: iconColor }} />
       </div>
       <div className="min-w-0">
-        <p className="text-xs text-fg-muted uppercase tracking-wide leading-tight">{label}</p>
-        <p className={`text-base md:text-lg font-bold mt-0.5 truncate ${valueColor}`} title={typeof value === 'string' ? value : undefined}>{value}</p>
-        {sub != null && <p className="hidden md:block text-xs text-fg-muted mt-0.5">{sub}</p>}
+        <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.piedra }}>
+          {label}
+        </p>
+        <p style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.03em', color: valueColor || C.crema, marginTop: 4, fontFamily: CIFRAS }} className="truncate">
+          {value}
+        </p>
+        {sub != null && <p style={{ fontSize: 11, color: C.piedra, marginTop: 3 }} className="truncate">{sub}</p>}
       </div>
     </div>
   )
@@ -138,42 +228,35 @@ function ProjectsPanel({ projects }) {
   const total = byStatus.reduce((acc, s) => acc + s.totalProjects, 0)
 
   return (
-    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-5">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-fg">Proyectos por estado</h3>
-        <Link to="/projects" className="flex items-center gap-1 text-xs text-brand hover:underline">
-          Ver todos <ArrowRightIcon className="w-3 h-3" />
-        </Link>
-      </div>
+    <div style={{ ...card, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <PanelHead title="Proyectos por estado" to="/projects" />
 
       {byStatus.length === 0 ? (
-        <p className="text-sm text-fg-muted py-4 text-center">Sin proyectos aún</p>
+        <p style={{ fontSize: 13, color: C.piedra, textAlign: 'center', padding: '16px 0' }}>Sin proyectos aún</p>
       ) : (
-        <ul className="space-y-3">
+        <ul style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {byStatus.map(s => {
-            const info = PROJECT_STATUS[s._id] ?? { label: s._id, dot: 'bg-fg-muted' }
+            const info = PROJECT_STATUS[s._id] ?? { label: s._id, color: C.piedra }
             const pct = total ? (s.totalProjects / total) * 100 : 0
             return (
               <li key={s._id}>
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full shrink-0 ${info.dot}`} />
-                    <span className="text-sm text-fg-soft">{info.label}</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: info.color, flexShrink: 0 }} />
+                    <span style={{ fontSize: 13, color: C.arena }}>{info.label}</span>
                   </div>
-                  <span className="text-sm font-semibold text-fg">{s.totalProjects}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: C.crema }}>{s.totalProjects}</span>
                 </div>
-                <div className="h-1.5 rounded-full bg-raised overflow-hidden">
-                  <div className="h-full rounded-full bg-brand/40 transition-all duration-700" style={{ width: `${pct}%` }} />
-                </div>
+                <Track pct={pct} color={info.color} opacity={0.4} />
               </li>
             )
           })}
         </ul>
       )}
 
-      <div className="pt-4 border-t border-line flex items-center justify-between">
-        <p className="text-xs text-fg-muted">Total proyectos</p>
-        <p className="text-sm font-semibold text-fg">{projects?.summary?.totalProjects ?? '-'}</p>
+      <div style={{ paddingTop: 14, borderTop: `1px solid ${C.linea}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <p style={{ fontSize: 11, color: C.piedra }}>Total proyectos</p>
+        <p style={{ fontSize: 13, fontWeight: 600, color: C.crema }}>{projects?.summary?.totalProjects ?? '-'}</p>
       </div>
     </div>
   )
@@ -184,37 +267,32 @@ function TopClientsPanel({ clients, currency }) {
   const max = list[0]?.total ?? 1
 
   return (
-    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-fg">Top clientes</h3>
-        <Link to="/clients" className="flex items-center gap-1 text-xs text-brand hover:underline">
-          Ver todos <ArrowRightIcon className="w-3 h-3" />
-        </Link>
-      </div>
+    <div style={{ ...card, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <PanelHead title="Top clientes" to="/clients" />
 
       {list.length === 0 ? (
-        <p className="text-sm text-fg-muted text-center py-4">Sin datos aún</p>
+        <p style={{ fontSize: 13, color: C.piedra, textAlign: 'center', padding: '16px 0' }}>Sin datos aún</p>
       ) : (
-        <ul className="space-y-3">
+        <ul style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {list.map((entry, i) => {
             const pct = max ? (entry.total / max) * 100 : 0
             return (
               <li key={entry.client.id}>
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-xs font-bold text-fg-muted w-4 shrink-0">#{i + 1}</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: C.piedra, width: 16, flexShrink: 0 }}>#{i + 1}</span>
                     <div className="min-w-0">
-                      <p className="text-sm text-fg font-medium truncate">{entry.client.name}</p>
+                      <p style={{ fontSize: 13, color: C.crema, fontWeight: 500 }} className="truncate">{entry.client.name}</p>
                       {entry.client.company && (
-                        <p className="text-xs text-fg-muted truncate">{entry.client.company}</p>
+                        <p style={{ fontSize: 11, color: C.piedra }} className="truncate">{entry.client.company}</p>
                       )}
                     </div>
                   </div>
-                  <span className="text-sm font-semibold text-fg shrink-0 ml-2">{fmt(entry.total, currency)}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: C.crema, flexShrink: 0, marginLeft: 8, fontFamily: CIFRAS }}>
+                    {fmt(entry.total, currency)}
+                  </span>
                 </div>
-                <div className="h-1.5 rounded-full bg-raised overflow-hidden">
-                  <div className="h-full rounded-full bg-brand/50 transition-all duration-700" style={{ width: `${pct}%` }} />
-                </div>
+                <Track pct={pct} color={C.crema} opacity={0.2} />
               </li>
             )
           })}
@@ -228,33 +306,29 @@ function ExpiringQuotesPanel({ quotes }) {
   const expiring = quotes?.expiringSoon ?? []
 
   return (
-    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-fg">Presupuestos por vencer</h3>
-        <Link to="/quotes" className="flex items-center gap-1 text-xs text-brand hover:underline">
-          Ver todos <ArrowRightIcon className="w-3 h-3" />
-        </Link>
-      </div>
+    <div style={{ ...card, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <PanelHead title="Presupuestos por vencer" to="/quotes" />
 
       {expiring.length === 0 ? (
-        <p className="text-sm text-fg-muted text-center py-4">Sin presupuestos próximos a vencer</p>
+        <p style={{ fontSize: 13, color: C.piedra, textAlign: 'center', padding: '16px 0' }}>Sin presupuestos próximos a vencer</p>
       ) : (
-        <ul className="divide-y divide-line">
+        <ul>
           {expiring.map(q => {
             const daysLeft = Math.max(0, Math.ceil((new Date(q.validUntil) - new Date()) / (1000 * 60 * 60 * 24)))
             const urgent = daysLeft <= 2
+            const stateColor = urgent ? C.err : C.warn
             return (
-              <li key={q.id} className="flex items-center gap-3 py-3">
-                <div className={`p-1.5 rounded-lg shrink-0 ${urgent ? 'bg-danger-subtle' : 'bg-warning-subtle'}`}>
-                  <ExclamationCircleIcon className={`w-4 h-4 ${urgent ? 'text-danger' : 'text-warning'}`} />
+              <li key={q.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 0', borderBottom: `1px solid ${C.linea}` }}>
+                <div style={{ padding: 8, background: urgent ? 'rgba(229,131,115,0.1)' : 'rgba(226,182,99,0.1)', borderRadius: '0 8px 8px 0', flexShrink: 0 }}>
+                  <AgendaIcon style={{ width: 15, height: 15, color: stateColor }} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-fg truncate">#{q.number} {q.title}</p>
-                  <p className="text-xs text-fg-muted truncate">{q.client?.name}</p>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 13, fontWeight: 500, color: C.crema }} className="truncate">#{q.number} {q.title}</p>
+                  <p style={{ fontSize: 11, color: C.piedra }} className="truncate">{q.client?.name}</p>
                 </div>
-                <div className="text-right shrink-0">
-                  <p className="text-sm font-semibold text-fg">{fmt(q.total)}</p>
-                  <p className={`text-xs font-medium ${urgent ? 'text-danger' : 'text-warning'}`}>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: C.crema, fontFamily: CIFRAS }}>{fmt(q.total)}</p>
+                  <p style={{ fontSize: 11, fontWeight: 600, color: stateColor }}>
                     {daysLeft === 0 ? 'Vence hoy' : `${daysLeft}d`}
                   </p>
                 </div>
@@ -268,127 +342,153 @@ function ExpiringQuotesPanel({ quotes }) {
 }
 
 function QuotesSummaryPanel({ quotes, currency }) {
-  const draft    = Number(quotes?.summary?.draft    ?? 0)
-  const sent     = Number(quotes?.summary?.sent     ?? 0)
-  const approved = Number(quotes?.summary?.approved ?? 0)
-  const rejected = Number(quotes?.summary?.rejected ?? 0)
-  const barTotal = draft + sent + approved + rejected
   const totalValue = Number(quotes?.summary?.totalValue ?? 0)
-  const pct = (v) => barTotal ? (v / barTotal) * 100 : 0
+
+  const items = [
+    { label: 'Borradores',  count: Number(quotes?.summary?.draftCount    ?? 0), bg: 'rgba(140,135,126,0.15)', color: C.piedra },
+    { label: 'Enviados',    count: Number(quotes?.summary?.sentCount     ?? 0), bg: 'rgba(142,177,222,0.12)', color: C.info },
+    { label: 'Aprobados',   count: Number(quotes?.summary?.approvedCount ?? 0), bg: 'rgba(125,190,147,0.12)', color: C.ok },
+    { label: 'Rechazados',  count: Number(quotes?.summary?.rejectedCount ?? 0), bg: 'rgba(229,131,115,0.12)', color: C.err },
+  ]
 
   return (
-    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-5">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-fg">Resumen de presupuestos</h3>
-        <Link to="/quotes" className="flex items-center gap-1 text-xs text-brand hover:underline">
-          Ver presupuestos <ArrowRightIcon className="w-3 h-3" />
-        </Link>
-      </div>
+    <div style={{ ...card, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 0, height: '100%', boxSizing: 'border-box' }}>
+      <PanelHead title="Presupuestos" to="/quotes" />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-        <div className="min-w-0">
-          <p className="text-xs text-fg-muted mb-1">Aprobados</p>
-          <p className="text-sm md:text-xl font-bold text-brand truncate">{fmt(approved, currency)}</p>
-        </div>
-        <div className="min-w-0">
-          <p className="text-xs text-fg-muted mb-1">Enviados</p>
-          <p className="text-sm md:text-xl font-bold text-info truncate">{fmt(sent, currency)}</p>
-        </div>
-        <div className="min-w-0">
-          <p className="text-xs text-fg-muted mb-1">Borradores</p>
-          <p className="text-sm md:text-xl font-bold text-fg-soft truncate">{fmt(draft, currency)}</p>
-        </div>
-        <div className="min-w-0">
-          <p className="text-xs text-fg-muted mb-1">Rechazados</p>
-          <p className="text-sm md:text-xl font-bold text-danger truncate">{fmt(rejected, currency)}</p>
-        </div>
-      </div>
+      <ul style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 18, flex: 1 }}>
+        {items.map(({ label, count, bg, color }) => (
+          <li key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{
+              fontSize: 12, fontWeight: 500,
+              padding: '3px 12px',
+              borderRadius: '0 6px 6px 0',
+              background: bg, color,
+            }}>
+              {label}
+            </span>
+            <span style={{ fontSize: 16, fontWeight: 700, color: C.crema, letterSpacing: '-0.02em' }}>{count}</span>
+          </li>
+        ))}
+      </ul>
 
-      <div>
-        {barTotal > 0 ? (
-          <div className="flex h-2.5 rounded-full overflow-hidden gap-px bg-raised">
-            {pct(approved) > 0 && <div style={{ width: `${pct(approved)}%` }} className="bg-brand transition-all duration-700" />}
-            {pct(sent) > 0     && <div style={{ width: `${pct(sent)}%` }}     className="bg-info transition-all duration-700" />}
-            {pct(draft) > 0    && <div style={{ width: `${pct(draft)}%` }}    className="bg-fg-muted/40 transition-all duration-700" />}
-            {pct(rejected) > 0 && <div style={{ width: `${pct(rejected)}%` }} className="bg-danger transition-all duration-700" />}
-          </div>
-        ) : (
-          <div className="h-2.5 rounded-full bg-raised" />
-        )}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2.5">
-          {[
-            { label: 'Aprobados',  color: 'bg-brand',      val: pct(approved) },
-            { label: 'Enviados',   color: 'bg-info',        val: pct(sent) },
-            { label: 'Borradores', color: 'bg-fg-muted/40', val: pct(draft) },
-            { label: 'Rechazados', color: 'bg-danger',      val: pct(rejected) },
-          ].map(({ label, color, val }) => (
-            <div key={label} className="flex items-center gap-1.5 text-xs text-fg-muted">
-              <span className={`w-2 h-2 rounded-full shrink-0 ${color}`} />
-              {label} <span className="text-fg-soft font-medium">{val.toFixed(0)}%</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="pt-4 border-t border-line flex items-center justify-between">
-        <p className="text-xs text-fg-muted">Total presupuestado</p>
-        <p className="text-sm font-semibold text-fg">{fmt(totalValue, currency)}</p>
+      <div style={{ paddingTop: 16, borderTop: `1px solid ${C.linea}`, marginTop: 18, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <p style={{ fontSize: 11, color: C.piedra }}>Total presupuestado</p>
+        <p style={{ fontSize: 22, fontWeight: 700, color: C.crema, letterSpacing: '-0.03em', fontFamily: CIFRAS }}>{fmt(totalValue, currency)}</p>
       </div>
     </div>
   )
 }
 
-// Gráfico de barras usando datos reales de CashMovements
 function IncomeExpensesBars({ months, currency }) {
   const [hovered, setHovered] = useState(null)
+  const [tapped,  setTapped]  = useState(null)
+  const ptrType = useRef('mouse')
   const max = Math.max(...months.map(m => Math.max(Number(m.income ?? 0), Number(m.expense ?? 0))), 1)
+  const total = months.length
+
+  // Cierra el tooltip al hacer click en cualquier parte fuera del chart (solo touch)
+  useEffect(() => {
+    if (!tapped) return
+    const handler = () => setTapped(null)
+    document.addEventListener('click', handler)
+    return () => document.removeEventListener('click', handler)
+  }, [tapped])
 
   return (
-    <div className="flex items-end gap-1.5 h-36">
-      {months.map(m => {
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 144 }}>
+      {months.map((m, i) => {
         const incomePct  = max ? (Number(m.income  ?? 0) / max) * 100 : 0
         const expensePct = max ? (Number(m.expense ?? 0) / max) * 100 : 0
         const balance    = Number(m.income ?? 0) - Number(m.expense ?? 0)
-        const isHovered  = hovered === m.month
+        const isActive   = hovered === m.month || tapped === m.month
         const label      = monthLabel(m.month)
+
+        // Evitar que el tooltip se corte en los extremos
+        const isFirst = i === 0
+        const isLast  = i === total - 1
+        const tipAlign = isFirst
+          ? { left: 0, transform: 'none' }
+          : isLast
+          ? { right: 0, left: 'auto', transform: 'none' }
+          : { left: '50%', transform: 'translateX(-50%)' }
 
         return (
           <div
             key={m.month}
-            className="flex-1 flex flex-col items-center gap-1 relative group"
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, position: 'relative', cursor: 'pointer' }}
+            onPointerDown={(e) => { ptrType.current = e.pointerType }}
             onMouseEnter={() => setHovered(m.month)}
             onMouseLeave={() => setHovered(null)}
+            onClick={(e) => {
+              if (ptrType.current === 'mouse') return
+              e.stopPropagation()
+              setTapped(prev => prev === m.month ? null : m.month)
+            }}
           >
-            {isHovered && (
-              <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-10 w-40 bg-overlay border border-line rounded-xl p-3 shadow-xl pointer-events-none">
-                <p className="text-xs font-semibold text-fg capitalize mb-2">{label}</p>
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="flex items-center gap-1 text-xs text-fg-muted">
-                      <span className="w-1.5 h-1.5 rounded-full bg-brand shrink-0" />Ingresos
-                    </span>
-                    <span className="text-xs font-semibold text-brand">{fmt(m.income ?? 0, currency)}</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="flex items-center gap-1 text-xs text-fg-muted">
-                      <span className="w-1.5 h-1.5 rounded-full bg-danger shrink-0" />Egresos
-                    </span>
-                    <span className="text-xs font-semibold text-danger">{fmt(m.expense ?? 0, currency)}</span>
-                  </div>
-                  <div className="pt-1.5 border-t border-line flex items-center justify-between gap-2">
-                    <span className="text-xs text-fg-muted">Balance</span>
-                    <span className={`text-xs font-bold ${balance >= 0 ? 'text-success' : 'text-danger'}`}>
-                      {balance >= 0 ? '+' : ''}{fmt(balance, currency)}
-                    </span>
-                  </div>
+            {isActive && (
+              <div style={{
+                position: 'absolute', bottom: 'calc(100% + 10px)',
+                ...tipAlign,
+                width: 200,
+                background: C.s2,
+                border: `1px solid ${C.linea}`,
+                borderRadius: '0 14px 14px 0',
+                padding: '14px 16px',
+                boxShadow: '0 16px 40px rgba(0,0,0,.65)',
+                zIndex: 20, pointerEvents: 'none',
+              }}>
+
+                {/* Mes */}
+                <p style={{
+                  fontSize: 10, fontWeight: 600,
+                  letterSpacing: '1.4px', textTransform: 'uppercase',
+                  color: C.piedra, marginBottom: 12,
+                }}>
+                  {label}
+                </p>
+
+                {/* Filas Ingresos / Egresos */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {[
+                    { dot: C.crema, label: 'Ingresos', value: fmt(m.income  ?? 0, currency), color: C.crema },
+                    { dot: C.arena, label: 'Egresos',  value: fmt(m.expense ?? 0, currency), color: C.arena },
+                  ].map(row => (
+                    <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: C.arena, flexShrink: 0 }}>
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: row.dot, flexShrink: 0 }} />
+                        {row.label}
+                      </span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: row.color, fontFamily: CIFRAS, textAlign: 'right' }}>
+                        {row.value}
+                      </span>
+                    </div>
+                  ))}
                 </div>
+
+                {/* Balance */}
+                <div style={{
+                  marginTop: 12, paddingTop: 12,
+                  borderTop: `1px solid ${C.linea}`,
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12,
+                }}>
+                  <span style={{ fontSize: 11, color: C.piedra }}>Balance</span>
+                  <span style={{
+                    fontSize: 15, fontWeight: 700,
+                    color: balance >= 0 ? C.ok : C.err,
+                    fontFamily: CIFRAS,
+                  }}>
+                    {balance >= 0 ? '+' : ''}{fmt(balance, currency)}
+                  </span>
+                </div>
+
               </div>
             )}
-            <div className="w-full flex items-end gap-0.5 h-28">
-              <div className={`flex-1 rounded-t-md transition-all duration-300 ${isHovered ? 'bg-brand' : 'bg-brand/60'}`} style={{ height: `${incomePct}%` }} />
-              <div className={`flex-1 rounded-t-md transition-all duration-300 ${isHovered ? 'bg-danger' : 'bg-danger/60'}`} style={{ height: `${expensePct}%` }} />
+
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 112 }}>
+              <div style={{ width: 16, borderRadius: '2px 2px 0 0', background: C.crema, opacity: isActive ? 1 : 0.85, height: `${incomePct}%`, transition: 'opacity 0.2s' }} />
+              <div style={{ width: 16, borderRadius: '2px 2px 0 0', background: C.crema, opacity: isActive ? 0.38 : 0.25, height: `${expensePct}%`, transition: 'opacity 0.2s' }} />
             </div>
-            <p className={`text-xs capitalize transition-colors ${isHovered ? 'text-fg' : 'text-fg-muted'}`}>{label}</p>
+            <p style={{ fontSize: 10, textTransform: 'capitalize', color: isActive ? C.arena : C.piedra, transition: 'color 0.2s' }}>{label}</p>
           </div>
         )
       })}
@@ -402,44 +502,40 @@ function IncomeExpensesChart({ data, currency }) {
   const totalExpense = months.reduce((a, m) => a + Number(m.expense ?? 0), 0)
   const balance      = totalIncome - totalExpense
 
-  const legend = (
-    <div className="flex items-center gap-3 text-xs text-fg-muted">
-      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand inline-block" />Ingresos</span>
-      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-danger inline-block" />Egresos</span>
-    </div>
-  )
-
   return (
-    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <h3 className="text-sm font-semibold text-fg">Ingresos y egresos — últimos 6 meses</h3>
-        <div className="flex items-center gap-3">
-          {legend}
-          <Link to="/finances" className="flex items-center gap-1 text-xs text-brand hover:underline">
-            Ver finanzas <ArrowRightIcon className="w-3 h-3" />
-          </Link>
+    <div style={{ ...card, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, height: '100%', boxSizing: 'border-box' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+        <h3 style={{ ...SECTION_TITLE }}>Ingresos y egresos — últimos 6 meses</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 11, color: C.piedra }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.crema }} />Ingresos
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.arena }} />Egresos
+            </span>
+          </div>
+          <SeeAllLink to="/finances" label="Ver finanzas" />
         </div>
       </div>
+
       {months.length === 0 ? (
-        <p className="text-sm text-fg-muted text-center py-8">Sin movimientos registrados</p>
+        <p style={{ fontSize: 13, color: C.piedra, textAlign: 'center', padding: '32px 0' }}>Sin movimientos registrados</p>
       ) : (
         <IncomeExpensesBars months={months} currency={currency} />
       )}
-      <div className="pt-4 border-t border-line grid grid-cols-3 gap-4">
-        <div>
-          <p className="text-xs text-fg-muted mb-0.5">Ingresos</p>
-          <p className="text-sm font-semibold text-brand">{fmt(totalIncome, currency)}</p>
-        </div>
-        <div>
-          <p className="text-xs text-fg-muted mb-0.5">Egresos</p>
-          <p className="text-sm font-semibold text-danger">{fmt(totalExpense, currency)}</p>
-        </div>
-        <div>
-          <p className="text-xs text-fg-muted mb-0.5">Balance</p>
-          <p className={`text-sm font-semibold ${balance >= 0 ? 'text-success' : 'text-danger'}`}>
-            {balance >= 0 ? '+' : ''}{fmt(balance, currency)}
-          </p>
-        </div>
+
+      <div style={{ paddingTop: 14, borderTop: `1px solid ${C.linea}`, display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+        {[
+          { label: 'Ingresos', value: fmt(totalIncome,  currency), color: C.crema },
+          { label: 'Egresos',  value: fmt(totalExpense, currency), color: C.arena },
+          { label: 'Balance',  value: `${balance >= 0 ? '+' : ''}${fmt(balance, currency)}`, color: balance >= 0 ? C.ok : C.err },
+        ].map(({ label, value, color }) => (
+          <div key={label}>
+            <p style={{ fontSize: 10, color: C.piedra, marginBottom: 3 }}>{label}</p>
+            <p style={{ fontSize: 13, fontWeight: 600, color, fontFamily: CIFRAS }}>{value}</p>
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -447,24 +543,29 @@ function IncomeExpensesChart({ data, currency }) {
 
 function RecentQuotes({ quotes }) {
   const list = quotes?.recent ?? []
-  if (!list.length) return <p className="text-sm text-fg-muted text-center py-6">Sin presupuestos recientes</p>
+  if (!list.length) return <p style={{ fontSize: 13, color: C.piedra, textAlign: 'center', padding: '24px 0' }}>Sin presupuestos recientes</p>
   return (
-    <ul className="divide-y divide-line">
+    <ul>
       {list.map(q => {
-        const st = QUOTE_STATUS[q.status] ?? { label: q.status, cls: 'bg-raised text-fg-muted' }
+        const st = QUOTE_STATUS[q.status] ?? { label: q.status, bg: 'rgba(242,237,227,0.07)', color: C.piedra }
         return (
           <li key={q.id}>
-            <Link to="/quotes" className="flex items-center gap-3 px-1 py-3 hover:bg-raised rounded-lg transition-colors">
-              <div className="w-8 h-8 rounded-lg bg-raised flex items-center justify-center shrink-0">
-                <DocumentTextIcon className="w-4 h-4 text-fg-muted" />
+            <Link
+              to="/quotes"
+              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: `1px solid ${C.linea}`, textDecoration: 'none', transition: 'opacity 0.12s' }}
+              onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+            >
+              <div style={{ width: 30, height: 30, background: C.s2, borderRadius: '0 7px 7px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <PresupuestoIcon style={{ width: 14, height: 14, color: C.piedra }} />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-fg truncate">#{q.number}{q.title ? ` · ${q.title}` : ''}</p>
-                <p className="text-xs text-fg-muted truncate">{q.client?.name}</p>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 13, fontWeight: 500, color: C.crema }} className="truncate">#{q.number}{q.title ? ` · ${q.title}` : ''}</p>
+                <p style={{ fontSize: 11, color: C.piedra }} className="truncate">{q.client?.name}</p>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <p className="text-sm font-semibold text-fg">{fmt(q.total, q.currency)}</p>
-                <span className={`hidden sm:inline text-xs px-2 py-0.5 rounded-full font-medium ${st.cls}`}>{st.label}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: C.crema, fontFamily: CIFRAS }}>{fmt(q.total, q.currency)}</p>
+                <Badge bg={st.bg} color={st.color} label={st.label} />
               </div>
             </Link>
           </li>
@@ -478,41 +579,33 @@ function RecentMovementsPanel({ movements, currency }) {
   const list = movements ?? []
 
   return (
-    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-fg">Últimos movimientos</h3>
-        <Link to="/finances/movements" className="flex items-center gap-1 text-xs text-brand hover:underline">
-          Ver todos <ArrowRightIcon className="w-3 h-3" />
-        </Link>
-      </div>
+    <div style={{ ...card, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <PanelHead title="Últimos movimientos" to="/finances/movements" />
 
       {list.length === 0 ? (
-        <p className="text-sm text-fg-muted text-center py-4">Sin movimientos registrados</p>
+        <p style={{ fontSize: 13, color: C.piedra, textAlign: 'center', padding: '16px 0' }}>Sin movimientos registrados</p>
       ) : (
-        <ul className="divide-y divide-line">
+        <ul>
           {list.map(m => {
-            const typeInfo   = MOVEMENT_TYPE[m.type]   ?? { label: m.type,   cls: 'text-fg' }
-            const statusInfo = MOVEMENT_STATUS[m.status] ?? { label: m.status, cls: 'bg-raised text-fg-muted' }
+            const typeInfo   = MOVEMENT_TYPE[m.type]    ?? { label: m.type,   color: C.crema }
+            const statusInfo = MOVEMENT_STATUS[m.status] ?? { label: m.status, bg: C.s2, color: C.piedra }
             const isIncome   = m.type === 'income' || m.type === 'transfer_in'
             return (
-              <li key={m.id} className="flex items-center gap-3 py-3">
-                <div className={`p-1.5 rounded-lg shrink-0 ${isIncome ? 'bg-brand-subtle' : 'bg-danger-subtle'}`}>
-                  <BanknotesIcon className={`w-4 h-4 ${isIncome ? 'text-brand' : 'text-danger'}`} />
+              <li key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 0', borderBottom: `1px solid ${C.linea}` }}>
+                <div style={{ padding: 8, background: isIncome ? 'rgba(125,190,147,0.1)' : 'rgba(229,131,115,0.1)', borderRadius: '0 8px 8px 0', flexShrink: 0 }}>
+                  <CobroIcon style={{ width: 14, height: 14, color: isIncome ? C.ok : C.err }} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-fg truncate">{m.description || typeInfo.label}</p>
-                  <p className="text-xs text-fg-muted truncate">
-                    {m.account?.name}
-                    {m.client ? ` · ${m.client.name}` : ''}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 13, fontWeight: 500, color: C.crema }} className="truncate">{m.description || typeInfo.label}</p>
+                  <p style={{ fontSize: 11, color: C.piedra }} className="truncate">
+                    {m.account?.name}{m.client ? ` · ${m.client.name}` : ''}
                   </p>
                 </div>
-                <div className="text-right shrink-0">
-                  <p className={`text-sm font-semibold ${typeInfo.cls}`}>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: typeInfo.color, fontFamily: CIFRAS }}>
                     {isIncome ? '+' : '-'}{fmt(m.amount, currency)}
                   </p>
-                  <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${statusInfo.cls}`}>
-                    {statusInfo.label}
-                  </span>
+                  <Badge bg={statusInfo.bg} color={statusInfo.color} label={statusInfo.label} />
                 </div>
               </li>
             )
@@ -527,31 +620,29 @@ function UpcomingProjectsPanel({ projects }) {
   const upcoming = projects?.upcomingProjects ?? []
 
   return (
-    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-fg">Proyectos por vencer</h3>
-        <Link to="/projects" className="flex items-center gap-1 text-xs text-brand hover:underline">
-          Ver todos <ArrowRightIcon className="w-3 h-3" />
-        </Link>
-      </div>
+    <div style={{ ...card, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <PanelHead title="Proyectos por vencer" to="/projects" />
 
       {upcoming.length === 0 ? (
-        <p className="text-sm text-fg-muted text-center py-4">Sin proyectos próximos a vencer</p>
+        <p style={{ fontSize: 13, color: C.piedra, textAlign: 'center', padding: '16px 0' }}>Sin proyectos próximos a vencer</p>
       ) : (
-        <ul className="divide-y divide-line">
+        <ul>
           {upcoming.map(p => {
             const daysLeft = Math.max(0, Math.ceil((new Date(p.endDate.slice(0, 10) + 'T12:00:00') - new Date()) / (1000 * 60 * 60 * 24)))
             const urgent = daysLeft <= 2
+            const stateColor = urgent ? C.err : C.warn
             return (
-              <li key={p.id} className="flex items-center gap-3 py-3">
-                <div className={`p-1.5 rounded-lg shrink-0 ${urgent ? 'bg-danger-subtle' : 'bg-warning-subtle'}`}>
-                  <CalendarDaysIcon className={`w-4 h-4 ${urgent ? 'text-danger' : 'text-warning'}`} />
+              <li key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 0', borderBottom: `1px solid ${C.linea}` }}>
+                <div style={{ padding: 8, background: urgent ? 'rgba(229,131,115,0.1)' : 'rgba(226,182,99,0.1)', borderRadius: '0 8px 8px 0', flexShrink: 0 }}>
+                  <AgendaIcon style={{ width: 14, height: 14, color: stateColor }} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-fg truncate">{p.title}</p>
-                  <p className="text-xs text-fg-muted truncate">{p.client?.name} · {PROJECT_STATUS_LABEL[p.status] ?? p.status}</p>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 13, fontWeight: 500, color: C.crema }} className="truncate">{p.title}</p>
+                  <p style={{ fontSize: 11, color: C.piedra }} className="truncate">
+                    {p.client?.name} · {PROJECT_STATUS_LABEL[p.status] ?? p.status}
+                  </p>
                 </div>
-                <p className={`text-xs font-medium shrink-0 ${urgent ? 'text-danger' : 'text-warning'}`}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: stateColor, flexShrink: 0 }}>
                   {daysLeft === 0 ? 'Vence hoy' : `${daysLeft}d`}
                 </p>
               </li>
@@ -567,34 +658,39 @@ function ActivityFeed({ activity }) {
   const items = activity ?? []
 
   return (
-    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
-      <h3 className="text-sm font-semibold text-fg">Actividad reciente</h3>
+    <div style={{ ...card, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <h3 style={{ ...SECTION_TITLE }}>Actividad reciente</h3>
 
       {items.length === 0 ? (
-        <p className="text-sm text-fg-muted text-center py-4">Sin actividad reciente</p>
+        <p style={{ fontSize: 13, color: C.piedra, textAlign: 'center', padding: '16px 0' }}>Sin actividad reciente</p>
       ) : (
-        <ul className="divide-y divide-line">
+        <ul>
           {items.map((item, i) => {
             const cfg = ACTIVITY_CONFIG[item.type]
             const Icon = cfg.icon
             const name = item.data.title ?? `#${item.data.number}`
             return (
               <li key={i}>
-                <Link to={cfg.to} className="flex items-center gap-3 py-3 px-1 rounded-lg hover:bg-raised transition-colors">
-                  <div className={`p-2 rounded-lg shrink-0 ${cfg.iconBg}`}>
-                    <Icon className={`w-4 h-4 ${cfg.iconColor}`} />
+                <Link
+                  to={cfg.to}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: `1px solid ${C.linea}`, textDecoration: 'none', transition: 'opacity 0.12s' }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
+                  onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                >
+                  <div style={{ padding: 8, background: cfg.iconBg, borderRadius: '0 8px 8px 0', flexShrink: 0 }}>
+                    <Icon style={{ width: 14, height: 14, color: cfg.iconColor }} />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-fg truncate">
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 13, fontWeight: 500, color: C.crema }} className="truncate">
                       {item.data.number ? `#${item.data.number} · ` : ''}{name}
                     </p>
-                    <p className="text-xs text-fg-muted truncate">
+                    <p style={{ fontSize: 11, color: C.piedra }} className="truncate">
                       {cfg.label}{item.data.client ? ` · ${item.data.client.name}` : ''}
                     </p>
                   </div>
-                  <div className="text-right shrink-0">
-                    {item.data.total != null && <p className="text-sm font-semibold text-fg">{fmt(item.data.total)}</p>}
-                    <p className="text-xs text-fg-muted">{fmtRelative(item.createdAt)}</p>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    {item.data.total != null && <p style={{ fontSize: 13, fontWeight: 600, color: C.crema, fontFamily: CIFRAS }}>{fmt(item.data.total)}</p>}
+                    <p style={{ fontSize: 11, color: C.piedra }}>{fmtRelative(item.createdAt)}</p>
                   </div>
                 </Link>
               </li>
@@ -630,65 +726,68 @@ function PendingMovementsPanel({ movements, currency }) {
   const monthTitle = new Date(sel.year, sel.month - 1, 1)
     .toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
 
-  const pendingIncome  = list.filter(m => m.type === 'income').reduce((a, m) => a + Number(m.amount), 0)
+  const pendingIncome  = list.filter(m => m.type === 'income').reduce((a, m)  => a + Number(m.amount), 0)
   const pendingExpense = list.filter(m => m.type === 'expense').reduce((a, m) => a + Number(m.amount), 0)
 
+  const navBtn = (disabled) => ({
+    padding: 4, background: 'none', border: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
+    color: disabled ? C.linea : C.piedra, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    borderRadius: 6, transition: 'color 0.12s',
+  })
+
   return (
-    <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <h3 className="text-sm font-semibold text-fg">Movimientos pendientes</h3>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={prev}
-            className="p-1 rounded-lg hover:bg-raised text-fg-muted hover:text-fg transition-colors"
-          >
-            <ChevronLeftIcon className="w-4 h-4" />
+    <div style={{ ...card, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+        <h3 style={{ ...SECTION_TITLE }}>Movimientos pendientes</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <button onClick={prev} style={navBtn(false)}
+            onMouseEnter={e => e.currentTarget.style.color = C.arena}
+            onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+            <ChevronLeftIcon style={{ width: 14, height: 14 }} />
           </button>
-          <span className="text-xs font-medium text-fg capitalize min-w-[7.5rem] text-center">{monthTitle}</span>
-          <button
-            onClick={next}
-            disabled={isMax}
-            className="p-1 rounded-lg hover:bg-raised text-fg-muted hover:text-fg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <ChevronRightIcon className="w-4 h-4" />
+          <span style={{ fontSize: 11.5, fontWeight: 500, color: C.crema, textTransform: 'capitalize', minWidth: 120, textAlign: 'center' }}>
+            {monthTitle}
+          </span>
+          <button onClick={next} disabled={isMax} style={navBtn(isMax)}
+            onMouseEnter={e => !isMax && (e.currentTarget.style.color = C.arena)}
+            onMouseLeave={e => !isMax && (e.currentTarget.style.color = C.piedra)}>
+            <ChevronRightIcon style={{ width: 14, height: 14 }} />
           </button>
-          <Link to="/finances/movements" className="flex items-center gap-1 text-xs text-brand hover:underline ml-3">
-            Ver todos <ArrowRightIcon className="w-3 h-3" />
-          </Link>
+          <div style={{ marginLeft: 8 }}>
+            <SeeAllLink to="/finances/movements" />
+          </div>
         </div>
       </div>
 
       {list.length === 0 ? (
-        <p className="text-sm text-fg-muted text-center py-4">Sin movimientos pendientes este mes.</p>
+        <p style={{ fontSize: 13, color: C.piedra, textAlign: 'center', padding: '16px 0' }}>Sin movimientos pendientes este mes.</p>
       ) : (
         <>
-          <ul className="divide-y divide-line">
+          <ul>
             {list.map(m => {
-              const typeInfo = MOVEMENT_TYPE[m.type] ?? { label: m.type, cls: 'text-fg' }
+              const typeInfo = MOVEMENT_TYPE[m.type] ?? { label: m.type, color: C.crema }
               const isIncome = m.type === 'income'
               const overdue  = isOverdue(m)
               return (
-                <li key={m.id} className="flex items-center gap-3 py-3">
-                  <div className="p-1.5 rounded-lg shrink-0 bg-warning/10">
-                    <BanknotesIcon className="w-4 h-4 text-warning/70" />
+                <li key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 0', borderBottom: `1px solid ${C.linea}` }}>
+                  <div style={{ padding: 8, background: 'rgba(226,182,99,0.1)', borderRadius: '0 8px 8px 0', flexShrink: 0 }}>
+                    <CobroIcon style={{ width: 14, height: 14, color: C.warn }} />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-fg truncate">{m.description || typeInfo.label}</p>
-                    <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-                      <p className="text-xs text-fg-muted">
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 13, fontWeight: 500, color: C.crema }} className="truncate">{m.description || typeInfo.label}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 2 }}>
+                      <p style={{ fontSize: 11, color: C.piedra }}>
                         {m.date
                           ? new Date(m.date.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
                           : ''}
                         {m.client ? ` · ${m.client.name}` : ''}
                       </p>
                       {overdue && (
-                        <span className="text-[10px] font-semibold uppercase tracking-wide bg-danger-subtle text-danger px-1.5 py-0.5 rounded-full">
-                          Atrasado
-                        </span>
+                        <Badge bg="rgba(229,131,115,0.12)" color={C.err} label="Atrasado" />
                       )}
                     </div>
                   </div>
-                  <p className="text-sm font-semibold shrink-0 text-warning">
+                  <p style={{ fontSize: 13, fontWeight: 600, color: C.warn, flexShrink: 0, fontFamily: CIFRAS }}>
                     {isIncome ? '+' : '-'}{fmt(m.amount, currency)}
                   </p>
                 </li>
@@ -697,17 +796,17 @@ function PendingMovementsPanel({ movements, currency }) {
           </ul>
 
           {(pendingIncome > 0 || pendingExpense > 0) && (
-            <div className="pt-3 border-t border-line grid grid-cols-2 gap-4">
+            <div style={{ paddingTop: 12, borderTop: `1px solid ${C.linea}`, display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 16 }}>
               {pendingIncome > 0 && (
                 <div>
-                  <p className="text-xs text-fg-muted mb-0.5">Ingresos pendientes</p>
-                  <p className="text-sm font-semibold text-warning/80">{fmt(pendingIncome, currency)}</p>
+                  <p style={{ fontSize: 10, color: C.piedra, marginBottom: 3 }}>Ingresos pendientes</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: C.warn, fontFamily: CIFRAS }}>{fmt(pendingIncome, currency)}</p>
                 </div>
               )}
               {pendingExpense > 0 && (
                 <div>
-                  <p className="text-xs text-fg-muted mb-0.5">Egresos pendientes</p>
-                  <p className="text-sm font-semibold text-warning/80">{fmt(pendingExpense, currency)}</p>
+                  <p style={{ fontSize: 10, color: C.piedra, marginBottom: 3 }}>Egresos pendientes</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: C.warn, fontFamily: CIFRAS }}>{fmt(pendingExpense, currency)}</p>
                 </div>
               )}
             </div>
@@ -783,27 +882,51 @@ export default function DashboardPage() {
   const incomeMonth    = Number(finData?.incomeMonth   ?? 0)
   const expenseMonth   = Number(finData?.expenseMonth  ?? 0)
 
+  const actionBtnBase = {
+    display: 'flex', alignItems: 'center', gap: 6,
+    padding: '7px 14px', borderRadius: '0 8px 8px 0',
+    fontSize: 12.5, fontWeight: 500, textDecoration: 'none', flexShrink: 0,
+    transition: 'background-color 0.12s, color 0.12s',
+  }
+
   return (
-    <div className="p-4 md:p-8 max-w-5xl">
+    <div style={{ padding: '28px 24px 40px', maxWidth: 1080, fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 28, flexWrap: 'wrap' }}>
         <div>
-          <h1 className="text-2xl font-bold text-fg">{greeting(profile?.name ?? user?.name)}</h1>
-          <p className="text-sm text-fg-muted mt-0.5 capitalize">{fmtDate()}</p>
+          <h1 style={{ fontSize: 24, fontWeight: 600, letterSpacing: '-0.03em', color: C.crema, lineHeight: 1.2 }}>
+            {greeting(profile?.name ?? user?.name)}
+          </h1>
+          <p style={{ fontSize: 13, color: C.piedra, marginTop: 5, textTransform: 'capitalize' }}>{fmtDate()}</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
           {!isMember && (
-            <Link to="/clients" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-line bg-raised hover:bg-surface text-xs font-medium text-fg transition-colors">
-              <PlusIcon className="w-3.5 h-3.5" />Cliente
+            <Link
+              to="/clients"
+              style={{ ...actionBtnBase, background: C.s2, border: `1px solid ${C.linea}`, color: C.arena }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.s3; e.currentTarget.style.color = C.crema }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = C.s2; e.currentTarget.style.color = C.arena }}
+            >
+              <MasIcon style={{ width: 13, height: 13 }} />Cliente
             </Link>
           )}
-          <Link to="/projects" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-line bg-raised hover:bg-surface text-xs font-medium text-fg transition-colors">
-            <PlusIcon className="w-3.5 h-3.5" />Proyecto
+          <Link
+            to="/projects"
+            style={{ ...actionBtnBase, background: C.s2, border: `1px solid ${C.linea}`, color: C.arena }}
+            onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.s3; e.currentTarget.style.color = C.crema }}
+            onMouseLeave={e => { e.currentTarget.style.backgroundColor = C.s2; e.currentTarget.style.color = C.arena }}
+          >
+            <MasIcon style={{ width: 13, height: 13 }} />Proyecto
           </Link>
           {!isMember && (
-            <Link to="/quotes" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand text-white hover:opacity-90 text-xs font-medium transition-opacity">
-              <PlusIcon className="w-3.5 h-3.5" />Presupuesto
+            <Link
+              to="/quotes"
+              style={{ ...actionBtnBase, background: C.crema, color: C.bg, border: 'none', fontWeight: 600 }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = '#E8E3D9'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = C.crema}
+            >
+              <MasIcon style={{ width: 13, height: 13 }} />Presupuesto
             </Link>
           )}
         </div>
@@ -811,111 +934,84 @@ export default function DashboardPage() {
 
       {/* KPIs */}
       {isMember ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          <KpiCard
-            icon={FolderOpenIcon}
-            iconBg="bg-info-subtle"
-            iconColor="text-info"
-            label="Proyectos en curso"
-            value={activeProjects}
-          />
-          <KpiCard
-            icon={ClipboardDocumentListIcon}
-            iconBg="bg-warning-subtle"
-            iconColor="text-warning"
-            label="Tareas asignadas"
-            value={myPendingTasks}
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ marginBottom: 24 }}>
+          <KpiCard icon={CarpetaIcon}  iconBg="rgba(142,177,222,0.1)" iconColor={C.info} label="Proyectos en curso" value={activeProjects} />
+          <KpiCard icon={ProyectoIcon} iconBg="rgba(226,182,99,0.1)"  iconColor={C.warn} label="Tareas asignadas"   value={myPendingTasks} />
         </div>
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" style={{ marginBottom: 24 }}>
           <KpiCard
-            icon={FolderOpenIcon}
-            iconBg="bg-info-subtle"
-            iconColor="text-info"
-            label="Proyectos en curso"
-            value={activeProjects}
+            icon={CarpetaIcon}
+            iconBg="rgba(142,177,222,0.1)" iconColor={C.info}
+            label="Proyectos en curso" value={activeProjects}
             sub={`${quotes?.byStatus?.filter(s => ['draft','sent'].includes(s.status))?.reduce((a,s)=>a+s.count,0)??0} presupuestos abiertos`}
           />
           <KpiCard
-            icon={BuildingLibraryIcon}
-            iconBg="bg-brand-subtle"
-            iconColor="text-brand"
-            label="Saldo en caja"
-            value={fmt(totalBalance, currency)}
-            valueColor="text-brand"
+            icon={CobroIcon}
+            iconBg="rgba(242,237,227,0.09)" iconColor={C.crema}
+            label="Saldo en caja" value={fmt(totalBalance, currency)} valueColor={C.crema}
             sub={finData?.accounts?.length ? `${finData.accounts.length} cuenta${finData.accounts.length !== 1 ? 's' : ''}` : undefined}
           />
           <KpiCard
-            icon={ArrowTrendingUpIcon}
-            iconBg="bg-success-subtle"
-            iconColor="text-success"
-            label="Ingresos del mes"
-            value={fmt(incomeMonth, currency)}
-            valueColor="text-success"
+            icon={RecorridoIcon}
+            iconBg="rgba(125,190,147,0.1)" iconColor={C.ok}
+            label="Ingresos del mes" value={fmt(incomeMonth, currency)} valueColor={C.ok}
             sub="movimientos confirmados"
           />
           <KpiCard
-            icon={ArrowTrendingDownIcon}
-            iconBg="bg-danger-subtle"
-            iconColor="text-danger"
-            label="Egresos del mes"
-            value={fmt(expenseMonth, currency)}
-            valueColor="text-danger"
+            icon={RecorridoDownIcon}
+            iconBg="rgba(229,131,115,0.1)" iconColor={C.err}
+            label="Egresos del mes" value={fmt(expenseMonth, currency)} valueColor={C.err}
             sub="movimientos confirmados"
           />
         </div>
       )}
 
-      {/* Paneles exclusivos de owner/Administrador*/}
+      {/* Paneles owner/admin */}
       {!isMember && (
         <>
-          <div className="mb-6">
-            <QuotesSummaryPanel quotes={quotes} currency={currency} />
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4" style={{ marginBottom: 20 }}>
+            <div className="md:col-span-3" style={{ display: 'flex', flexDirection: 'column' }}>
+              <IncomeExpensesChart data={buildMonthlyEvolution(finData?.monthlyEvolution)} currency={currency} />
+            </div>
+            <div className="md:col-span-2" style={{ display: 'flex', flexDirection: 'column' }}>
+              <QuotesSummaryPanel quotes={quotes} currency={currency} />
+            </div>
           </div>
 
-          <div className="mb-6">
-            <IncomeExpensesChart data={buildMonthlyEvolution(finData?.monthlyEvolution)} currency={currency} />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div className="bg-surface border border-line rounded-xl p-6 flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-fg">Presupuestos recientes</h3>
-                <Link to="/quotes" className="flex items-center gap-1 text-xs text-brand hover:underline">
-                  Ver todos <ArrowRightIcon className="w-3 h-3" />
-                </Link>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ marginBottom: 20 }}>
+            <div style={{ ...card, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <PanelHead title="Presupuestos recientes" to="/quotes" />
               <RecentQuotes quotes={quotes} />
             </div>
             <RecentMovementsPanel movements={finData?.recentMovements} currency={currency} />
           </div>
 
-          <div className="mb-6">
+          <div style={{ marginBottom: 20 }}>
             <PendingMovementsPanel movements={finData?.pendingMovements} currency={currency} />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ marginBottom: 20 }}>
             <ExpiringQuotesPanel quotes={quotes} />
             <ProjectsPanel projects={projects} />
           </div>
         </>
       )}
 
-      {/* Paneles visibles para todos */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      {/* Paneles todos */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ marginBottom: 20 }}>
         {!isMember && <TopClientsPanel clients={topClients} currency={currency} />}
         <UpcomingProjectsPanel projects={projects} />
       </div>
 
       {isMember && (
-        <div className="mb-6">
+        <div style={{ marginBottom: 20 }}>
           <ProjectsPanel projects={projects} />
         </div>
       )}
 
       {!isMember && (
-        <div className="mb-6">
+        <div style={{ marginBottom: 20 }}>
           <ActivityFeed activity={recentActivity} />
         </div>
       )}
