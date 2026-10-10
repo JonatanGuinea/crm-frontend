@@ -85,13 +85,34 @@ export default function ClientsPage() {
     <div style={{ padding: '28px 24px 40px', maxWidth: 1080, fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* ── Header ──────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
+        {/* Título */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <ClienteIcon style={{ width: 18, height: 18, color: C.arena }} />
           <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema }}>Clientes</h2>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        {/* CTA + Tabs apilados a la derecha */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, flexShrink: 0 }}>
+          {canWrite && tab === 'table' && (
+            <button
+              onClick={() => setModalOpen(true)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 7,
+                padding: '7px 14px', borderRadius: '0 8px 8px 0',
+                background: C.crema, color: C.bg,
+                fontSize: 12.5, fontWeight: 600,
+                border: 'none', cursor: 'pointer',
+                transition: 'background 0.12s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = '#E8E3D9'}
+              onMouseLeave={e => e.currentTarget.style.background = C.crema}
+            >
+              <MasIcon style={{ width: 12, height: 12 }} />
+              Nuevo cliente
+            </button>
+          )}
+
           <div style={{
             display: 'flex', alignItems: 'center', gap: 3,
             padding: 4, background: C.s2, border: `1px solid ${C.linea}`,
@@ -106,26 +127,6 @@ export default function ClientsPage() {
               Historial
             </button>
           </div>
-
-          {canWrite && tab === 'table' && (
-            <button
-              onClick={() => setModalOpen(true)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 7,
-                padding: '0 14px', borderRadius: '0 8px 8px 0',
-                alignSelf: 'stretch',
-                background: C.crema, color: C.bg,
-                fontSize: 12.5, fontWeight: 600,
-                border: 'none', cursor: 'pointer', flexShrink: 0,
-                transition: 'background 0.12s',
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#E8E3D9'}
-              onMouseLeave={e => e.currentTarget.style.background = C.crema}
-            >
-              <MasIcon style={{ width: 12, height: 12 }} />
-              Nuevo cliente
-            </button>
-          )}
         </div>
       </div>
 

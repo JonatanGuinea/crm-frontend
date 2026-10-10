@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom'
 import { NavLink, Link, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
+import { useToast } from '../components/Toast'
 import GlobalSearch from '../components/GlobalSearch'
 import OrgSwitcher from '../components/OrgSwitcher'
 import InvitationsBanner from '../components/InvitationsBanner'
@@ -216,11 +218,11 @@ function SidebarAvatar({ avatar, name }) {
   )
 }
 
-function ProfileDropdown({ profile, user }) {
+function ProfileDropdown({ profile, user, compact = false, position = 'up' }) {
   const { logout } = useAuth()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
-  const [menuPos, setMenuPos] = useState({ bottom: 0, left: 0 })
+  const [menuPos, setMenuPos] = useState({})
   const btnRef = useRef()
   const menuRef = useRef()
 
@@ -238,7 +240,11 @@ function ProfileDropdown({ profile, user }) {
   function handleOpen() {
     if (!open && btnRef.current) {
       const r = btnRef.current.getBoundingClientRect()
-      setMenuPos({ bottom: window.innerHeight - r.top + 6, left: r.left })
+      if (position === 'down') {
+        setMenuPos({ top: r.bottom + 6, right: window.innerWidth - r.right })
+      } else {
+        setMenuPos({ bottom: window.innerHeight - r.top + 6, left: r.left })
+      }
     }
     setOpen(v => !v)
   }
@@ -258,30 +264,35 @@ function ProfileDropdown({ profile, user }) {
         ref={btnRef}
         onClick={handleOpen}
         style={{
-          display: 'flex', alignItems: 'center', gap: 10, width: '100%',
-          padding: '12px 14px', background: 'none', border: 'none',
+          display: 'flex', alignItems: 'center', gap: compact ? 0 : 10,
+          width: compact ? 'auto' : '100%',
+          padding: compact ? '4px' : '12px 14px',
+          background: 'none', border: 'none',
           cursor: 'pointer', fontFamily: 'inherit',
-          transition: 'background-color 0.12s',
+          borderRadius: compact ? '50%' : 0,
+          transition: 'opacity 0.12s',
         }}
-        onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(242,237,227,0.04)'}
-        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+        onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+        onMouseLeave={e => e.currentTarget.style.opacity = '1'}
       >
         <SidebarAvatar avatar={profile?.avatar} name={profile?.name || user?.name} />
-        <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
-          <p style={{ color: C.crema, fontSize: 13, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {profile?.name || user?.name || 'Mi perfil'}
-          </p>
-          <p style={{ color: C.piedra, fontSize: 11 }}>
-            {ROLE_LABEL[user?.role] || user?.role}
-          </p>
-        </div>
+        {!compact && (
+          <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+            <p style={{ color: C.crema, fontSize: 13, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {profile?.name || user?.name || 'Mi perfil'}
+            </p>
+            <p style={{ color: C.piedra, fontSize: 11 }}>
+              {ROLE_LABEL[user?.role] || user?.role}
+            </p>
+          </div>
+        )}
       </button>
 
       {createPortal(
         <div
           ref={menuRef}
           style={{
-            position: 'fixed', bottom: menuPos.bottom, left: menuPos.left,
+            position: 'fixed', ...menuPos,
             width: 200, background: C.s2, border: `1px solid ${C.linea}`,
             borderRadius: '0 12px 12px 0', overflow: 'hidden',
             boxShadow: '0 8px 32px rgba(0,0,0,.5)',
@@ -289,7 +300,7 @@ function ProfileDropdown({ profile, user }) {
             opacity: open ? 1 : 0,
             transform: open ? 'scale(1)' : 'scale(0.96)',
             pointerEvents: open ? 'auto' : 'none',
-            transformOrigin: 'bottom left',
+            transformOrigin: position === 'down' ? 'top right' : 'bottom left',
           }}
         >
           <div style={{ padding: '12px 14px', borderBottom: `1px solid ${C.linea}` }}>
@@ -344,8 +355,40 @@ function ProfileDropdown({ profile, user }) {
   )
 }
 
-function SidebarContent({ collapsed, onNavClick, newProjectsCount, user, profile }) {
+function SunIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}
+      strokeLinecap="round" strokeLinejoin="round" style={{ width: 16, height: 16, flexShrink: 0 }}>
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+  )
+}
+
+function MoonIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}
+      strokeLinecap="round" strokeLinejoin="round" style={{ width: 16, height: 16, flexShrink: 0 }}>
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  )
+}
+
+function SidebarContent({ collapsed, onNavClick, newProjectsCount, user }) {
   const isMember = user?.role === 'member'
+  const { dark } = useTheme()
+  const toast = useToast()
+
+  function handleThemeClick() {
+    toast('Modo claro en desarrollo — próximamente disponible', 'info')
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
@@ -384,22 +427,33 @@ function SidebarContent({ collapsed, onNavClick, newProjectsCount, user, profile
         }
       </nav>
 
-      {/* Profile */}
+      {/* Theme toggle */}
       <div style={{ borderTop: `1px solid ${C.linea}`, flexShrink: 0 }}>
-        {collapsed ? (
-          <div style={{ padding: '12px 0', display: 'flex', justifyContent: 'center' }}>
-            <SidebarAvatar avatar={profile?.avatar} name={profile?.name || user?.name} />
-          </div>
-        ) : (
-          <ProfileDropdown profile={profile} user={user} />
-        )}
+        <button
+          onClick={handleThemeClick}
+          title="Modo claro — próximamente"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            width: '100%',
+            padding: collapsed ? '12px 0' : '11px 14px',
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            background: 'none', border: 'none', cursor: 'not-allowed',
+            color: C.linea, fontSize: 13, fontFamily: 'inherit',
+            opacity: 0.6,
+          }}
+        >
+          <SunIcon />
+          {!collapsed && 'Modo claro'}
+        </button>
       </div>
+
     </div>
   )
 }
 
 export default function AppLayout() {
   const { user, switchOrg } = useAuth()
+  const { dark } = useTheme()
   const qc = useQueryClient()
   const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('sidebar') === 'collapsed')
@@ -464,7 +518,7 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="dark" style={{ display: 'flex', height: '100dvh', overflow: 'hidden', background: C.bg, fontFamily: 'Geist, system-ui, sans-serif', WebkitFontSmoothing: 'antialiased' }}>
+    <div className={dark ? 'dark' : ''} style={{ display: 'flex', height: '100dvh', overflow: 'hidden', background: C.bg, fontFamily: 'Geist, system-ui, sans-serif', WebkitFontSmoothing: 'antialiased' }}>
       {needsOrg && <SetupOrgModal onCreated={handleOrgCreated} />}
 
       {/* Mobile overlay */}
@@ -606,6 +660,9 @@ export default function AppLayout() {
               </span>
             )}
           </Link>
+
+          {/* Profile avatar */}
+          <ProfileDropdown compact position="down" profile={profile} user={user} />
         </header>
 
         {/* Page content */}

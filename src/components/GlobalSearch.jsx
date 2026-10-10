@@ -2,7 +2,35 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { globalSearch } from '../api/search'
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { ClienteIcon, ProyectoIcon, PresupuestoIcon } from './DuIcons'
+
+// ── tokens ────────────────────────────────────────────────────────────────────
+
+const C = {
+  bg:    '#0B0B0C',
+  s1:    '#141415',
+  s2:    '#1E1E20',
+  s3:    '#26262A',
+  linea: '#2C2C2F',
+  crema: '#F2EDE3',
+  arena: '#B9B4AA',
+  piedra:'#8C877E',
+}
+
+// ── iconos inline ─────────────────────────────────────────────────────────────
+
+function SearchIcon({ style }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}
+      strokeLinecap="round" strokeLinejoin="round"
+      style={{ flexShrink: 0, ...style }}>
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  )
+}
+
+// ── helpers ───────────────────────────────────────────────────────────────────
 
 function useDebounce(value, delay) {
   const [debounced, setDebounced] = useState(value)
@@ -14,27 +42,27 @@ function useDebounce(value, delay) {
 }
 
 const SECTION_LABELS = {
-  clients: 'Clientes',
+  clients:  'Clientes',
   projects: 'Proyectos',
-  quotes: 'Presupuestos',
+  quotes:   'Presupuestos',
 }
 
-const SECTION_ICONS = {
-  clients: '👤',
-  projects: '📁',
-  quotes: '📄',
+const SECTION_ICON = {
+  clients:  <ClienteIcon  style={{ width: 13, height: 13, flexShrink: 0 }} />,
+  projects: <ProyectoIcon style={{ width: 13, height: 13, flexShrink: 0 }} />,
+  quotes:   <PresupuestoIcon style={{ width: 13, height: 13, flexShrink: 0 }} />,
 }
 
 const SECTION_PATHS = {
-  clients: (item) => `/clients/${item.id}`,
+  clients:  (item) => `/clients/${item.id}`,
   projects: (item) => `/projects/${item.id}`,
-  quotes: () => '/quotes',
+  quotes:   () => '/quotes',
 }
 
 function itemLabel(section, item) {
-  if (section === 'clients') return item.name + (item.company ? ` — ${item.company}` : '')
+  if (section === 'clients')  return item.name + (item.company ? ` — ${item.company}` : '')
   if (section === 'projects') return item.title + (item.client ? ` · ${item.client.name}` : '')
-  if (section === 'quotes') return `${item.number} ${item.title || ''}`.trim() + (item.client ? ` · ${item.client.name}` : '')
+  if (section === 'quotes')   return `${item.number} ${item.title || ''}`.trim() + (item.client ? ` · ${item.client.name}` : '')
   return ''
 }
 
@@ -42,17 +70,18 @@ function isMac() {
   return typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
 }
 
+// ── component ─────────────────────────────────────────────────────────────────
+
 export default function GlobalSearch() {
-  const [open, setOpen] = useState(false)
-  const [query, setQuery] = useState('')
-  const [results, setResults] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [open, setOpen]           = useState(false)
+  const [query, setQuery]         = useState('')
+  const [results, setResults]     = useState(null)
+  const [loading, setLoading]     = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
   const debouncedQuery = useDebounce(query, 280)
-  const inputRef = useRef()
-  const navigate = useNavigate()
+  const inputRef  = useRef()
+  const navigate  = useNavigate()
 
-  // Flatten results for keyboard navigation
   const flatItems = results
     ? Object.entries(SECTION_LABELS).flatMap(([section]) =>
         (results[section] || []).map(item => ({ section, item }))
@@ -60,20 +89,13 @@ export default function GlobalSearch() {
     : []
 
   const openModal = useCallback(() => {
-    setOpen(true)
-    setQuery('')
-    setResults(null)
-    setActiveIndex(-1)
+    setOpen(true); setQuery(''); setResults(null); setActiveIndex(-1)
   }, [])
 
   const closeModal = useCallback(() => {
-    setOpen(false)
-    setQuery('')
-    setResults(null)
-    setActiveIndex(-1)
+    setOpen(false); setQuery(''); setResults(null); setActiveIndex(-1)
   }, [])
 
-  // Cmd+K / Ctrl+K shortcut
   useEffect(() => {
     function onKey(e) {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -85,27 +107,18 @@ export default function GlobalSearch() {
     return () => document.removeEventListener('keydown', onKey)
   }, [open, openModal, closeModal])
 
-  // Focus input when modal opens
   useEffect(() => {
-    if (open) {
-      setTimeout(() => inputRef.current?.focus(), 50)
-    }
+    if (open) setTimeout(() => inputRef.current?.focus(), 50)
   }, [open])
 
-  // Search
   useEffect(() => {
     if (debouncedQuery.length < 2) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setResults(null)
-      setActiveIndex(-1)
-      return
+      setResults(null); setActiveIndex(-1); return
     }
     setLoading(true)
     globalSearch(debouncedQuery)
-      .then(r => {
-        setResults(r.data.data)
-        setActiveIndex(-1)
-      })
+      .then(r => { setResults(r.data.data); setActiveIndex(-1) })
       .catch(() => setResults(null))
       .finally(() => setLoading(false))
   }, [debouncedQuery])
@@ -118,11 +131,9 @@ export default function GlobalSearch() {
   function handleKeyDown(e) {
     if (!flatItems.length) return
     if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setActiveIndex(i => (i + 1) % flatItems.length)
+      e.preventDefault(); setActiveIndex(i => (i + 1) % flatItems.length)
     } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setActiveIndex(i => (i <= 0 ? flatItems.length - 1 : i - 1))
+      e.preventDefault(); setActiveIndex(i => (i <= 0 ? flatItems.length - 1 : i - 1))
     } else if (e.key === 'Enter' && activeIndex >= 0) {
       e.preventDefault()
       const { section, item } = flatItems[activeIndex]
@@ -135,35 +146,69 @@ export default function GlobalSearch() {
 
   return (
     <>
-      {/* Trigger button in header */}
+      {/* Trigger */}
       <button
         onClick={openModal}
-        className="flex items-center gap-2 w-full max-w-xs px-3 py-1.5 rounded-lg bg-raised border border-line text-fg-muted text-sm hover:border-line-soft hover:bg-overlay transition-colors group"
+        style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          width: '100%', maxWidth: 260,
+          padding: '6px 12px',
+          background: C.s2, border: `1px solid ${C.linea}`,
+          borderRadius: '0 10px 10px 0',
+          color: C.piedra, fontSize: 13,
+          cursor: 'pointer', transition: 'border-color 0.12s',
+          fontFamily: 'Geist, system-ui, sans-serif',
+        }}
+        onMouseEnter={e => e.currentTarget.style.borderColor = C.arena}
+        onMouseLeave={e => e.currentTarget.style.borderColor = C.linea}
       >
-        <MagnifyingGlassIcon className="w-4 h-4 shrink-0" />
-        <span className="flex-1 text-left">Buscar...</span>
-        <span className="hidden sm:flex items-center gap-0.5 text-xs text-fg-muted border border-line rounded px-1.5 py-0.5 font-mono group-hover:border-line-soft transition-colors">
+        <SearchIcon style={{ width: 14, height: 14 }} />
+        <span style={{ flex: 1, textAlign: 'left' }}>Buscar...</span>
+        <span style={{
+          display: 'flex', alignItems: 'center', gap: 2,
+          fontSize: 11, color: C.piedra,
+          border: `1px solid ${C.linea}`,
+          borderRadius: '0 4px 4px 0',
+          padding: '1px 5px',
+          fontFamily: 'monospace',
+        }}>
           {mod}<span>K</span>
         </span>
       </button>
 
-      {/* Modal overlay — rendered via portal to escape header's stacking context */}
+      {/* Modal */}
       {open && createPortal(
         <div
-          className="fixed inset-0 z-[9999] flex items-start justify-center pt-4 sm:pt-[15vh] px-4"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+            paddingTop: '14vh', padding: '14vh 16px 0',
+            fontFamily: 'Geist, system-ui, sans-serif',
+          }}
           onClick={closeModal}
         >
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.65)' }} />
 
           {/* Panel */}
           <div
-            className="relative w-full max-w-lg bg-surface/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-line overflow-hidden"
+            style={{
+              position: 'relative',
+              width: '100%', maxWidth: 520,
+              background: C.s2, border: `1px solid ${C.linea}`,
+              borderRadius: '0 16px 16px 0',
+              boxShadow: '0 24px 64px rgba(0,0,0,0.7)',
+              overflow: 'hidden',
+            }}
             onClick={e => e.stopPropagation()}
           >
-            {/* Search input */}
-            <div className="flex items-center gap-3 px-4 py-3.5 border-b border-line">
-              <MagnifyingGlassIcon className="w-5 h-5 text-fg-muted shrink-0" />
+            {/* Input row */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '12px 16px',
+              borderBottom: `1px solid ${C.linea}`,
+            }}>
+              <SearchIcon style={{ width: 16, height: 16, color: C.piedra }} />
               <input
                 ref={inputRef}
                 type="text"
@@ -171,57 +216,87 @@ export default function GlobalSearch() {
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="flex-1 bg-transparent text-fg placeholder:text-fg-muted text-sm focus:outline-none"
+                style={{
+                  flex: 1, background: 'transparent', border: 'none', outline: 'none',
+                  fontSize: 13, color: C.crema,
+                }}
+                className="placeholder:text-[#8C877E]"
               />
               {loading && (
-                <div className="w-4 h-4 border-2 border-brand border-t-transparent rounded-full animate-spin shrink-0" />
+                <div style={{
+                  width: 14, height: 14, borderRadius: '50%',
+                  border: `2px solid ${C.linea}`,
+                  borderTopColor: C.arena,
+                  flexShrink: 0,
+                  animation: 'spin 0.7s linear infinite',
+                }} />
               )}
               <button
                 onClick={closeModal}
-                className="text-xs text-fg-muted border border-line rounded px-1.5 py-0.5 font-mono hover:bg-raised transition-colors shrink-0"
+                style={{
+                  fontSize: 11, color: C.piedra,
+                  border: `1px solid ${C.linea}`,
+                  borderRadius: '0 4px 4px 0',
+                  padding: '2px 6px',
+                  background: 'none', cursor: 'pointer',
+                  fontFamily: 'monospace',
+                  transition: 'color 0.12s, border-color 0.12s',
+                  flexShrink: 0,
+                }}
+                onMouseEnter={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.arena }}
+                onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}
               >
                 Esc
               </button>
             </div>
 
             {/* Results */}
-            <div className="max-h-96 overflow-y-auto">
+            <div style={{ maxHeight: 360, overflowY: 'auto' }}>
               {!query || query.length < 2 ? (
-                <div className="px-4 py-8 text-center">
-                  <p className="text-sm text-fg-muted">Escribí al menos 2 caracteres para buscar</p>
+                <div style={{ padding: '32px 16px', textAlign: 'center' }}>
+                  <p style={{ fontSize: 12, color: C.piedra }}>Escribí al menos 2 caracteres para buscar</p>
                 </div>
               ) : !hasResults && !loading ? (
-                <div className="px-4 py-8 text-center">
-                  <p className="text-sm text-fg-muted">Sin resultados para <span className="text-fg font-medium">"{debouncedQuery}"</span></p>
+                <div style={{ padding: '32px 16px', textAlign: 'center' }}>
+                  <p style={{ fontSize: 12, color: C.piedra }}>
+                    Sin resultados para{' '}
+                    <span style={{ color: C.arena, fontWeight: 500 }}>"{debouncedQuery}"</span>
+                  </p>
                 </div>
               ) : (
-                <div className="py-2">
+                <div style={{ padding: '6px 0' }}>
                   {Object.entries(SECTION_LABELS).map(([section, label]) => {
                     const items = results?.[section]
                     if (!items?.length) return null
                     return (
-                      <div key={section} className="mb-1">
-                        <div className="flex items-center gap-2 px-4 py-1.5">
-                          <span className="text-xs font-semibold text-fg-muted uppercase tracking-wider">{label}</span>
-                          <div className="flex-1 h-px bg-line" />
+                      <div key={section} style={{ marginBottom: 4 }}>
+                        {/* Section header */}
+                        <div style={{
+                          display: 'flex', alignItems: 'center', gap: 8,
+                          padding: '6px 16px',
+                        }}>
+                          <span style={{
+                            fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+                            letterSpacing: '0.1em', color: C.piedra,
+                          }}>
+                            {label}
+                          </span>
+                          <div style={{ flex: 1, height: 1, background: C.linea }} />
                         </div>
+                        {/* Items */}
                         <ul>
                           {items.map(item => {
                             const globalIdx = flatItems.findIndex(f => f.section === section && f.item === item)
-                            const isActive = globalIdx === activeIndex
+                            const isActive  = globalIdx === activeIndex
                             return (
-                              <li key={item.id}>
-                                <button
-                                  onClick={() => handleSelect(section, item)}
-                                  onMouseEnter={() => setActiveIndex(globalIdx)}
-                                  className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors ${
-                                    isActive ? 'bg-brand-subtle text-brand' : 'text-fg-soft hover:bg-raised'
-                                  }`}
-                                >
-                                  <span className="text-base shrink-0">{SECTION_ICONS[section]}</span>
-                                  <span className="truncate">{itemLabel(section, item)}</span>
-                                </button>
-                              </li>
+                              <ResultItem
+                                key={item.id}
+                                section={section}
+                                item={item}
+                                isActive={isActive}
+                                onSelect={() => handleSelect(section, item)}
+                                onHover={() => setActiveIndex(globalIdx)}
+                              />
                             )
                           })}
                         </ul>
@@ -232,18 +307,61 @@ export default function GlobalSearch() {
               )}
             </div>
 
-            {/* Footer hint */}
+            {/* Footer */}
             {hasResults && (
-              <div className="px-4 py-2 border-t border-line flex items-center gap-3 text-xs text-fg-muted">
+              <div style={{
+                padding: '8px 16px',
+                borderTop: `1px solid ${C.linea}`,
+                display: 'flex', alignItems: 'center', gap: 14,
+                fontSize: 11, color: C.piedra,
+              }}>
                 <span>↑↓ navegar</span>
                 <span>↵ abrir</span>
                 <span>Esc cerrar</span>
               </div>
             )}
-            </div>
+          </div>
         </div>,
         document.body
       )}
+
+      {/* Spinner keyframe */}
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
     </>
+  )
+}
+
+// ── ResultItem ────────────────────────────────────────────────────────────────
+
+function ResultItem({ section, item, isActive, onSelect, onHover }) {
+  const [hovered, setHovered] = useState(false)
+  const active = isActive || hovered
+
+  return (
+    <li>
+      <button
+        onClick={onSelect}
+        onMouseEnter={() => { setHovered(true); onHover() }}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+          padding: '8px 16px',
+          background: active ? C.s3 : 'transparent',
+          border: 'none', cursor: 'pointer', textAlign: 'left',
+          transition: 'background 0.1s',
+        }}
+      >
+        <span style={{ color: active ? C.crema : C.piedra, display: 'flex', transition: 'color 0.1s' }}>
+          {SECTION_ICON[section]}
+        </span>
+        <span style={{
+          fontSize: 12.5, color: active ? C.crema : C.arena,
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          transition: 'color 0.1s',
+        }}>
+          {itemLabel(section, item)}
+        </span>
+      </button>
+    </li>
   )
 }
