@@ -7,42 +7,108 @@ import { getProjects } from '../../api/projects'
 import { getQuotes } from '../../api/quotes'
 import ClientModal from './ClientModal'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
-import { ClockIcon, TableCellsIcon } from '@heroicons/react/24/outline'
+import {
+  ClienteIcon,
+  AgendaIcon,
+  ProyectoIcon,
+  PresupuestoIcon,
+  AjustesIcon,
+} from '../../components/DuIcons'
 
-const STATUS_COLORS_PROJECT = {
-  pending:     'bg-warning-subtle text-warning',
-  approved:    'bg-info-subtle text-info',
-  in_progress: 'bg-brand-subtle text-brand',
-  finished:    'bg-brand-subtle text-brand',
-  cancelled:   'bg-raised text-fg-muted'
-}
-const STATUS_LABELS_PROJECT = {
-  pending: 'Pendiente', approved: 'Aprobado', in_progress: 'En curso',
-  finished: 'Finalizado', cancelled: 'Cancelado'
+// ── tokens ────────────────────────────────────────────────────────────────────
+
+const C = {
+  bg:    '#0B0B0C',
+  s1:    '#141415',
+  s2:    '#1E1E20',
+  s3:    '#26262A',
+  linea: '#2C2C2F',
+  crema: '#F2EDE3',
+  arena: '#B9B4AA',
+  piedra:'#8C877E',
+  ok:    '#7DBE93',
+  warn:  '#E2B663',
+  err:   '#E58373',
+  info:  '#8EB1DE',
 }
 
-const STATUS_COLORS_DOC = {
-  draft:     'bg-raised text-fg-soft',
-  sent:      'bg-info-subtle text-info',
-  approved:  'bg-brand-subtle text-brand',
-  rejected:  'bg-danger-subtle text-danger',
-  pending:   'bg-warning-subtle text-warning',
-  paid:      'bg-brand-subtle text-brand',
-  overdue:   'bg-danger-subtle text-danger',
-  cancelled: 'bg-raised text-fg-muted',
-  partial:   'bg-warning-subtle text-warning',
+const card = {
+  background: C.s1,
+  border: `1px solid ${C.linea}`,
+  borderRadius: '0 16px 16px 0',
 }
-const STATUS_LABELS_DOC = {
-  draft:     'Borrador',
-  sent:      'Enviado',
-  approved:  'Aprobado',
-  rejected:  'Rechazado',
-  pending:   'Pendiente',
-  paid:      'Pagado',
-  overdue:   'Vencido',
-  cancelled: 'Cancelado',
-  partial:   'Cuotas pendientes',
+
+const SECTION_TITLE = {
+  fontSize: 10.5, fontWeight: 600,
+  textTransform: 'uppercase', letterSpacing: '0.1em',
+  color: C.arena,
 }
+
+// ── estado de proyectos ───────────────────────────────────────────────────────
+
+const PROJECT_STATUS = {
+  pending:     { label: 'Pendiente',  bg: 'rgba(226,182,99,0.12)',  color: C.warn },
+  approved:    { label: 'Aprobado',   bg: 'rgba(142,177,222,0.12)', color: C.info },
+  in_progress: { label: 'En curso',   bg: 'rgba(125,190,147,0.12)', color: C.ok },
+  finished:    { label: 'Finalizado', bg: 'rgba(125,190,147,0.07)', color: C.ok },
+  cancelled:   { label: 'Cancelado',  bg: 'rgba(242,237,227,0.05)', color: C.piedra },
+}
+
+const QUOTE_STATUS = {
+  draft:     { label: 'Borrador',          bg: 'rgba(242,237,227,0.07)', color: C.piedra },
+  sent:      { label: 'Enviado',           bg: 'rgba(142,177,222,0.12)', color: C.info },
+  approved:  { label: 'Aprobado',          bg: 'rgba(125,190,147,0.12)', color: C.ok },
+  signed:    { label: 'Firmado',           bg: 'rgba(125,190,147,0.18)', color: C.ok },
+  rejected:  { label: 'Rechazado',         bg: 'rgba(229,131,115,0.12)', color: C.err },
+  cancelled: { label: 'Cancelado',         bg: 'rgba(229,131,115,0.08)', color: C.err },
+  expired:   { label: 'Vencido',           bg: 'rgba(242,237,227,0.05)', color: C.piedra },
+  pending:   { label: 'Pendiente',         bg: 'rgba(226,182,99,0.12)',  color: C.warn },
+  paid:      { label: 'Pagado',            bg: 'rgba(125,190,147,0.12)', color: C.ok },
+  overdue:   { label: 'Vencido',           bg: 'rgba(229,131,115,0.12)', color: C.err },
+  partial:   { label: 'Cuotas pendientes', bg: 'rgba(226,182,99,0.12)',  color: C.warn },
+}
+
+// ── atoms ─────────────────────────────────────────────────────────────────────
+
+function Badge({ bg, color, label }) {
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center',
+      padding: '2px 8px', borderRadius: '0 6px 6px 0',
+      fontSize: 10.5, fontWeight: 600,
+      background: bg, color,
+    }}>
+      {label}
+    </span>
+  )
+}
+
+function PanelHead({ title, count, to, linkLabel = 'Ver todos' }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+        <h3 style={SECTION_TITLE}>{title}</h3>
+        {count != null && (
+          <span style={{ fontSize: 11, color: C.piedra, fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>
+            ({count})
+          </span>
+        )}
+      </div>
+      {to && (
+        <Link
+          to={to}
+          style={{ fontSize: 11, color: C.piedra, textDecoration: 'none', transition: 'color 0.12s' }}
+          onMouseEnter={e => e.currentTarget.style.color = C.arena}
+          onMouseLeave={e => e.currentTarget.style.color = C.piedra}
+        >
+          {linkLabel} →
+        </Link>
+      )}
+    </div>
+  )
+}
+
+// ── page ──────────────────────────────────────────────────────────────────────
 
 export default function ClientDetailPage() {
   const { id } = useParams()
@@ -50,8 +116,8 @@ export default function ClientDetailPage() {
   const { user } = useAuth()
   const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
-  const [tab, setTab]             = useState('table')
-  const [editOpen, setEditOpen]   = useState(false)
+  const [tab, setTab]           = useState('info')
+  const [editOpen, setEditOpen] = useState(false)
   const [historyVisible, setHistoryVisible] = useState(25)
 
   const { data: clientRes, isLoading } = useQuery({
@@ -74,215 +140,315 @@ export default function ClientDetailPage() {
     queryFn: () => getClientHistory(id).then(r => r.data.data),
   })
 
+  if (isLoading) return <div style={{ padding: '40px 24px', fontSize: 13, color: C.piedra, fontFamily: 'Geist, system-ui, sans-serif' }}>Cargando...</div>
+  if (!clientRes) return <div style={{ padding: '40px 24px', fontSize: 13, color: C.piedra, fontFamily: 'Geist, system-ui, sans-serif' }}>Cliente no encontrado</div>
 
-  if (isLoading) return <div className="p-8 text-sm text-fg-soft">Cargando...</div>
-  if (!clientRes) return <div className="p-8 text-sm text-fg-soft">Cliente no encontrado</div>
-
-  const client = clientRes
+  const client   = clientRes
   const projects = projectsRes?.data || []
-  const quotes = quotesRes?.data || []
+  const quotes   = quotesRes?.data || []
+  const initials = client.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+
+  const tabBtn = (active) => ({
+    display: 'flex', alignItems: 'center', gap: 6,
+    padding: '5px 12px', borderRadius: '0 7px 7px 0',
+    fontSize: 12, fontWeight: 500, cursor: 'pointer',
+    background: active ? C.s3 : 'transparent',
+    color: active ? C.crema : C.piedra,
+    border: 'none', transition: 'color 0.12s, background 0.12s',
+  })
 
   return (
-    <div className="p-4 md:p-6">
-      <button onClick={() => navigate('/clients')} className="text-sm text-fg-muted hover:text-fg-soft mb-4 block">
+    <div style={{ padding: '28px 24px 40px', maxWidth: 1080, fontFamily: 'Geist, system-ui, sans-serif' }}>
+
+      {/* Back */}
+      <button
+        onClick={() => navigate('/clients')}
+        style={{
+          fontSize: 12, color: C.piedra, background: 'none', border: 'none',
+          cursor: 'pointer', marginBottom: 20, padding: 0, transition: 'color 0.12s',
+        }}
+        onMouseEnter={e => e.currentTarget.style.color = C.arena}
+        onMouseLeave={e => e.currentTarget.style.color = C.piedra}
+      >
         ← Clientes
       </button>
 
-      <div className="mb-8">
-        {/* Fila 1: título + tabs */}
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold text-fg leading-snug">{client.name}</h1>
-            {client.company && <p className="text-fg-soft mt-0.5 text-sm">{client.company}</p>}
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4" style={{ marginBottom: 28 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{
+            width: 48, height: 48, flexShrink: 0,
+            background: C.s2, border: `1px solid ${C.linea}`,
+            borderRadius: '0 12px 12px 0',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 14, fontWeight: 700, color: C.arena,
+          }}>
+            {initials}
           </div>
-          <div className="shrink-0 flex items-center gap-1 p-1 bg-raised rounded-lg border border-line">
+          <div className="min-w-0">
+            <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema }}>{client.name}</h1>
+            {client.company && <p style={{ fontSize: 13, color: C.piedra, marginTop: 2 }}>{client.company}</p>}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', flexShrink: 0 }}>
+          {canWrite && (
             <button
-              onClick={() => setTab('table')}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                tab === 'table' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'
-              }`}
+              onClick={() => setEditOpen(true)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '7px 14px', borderRadius: '0 8px 8px 0',
+                background: C.crema, color: C.bg,
+                fontSize: 12.5, fontWeight: 600,
+                border: 'none', cursor: 'pointer', transition: 'background 0.12s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = '#E8E3D9'}
+              onMouseLeave={e => e.currentTarget.style.background = C.crema}
             >
-              <TableCellsIcon className="w-4 h-4" />
-              Tabla
+              <AjustesIcon style={{ width: 12, height: 12 }} />
+              Editar
             </button>
-            <button
-              onClick={() => setTab('history')}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                tab === 'history' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'
-              }`}
-            >
-              <ClockIcon className="w-4 h-4" />
+          )}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 3,
+            padding: 4, background: C.s2, border: `1px solid ${C.linea}`,
+            borderRadius: '0 10px 10px 0',
+          }}>
+            <button onClick={() => setTab('info')} style={tabBtn(tab === 'info')}>
+              <ClienteIcon style={{ width: 11, height: 11 }} />
+              Info
+            </button>
+            <button onClick={() => setTab('history')} style={tabBtn(tab === 'history')}>
+              <AgendaIcon style={{ width: 11, height: 11 }} />
               Historial
             </button>
           </div>
         </div>
-
-        {/* Fila 2: acciones */}
-        {canWrite && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => setEditOpen(true)}
-              className="px-3 py-1.5 border border-line-soft rounded-md text-xs font-medium text-fg-soft hover:bg-raised transition-colors"
-            >
-              Editar
-            </button>
-          </div>
-        )}
       </div>
 
-      {tab === 'table' && <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="space-y-6">
-          <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-5">
-            <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide mb-4">Información</h3>
-            <dl className="space-y-3 text-sm">
-              {[
-                { label: 'Email', value: client.email },
-                { label: 'Teléfono', value: client.phone },
-                { label: 'Empresa', value: client.company },
-                { label: 'CUIL / CUIT', value: client.cuit },
-                { label: 'Dirección', value: client.address },
-              ].map(({ label, value }) => value && (
-                <div key={label}>
-                  <dt className="text-xs text-fg-muted uppercase mb-0.5">{label}</dt>
-                  <dd className="text-fg">{value}</dd>
-                </div>
-              ))}
-              {client.notes && (
-                <div>
-                  <dt className="text-xs text-fg-muted uppercase mb-0.5">Notas</dt>
-                  <dd className="text-fg whitespace-pre-line [overflow-wrap:anywhere]">{client.notes}</dd>
-                </div>
-              )}
-            </dl>
+      {/* ── Tab: Info ────────────────────────────────────────────── */}
+      {tab === 'info' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          {/* Columna izquierda */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+            {/* Datos del cliente */}
+            <div style={{ ...card, padding: '20px 24px' }}>
+              <div style={{ marginBottom: 16 }}>
+                <PanelHead title="Información" />
+              </div>
+              <dl style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {[
+                  { label: 'Email',         value: client.email },
+                  { label: 'Teléfono',      value: client.phone },
+                  { label: 'Empresa',       value: client.company },
+                  { label: 'CUIL / CUIT',   value: client.cuit },
+                  { label: 'Dirección',     value: client.address },
+                  { label: 'Provincia',     value: client.province },
+                  { label: 'Ciudad',        value: client.city },
+                  { label: 'Código postal', value: client.postalCode },
+                ].map(({ label, value }) => value && (
+                  <div key={label}>
+                    <dt style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: C.piedra, marginBottom: 3 }}>
+                      {label}
+                    </dt>
+                    <dd style={{ fontSize: 13, color: C.arena }}>{value}</dd>
+                  </div>
+                ))}
+                {client.notes && (
+                  <div>
+                    <dt style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: C.piedra, marginBottom: 3 }}>
+                      Notas
+                    </dt>
+                    <dd style={{ fontSize: 13, color: C.arena, whiteSpace: 'pre-line', overflowWrap: 'anywhere' }}>{client.notes}</dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+
+            {/* Adjuntos */}
+            <div style={{ ...card, padding: '20px 24px' }}>
+              <AttachmentsPanel entityType="client" entityId={id} />
+            </div>
           </div>
 
-          <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-5">
-            <AttachmentsPanel entityType="client" entityId={id} />
+          {/* Columna principal */}
+          <div className="lg:col-span-2" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+            {/* Proyectos */}
+            <div style={{ ...card, overflow: 'hidden' }}>
+              <div style={{ padding: '16px 20px', borderBottom: `1px solid ${C.linea}` }}>
+                <PanelHead
+                  title="Proyectos"
+                  count={projects.length}
+                  to={`/projects?clientId=${id}`}
+                />
+              </div>
+              {projects.length === 0 ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '16px 20px' }}>
+                  <ProyectoIcon style={{ width: 14, height: 14, color: C.linea }} />
+                  <p style={{ fontSize: 13, color: C.piedra }}>Sin proyectos</p>
+                </div>
+              ) : (
+                <ul>
+                  {projects.slice(0, 5).map((p, i) => {
+                    const st = PROJECT_STATUS[p.status] ?? { label: p.status, bg: 'rgba(242,237,227,0.05)', color: C.piedra }
+                    return (
+                      <li
+                        key={p.id}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+                          padding: '11px 20px',
+                          borderBottom: i < Math.min(projects.length, 5) - 1 ? `1px solid ${C.linea}` : 'none',
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = C.s2}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <div style={{ minWidth: 0 }}>
+                          <Link
+                            to={`/projects/${p.id}`}
+                            style={{ fontSize: 13, fontWeight: 500, color: C.crema, textDecoration: 'none', transition: 'color 0.12s' }}
+                            onMouseEnter={e => e.currentTarget.style.color = C.arena}
+                            onMouseLeave={e => e.currentTarget.style.color = C.crema}
+                          >
+                            {p.title}
+                          </Link>
+                          {p.budget != null && (
+                            <p style={{ fontSize: 11, color: C.piedra, marginTop: 2 }}>
+                              ${Number(p.budget).toLocaleString('es-AR')}
+                            </p>
+                          )}
+                        </div>
+                        <Badge bg={st.bg} color={st.color} label={st.label} />
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </div>
+
+            {/* Presupuestos */}
+            <div style={{ ...card, overflow: 'hidden' }}>
+              <div style={{ padding: '16px 20px', borderBottom: `1px solid ${C.linea}` }}>
+                <PanelHead
+                  title="Presupuestos"
+                  count={quotes.length}
+                  to="/quotes"
+                />
+              </div>
+              {quotes.length === 0 ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '16px 20px' }}>
+                  <PresupuestoIcon style={{ width: 14, height: 14, color: C.linea }} />
+                  <p style={{ fontSize: 13, color: C.piedra }}>Sin presupuestos</p>
+                </div>
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ background: C.s2, borderBottom: `1px solid ${C.linea}` }}>
+                      {['N°', 'Estado', 'Total'].map(h => (
+                        <th key={h} style={{ ...SECTION_TITLE, textAlign: 'left', padding: '10px 20px' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {quotes.slice(0, 5).map((q, i) => {
+                      const st = QUOTE_STATUS[q.status] ?? { label: q.status, bg: 'rgba(242,237,227,0.07)', color: C.piedra }
+                      return (
+                        <tr
+                          key={q.id}
+                          style={{ borderBottom: i < Math.min(quotes.length, 5) - 1 ? `1px solid ${C.linea}` : 'none' }}
+                          onMouseEnter={e => e.currentTarget.style.background = C.s2}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                        >
+                          <td style={{ padding: '11px 20px', fontWeight: 500, color: C.crema }}>{q.number}</td>
+                          <td style={{ padding: '11px 20px' }}>
+                            <Badge bg={st.bg} color={st.color} label={st.label} />
+                          </td>
+                          <td style={{
+                            padding: '11px 20px', color: C.arena,
+                            fontFamily: "'DanteUP Cifras', Geist, sans-serif",
+                            fontWeight: 600,
+                          }}>
+                            {q.total != null ? `$${Number(q.total).toLocaleString('es-AR')}` : '—'}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
           </div>
         </div>
+      )}
 
-        <div className="lg:col-span-2 space-y-6">
-          {/* Proyectos */}
-          <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-line">
-              <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide">
-                Proyectos <span className="text-fg-muted font-normal">({projects.length})</span>
-              </h3>
-              <Link to={`/projects?clientId=${id}`} className="text-xs text-brand hover:underline">Ver todos</Link>
-            </div>
-            {projects.length === 0 ? (
-              <p className="px-5 py-4 text-sm text-fg-muted">Sin proyectos</p>
-            ) : (
-              <ul className="divide-y divide-line">
-                {projects.slice(0, 5).map(p => (
-                  <li key={p.id} className="flex items-center justify-between px-5 py-3 hover:bg-raised">
-                    <div>
-                      <Link to={`/projects/${p.id}`} className="text-sm font-medium text-fg hover:text-brand">
-                        {p.title}
-                      </Link>
-                      {p.budget != null && (
-                        <p className="text-xs text-fg-muted">${Number(p.budget).toLocaleString('es-AR')}</p>
+      {/* ── Tab: Historial ───────────────────────────────────────── */}
+      {tab === 'history' && (
+        <div style={{ ...card, overflow: 'hidden', maxWidth: 640 }}>
+          <div style={{ padding: '16px 20px', borderBottom: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <AgendaIcon style={{ width: 14, height: 14, color: C.arena }} />
+            <span style={SECTION_TITLE}>Historial</span>
+            <span style={{ fontSize: 11, color: C.piedra }}>({historyData.length})</span>
+          </div>
+          {historyData.length === 0 ? (
+            <p style={{ padding: '24px 20px', fontSize: 13, color: C.piedra }}>Sin movimientos registrados.</p>
+          ) : (
+            <div style={{ padding: '20px' }}>
+              {historyData.slice(0, historyVisible).map((entry, i) => {
+                const initials = entry.user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+                const date    = new Date(entry.createdAt)
+                const dateStr = date.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
+                const timeStr = date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+                const shown   = historyData.slice(0, historyVisible)
+                return (
+                  <div key={entry.id} style={{ display: 'flex', gap: 12 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <div style={{
+                        width: 28, height: 28, flexShrink: 0,
+                        background: C.s3, border: `1px solid ${C.linea}`,
+                        borderRadius: '0 7px 7px 0',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 10, fontWeight: 700, color: C.arena,
+                      }}>
+                        {initials}
+                      </div>
+                      {i < shown.length - 1 && (
+                        <div style={{ width: 1, flex: 1, background: C.linea, margin: '3px 0', minHeight: 12 }} />
                       )}
                     </div>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS_PROJECT[p.status]}`}>
-                      {STATUS_LABELS_PROJECT[p.status]}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          {/* Presupuestos */}
-          <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-line">
-              <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide">
-                Presupuestos <span className="text-fg-muted font-normal">({quotes.length})</span>
-              </h3>
-              <Link to="/quotes" className="text-xs text-brand hover:underline">Ver todos</Link>
-            </div>
-            {quotes.length === 0 ? (
-              <p className="px-5 py-4 text-sm text-fg-muted">Sin presupuestos</p>
-            ) : (
-              <table className="w-full text-sm">
-                <thead className="bg-raised">
-                  <tr>
-                    {['N°', 'Estado', 'Total'].map(h => (
-                      <th key={h} className="text-left px-5 py-2 text-xs font-medium text-fg-soft uppercase">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-line">
-                  {quotes.slice(0, 5).map(q => (
-                    <tr key={q.id} className="hover:bg-raised">
-                      <td className="px-5 py-3 font-medium text-fg">{q.number}</td>
-                      <td className="px-5 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS_DOC[q.status] || 'bg-raised text-fg-soft'}`}>
-                          {STATUS_LABELS_DOC[q.status] || q.status}
+                    <div style={{ paddingBottom: 14, flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '0 6px' }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: C.crema }}>{entry.user.name}</span>
+                        <span style={{ fontSize: 13, color: C.piedra }}>
+                          {entry.action === 'created' ? 'creó el cliente' : 'actualizó'}
+                          {entry.detail && <span style={{ color: C.arena }}> · {entry.detail}</span>}
                         </span>
-                      </td>
-                      <td className="px-5 py-3 text-fg-soft">
-                        {q.total != null ? `$${Number(q.total).toLocaleString('es-AR')}` : '-'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-
-        </div>
-      </div>}
-
-      {/* Historial */}
-      {tab === 'history' && <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line overflow-hidden">
-        <div className="flex items-center gap-2 px-5 py-4 border-b border-line">
-          <ClockIcon className="w-4 h-4 text-fg-muted" />
-          <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide">Historial</h3>
-          <span className="text-xs text-fg-muted">({historyData.length})</span>
-        </div>
-        {historyData.length === 0 ? (
-          <p className="px-5 py-4 text-sm text-fg-muted">Sin movimientos registrados.</p>
-        ) : (
-          <div className="p-5 flex flex-col gap-1">
-            {historyData.slice(0, historyVisible).map((entry, i) => {
-              const initials = entry.user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-              const date = new Date(entry.createdAt)
-              const dateStr = date.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
-              const timeStr = date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
-              const shown = historyData.slice(0, historyVisible)
-              return (
-                <div key={entry.id} className="flex gap-3">
-                  <div className="flex flex-col items-center">
-                    <div className="w-7 h-7 rounded-full bg-brand-subtle text-brand text-[10px] font-bold flex items-center justify-center shrink-0">
-                      {initials}
+                      </div>
+                      <p style={{ fontSize: 11, color: C.piedra, marginTop: 2 }}>{dateStr} · {timeStr}</p>
                     </div>
-                    {i < shown.length - 1 && <div className="w-px flex-1 bg-line mt-1 mb-1 min-h-[12px]" />}
                   </div>
-                  <div className="pb-3 flex-1 min-w-0">
-                    <div className="flex flex-wrap items-baseline gap-x-1.5">
-                      <span className="text-sm font-semibold text-fg">{entry.user.name}</span>
-                      <span className="text-sm text-fg-muted">
-                        {entry.action === 'created' ? 'creó el cliente' : 'actualizó'}
-                        {entry.detail && <span className="text-fg-soft"> · {entry.detail}</span>}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-fg-muted/70 mt-0.5">{dateStr} · {timeStr}</p>
-                  </div>
-                </div>
-              )
-            })}
-            {historyData.length > historyVisible && (
-              <button
-                onClick={() => setHistoryVisible(v => v + 25)}
-                className="mt-1 text-xs text-fg-muted hover:text-fg text-center py-2 border border-dashed border-line rounded-xl transition-colors"
-              >
-                Mostrar más ({historyData.length - historyVisible} restante{historyData.length - historyVisible !== 1 ? 's' : ''})
-              </button>
-            )}
-          </div>
-        )}
-      </div>}
+                )
+              })}
+              {historyData.length > historyVisible && (
+                <button
+                  onClick={() => setHistoryVisible(v => v + 25)}
+                  style={{
+                    marginTop: 4, width: '100%', padding: '10px 0',
+                    fontSize: 12, color: C.piedra,
+                    border: `1px dashed ${C.linea}`,
+                    borderRadius: '0 12px 12px 0',
+                    background: 'none', cursor: 'pointer',
+                  }}
+                >
+                  Mostrar más ({historyData.length - historyVisible} restante{historyData.length - historyVisible !== 1 ? 's' : ''})
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {editOpen && (
         <ClientModal

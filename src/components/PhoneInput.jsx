@@ -1,8 +1,68 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useState } from 'react'
-import { ChevronDownIcon, XMarkIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline'
-import { CheckIcon } from '@heroicons/react/24/solid'
 import { isValidPhoneNumber } from 'libphonenumber-js'
+
+// ── tokens ────────────────────────────────────────────────────────────────────
+
+const C = {
+  bg:    '#0B0B0C',
+  s1:    '#141415',
+  s2:    '#1E1E20',
+  s3:    '#26262A',
+  linea: '#2C2C2F',
+  crema: '#F2EDE3',
+  arena: '#B9B4AA',
+  piedra:'#8C877E',
+  err:   '#E58373',
+  ok:    '#7DB99A',
+}
+
+// ── iconos inline ─────────────────────────────────────────────────────────────
+
+function ChevronIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
+      strokeLinecap="round" strokeLinejoin="round"
+      style={{ width: 11, height: 11, flexShrink: 0 }}>
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  )
+}
+
+function CloseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
+      strokeLinecap="round" strokeLinejoin="round"
+      style={{ width: 18, height: 18 }}>
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  )
+}
+
+function CheckMarkIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}
+      strokeLinecap="round" strokeLinejoin="round"
+      style={{ width: 13, height: 13, flexShrink: 0 }}>
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  )
+}
+
+function WarnIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}
+      strokeLinecap="round" strokeLinejoin="round"
+      style={{ width: 13, height: 13, flexShrink: 0 }}>
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="12" />
+      <line x1="12" y1="16" x2="12.01" y2="16" />
+    </svg>
+  )
+}
+
+// ── data ──────────────────────────────────────────────────────────────────────
 
 export const PHONE_COUNTRIES = [
   { code: 'AR', name: 'Argentina',      dial: '+54',  flag: '🇦🇷' },
@@ -41,12 +101,12 @@ export function checkPhone(digits, countryCode) {
 
 /**
  * Props:
- *   countryCode       string   — e.g. 'AR'
- *   phoneNumber       string   — formatted local number
- *   onChangeCountry   fn(code) — country changed
- *   onChangeNumber    fn(str)  — number changed (formatted)
- *   onValidChange     fn(bool) — validity changed
- *   label             string   — optional, default 'Teléfono'
+ *   countryCode       string        — e.g. 'AR'
+ *   phoneNumber       string        — formatted local number
+ *   onChangeCountry   fn(code)      — country changed
+ *   onChangeNumber    fn(str)       — number changed (formatted)
+ *   onValidChange     fn(bool)      — validity changed
+ *   label             string|null   — label text; pass null to suppress
  */
 export default function PhoneInput({
   countryCode,
@@ -56,24 +116,26 @@ export default function PhoneInput({
   onValidChange,
   label = 'Teléfono',
 }) {
-  const [open, setOpen]     = useState(false)
-  const [search, setSearch] = useState('')
+  const [open, setOpen]       = useState(false)
+  const [search, setSearch]   = useState('')
   const [touched, setTouched] = useState(false)
+  const [focused, setFocused] = useState(false)
 
   const selected = PHONE_COUNTRIES.find(c => c.code === countryCode) || PHONE_COUNTRIES[0]
   const filtered = PHONE_COUNTRIES.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase()) || c.dial.includes(search)
   )
 
-  const digits      = phoneNumber.replace(/\D/g, '')
-  const isValid     = checkPhone(digits, countryCode)
-  const hasError    = touched && !isValid
-  const hasSuccess  = touched && digits.length > 0 && isValid
+  const digits     = phoneNumber.replace(/\D/g, '')
+  const isValid    = checkPhone(digits, countryCode)
+  const hasError   = touched && !isValid
+  const hasSuccess = touched && digits.length > 0 && isValid
+
+  const borderColor = hasError ? C.err : hasSuccess ? C.ok : focused ? C.arena : C.linea
 
   function handleCountry(code) {
     onChangeCountry(code)
-    const d = phoneNumber.replace(/\D/g, '')
-    onValidChange?.(checkPhone(d, code))
+    onValidChange?.(checkPhone(phoneNumber.replace(/\D/g, ''), code))
     setOpen(false)
     setSearch('')
   }
@@ -81,74 +143,137 @@ export default function PhoneInput({
   function handleNumber(e) {
     const formatted = formatPhoneNumber(e.target.value)
     onChangeNumber(formatted)
-    const d = formatted.replace(/\D/g, '')
-    onValidChange?.(checkPhone(d, countryCode))
+    onValidChange?.(checkPhone(formatted.replace(/\D/g, ''), countryCode))
   }
 
   function handleBlur() {
     setTouched(true)
+    setFocused(false)
     onValidChange?.(isValid)
   }
 
   function close() { setOpen(false); setSearch('') }
 
-  const borderCls = hasError
-    ? 'border-red-400 focus-within:ring-red-300'
-    : hasSuccess
-      ? 'border-emerald-500 focus-within:ring-emerald-200'
-      : 'border-zinc-200 dark:border-zinc-700 focus-within:ring-slate-200 dark:focus-within:ring-slate-600'
-
   return (
-    <div>
-      {label && <label className="block text-xs font-semibold text-zinc-500 mb-1">{label}</label>}
+    <div style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
+      {label && (
+        <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: C.arena, marginBottom: 6 }}>
+          {label}
+        </label>
+      )}
 
-      <div className={`flex rounded-xl border overflow-hidden focus-within:ring-2 transition-all ${borderCls} bg-white dark:bg-zinc-800`}>
-        {/* Selector de país */}
+      {/* Input row */}
+      <div style={{
+        display: 'flex', height: 42,
+        background: C.bg,
+        border: `1px solid ${borderColor}`,
+        borderRadius: '0 10px 10px 0',
+        overflow: 'hidden',
+        transition: 'border-color 0.12s',
+        boxSizing: 'border-box',
+      }}>
+        {/* Country selector */}
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-2.5 bg-zinc-50 dark:bg-zinc-700/60 border-r border-zinc-200 dark:border-zinc-700 shrink-0 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '0 10px',
+            background: C.s1,
+            borderRight: `1px solid ${C.linea}`,
+            color: C.arena,
+            border: 'none',
+            borderRight: `1px solid ${C.linea}`,
+            cursor: 'pointer',
+            flexShrink: 0,
+            transition: 'background 0.12s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = C.s2}
+          onMouseLeave={e => e.currentTarget.style.background = C.s1}
         >
-          <span className="text-base leading-none">{selected.flag}</span>
-          <span className="text-xs text-zinc-600 dark:text-zinc-300 font-mono">{selected.dial}</span>
-          <ChevronDownIcon className="w-3 h-3 text-zinc-400" />
+          <span style={{ fontSize: 14, lineHeight: 1 }}>{selected.flag}</span>
+          <span style={{ fontSize: 12, color: C.arena, fontFamily: 'monospace' }}>{selected.dial}</span>
+          <ChevronIcon />
         </button>
 
-        {/* Input de número */}
+        {/* Number input */}
         <input
           type="tel"
           value={phoneNumber}
           onChange={handleNumber}
+          onFocus={() => setFocused(true)}
           onBlur={handleBlur}
           placeholder="11 1234-5678"
-          className="flex-1 px-3 py-2.5 bg-transparent text-sm text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none"
+          style={{
+            flex: 1, height: '100%',
+            background: 'transparent',
+            border: 'none', outline: 'none',
+            padding: '0 14px',
+            fontSize: 13,
+            color: C.crema,
+            boxSizing: 'border-box',
+          }}
+          className="placeholder:text-[#8C877E]"
         />
       </div>
 
-      {/* Mensajes de validación */}
+      {/* Validation messages */}
       {hasError && (
-        <p className="mt-1.5 text-xs text-red-500 flex items-center gap-1">
-          <ExclamationCircleIcon className="w-3.5 h-3.5 shrink-0" />
+        <p style={{ marginTop: 6, fontSize: 11, color: C.err, display: 'flex', alignItems: 'center', gap: 5 }}>
+          <WarnIcon />
           {digits.length === 0 ? 'El teléfono es obligatorio' : `Número inválido para ${selected.name}`}
         </p>
       )}
       {hasSuccess && (
-        <p className="mt-1.5 text-xs text-emerald-600 flex items-center gap-1">
-          <CheckIcon className="w-3.5 h-3.5 shrink-0" />
+        <p style={{ marginTop: 6, fontSize: 11, color: C.ok, display: 'flex', alignItems: 'center', gap: 5 }}>
+          <CheckMarkIcon />
           Número válido
         </p>
       )}
 
-      {/* Dropdown de países — bottom-sheet en mobile */}
+      {/* Country dropdown */}
       {open && (
-        <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={close} />
-          <div className="relative w-full sm:max-w-sm bg-white dark:bg-zinc-900 rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[70vh]">
-            <div className="shrink-0 px-4 pt-4 pb-3 border-b border-zinc-100 dark:border-zinc-800">
-              <div className="flex items-center justify-between mb-3">
-                <p className="font-semibold text-zinc-800 dark:text-zinc-100">Código de área</p>
-                <button type="button" onClick={close} className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-lg">
-                  <XMarkIcon className="w-5 h-5" />
+        <div style={{
+          position: 'fixed', inset: 0,
+          zIndex: 200,
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+        }}>
+          <div
+            style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)' }}
+            onClick={close}
+          />
+          <div style={{
+            position: 'relative',
+            width: '100%', maxWidth: 380,
+            background: C.s2,
+            border: `1px solid ${C.linea}`,
+            borderRadius: '0 16px 0 0',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.7)',
+            overflow: 'hidden',
+            display: 'flex', flexDirection: 'column',
+            maxHeight: '65vh',
+          }}>
+            {/* Dropdown header */}
+            <div style={{
+              flexShrink: 0,
+              padding: '14px 16px 12px',
+              borderBottom: `1px solid ${C.linea}`,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: C.crema }}>Código de área</span>
+                <button
+                  type="button"
+                  onClick={close}
+                  style={{
+                    background: 'none', border: 'none',
+                    color: C.piedra, cursor: 'pointer', padding: '2px',
+                    display: 'flex', alignItems: 'center',
+                    transition: 'color 0.12s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.color = C.arena}
+                  onMouseLeave={e => e.currentTarget.style.color = C.piedra}
+                >
+                  <CloseIcon />
                 </button>
               </div>
               <input
@@ -157,32 +282,74 @@ export default function PhoneInput({
                 placeholder="Buscar país..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm text-zinc-800 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-slate-500 placeholder:text-zinc-400"
+                style={{
+                  width: '100%', height: 36,
+                  background: C.s3,
+                  border: `1px solid ${C.linea}`,
+                  borderRadius: '0 8px 8px 0',
+                  color: C.crema, fontSize: 12,
+                  padding: '0 12px',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                }}
+                className="focus:border-[#B9B4AA] placeholder:text-[#8C877E]"
               />
             </div>
-            <div className="overflow-y-auto flex-1">
+
+            {/* Country list */}
+            <div style={{ overflowY: 'auto', flex: 1 }}>
               {filtered.length === 0 && (
-                <p className="px-5 py-4 text-sm text-zinc-400">Sin resultados</p>
+                <p style={{ padding: '14px 16px', fontSize: 12, color: C.piedra }}>Sin resultados</p>
               )}
               {filtered.map(c => (
-                <button
+                <CountryRow
                   key={c.code}
-                  type="button"
-                  onClick={() => handleCountry(c.code)}
-                  className="w-full flex items-center gap-3 px-5 py-3 text-sm border-b border-zinc-50 dark:border-zinc-800/60 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
-                >
-                  <span className="text-base leading-none">{c.flag}</span>
-                  <span className={`flex-1 text-left ${c.code === countryCode ? 'font-semibold text-emerald-600' : 'text-zinc-700 dark:text-zinc-200'}`}>
-                    {c.name}
-                  </span>
-                  <span className="font-mono text-xs text-zinc-400">{c.dial}</span>
-                  {c.code === countryCode && <CheckIcon className="w-4 h-4 text-emerald-600 shrink-0" />}
-                </button>
+                  country={c}
+                  selected={c.code === countryCode}
+                  onSelect={() => handleCountry(c.code)}
+                />
               ))}
             </div>
           </div>
         </div>
       )}
     </div>
+  )
+}
+
+function CountryRow({ country: c, selected, onSelect }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      style={{
+        width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+        padding: '10px 16px',
+        background: selected || hovered ? C.s3 : 'transparent',
+        border: 'none',
+        borderBottom: `1px solid ${C.linea}`,
+        cursor: 'pointer',
+        textAlign: 'left',
+        transition: 'background 0.1s',
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <span style={{ fontSize: 14, lineHeight: 1 }}>{c.flag}</span>
+      <span style={{
+        flex: 1, fontSize: 12,
+        color: selected ? C.crema : C.arena,
+        fontWeight: selected ? 600 : 400,
+      }}>
+        {c.name}
+      </span>
+      <span style={{ fontSize: 11, color: C.piedra, fontFamily: 'monospace' }}>{c.dial}</span>
+      {selected && (
+        <span style={{ color: C.ok, display: 'flex' }}>
+          <CheckMarkIcon />
+        </span>
+      )}
+    </button>
   )
 }

@@ -4,9 +4,46 @@ import { Link } from 'react-router-dom'
 import { getClients, getAllClientsHistory } from '../../api/clients'
 import ClientModal from './ClientModal'
 import { useAuth } from '../../context/AuthContext'
-import { EnvelopeIcon, PhoneIcon, BuildingOfficeIcon, EyeIcon, ClockIcon, TableCellsIcon, ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import {
+  ClienteIcon,
+  BuscarIcon,
+  MasIcon,
+  AgendaIcon,
+  ProyectoIcon,
+} from '../../components/DuIcons'
+
+// ── tokens ────────────────────────────────────────────────────────────────────
+
+const C = {
+  bg:    '#0B0B0C',
+  s1:    '#141415',
+  s2:    '#1E1E20',
+  s3:    '#26262A',
+  linea: '#2C2C2F',
+  crema: '#F2EDE3',
+  arena: '#B9B4AA',
+  piedra:'#8C877E',
+  ok:    '#7DBE93',
+  warn:  '#E2B663',
+  err:   '#E58373',
+  info:  '#8EB1DE',
+}
+
+const card = {
+  background: C.s1,
+  border: `1px solid ${C.linea}`,
+  borderRadius: '0 16px 16px 0',
+}
+
+const SECTION_TITLE = {
+  fontSize: 10.5, fontWeight: 600,
+  textTransform: 'uppercase', letterSpacing: '0.1em',
+  color: C.arena,
+}
 
 const PAGE_SIZE = 15
+
+// ── component ─────────────────────────────────────────────────────────────────
 
 export default function ClientsPage() {
   const { user } = useAuth()
@@ -16,9 +53,7 @@ export default function ClientsPage() {
   const [search, setSearch]   = useState('')
   const [visible, setVisible] = useState(PAGE_SIZE)
   const [modalOpen, setModalOpen] = useState(false)
-  const [editing, setEditing] = useState(null)
   const [historyVisible, setHistoryVisible] = useState(25)
-  const [filtersOpen, setFiltersOpen] = useState(false)
 
   const { data, isLoading } = useQuery({
     queryKey: ['clients', search],
@@ -31,104 +66,118 @@ export default function ClientsPage() {
     enabled: tab === 'history',
   })
 
-  function openCreate() { setEditing(null); setModalOpen(true) }
   function handleSearch(val) { setSearch(val); setVisible(PAGE_SIZE) }
 
-  const allClients = data?.data ?? []
+  const allClients  = data?.data ?? []
   const shownClients = allClients.slice(0, visible)
-  const hasMore = allClients.length > visible
-  const activeFilterCount = search ? 1 : 0
+  const hasMore     = allClients.length > visible
+
+  const tabBtn = (active) => ({
+    display: 'flex', alignItems: 'center', gap: 6,
+    padding: '5px 12px', borderRadius: '0 7px 7px 0',
+    fontSize: 12, fontWeight: 500, cursor: 'pointer',
+    background: active ? C.s3 : 'transparent',
+    color: active ? C.crema : C.piedra,
+    border: 'none', transition: 'color 0.12s, background 0.12s',
+  })
 
   return (
-    <div className="p-4 md:p-8 min-h-full">
-      <div className="mb-6">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <h2 className="text-xl font-semibold text-fg">Clientes</h2>
-          <div className="shrink-0 flex items-center gap-0.5 p-1 bg-raised rounded-lg border border-line">
-            <button
-              onClick={() => setTab('table')}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                tab === 'table' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'
-              }`}
-            >
-              <TableCellsIcon className="w-4 h-4" />
+    <div style={{ padding: '28px 24px 40px', maxWidth: 1080, fontFamily: 'Geist, system-ui, sans-serif' }}>
+
+      {/* ── Header ──────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <ClienteIcon style={{ width: 18, height: 18, color: C.arena }} />
+          <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema }}>Clientes</h2>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 3,
+            padding: 4, background: C.s2, border: `1px solid ${C.linea}`,
+            borderRadius: '0 10px 10px 0',
+          }}>
+            <button onClick={() => setTab('table')} style={tabBtn(tab === 'table')}>
+              <ProyectoIcon style={{ width: 11, height: 11 }} />
               Tabla
             </button>
-            <button
-              onClick={() => setTab('history')}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                tab === 'history' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'
-              }`}
-            >
-              <ClockIcon className="w-4 h-4" />
+            <button onClick={() => setTab('history')} style={tabBtn(tab === 'history')}>
+              <AgendaIcon style={{ width: 11, height: 11 }} />
               Historial
             </button>
           </div>
-        </div>
-        {tab === 'table' && (
-          <div className="flex items-center gap-2">
+
+          {canWrite && tab === 'table' && (
             <button
-              onClick={() => setFiltersOpen(v => !v)}
-              className={`md:hidden flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-medium transition-colors ${
-                activeFilterCount > 0
-                  ? 'border-brand bg-brand-subtle text-brand'
-                  : 'border-line bg-raised text-fg-muted hover:text-fg'
-              }`}
+              onClick={() => setModalOpen(true)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 7,
+                padding: '0 14px', borderRadius: '0 8px 8px 0',
+                alignSelf: 'stretch',
+                background: C.crema, color: C.bg,
+                fontSize: 12.5, fontWeight: 600,
+                border: 'none', cursor: 'pointer', flexShrink: 0,
+                transition: 'background 0.12s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = '#E8E3D9'}
+              onMouseLeave={e => e.currentTarget.style.background = C.crema}
             >
-              Buscar
-              {activeFilterCount > 0 && (
-                <span className="w-4 h-4 flex items-center justify-center rounded-full bg-brand text-white text-[10px] font-bold">
-                  {activeFilterCount}
-                </span>
-              )}
-              <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform ${filtersOpen ? 'rotate-180' : ''}`} />
+              <MasIcon style={{ width: 12, height: 12 }} />
+              Nuevo cliente
             </button>
-            {canWrite && (
-              <button onClick={openCreate} className="ml-auto px-3 py-1.5 rounded-md bg-brand text-white text-xs font-medium hover:opacity-90 transition-opacity">
-                + Nuevo cliente
-              </button>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
+      {/* ── Historial ─────────────────────────────────────────────── */}
       {tab === 'history' && (
-        <div className="flex flex-col gap-4 max-w-2xl">
+        <div style={{ maxWidth: 580 }}>
           {historyData.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3 text-fg-muted">
-              <ClockIcon className="w-10 h-10 opacity-30" />
-              <p className="text-sm">Sin movimientos registrados.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '60px 0', gap: 12 }}>
+              <AgendaIcon style={{ width: 36, height: 36, color: C.linea }} />
+              <p style={{ fontSize: 13, color: C.piedra }}>Sin movimientos registrados.</p>
             </div>
           ) : (
-            <div className="flex flex-col gap-1">
+            <div>
               {historyData.slice(0, historyVisible).map((entry, i) => {
                 const initials = entry.user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-                const date = new Date(entry.createdAt)
-                const dateStr = date.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
-                const timeStr = date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
-                const shown = historyData.slice(0, historyVisible)
+                const date     = new Date(entry.createdAt)
+                const dateStr  = date.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
+                const timeStr  = date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+                const shown    = historyData.slice(0, historyVisible)
                 return (
-                  <div key={entry.id} className="flex gap-4">
-                    <div className="flex flex-col items-center">
-                      <div className="w-8 h-8 rounded-full bg-brand-subtle text-brand text-[11px] font-bold flex items-center justify-center shrink-0">
+                  <div key={entry.id} style={{ display: 'flex', gap: 14 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <div style={{
+                        width: 32, height: 32, flexShrink: 0,
+                        background: C.s2, border: `1px solid ${C.linea}`,
+                        borderRadius: '0 8px 8px 0',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 10.5, fontWeight: 700, color: C.arena,
+                      }}>
                         {initials}
                       </div>
-                      {i < shown.length - 1 && <div className="w-px flex-1 bg-line mt-1 mb-1 min-h-[16px]" />}
+                      {i < shown.length - 1 && (
+                        <div style={{ width: 1, flex: 1, background: C.linea, margin: '4px 0', minHeight: 16 }} />
+                      )}
                     </div>
-                    <div className="pb-4 flex-1 min-w-0">
-                      <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-                        <span className="text-sm font-semibold text-fg">{entry.user.name}</span>
-                        <span className="text-sm text-fg-muted">
+                    <div style={{ paddingBottom: 16, flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '0 6px' }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: C.crema }}>{entry.user.name}</span>
+                        <span style={{ fontSize: 13, color: C.piedra }}>
                           {entry.action === 'created' ? 'creó el cliente' : 'actualizó'}
+                          {entry.detail && <span style={{ color: C.arena }}> · {entry.detail}</span>}
                         </span>
-                        {entry.detail && (
-                          <span className="text-sm text-fg-soft">· {entry.detail}</span>
-                        )}
                       </div>
-                      <Link to={`/clients/${entry.client.id}`} className="text-xs text-brand hover:underline">
+                      <Link
+                        to={`/clients/${entry.client.id}`}
+                        style={{ fontSize: 12, color: C.info, textDecoration: 'none' }}
+                        onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
+                        onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
+                      >
                         {entry.client.name}
                       </Link>
-                      <p className="text-[11px] text-fg-muted/70 mt-0.5">{dateStr} · {timeStr}</p>
+                      <p style={{ fontSize: 11, color: C.piedra, marginTop: 2 }}>{dateStr} · {timeStr}</p>
                     </div>
                   </div>
                 )
@@ -136,7 +185,13 @@ export default function ClientsPage() {
               {historyData.length > historyVisible && (
                 <button
                   onClick={() => setHistoryVisible(v => v + 25)}
-                  className="mt-2 text-xs text-fg-muted hover:text-fg text-center py-2 border border-dashed border-line rounded-xl transition-colors"
+                  style={{
+                    marginTop: 8, width: '100%', padding: '10px 0',
+                    fontSize: 12, color: C.piedra,
+                    border: `1px dashed ${C.linea}`,
+                    borderRadius: '0 12px 12px 0',
+                    background: 'none', cursor: 'pointer',
+                  }}
                 >
                   Mostrar más ({historyData.length - historyVisible} restante{historyData.length - historyVisible !== 1 ? 's' : ''})
                 </button>
@@ -146,141 +201,187 @@ export default function ClientsPage() {
         </div>
       )}
 
-      {tab === 'table' && <>
-      {/* Mobile: panel de búsqueda */}
-      {filtersOpen && (
-        <div className="md:hidden mb-4 p-3 rounded-xl border border-line bg-surface space-y-2">
-          <input
-            type="text"
-            placeholder="Buscar por nombre..."
-            value={search}
-            onChange={e => handleSearch(e.target.value)}
-            className="w-full px-3 py-2 border border-line rounded-lg text-sm bg-surface text-fg placeholder:text-fg-muted focus:outline-none focus:ring-2 focus:ring-brand"
-          />
-          {search && (
-            <button
-              onClick={() => handleSearch('')}
-              className="flex items-center gap-1 text-xs text-danger/70 hover:text-danger transition-colors"
-            >
-              <XMarkIcon className="w-3.5 h-3.5" />
-              Limpiar búsqueda
-            </button>
-          )}
-        </div>
-      )}
-      {/* Desktop: búsqueda inline */}
-      <input
-        type="text"
-        placeholder="Buscar por nombre..."
-        value={search}
-        onChange={e => handleSearch(e.target.value)}
-        className="hidden md:block mb-4 md:max-w-xs px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg placeholder:text-fg-muted"
-      />
-
-      {isLoading ? (
-        <p className="text-sm text-fg-soft">Cargando...</p>
-      ) : (
+      {/* ── Tabla ─────────────────────────────────────────────────── */}
+      {tab === 'table' && (
         <>
-          {/* Mobile: cards */}
-          <div className="md:hidden grid grid-cols-1 gap-3">
-            {shownClients.map(c => (
-              <div key={c.id} className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-4">
-                {/* Avatar + nombre */}
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-11 h-11 rounded-full bg-brand-subtle text-brand font-bold text-sm flex items-center justify-center shrink-0 uppercase">
-                    {c.name?.split(' ').map(w => w[0]).join('').slice(0, 2)}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-fg truncate leading-snug">{c.name}</p>
-                    {c.company && <p className="text-xs text-fg-muted truncate">{c.company}</p>}
-                  </div>
-                </div>
-                {/* Meta */}
-                <div className="space-y-1.5 mb-4">
-                  {c.email && (
-                    <p className="text-xs text-fg-soft flex items-center gap-2 truncate">
-                      <EnvelopeIcon className="w-3.5 h-3.5 shrink-0 text-fg-muted" />
-                      {c.email}
-                    </p>
-                  )}
-                  {c.phone && (
-                    <p className="text-xs text-fg-soft flex items-center gap-2">
-                      <PhoneIcon className="w-3.5 h-3.5 shrink-0 text-fg-muted" />
-                      {c.phone}
-                    </p>
-                  )}
-                  {c.company && (
-                    <p className="text-xs text-fg-soft flex items-center gap-2 truncate">
-                      <BuildingOfficeIcon className="w-3.5 h-3.5 shrink-0 text-fg-muted" />
-                      {c.company}
-                    </p>
-                  )}
-                </div>
-                {/* Acciones */}
-                <div className="flex items-center gap-2 pt-3 border-t border-line">
-                  <Link to={`/clients/${c.id}`} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium bg-brand text-white hover:opacity-90 transition-opacity">
-                    <EyeIcon className="w-3.5 h-3.5" />
-                    Ver
-                  </Link>
-                </div>
-              </div>
-            ))}
-            {!allClients.length && (
-              <p className="py-10 text-center text-sm text-fg-muted">Sin clientes</p>
+          {/* Búsqueda */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, maxWidth: 320 }}>
+            <div style={{ flex: 1, position: 'relative' }}>
+              <BuscarIcon style={{
+                width: 13, height: 13, color: C.piedra,
+                position: 'absolute', left: 12, top: '50%',
+                transform: 'translateY(-50%)', pointerEvents: 'none',
+              }} />
+              <input
+                type="text"
+                placeholder="Buscar por nombre..."
+                value={search}
+                onChange={e => handleSearch(e.target.value)}
+                className="placeholder:text-[#8C877E]"
+                style={{
+                  width: '100%', height: 38, paddingLeft: 34, paddingRight: 12,
+                  background: C.bg, border: `1px solid ${C.linea}`,
+                  borderRadius: '0 10px 10px 0', color: C.crema,
+                  fontSize: 13, boxSizing: 'border-box', outline: 'none',
+                }}
+                onFocus={e => e.target.style.borderColor = C.arena}
+                onBlur={e => e.target.style.borderColor = C.linea}
+              />
+            </div>
+            {search && (
+              <button
+                onClick={() => handleSearch('')}
+                style={{ fontSize: 11, color: C.err, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', flexShrink: 0 }}
+              >
+                Limpiar
+              </button>
             )}
           </div>
 
-          {/* Desktop: tabla */}
-          <div className="hidden md:block bg-surface/60 backdrop-blur-xl rounded-xl border border-line overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-raised border-b border-line">
-                  <tr>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Nombre</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Email</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Empresa</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide">Teléfono</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-fg-soft uppercase tracking-wide"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-line">
-                  {shownClients.map(c => (
-                    <tr key={c.id} className="hover:bg-raised">
-                      <td className="px-4 py-3 font-medium text-fg">{c.name}</td>
-                      <td className="px-4 py-3 text-fg-soft">{c.email || '-'}</td>
-                      <td className="px-4 py-3 text-fg-soft">{c.company || '-'}</td>
-                      <td className="px-4 py-3 text-fg-soft">{c.phone || '-'}</td>
-                      <td className="px-4 py-3 text-right">
-                        <Link to={`/clients/${c.id}`} className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium bg-brand text-white hover:opacity-90 transition-opacity">
-                          <EyeIcon className="w-3.5 h-3.5" />
-                          Ver
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                  {!allClients.length && (
-                    <tr><td colSpan={5} className="px-4 py-6 text-center text-fg-muted">Sin clientes</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          {isLoading ? (
+            <p style={{ fontSize: 13, color: C.piedra }}>Cargando...</p>
+          ) : (
+            <>
+              {/* Desktop: tabla */}
+              <div className="hidden md:block" style={{ ...card, overflow: 'hidden' }}>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                    <thead>
+                      <tr style={{ background: C.linea }}>
+                        {['Cliente', 'Email', 'Empresa', 'Teléfono', ''].map((h, i) => (
+                          <th key={i} style={{
+                            textAlign: 'left', padding: '11px 20px',
+                            fontSize: 11, fontWeight: 700,
+                            textTransform: 'uppercase', letterSpacing: '0.08em',
+                            color: C.crema,
+                          }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {shownClients.map(c => (
+                        <tr
+                          key={c.id}
+                          style={{ borderBottom: `1px solid ${C.linea}` }}
+                          onMouseEnter={e => e.currentTarget.style.background = C.s2}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                        >
+                          <td style={{ padding: '12px 20px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              <div style={{
+                                width: 30, height: 30, flexShrink: 0,
+                                background: C.s3, borderRadius: '0 7px 7px 0',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontSize: 10.5, fontWeight: 700, color: C.arena,
+                              }}>
+                                {c.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+                              </div>
+                              <span style={{ fontWeight: 500, color: C.crema }}>{c.name}</span>
+                            </div>
+                          </td>
+                          <td style={{ padding: '12px 20px', color: C.piedra }}>{c.email || '—'}</td>
+                          <td style={{ padding: '12px 20px', color: C.piedra }}>{c.company || '—'}</td>
+                          <td style={{ padding: '12px 20px', color: C.piedra }}>{c.phone || '—'}</td>
+                          <td style={{ padding: '12px 20px', textAlign: 'right' }}>
+                            <Link
+                              to={`/clients/${c.id}`}
+                              style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 6,
+                                padding: '5px 12px', borderRadius: '0 7px 7px 0',
+                                background: C.linea, color: C.crema,
+                                fontSize: 12, fontWeight: 600,
+                                textDecoration: 'none', transition: 'background 0.12s',
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.background = C.s3}
+                              onMouseLeave={e => e.currentTarget.style.background = C.linea}
+                            >
+                              Ver →
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                      {!allClients.length && (
+                        <tr>
+                          <td colSpan={5} style={{ padding: '32px 20px', textAlign: 'center', color: C.piedra, fontSize: 13 }}>
+                            Sin clientes
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
 
-          {hasMore && (
-            <button
-              onClick={() => setVisible(v => v + PAGE_SIZE)}
-              className="mt-4 w-full py-2.5 text-sm text-fg-muted hover:text-fg border border-dashed border-line rounded-xl transition-colors"
-            >
-              Ver más ({allClients.length - visible} restante{allClients.length - visible !== 1 ? 's' : ''})
-            </button>
+              {/* Mobile: cards */}
+              <div className="md:hidden">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {shownClients.map(c => (
+                  <div key={c.id} style={{ ...card, padding: '16px 18px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                      <div style={{
+                        width: 38, height: 38, flexShrink: 0,
+                        background: C.s2, border: `1px solid ${C.linea}`,
+                        borderRadius: '0 10px 10px 0',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 11.5, fontWeight: 700, color: C.arena,
+                      }}>
+                        {c.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+                      </div>
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{ fontSize: 14, fontWeight: 600, color: C.crema }}>{c.name}</p>
+                        {c.company && <p style={{ fontSize: 11, color: C.piedra }}>{c.company}</p>}
+                      </div>
+                    </div>
+                    {(c.email || c.phone) && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 14 }}>
+                        {c.email && <p style={{ fontSize: 12, color: C.piedra }}>{c.email}</p>}
+                        {c.phone && <p style={{ fontSize: 12, color: C.piedra }}>{c.phone}</p>}
+                      </div>
+                    )}
+                    <div style={{ borderTop: `1px solid ${C.linea}`, paddingTop: 12 }}>
+                      <Link
+                        to={`/clients/${c.id}`}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          padding: '8px 0', borderRadius: '0 8px 8px 0',
+                          background: C.s2, border: `1px solid ${C.linea}`,
+                          color: C.arena, fontSize: 12, fontWeight: 500,
+                          textDecoration: 'none',
+                        }}
+                      >
+                        Ver detalle →
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+                {!allClients.length && (
+                  <p style={{ padding: '40px 0', textAlign: 'center', fontSize: 13, color: C.piedra }}>Sin clientes</p>
+                )}
+              </div>
+              </div>
+
+              {hasMore && (
+                <button
+                  onClick={() => setVisible(v => v + PAGE_SIZE)}
+                  style={{
+                    marginTop: 16, width: '100%', padding: '10px 0',
+                    fontSize: 13, color: C.piedra,
+                    border: `1px dashed ${C.linea}`,
+                    borderRadius: '0 12px 12px 0',
+                    background: 'none', cursor: 'pointer',
+                  }}
+                >
+                  Ver más ({allClients.length - visible} restante{allClients.length - visible !== 1 ? 's' : ''})
+                </button>
+              )}
+            </>
           )}
         </>
       )}
-      </>}
 
       {modalOpen && (
         <ClientModal
-          client={editing}
+          client={null}
           onClose={() => setModalOpen(false)}
           onSaved={() => { setModalOpen(false); qc.invalidateQueries(['clients']) }}
         />

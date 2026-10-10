@@ -4,8 +4,66 @@ import { useToast } from '../../components/Toast'
 import ProvinceSelect from '../../components/ProvinceSelect'
 import PhoneInput, { PHONE_COUNTRIES, formatPhoneNumber } from '../../components/PhoneInput'
 
-const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
-const labelCls = "block text-sm font-medium text-fg-soft mb-1"
+// ── tokens ────────────────────────────────────────────────────────────────────
+
+const C = {
+  bg:    '#0B0B0C',
+  s1:    '#141415',
+  s2:    '#1E1E20',
+  s3:    '#26262A',
+  linea: '#2C2C2F',
+  crema: '#F2EDE3',
+  arena: '#B9B4AA',
+  piedra:'#8C877E',
+  err:   '#E58373',
+}
+
+const card = {
+  background: C.s2,
+  border: `1px solid ${C.linea}`,
+  borderRadius: '0 16px 16px 0',
+}
+
+const labelStyle = {
+  display: 'block', fontSize: 12, fontWeight: 500, color: C.arena, marginBottom: 6,
+}
+
+// Tailwind arbitrary-value className para inputs — evita repetir inline styles
+const inputCls = [
+  'w-full',
+  'h-[42px]',
+  'bg-[#0B0B0C]',
+  'border',
+  'border-[#2C2C2F]',
+  'rounded-[0_10px_10px_0]',
+  'text-[#F2EDE3]',
+  'text-[13px]',
+  'px-[14px]',
+  'outline-none',
+  'focus:border-[#B9B4AA]',
+  'placeholder:text-[#8C877E]',
+  'box-border',
+].join(' ')
+
+const textareaCls = [
+  'w-full',
+  '!h-auto',
+  'bg-[#0B0B0C]',
+  'border',
+  'border-[#2C2C2F]',
+  'rounded-[0_10px_10px_0]',
+  'text-[#F2EDE3]',
+  'text-[13px]',
+  'px-[14px]',
+  'py-[10px]',
+  'outline-none',
+  'focus:border-[#B9B4AA]',
+  'placeholder:text-[#8C877E]',
+  'resize-none',
+  'box-border',
+].join(' ')
+
+// ── helpers ───────────────────────────────────────────────────────────────────
 
 function parseExistingPhone(phone) {
   if (!phone) return { code: 'AR', number: '' }
@@ -16,6 +74,8 @@ function parseExistingPhone(phone) {
   }
   return { code: 'AR', number: phone }
 }
+
+// ── component ─────────────────────────────────────────────────────────────────
 
 export default function ClientModal({ client, onClose, onSaved }) {
   const toast = useToast()
@@ -36,8 +96,7 @@ export default function ClientModal({ client, onClose, onSaved }) {
   })
   const [phoneCountry, setPhoneCountry] = useState(parsedPhone.code)
   const [phoneNumber, setPhoneNumber]   = useState(formatPhoneNumber(parsedPhone.number))
-
-  const [error, setError]   = useState('')
+  const [error, setError]    = useState('')
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e) {
@@ -45,13 +104,15 @@ export default function ClientModal({ client, onClose, onSaved }) {
     setError('')
     setLoading(true)
     try {
-      const dialCode = PHONE_COUNTRIES.find(c => c.code === phoneCountry)?.dial || ''
+      const dialCode  = PHONE_COUNTRIES.find(c => c.code === phoneCountry)?.dial || ''
       const fullPhone = phoneNumber.trim() ? `${dialCode} ${phoneNumber.trim()}` : ''
 
       const data = {
         ...form,
         phone: fullPhone || undefined,
-        website: form.website && !/^https?:\/\//i.test(form.website) ? `https://${form.website}` : form.website
+        website: form.website && !/^https?:\/\//i.test(form.website)
+          ? `https://${form.website}`
+          : form.website,
       }
       if (client) {
         await updateClient(client.id, data)
@@ -69,26 +130,57 @@ export default function ClientModal({ client, onClose, onSaved }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-      <div className="bg-surface/60 backdrop-blur-xl rounded-xl shadow-lg w-full max-w-md max-h-[90vh] flex flex-col">
+    <div style={{
+      position: 'fixed', inset: 0,
+      background: 'rgba(0,0,0,0.65)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      zIndex: 50, padding: '0 16px',
+      fontFamily: 'Geist, system-ui, sans-serif',
+    }}>
+      <div style={{ ...card, width: '100%', maxWidth: 520, maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}>
 
         {/* Header */}
-        <div className="shrink-0 px-6 py-4 border-b border-line">
-          <h3 className="text-lg font-semibold text-fg">
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '18px 24px', background: C.linea, flexShrink: 0,
+          borderRadius: '0 16px 0 0',
+        }}>
+          <h3 style={{ fontSize: 15, fontWeight: 600, color: C.crema }}>
             {client ? 'Editar cliente' : 'Nuevo cliente'}
           </h3>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              fontSize: 20, color: C.arena, background: 'none', border: 'none',
+              cursor: 'pointer', lineHeight: 1, padding: '2px 4px',
+              transition: 'color 0.12s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.color = C.crema}
+            onMouseLeave={e => e.currentTarget.style.color = C.arena}
+          >
+            ×
+          </button>
         </div>
 
         {/* Scrollable body */}
-        <form id="client-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
+        <form
+          id="client-form"
+          onSubmit={handleSubmit}
+          style={{
+            flex: 1, overflowY: 'auto',
+            padding: '20px 24px',
+            display: 'flex', flexDirection: 'column', gap: 14,
+          }}
+        >
           {[
             { key: 'name',    label: 'Nombre *',  type: 'text',  required: true },
             { key: 'company', label: 'Empresa',   type: 'text' },
             { key: 'email',   label: 'Email',     type: 'email' },
-            { key: 'website', label: 'Sitio web', type: 'text', placeholder: 'ejemplo.com' },
+            { key: 'website', label: 'Sitio web', type: 'text',  placeholder: 'ejemplo.com' },
           ].map(({ key, label, type, required, placeholder }) => (
             <div key={key}>
-              <label className={labelCls}>{label}</label>
+              <label style={labelStyle}>{label}</label>
               <input
                 type={type}
                 required={required}
@@ -100,10 +192,11 @@ export default function ClientModal({ client, onClose, onSaved }) {
             </div>
           ))}
 
-          {/* Teléfono con código de área */}
+          {/* Teléfono */}
           <div>
-            <label className={labelCls}>Teléfono</label>
+            <label style={labelStyle}>Teléfono</label>
             <PhoneInput
+              label={null}
               countryCode={phoneCountry}
               phoneNumber={phoneNumber}
               onChangeCountry={setPhoneCountry}
@@ -111,62 +204,114 @@ export default function ClientModal({ client, onClose, onSaved }) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
-              <label className={labelCls}>CUIL / CUIT</label>
-              <input type="text" value={form.cuit}
+              <label style={labelStyle}>CUIL / CUIT</label>
+              <input
+                type="text"
+                value={form.cuit}
                 onChange={e => setForm(f => ({ ...f, cuit: e.target.value }))}
-                placeholder="20-12345678-9" className={inputCls} />
+                placeholder="20-12345678-9"
+                className={inputCls}
+              />
             </div>
             <div>
-              <label className={labelCls}>Dirección</label>
-              <input type="text" value={form.address}
+              <label style={labelStyle}>Dirección</label>
+              <input
+                type="text"
+                value={form.address}
                 onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
-                className={inputCls} />
+                className={inputCls}
+              />
             </div>
           </div>
 
           <div>
-            <label className={labelCls}>Provincia</label>
+            <label style={labelStyle}>Provincia</label>
             <ProvinceSelect
               value={form.province}
               onChange={v => setForm(f => ({ ...f, province: v }))}
-              className={inputCls}
+              className={[
+                'w-full', 'h-[42px]',
+                'bg-[#0B0B0C]', 'border', 'border-[#2C2C2F]',
+                'rounded-[0_10px_10px_0]', 'text-[#F2EDE3]', 'text-[13px]',
+                'px-[14px]', 'outline-none', 'focus:border-[#B9B4AA]',
+                'appearance-none', 'box-border',
+              ].join(' ')}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
-              <label className={labelCls}>Ciudad</label>
-              <input type="text" value={form.city}
+              <label style={labelStyle}>Ciudad</label>
+              <input
+                type="text"
+                value={form.city}
                 onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
-                className={inputCls} placeholder="Ej: Rosario" />
+                placeholder="Ej: Rosario"
+                className={inputCls}
+              />
             </div>
             <div>
-              <label className={labelCls}>Código postal</label>
-              <input type="text" value={form.postalCode}
+              <label style={labelStyle}>Código postal</label>
+              <input
+                type="text"
+                value={form.postalCode}
                 onChange={e => setForm(f => ({ ...f, postalCode: e.target.value }))}
-                className={inputCls} placeholder="Ej: 2000" />
+                placeholder="Ej: 2000"
+                className={inputCls}
+              />
             </div>
           </div>
 
           <div>
-            <label className={labelCls}>Notas</label>
-            <textarea rows={3} value={form.notes}
+            <label style={labelStyle}>Notas</label>
+            <textarea
+              rows={3}
+              value={form.notes}
               onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-              className={inputCls} />
+              className={textareaCls}
+            />
           </div>
 
-          {error && <p className="text-sm text-danger">{error}</p>}
+          {error && <p style={{ fontSize: 12, color: C.err }}>{error}</p>}
         </form>
 
         {/* Footer */}
-        <div className="shrink-0 px-6 py-4 border-t border-line flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-fg-soft hover:text-fg">
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8,
+          padding: '14px 24px', borderTop: `1px solid ${C.linea}`, flexShrink: 0,
+        }}>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              padding: '8px 16px', borderRadius: '0 8px 8px 0',
+              background: 'none', border: `1px solid ${C.linea}`,
+              color: C.piedra, fontSize: 13, cursor: 'pointer',
+              transition: 'color 0.12s, border-color 0.12s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.arena }}
+            onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}
+          >
             Cancelar
           </button>
-          <button type="submit" form="client-form" disabled={loading} className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50">
-            {loading ? 'Guardando...' : 'Guardar'}
+          <button
+            type="submit"
+            form="client-form"
+            disabled={loading}
+            style={{
+              padding: '8px 20px', borderRadius: '0 10px 10px 0',
+              background: C.crema, color: C.bg,
+              fontSize: 13, fontWeight: 600, border: 'none',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.6 : 1,
+              transition: 'opacity 0.12s, background 0.12s',
+            }}
+            onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#E8E3D9' }}
+            onMouseLeave={e => { e.currentTarget.style.background = C.crema }}
+          >
+            {loading ? 'Guardando...' : (client ? 'Guardar cambios' : 'Crear cliente')}
           </button>
         </div>
 
