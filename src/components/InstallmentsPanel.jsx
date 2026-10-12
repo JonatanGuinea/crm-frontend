@@ -1,45 +1,104 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { CheckCircleIcon, ClockIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { getInstallments, createInstallments, createCustomInstallments, payInstallment, deleteInstallments } from '../api/installments'
 import DatePicker from './DatePicker'
 import { useConfirm } from './ConfirmDialog'
 
-const fmt = (n) => Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+// ── tokens ────────────────────────────────────────────────────────────────────
+
+const C = {
+  bg:    '#0B0B0C',
+  s1:    '#141415',
+  s2:    '#1E1E20',
+  s3:    '#26262A',
+  linea: '#2C2C2F',
+  crema: '#F2EDE3',
+  arena: '#B9B4AA',
+  piedra:'#8C877E',
+  ok:    '#7DBE93',
+  warn:  '#E2B663',
+  err:   '#E58373',
+  info:  '#8EB1DE',
+}
+
+const CIFRAS = "'DanteUP Cifras', Geist, sans-serif"
+
+const SECTION_TITLE = {
+  fontSize: 10.5, fontWeight: 600,
+  textTransform: 'uppercase', letterSpacing: '0.1em',
+  color: C.arena, margin: 0,
+}
+
+const labelStyle = { fontSize: 12, fontWeight: 500, color: C.arena, marginBottom: 6, display: 'block' }
+
+const inputStyle = {
+  width: '100%', height: 36, padding: '0 12px',
+  background: C.bg, border: `1px solid ${C.linea}`,
+  borderRadius: '0 9px 9px 0',
+  color: C.crema, fontSize: 13,
+  outline: 'none', boxSizing: 'border-box',
+  fontFamily: 'inherit',
+}
+
+// ── utils ─────────────────────────────────────────────────────────────────────
+
+const fmtNum  = (n) => Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const fmtDate = (d) => new Date(String(d).slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR')
 
-const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
-const labelCls = "block text-sm font-medium text-fg-soft mb-1"
+// ── icons ─────────────────────────────────────────────────────────────────────
+
+function CheckCircleSvg({ color }) {
+  return (
+    <svg viewBox="0 0 20 20" fill="currentColor" style={{ width: 15, height: 15, color, flexShrink: 0 }}>
+      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+    </svg>
+  )
+}
+
+function ClockSvg({ color }) {
+  return (
+    <svg viewBox="0 0 20 20" fill="currentColor" style={{ width: 15, height: 15, color, flexShrink: 0 }}>
+      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+    </svg>
+  )
+}
+
+function TrashSvg() {
+  return (
+    <svg viewBox="0 0 20 20" fill="currentColor" style={{ width: 14, height: 14 }}>
+      <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+    </svg>
+  )
+}
+
+// ── component ─────────────────────────────────────────────────────────────────
 
 export default function InstallmentsPanel({ entityType, entityId, entityStatus, canWrite, currency, total = 0 }) {
-  const qc = useQueryClient()
+  const qc      = useQueryClient()
   const confirm = useConfirm()
-  const queryKey = ['installments', entityType, entityId]
+  const queryKey   = ['installments', entityType, entityId]
   const entityParam = { quoteId: entityId }
 
-  // ── cuotas iguales ────────────────────────────────────────────────────────
   const [showForm, setShowForm]         = useState(false)
   const [count, setCount]               = useState(2)
   const [firstDueDate, setFirstDueDate] = useState('')
   const [formError, setFormError]       = useState('')
 
-  // ── anticipo ──────────────────────────────────────────────────────────────
-  const [showAnticipo, setShowAnticipo]           = useState(false)
-  const [dpMode, setDpMode]                       = useState('amount')   // 'amount' | 'percent'
-  const [dpAmount, setDpAmount]                   = useState('')
-  const [dpPercent, setDpPercent]                 = useState('')
-  const [dpDate, setDpDate]                       = useState('')
-  const [remainderType, setRemainderType]         = useState('second')   // 'second' | 'installments'
-  const [secondDate, setSecondDate]               = useState('')
-  const [antInstallCount, setAntInstallCount]     = useState(2)
-  const [antInstallFirst, setAntInstallFirst]     = useState('')
-  const [anticoError, setAnticoError]             = useState('')
+  const [showAnticipo, setShowAnticipo]       = useState(false)
+  const [dpMode, setDpMode]                   = useState('amount')
+  const [dpAmount, setDpAmount]               = useState('')
+  const [dpPercent, setDpPercent]             = useState('')
+  const [dpDate, setDpDate]                   = useState('')
+  const [remainderType, setRemainderType]     = useState('second')
+  const [secondDate, setSecondDate]           = useState('')
+  const [antInstallCount, setAntInstallCount] = useState(2)
+  const [antInstallFirst, setAntInstallFirst] = useState('')
+  const [anticoError, setAnticoError]         = useState('')
 
   const effectiveDp = dpMode === 'amount'
     ? parseFloat(dpAmount) || 0
     : parseFloat((total * (parseFloat(dpPercent) || 0) / 100).toFixed(2))
 
-  // ── queries / mutations ───────────────────────────────────────────────────
   const { data: installments = [] } = useQuery({
     queryKey,
     queryFn: () => getInstallments(entityParam).then(r => r.data.data)
@@ -51,8 +110,7 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
       qc.invalidateQueries(queryKey)
       qc.invalidateQueries([entityType, entityId])
       qc.invalidateQueries(['quotes'])
-      setShowForm(false)
-      setFormError('')
+      setShowForm(false); setFormError('')
     },
     onError: (err) => setFormError(err.response?.data?.error || err.message || 'Error al crear el plan')
   })
@@ -63,8 +121,7 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
       qc.invalidateQueries(queryKey)
       qc.invalidateQueries([entityType, entityId])
       qc.invalidateQueries(['quotes'])
-      setShowAnticipo(false)
-      setAnticoError('')
+      setShowAnticipo(false); setAnticoError('')
     },
     onError: (err) => setAnticoError(err.response?.data?.error || err.message || 'Error al crear el plan')
   })
@@ -89,7 +146,6 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
     }
   })
 
-  // ── handlers ──────────────────────────────────────────────────────────────
   function handleCreateEqual(e) {
     e.preventDefault()
     setFormError('')
@@ -102,8 +158,8 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
     setAnticoError('')
     if (dpMode === 'percent' && (!total || total <= 0)) return setAnticoError('El presupuesto no tiene monto total. Agregá ítems con precio antes de usar el modo porcentual.')
     if (!effectiveDp || effectiveDp <= 0) return setAnticoError(dpMode === 'percent' ? 'El porcentaje ingresado da monto $0. Revisá el total del presupuesto.' : 'Ingresá el monto del anticipo')
-    if (!dpDate)                           return setAnticoError('Ingresá la fecha del anticipo')
-    if (effectiveDp >= total)              return setAnticoError('El anticipo no puede ser igual o mayor al total')
+    if (!dpDate)           return setAnticoError('Ingresá la fecha del anticipo')
+    if (effectiveDp >= total) return setAnticoError('El anticipo no puede ser igual o mayor al total')
     if (remainderType === 'second') {
       if (!secondDate) return setAnticoError('Ingresá la fecha del segundo pago')
       if (dpDate >= secondDate) return setAnticoError('El segundo pago debe ser posterior al anticipo')
@@ -118,14 +174,14 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
     if (remainderType === 'second') {
       payments.push({ amount: remaining, dueDate: secondDate })
     } else {
-      const n         = parseInt(antInstallCount)
+      const n = parseInt(antInstallCount)
       const perInstall = parseFloat((remaining / n).toFixed(2))
-      const diff       = parseFloat((remaining - perInstall * n).toFixed(2))
+      const diff = parseFloat((remaining - perInstall * n).toFixed(2))
       for (let i = 0; i < n; i++) {
         const d = new Date(antInstallFirst)
         d.setMonth(d.getMonth() + i)
         payments.push({
-          amount:  i === n - 1 ? parseFloat((perInstall + diff).toFixed(2)) : perInstall,
+          amount: i === n - 1 ? parseFloat((perInstall + diff).toFixed(2)) : perInstall,
           dueDate: d.toISOString().slice(0, 10)
         })
       }
@@ -135,40 +191,55 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
   }
 
   function closeAnticipo() {
-    setShowAnticipo(false)
-    setAnticoError('')
+    setShowAnticipo(false); setAnticoError('')
     setDpAmount(''); setDpPercent(''); setDpDate('')
     setSecondDate(''); setAntInstallFirst('')
   }
 
-  // ── derived ───────────────────────────────────────────────────────────────
-  const canConfigure    = canWrite && !['paid', 'cancelled', 'rejected', 'expired'].includes(entityStatus)
-  const paidCount       = installments.filter(i => i.status === 'paid').length
-  const totalInstall    = installments.length
+  const canConfigure = canWrite && !['paid', 'cancelled', 'rejected', 'expired'].includes(entityStatus)
+  const paidCount    = installments.filter(i => i.status === 'paid').length
+  const totalInstall = installments.length
+
+  // DatePicker className (only accepts className prop)
+  const dpCls = "h-[36px] w-full px-3 bg-[#0B0B0C] border border-[#2C2C2F] rounded-[0_9px_9px_0] text-[#F2EDE3] text-[13px] outline-none focus:border-[#B9B4AA] font-[inherit]"
 
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div>
-          <h3 className="text-sm font-semibold text-fg-soft uppercase tracking-wide">Cuotas</h3>
+          <p style={SECTION_TITLE}>Cuotas</p>
           {totalInstall > 0 && (
-            <p className="text-xs text-fg-muted mt-0.5">{paidCount} de {totalInstall} pagadas</p>
+            <p style={{ fontSize: 11, color: C.piedra, marginTop: 3 }}>{paidCount} de {totalInstall} pagadas</p>
           )}
         </div>
         {canConfigure && totalInstall > 0 && (
-          <div className="flex items-center gap-2">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <button
               onClick={async () => { if (await confirm('¿Eliminar el plan de cuotas?')) deleteMut.mutate() }}
               disabled={deleteMut.isPending}
-              className="p-1.5 rounded-md text-fg-muted hover:text-danger hover:bg-danger-subtle transition-colors"
               title="Eliminar plan"
+              style={{
+                padding: 6, background: 'none', border: 'none',
+                borderRadius: '0 6px 6px 0', cursor: 'pointer',
+                color: C.piedra, transition: 'color 0.12s, background 0.12s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = C.err; e.currentTarget.style.background = 'rgba(229,131,115,0.08)' }}
+              onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.background = 'none' }}
             >
-              <TrashIcon className="w-4 h-4" />
+              <TrashSvg />
             </button>
             <button
               onClick={() => { setShowForm(v => !v); setShowAnticipo(false) }}
-              className="text-xs px-3 py-1.5 rounded-md bg-brand text-white hover:bg-brand-hover transition-colors"
+              style={{
+                height: 28, padding: '0 10px',
+                background: C.s3, color: C.arena,
+                border: `1px solid ${C.linea}`, borderRadius: '0 7px 7px 0',
+                fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                transition: 'color 0.12s, border-color 0.12s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = C.crema; e.currentTarget.style.borderColor = C.arena }}
+              onMouseLeave={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.linea }}
             >
               Reconfigurar
             </button>
@@ -176,52 +247,80 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
         )}
       </div>
 
-      {/* Sin cuotas: mostrar opciones */}
+      {/* Sin cuotas: opciones */}
       {totalInstall === 0 && !showForm && !showAnticipo && canConfigure && (
-        <div className="flex gap-2 mb-4">
-          <button
-            onClick={() => setShowForm(true)}
-            className="flex-1 py-2 text-xs font-medium rounded-md border border-line text-fg-soft hover:bg-raised transition-colors"
-          >
-            Cuotas iguales
-          </button>
-          <button
-            onClick={() => setShowAnticipo(true)}
-            className="flex-1 py-2 text-xs font-medium rounded-md border border-line text-fg-soft hover:bg-raised transition-colors"
-          >
-            Con anticipo
-          </button>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          {[{ label: 'Cuotas iguales', action: () => setShowForm(true) }, { label: 'Con anticipo', action: () => setShowAnticipo(true) }].map(({ label, action }) => (
+            <button
+              key={label}
+              onClick={action}
+              style={{
+                flex: 1, padding: '8px 0',
+                background: 'none', border: `1px solid ${C.linea}`,
+                borderRadius: '0 8px 8px 0',
+                color: C.piedra, fontSize: 12, fontWeight: 500,
+                cursor: 'pointer', fontFamily: 'inherit',
+                transition: 'border-color 0.12s, color 0.12s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = C.arena; e.currentTarget.style.color = C.arena }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = C.linea; e.currentTarget.style.color = C.piedra }}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       )}
 
-      {/* Sin cuotas y no puede configurar */}
       {totalInstall === 0 && !showForm && !showAnticipo && !canConfigure && (
-        <p className="text-sm text-fg-muted text-center py-3">Sin plan de cuotas</p>
+        <p style={{ fontSize: 13, color: C.piedra, textAlign: 'center', padding: '12px 0' }}>Sin plan de cuotas</p>
       )}
 
       {/* Formulario cuotas iguales */}
       {showForm && (
-        <form onSubmit={handleCreateEqual} className="mb-4 p-4 bg-raised rounded-lg border border-line space-y-3">
-          <div className="grid grid-cols-2 gap-3">
+        <form onSubmit={handleCreateEqual} style={{
+          marginBottom: 16, padding: 14,
+          background: C.s3, border: `1px solid ${C.linea}`,
+          borderRadius: '0 10px 10px 0',
+          display: 'flex', flexDirection: 'column', gap: 12,
+        }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
-              <label className={labelCls}>Número de cuotas</label>
-              <input type="number" min="2" max="60" step="1" value={count}
-                onChange={e => setCount(e.target.value)} className={inputCls} />
+              <label style={labelStyle}>Número de cuotas</label>
+              <input
+                type="number" min="2" max="60" step="1"
+                value={count} onChange={e => setCount(e.target.value)}
+                style={inputStyle}
+              />
             </div>
             <div>
-              <label className={labelCls}>Vencimiento 1ª cuota</label>
-              <DatePicker value={firstDueDate}
-                onChange={e => setFirstDueDate(e.target.value)} className={inputCls} />
+              <label style={labelStyle}>Vencimiento 1ª cuota</label>
+              <DatePicker value={firstDueDate} onChange={e => setFirstDueDate(e.target.value)} className={dpCls} />
             </div>
           </div>
-          {formError && <p className="text-xs text-danger">{formError}</p>}
-          <div className="flex gap-2 justify-end">
-            <button type="button" onClick={() => { setShowForm(false); setFormError('') }}
-              className="px-3 py-1.5 text-sm text-fg-soft hover:text-fg">
+          {formError && <p style={{ fontSize: 11, color: C.err }}>{formError}</p>}
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <button
+              type="button"
+              onClick={() => { setShowForm(false); setFormError('') }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: C.piedra, fontFamily: 'inherit', padding: '0 8px' }}
+            >
               Cancelar
             </button>
-            <button type="submit" disabled={createMut.isPending}
-              className="px-4 py-1.5 text-sm bg-brand text-white rounded-md hover:bg-brand-hover disabled:opacity-50">
+            <button
+              type="submit"
+              disabled={createMut.isPending}
+              style={{
+                height: 32, padding: '0 14px',
+                background: C.crema, color: C.bg,
+                border: 'none', borderRadius: '0 8px 8px 0',
+                fontSize: 12, fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'inherit',
+                opacity: createMut.isPending ? 0.5 : 1,
+                transition: 'background 0.12s',
+              }}
+              onMouseEnter={e => { if (!createMut.isPending) e.currentTarget.style.background = '#E8E3D9' }}
+              onMouseLeave={e => e.currentTarget.style.background = C.crema}
+            >
               {createMut.isPending ? 'Guardando...' : 'Crear plan'}
             </button>
           </div>
@@ -230,110 +329,151 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
 
       {/* Formulario anticipo */}
       {showAnticipo && (
-        <form onSubmit={handleCreateAnticipo} className="mb-4 p-4 bg-raised rounded-lg border border-line space-y-3">
-
+        <form onSubmit={handleCreateAnticipo} style={{
+          marginBottom: 16, padding: 14,
+          background: C.s3, border: `1px solid ${C.linea}`,
+          borderRadius: '0 10px 10px 0',
+          display: 'flex', flexDirection: 'column', gap: 12,
+        }}>
           {/* Anticipo + fecha */}
-          <div className="grid grid-cols-2 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className={labelCls + ' mb-0'}>Anticipo</label>
-                <div className="flex rounded-md overflow-hidden border border-line text-xs">
-                  <button type="button" onClick={() => setDpMode('amount')}
-                    className={`px-2 py-0.5 font-medium transition-colors ${dpMode === 'amount' ? 'bg-brand text-white' : 'bg-surface text-fg-soft hover:bg-raised'}`}>
-                    Monto
-                  </button>
-                  <button type="button" onClick={() => setDpMode('percent')}
-                    className={`px-2 py-0.5 font-medium transition-colors ${dpMode === 'percent' ? 'bg-brand text-white' : 'bg-surface text-fg-soft hover:bg-raised'}`}>
-                    %
-                  </button>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                <label style={{ ...labelStyle, marginBottom: 0 }}>Anticipo</label>
+                <div style={{ display: 'flex', border: `1px solid ${C.linea}`, borderRadius: '0 6px 6px 0', overflow: 'hidden' }}>
+                  {[{ val: 'amount', label: 'Monto' }, { val: 'percent', label: '%' }].map(({ val, label }) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setDpMode(val)}
+                      style={{
+                        padding: '2px 8px', fontSize: 11, fontWeight: 500,
+                        border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                        background: dpMode === val ? C.crema : C.s2,
+                        color: dpMode === val ? C.bg : C.piedra,
+                        transition: 'background 0.12s, color 0.12s',
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
                 </div>
               </div>
               {dpMode === 'amount' ? (
-                <input type="number" min="0" step="0.01" value={dpAmount}
-                  onChange={e => setDpAmount(e.target.value)}
-                  className={inputCls} placeholder="0.00" />
+                <input
+                  type="number" min="0" step="0.01"
+                  value={dpAmount} onChange={e => setDpAmount(e.target.value)}
+                  placeholder="0.00" style={inputStyle}
+                  className="placeholder:text-[#8C877E]"
+                />
               ) : (
                 <div>
-                  <div className="relative">
-                    <input type="number" min="0" max="100" step="1" value={dpPercent}
-                      onChange={e => setDpPercent(e.target.value)}
-                      className={inputCls + ' pr-7'} placeholder="0" />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-fg-muted pointer-events-none">%</span>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="number" min="0" max="100" step="1"
+                      value={dpPercent} onChange={e => setDpPercent(e.target.value)}
+                      placeholder="0"
+                      style={{ ...inputStyle, paddingRight: 28 }}
+                      className="placeholder:text-[#8C877E]"
+                    />
+                    <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: C.piedra, pointerEvents: 'none' }}>%</span>
                   </div>
                   {parseFloat(dpPercent) > 0 && total > 0 && (
-                    <p className="text-xs text-fg-muted mt-1">
-                      = {currency} {fmt(effectiveDp)}
-                    </p>
+                    <p style={{ fontSize: 11, color: C.piedra, marginTop: 4 }}>= {currency} {fmtNum(effectiveDp)}</p>
                   )}
                 </div>
               )}
             </div>
             <div>
-              <label className={labelCls}>Fecha del anticipo</label>
-              <DatePicker value={dpDate} onChange={e => setDpDate(e.target.value)} className={inputCls} />
+              <label style={labelStyle}>Fecha del anticipo</label>
+              <DatePicker value={dpDate} onChange={e => setDpDate(e.target.value)} className={dpCls} />
             </div>
           </div>
 
-          {/* Saldo restante */}
           {effectiveDp > 0 && effectiveDp < total && (
-            <p className="text-xs text-fg-muted">
-              Saldo restante: <span className="font-semibold text-fg">
-                {currency} {fmt(total - effectiveDp)}
-              </span>
+            <p style={{ fontSize: 11, color: C.piedra }}>
+              Saldo restante: <span style={{ fontWeight: 600, color: C.crema, fontFamily: CIFRAS }}>{currency} {fmtNum(total - effectiveDp)}</span>
             </p>
           )}
 
           {/* Tipo de saldo */}
           <div>
-            <p className="text-xs font-medium text-fg-soft mb-2">Saldo restante</p>
-            <div className="flex gap-2">
-              <button type="button" onClick={() => setRemainderType('second')}
-                className={`flex-1 py-2 text-xs font-medium rounded-md border transition-colors ${remainderType === 'second' ? 'border-brand bg-brand-subtle text-brand' : 'border-line text-fg-soft hover:bg-raised'}`}>
-                Segundo pago
-              </button>
-              <button type="button" onClick={() => setRemainderType('installments')}
-                className={`flex-1 py-2 text-xs font-medium rounded-md border transition-colors ${remainderType === 'installments' ? 'border-brand bg-brand-subtle text-brand' : 'border-line text-fg-soft hover:bg-raised'}`}>
-                En cuotas
-              </button>
+            <p style={{ fontSize: 11, fontWeight: 500, color: C.arena, marginBottom: 8 }}>Saldo restante</p>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {[{ val: 'second', label: 'Segundo pago' }, { val: 'installments', label: 'En cuotas' }].map(({ val, label }) => (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => setRemainderType(val)}
+                  style={{
+                    flex: 1, padding: '7px 0',
+                    border: `1px solid ${remainderType === val ? C.arena : C.linea}`,
+                    borderRadius: '0 8px 8px 0',
+                    background: remainderType === val ? 'rgba(185,180,170,0.08)' : 'none',
+                    color: remainderType === val ? C.crema : C.piedra,
+                    fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                    transition: 'all 0.12s',
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </div>
 
           {remainderType === 'second' && (
             <div>
-              <label className={labelCls}>Fecha del segundo pago</label>
-              <DatePicker value={secondDate} onChange={e => setSecondDate(e.target.value)} className={inputCls} />
+              <label style={labelStyle}>Fecha del segundo pago</label>
+              <DatePicker value={secondDate} onChange={e => setSecondDate(e.target.value)} className={dpCls} />
               {secondDate && dpDate && dpDate >= secondDate && (
-                <p className="text-xs text-danger mt-1">Debe ser posterior al anticipo</p>
+                <p style={{ fontSize: 11, color: C.err, marginTop: 4 }}>Debe ser posterior al anticipo</p>
               )}
             </div>
           )}
 
           {remainderType === 'installments' && (
-            <div className="grid grid-cols-2 gap-3">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div>
-                <label className={labelCls}>Número de cuotas</label>
-                <input type="number" min="2" max="60" step="1" value={antInstallCount}
-                  onChange={e => setAntInstallCount(e.target.value)} className={inputCls} />
+                <label style={labelStyle}>Número de cuotas</label>
+                <input
+                  type="number" min="2" max="60" step="1"
+                  value={antInstallCount} onChange={e => setAntInstallCount(e.target.value)}
+                  style={inputStyle}
+                />
               </div>
               <div>
-                <label className={labelCls}>Vencimiento 1ª cuota</label>
-                <DatePicker value={antInstallFirst} onChange={e => setAntInstallFirst(e.target.value)} className={inputCls} />
+                <label style={labelStyle}>Vencimiento 1ª cuota</label>
+                <DatePicker value={antInstallFirst} onChange={e => setAntInstallFirst(e.target.value)} className={dpCls} />
                 {antInstallFirst && dpDate && dpDate >= antInstallFirst && (
-                  <p className="text-xs text-danger mt-1">Debe ser posterior al anticipo</p>
+                  <p style={{ fontSize: 11, color: C.err, marginTop: 4 }}>Debe ser posterior al anticipo</p>
                 )}
               </div>
             </div>
           )}
 
-          {anticoError && <p className="text-xs text-danger">{anticoError}</p>}
+          {anticoError && <p style={{ fontSize: 11, color: C.err }}>{anticoError}</p>}
 
-          <div className="flex gap-2 justify-end">
-            <button type="button" onClick={closeAnticipo}
-              className="px-3 py-1.5 text-sm text-fg-soft hover:text-fg">
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <button
+              type="button" onClick={closeAnticipo}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: C.piedra, fontFamily: 'inherit', padding: '0 8px' }}
+            >
               Cancelar
             </button>
-            <button type="submit" disabled={createCustomMut.isPending}
-              className="px-4 py-1.5 text-sm bg-brand text-white rounded-md hover:bg-brand-hover disabled:opacity-50">
+            <button
+              type="submit" disabled={createCustomMut.isPending}
+              style={{
+                height: 32, padding: '0 14px',
+                background: C.crema, color: C.bg,
+                border: 'none', borderRadius: '0 8px 8px 0',
+                fontSize: 12, fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'inherit',
+                opacity: createCustomMut.isPending ? 0.5 : 1,
+                transition: 'background 0.12s',
+              }}
+              onMouseEnter={e => { if (!createCustomMut.isPending) e.currentTarget.style.background = '#E8E3D9' }}
+              onMouseLeave={e => e.currentTarget.style.background = C.crema}
+            >
               {createCustomMut.isPending ? 'Guardando...' : 'Crear plan'}
             </button>
           </div>
@@ -342,28 +482,32 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
 
       {/* Lista de cuotas */}
       {totalInstall > 0 && (
-        <ul className="space-y-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {installments.map((inst) => {
             const isPaid    = inst.status === 'paid'
             const isOverdue = !isPaid && new Date(inst.dueDate.slice(0, 10) + 'T12:00:00') < new Date()
-            const accent    = isPaid ? 'text-brand' : isOverdue ? 'text-danger' : 'text-fg'
-            const bg        = isPaid ? 'border-brand/20 bg-brand-subtle' : isOverdue ? 'border-danger/20 bg-danger-subtle' : 'border-line bg-raised'
+            const accent    = isPaid ? C.ok : isOverdue ? C.err : C.crema
+            const bg        = isPaid
+              ? { background: 'rgba(125,190,147,0.08)', border: `1px solid rgba(125,190,147,0.2)` }
+              : isOverdue
+              ? { background: 'rgba(229,131,115,0.08)', border: `1px solid rgba(229,131,115,0.2)` }
+              : { background: C.s2, border: `1px solid ${C.linea}` }
             return (
-              <li key={inst.id} className={`rounded-lg px-3 py-2.5 border ${bg}`}>
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
+              <div key={inst.id} style={{ ...bg, borderRadius: '0 10px 10px 0', padding: '10px 12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
                     {isPaid
-                      ? <CheckCircleIcon className="w-4 h-4 text-brand shrink-0" />
-                      : <ClockIcon className={`w-4 h-4 shrink-0 ${isOverdue ? 'text-danger' : 'text-fg-muted'}`} />
+                      ? <CheckCircleSvg color={C.ok} />
+                      : <ClockSvg color={isOverdue ? C.err : C.piedra} />
                     }
-                    <span className={`text-sm font-medium ${accent}`}>Cuota {inst.number}</span>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: accent }}>Cuota {inst.number}</span>
                   </div>
-                  <span className={`text-sm font-semibold shrink-0 ${accent}`}>
-                    {currency} ${fmt(inst.amount)}
+                  <span style={{ fontSize: 13, fontWeight: 600, color: accent, fontFamily: CIFRAS, flexShrink: 0 }}>
+                    {currency} {fmtNum(inst.amount)}
                   </span>
                 </div>
-                <div className="flex items-center justify-between gap-2 mt-1.5 pl-6">
-                  <span className={`text-xs ${isPaid ? 'text-brand' : isOverdue ? 'text-danger' : 'text-fg-muted'}`}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 6, paddingLeft: 23 }}>
+                  <span style={{ fontSize: 11, color: isPaid ? C.ok : isOverdue ? C.err : C.piedra }}>
                     {isPaid && inst.paidAt
                       ? `Cobrada ${fmtDate(inst.paidAt)}`
                       : `Vence ${fmtDate(inst.dueDate)}`}
@@ -372,16 +516,27 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
                     <button
                       onClick={() => payMut.mutate(inst.id)}
                       disabled={payMut.isPending}
-                      className="text-xs px-2.5 py-1 rounded-md bg-brand text-white hover:bg-brand-hover disabled:opacity-50 transition-colors shrink-0"
+                      style={{
+                        display: 'flex', alignItems: 'center',
+                        padding: '4px 10px', borderRadius: '0 6px 6px 0',
+                        background: C.arena, color: C.bg,
+                        fontSize: 11.5, fontWeight: 600, border: 'none',
+                        cursor: payMut.isPending ? 'not-allowed' : 'pointer',
+                        opacity: payMut.isPending ? 0.6 : 1,
+                        flexShrink: 0, transition: 'background 0.12s',
+                        fontFamily: 'inherit',
+                      }}
+                      onMouseEnter={e => { if (!payMut.isPending) e.currentTarget.style.background = C.crema }}
+                      onMouseLeave={e => e.currentTarget.style.background = C.arena}
                     >
                       Cobrar
                     </button>
                   )}
                 </div>
-              </li>
+              </div>
             )
           })}
-        </ul>
+        </div>
       )}
     </div>
   )

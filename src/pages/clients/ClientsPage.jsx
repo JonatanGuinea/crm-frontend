@@ -42,6 +42,7 @@ const SECTION_TITLE = {
 }
 
 const PAGE_SIZE = 15
+const CTRL_H = 34
 
 // ── component ─────────────────────────────────────────────────────────────────
 
@@ -74,7 +75,7 @@ export default function ClientsPage() {
 
   const tabBtn = (active) => ({
     display: 'flex', alignItems: 'center', gap: 6,
-    padding: '5px 12px', borderRadius: '0 7px 7px 0',
+    padding: '0 12px', height: '100%', borderRadius: '0 7px 7px 0',
     fontSize: 12, fontWeight: 500, cursor: 'pointer',
     background: active ? C.s3 : 'transparent',
     color: active ? C.crema : C.piedra,
@@ -85,47 +86,70 @@ export default function ClientsPage() {
     <div style={{ padding: '28px 24px 40px', maxWidth: 1080, fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* ── Header ──────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
-        {/* Título */}
+      {/* Fila 1 */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <ClienteIcon style={{ width: 18, height: 18, color: C.arena }} />
-          <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema }}>Clientes</h2>
+          <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Clientes</h2>
         </div>
 
-        {/* CTA + Tabs apilados a la derecha */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, flexShrink: 0 }}>
-          {canWrite && tab === 'table' && (
+        {/* Tablet/Desktop sm+ */}
+        <div className="hidden sm:block">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 3, padding: 4, height: CTRL_H, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0' }}>
+              <button onClick={() => setTab('table')} style={tabBtn(tab === 'table')}>
+                <ProyectoIcon style={{ width: 11, height: 11 }} />
+                Tabla
+              </button>
+              <button onClick={() => setTab('history')} style={tabBtn(tab === 'history')}>
+                <AgendaIcon style={{ width: 11, height: 11 }} />
+                Historial
+              </button>
+            </div>
+            {canWrite && (
+              <button
+                onClick={() => setModalOpen(true)}
+                style={{ display: 'flex', alignItems: 'center', gap: 7, height: CTRL_H, padding: '0 14px', background: C.crema, color: C.bg, border: 'none', borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.12s' }}
+                onMouseEnter={e => e.currentTarget.style.background = '#E8E3D9'}
+                onMouseLeave={e => e.currentTarget.style.background = C.crema}
+              >
+                <MasIcon style={{ width: 12, height: 12 }} />
+                Nuevo cliente
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Mobile: solo + Nuevo */}
+        {canWrite && (
+          <div className="sm:hidden">
             <button
               onClick={() => setModalOpen(true)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 7,
-                padding: '7px 14px', borderRadius: '0 8px 8px 0',
-                background: C.crema, color: C.bg,
-                fontSize: 12.5, fontWeight: 600,
-                border: 'none', cursor: 'pointer',
-                transition: 'background 0.12s',
-              }}
+              style={{ display: 'flex', alignItems: 'center', gap: 7, height: CTRL_H, padding: '0 14px', background: C.crema, color: C.bg, border: 'none', borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.12s' }}
               onMouseEnter={e => e.currentTarget.style.background = '#E8E3D9'}
               onMouseLeave={e => e.currentTarget.style.background = C.crema}
             >
               <MasIcon style={{ width: 12, height: 12 }} />
               Nuevo cliente
             </button>
-          )}
+          </div>
+        )}
+      </div>
 
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 3,
-            padding: 4, background: C.s2, border: `1px solid ${C.linea}`,
-            borderRadius: '0 10px 10px 0',
-          }}>
-            <button onClick={() => setTab('table')} style={tabBtn(tab === 'table')}>
-              <ProyectoIcon style={{ width: 11, height: 11 }} />
-              Tabla
-            </button>
-            <button onClick={() => setTab('history')} style={tabBtn(tab === 'history')}>
-              <AgendaIcon style={{ width: 11, height: 11 }} />
-              Historial
-            </button>
+      {/* Fila 2 mobile: TabSwitcher a la derecha */}
+      <div className="sm:hidden" style={{ marginBottom: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ marginLeft: 'auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 3, padding: 4, height: CTRL_H, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0' }}>
+              <button onClick={() => setTab('table')} style={tabBtn(tab === 'table')}>
+                <ProyectoIcon style={{ width: 11, height: 11 }} />
+                Tabla
+              </button>
+              <button onClick={() => setTab('history')} style={tabBtn(tab === 'history')}>
+                <AgendaIcon style={{ width: 11, height: 11 }} />
+                Historial
+              </button>
+            </div>
           </div>
         </div>
       </div>
