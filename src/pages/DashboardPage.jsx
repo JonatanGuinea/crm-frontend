@@ -890,7 +890,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div style={{ padding: '28px 24px 40px', maxWidth: 1080, fontFamily: 'Geist, system-ui, sans-serif' }}>
+    <div style={{ padding: '28px 24px 40px', width: '100%', fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* Header */}
       <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 28, flexWrap: 'wrap' }}>

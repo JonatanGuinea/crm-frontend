@@ -103,9 +103,9 @@ export default function DatePicker({ value, onChange, className, placeholder = '
         type="button"
         ref={btnRef}
         onClick={handleOpen}
-        className={`${className} flex items-center justify-between gap-2`}
+        className={`${className} flex items-center justify-between gap-2 overflow-hidden`}
       >
-        <span className={value ? 'text-fg' : 'text-fg-muted'}>
+        <span className={`truncate min-w-0 ${value ? 'text-fg' : 'text-fg-muted'}`}>
           {value ? toDisplay(value) : placeholder}
         </span>
         <CalendarDaysIcon className="w-4 h-4 text-fg-muted shrink-0" />
@@ -115,8 +115,8 @@ export default function DatePicker({ value, onChange, className, placeholder = '
         <>
           <div className="fixed inset-0 z-[9998]" onClick={() => setOpen(false)} />
           <div
-            style={{ top: pos.top, left: pos.left }}
-            className="fixed z-[9999] w-[280px] bg-surface/90 backdrop-blur-xl border border-line rounded-xl shadow-2xl p-3 select-none"
+            style={{ top: pos.top, left: pos.left, background: '#141415', borderRadius: '0 14px 14px 0' }}
+            className="fixed z-[9999] w-[280px] border border-line shadow-2xl p-3 select-none"
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-3">
@@ -164,9 +164,9 @@ export default function DatePicker({ value, onChange, className, placeholder = '
                     className={[
                       'w-full aspect-square flex items-center justify-center rounded-lg text-xs transition-colors',
                       isSelected
-                        ? 'bg-brand text-white font-semibold'
+                        ? 'bg-brand text-base font-semibold'
                         : isToday
-                          ? 'ring-1 ring-brand text-brand font-medium hover:bg-brand-subtle'
+                          ? 'ring-1 ring-brand text-fg font-medium hover:bg-brand-subtle'
                           : cell.out
                             ? 'text-fg-muted hover:bg-raised'
                             : 'text-fg hover:bg-raised',

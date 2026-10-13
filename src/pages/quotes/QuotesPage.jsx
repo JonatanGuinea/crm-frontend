@@ -658,16 +658,14 @@ export default function QuotesPage() {
                 style={{ ...filterSelectStyle, width: '100%', marginBottom: 8 }}
               >
                 <option value="">Todos los estados</option>
-                {Object.entries(QUOTE_STATUS).map(([v, { label }]) => <option key={v} value={v}>{label}</option>)}
+                {Object.entries(QUOTE_STATUS).map(([v, { label }]) => <option style={{ ...SECTION_TITLE, width: '100%' }} key={v} value={v}>{label}</option>)}
               </select>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 <div>
-                  <p style={{ ...SECTION_TITLE, marginBottom: 4 }}>Desde</p>
-                  <DatePicker value={fromDate} onChange={e => { setFromDate(e.target.value); setVisible(15) }} className={`${dpClass} w-full`} placeholder="Fecha desde" />
+                  <DatePicker value={fromDate} onChange={e => { setFromDate(e.target.value); setVisible(15) }} className={`${dpClass} w-full`} placeholder="Desde" />
                 </div>
                 <div>
-                  <p style={{ ...SECTION_TITLE, marginBottom: 4 }}>Hasta</p>
-                  <DatePicker value={toDate} onChange={e => { setToDate(e.target.value); setVisible(15) }} className={`${dpClass} w-full`} placeholder="Fecha hasta" />
+                  <DatePicker value={toDate} onChange={e => { setToDate(e.target.value); setVisible(15) }} className={`${dpClass} w-full`} placeholder="Hasta" />
                 </div>
               </div>
               {activeFilterCount > 0 && (
@@ -684,16 +682,14 @@ export default function QuotesPage() {
           {/* Filtros desktop */}
           <div className="hidden sm:flex" style={{ flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 16 }}>
             <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setVisible(15) }} style={filterSelectStyle}>
-              <option value="">Todos los estados</option>
-              {Object.entries(QUOTE_STATUS).map(([v, { label }]) => <option key={v} value={v}>{label}</option>)}
+              <option style={{ ...SECTION_TITLE}} value="">Todos los estados</option>
+              {Object.entries(QUOTE_STATUS).map(([v, { label }]) => <option style={{ ...SECTION_TITLE}} key={v} value={v}>{label}</option>)}
             </select>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 12, color: C.piedra }}>Desde</span>
-              <DatePicker value={fromDate} onChange={e => { setFromDate(e.target.value); setVisible(15) }} className={dpClass} placeholder="Fecha desde" />
+              <DatePicker value={fromDate} onChange={e => { setFromDate(e.target.value); setVisible(15) }} className={dpClass} placeholder="Desde" />
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 12, color: C.piedra }}>Hasta</span>
-              <DatePicker value={toDate} onChange={e => { setToDate(e.target.value); setVisible(15) }} className={dpClass} placeholder="Fecha hasta" />
+              <DatePicker value={toDate} onChange={e => { setToDate(e.target.value); setVisible(15) }} className={dpClass} placeholder="Hasta" />
             </div>
             {(fromDate || toDate) && (
               <button

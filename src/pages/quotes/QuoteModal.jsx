@@ -11,13 +11,20 @@ import LineItemsEditor from '../../components/LineItemsEditor'
 import InstallmentsPanel from '../../components/InstallmentsPanel'
 import { useToast } from '../../components/Toast'
 import { useAuth } from '../../context/AuthContext'
-import { PlusIcon, TrashIcon, PhotoIcon } from '@heroicons/react/24/outline'
+import { MasIcon } from '../../components/DuIcons'
 
 const UPLOADS_BASE = import.meta.env.VITE_API_URL
-
 const EMPTY_ITEM = { description: '', quantity: 1, unitPrice: 0, amount: 0 }
+const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', err: '#E58373' }
 
-const inputCls = "w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/40 bg-raised text-fg"
+function TrashSvg() {
+  return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', flexShrink: 0 }}><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+}
+function PhotoSvg() {
+  return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', flexShrink: 0 }}><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+}
+
+const inputCls = "du-input"
 const labelCls = "block text-sm font-medium text-fg-soft mb-1"
 
 export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId = '', initialProjectId = '' }) {
@@ -287,8 +294,8 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50">
-      <div className="bg-surface border border-line rounded-t-2xl sm:rounded-xl shadow-lg w-full sm:max-w-2xl sm:mx-4 max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 flex items-end sm:items-center justify-center z-50" style={{ background: 'rgba(0,0,0,0.65)' }}>
+      <div className="shadow-2xl w-full sm:max-w-2xl sm:mx-4 max-h-[92vh] flex flex-col" style={{ background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0' }}>
         {/* Header */}
         <div className="shrink-0 border-b border-line px-5 py-4 flex items-center justify-between">
           <h3 className="text-base font-semibold text-fg">
@@ -325,7 +332,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
 
           <div className="grid grid-cols-[100px_1fr] gap-3">
             <div>
-              <label className={labelCls}>Nº presupuesto</label>
+              <label className={labelCls}>Nº</label>
               <input type="number" min="1" step="1" required value={form.number}
                 onChange={e => setForm(f => ({ ...f, number: e.target.value }))}
                 className={inputCls} />
@@ -338,7 +345,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
             </div>
           </div>
 
-          <div className={`grid gap-3 ${isEditing ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2 sm:grid-cols-3'}`}>
+          <div className={`grid gap-3 ${isEditing ? 'grid-cols-1 sm:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3'}`}>
             <div>
               <label className={labelCls}>Válido hasta</label>
               <DatePicker value={form.validUntil}
@@ -359,7 +366,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
                   className={inputCls} />
               </div>
             )}
-            <div className={isEditing ? '' : 'col-span-2 sm:col-span-1'}>
+            <div>
               <label className={labelCls}>IVA (%)</label>
               <input type="number" min="0" max="100" step="1" value={form.taxRate}
                 onChange={e => setForm(f => ({ ...f, taxRate: e.target.value }))}
@@ -380,11 +387,11 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
               <label className={labelCls + ' mb-0'}>Descuento</label>
               <div className="flex rounded-md overflow-hidden border border-line text-xs">
                 <button type="button" onClick={() => setDiscountMode('percent')}
-                  className={`px-2 py-0.5 font-medium transition-colors ${discountMode === 'percent' ? 'bg-brand text-white' : 'bg-surface text-fg-soft hover:bg-raised'}`}>
+                  className={`px-2 py-0.5 font-medium transition-colors ${discountMode === 'percent' ? 'bg-brand text-base' : 'bg-surface text-fg-soft hover:bg-raised'}`}>
                   %
                 </button>
                 <button type="button" onClick={() => setDiscountMode('amount')}
-                  className={`px-2 py-0.5 font-medium transition-colors ${discountMode === 'amount' ? 'bg-brand text-white' : 'bg-surface text-fg-soft hover:bg-raised'}`}>
+                  className={`px-2 py-0.5 font-medium transition-colors ${discountMode === 'amount' ? 'bg-brand text-base' : 'bg-surface text-fg-soft hover:bg-raised'}`}>
                   Monto
                 </button>
               </div>
@@ -426,9 +433,10 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
               <button
                 type="button"
                 onClick={() => setNewNotes(prev => [...prev, { key: crypto.randomUUID(), title: '', description: '' }])}
-                className="flex items-center gap-1 text-xs text-brand hover:opacity-80 transition-opacity"
+                className="flex items-center gap-1 text-xs hover:opacity-80 transition-opacity"
+              style={{ color: C.arena }}
               >
-                <PlusIcon className="w-3.5 h-3.5" /> Agregar nota
+                <MasIcon style={{ width: 12, height: 12 }} /> Agregar nota
               </button>
             </div>
 
@@ -442,7 +450,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
                       value={note.title ?? ''}
                       onChange={e => setExistingNotes(prev => prev.map(n => n.id === note.id ? { ...n, title: e.target.value } : n))}
                       placeholder="Título (opcional)"
-                      className="w-full px-2.5 py-1.5 text-sm border border-line rounded-md bg-surface text-fg focus:outline-none focus:ring-1 focus:ring-brand/40"
+                      className="du-input w-full" style={{ height: 'auto', minHeight: 34, padding: '6px 12px', fontSize: 13, borderRadius: '0 8px 8px 0' }}
                     />
                     <textarea
                       ref={el => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px' } }}
@@ -454,14 +462,15 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
                       }}
                       placeholder="Descripción *"
                       rows={1}
-                      className="w-full px-2.5 py-1.5 text-sm border border-line rounded-md bg-surface text-fg focus:outline-none focus:ring-1 focus:ring-brand/40 resize-none overflow-hidden"
+                      className="w-full resize-none overflow-hidden outline-none font-[inherit]" style={{ background: C.bg, border: `1px solid ${C.linea}`, borderRadius: '0 8px 8px 0', color: C.crema, fontSize: 13, padding: '6px 12px' }}
                     />
                     <button
                       type="button"
                       onClick={() => setExistingNotes(prev => prev.map(n => n.id === note.id ? { ...n, _deleted: true } : n))}
-                      className="flex items-center gap-1 text-xs text-danger/60 hover:text-danger transition-colors"
+                      className="flex items-center gap-1 text-xs opacity-60 hover:opacity-100 transition-opacity"
+                    style={{ color: C.err }}
                     >
-                      <TrashIcon className="w-3.5 h-3.5" /> Eliminar
+                      <TrashSvg /> Eliminar
                     </button>
                   </div>
                 ))}
@@ -472,13 +481,13 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
             {newNotes.length > 0 && (
               <div className="space-y-2 mb-2">
                 {newNotes.map(note => (
-                  <div key={note.key} className="rounded-lg border border-brand/30 bg-brand-subtle/10 p-3 space-y-2">
+                  <div key={note.key} className="p-3 space-y-2" style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 12px 12px 0' }}>
                     <input
                       type="text"
                       value={note.title}
                       onChange={e => setNewNotes(prev => prev.map(n => n.key === note.key ? { ...n, title: e.target.value } : n))}
                       placeholder="Título (opcional)"
-                      className="w-full px-2.5 py-1.5 text-sm border border-line rounded-md bg-surface text-fg focus:outline-none focus:ring-1 focus:ring-brand/40"
+                      className="du-input w-full" style={{ height: 'auto', minHeight: 34, padding: '6px 12px', fontSize: 13, borderRadius: '0 8px 8px 0' }}
                     />
                     <textarea
                       ref={el => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px' } }}
@@ -490,14 +499,15 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
                       }}
                       placeholder="Descripción *"
                       rows={1}
-                      className="w-full px-2.5 py-1.5 text-sm border border-line rounded-md bg-surface text-fg focus:outline-none focus:ring-1 focus:ring-brand/40 resize-none overflow-hidden"
+                      className="w-full resize-none overflow-hidden outline-none font-[inherit]" style={{ background: C.bg, border: `1px solid ${C.linea}`, borderRadius: '0 8px 8px 0', color: C.crema, fontSize: 13, padding: '6px 12px' }}
                     />
                     <button
                       type="button"
                       onClick={() => setNewNotes(prev => prev.filter(n => n.key !== note.key))}
-                      className="flex items-center gap-1 text-xs text-danger/60 hover:text-danger transition-colors"
+                      className="flex items-center gap-1 text-xs opacity-60 hover:opacity-100 transition-opacity"
+                    style={{ color: C.err }}
                     >
-                      <TrashIcon className="w-3.5 h-3.5" /> Quitar
+                      <TrashSvg /> Quitar
                     </button>
                   </div>
                 ))}
@@ -518,9 +528,10 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
               <button
                 type="button"
                 onClick={() => imgFileRef.current?.click()}
-                className="flex items-center gap-1 text-xs text-brand hover:opacity-80 transition-opacity"
+                className="flex items-center gap-1 text-xs hover:opacity-80 transition-opacity"
+              style={{ color: C.arena }}
               >
-                <PlusIcon className="w-3.5 h-3.5" /> Agregar imagen
+                <MasIcon style={{ width: 12, height: 12 }} /> Agregar imagen
               </button>
               <input
                 ref={imgFileRef}
@@ -558,22 +569,23 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
                         value={img.title ?? ''}
                         onChange={e => setExistingImages(prev => prev.map(i => i.id === img.id ? { ...i, title: e.target.value } : i))}
                         placeholder="Título"
-                        className="w-full px-2.5 py-1 text-xs border border-line rounded-md bg-surface text-fg focus:outline-none focus:ring-1 focus:ring-brand/40"
+                        className="du-input w-full" style={{ height: 'auto', minHeight: 30, padding: '5px 10px', fontSize: 12, borderRadius: '0 7px 7px 0' }}
                       />
                       <textarea
                         value={img.description ?? ''}
                         onChange={e => setExistingImages(prev => prev.map(i => i.id === img.id ? { ...i, description: e.target.value } : i))}
                         placeholder="Descripción"
                         rows={2}
-                        className="w-full px-2.5 py-1 text-xs border border-line rounded-md bg-surface text-fg focus:outline-none focus:ring-1 focus:ring-brand/40 resize-none"
+                        className="w-full resize-none outline-none font-[inherit]" style={{ background: C.bg, border: `1px solid ${C.linea}`, borderRadius: '0 7px 7px 0', color: C.crema, fontSize: 12, padding: '5px 10px' }}
                       />
                       <button
                         type="button"
                         onClick={() => setExistingImages(prev => prev.map(i => i.id === img.id ? { ...i, _deleted: true } : i))}
-                        className="flex items-center gap-1 text-xs text-danger/60 hover:text-danger transition-colors"
+                        className="flex items-center gap-1 text-xs opacity-60 hover:opacity-100 transition-opacity"
                         title="Eliminar"
+                        style={{ color: C.err }}
                       >
-                        <TrashIcon className="w-3.5 h-3.5" /> Eliminar
+                        <TrashSvg /> Eliminar
                       </button>
                     </div>
                   </div>
@@ -585,26 +597,26 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
             {newImages.length > 0 && (
               <div className="space-y-3 mb-2">
                 {newImages.map(img => (
-                  <div key={img.key} className="rounded-lg border border-brand/30 overflow-hidden">
+                  <div key={img.key} className="overflow-hidden" style={{ border: `1px solid ${C.linea}`, borderRadius: '0 12px 12px 0' }}>
                     <img
                       src={img.previewUrl}
                       alt=""
                       className="w-full h-auto block"
                     />
-                    <div className="p-2 bg-brand-subtle/10 space-y-1.5">
+                    <div className="p-2 space-y-1.5" style={{ background: C.s2 }}>
                       <input
                         type="text"
                         value={img.title}
                         onChange={e => setNewImages(prev => prev.map(i => i.key === img.key ? { ...i, title: e.target.value } : i))}
                         placeholder="Título"
-                        className="w-full px-2.5 py-1 text-xs border border-line rounded-md bg-surface text-fg focus:outline-none focus:ring-1 focus:ring-brand/40"
+                        className="du-input w-full" style={{ height: 'auto', minHeight: 30, padding: '5px 10px', fontSize: 12, borderRadius: '0 7px 7px 0' }}
                       />
                       <textarea
                         value={img.description}
                         onChange={e => setNewImages(prev => prev.map(i => i.key === img.key ? { ...i, description: e.target.value } : i))}
                         placeholder="Descripción"
                         rows={2}
-                        className="w-full px-2.5 py-1 text-xs border border-line rounded-md bg-surface text-fg focus:outline-none focus:ring-1 focus:ring-brand/40 resize-none"
+                        className="w-full resize-none outline-none font-[inherit]" style={{ background: C.bg, border: `1px solid ${C.linea}`, borderRadius: '0 7px 7px 0', color: C.crema, fontSize: 12, padding: '5px 10px' }}
                       />
                       <button
                         type="button"
@@ -612,10 +624,11 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
                           URL.revokeObjectURL(img.previewUrl)
                           setNewImages(prev => prev.filter(i => i.key !== img.key))
                         }}
-                        className="flex items-center gap-1 text-xs text-danger/60 hover:text-danger transition-colors"
+                        className="flex items-center gap-1 text-xs opacity-60 hover:opacity-100 transition-opacity"
                         title="Quitar"
+                        style={{ color: C.err }}
                       >
-                        <TrashIcon className="w-3.5 h-3.5" /> Quitar
+                        <TrashSvg /> Quitar
                       </button>
                     </div>
                   </div>
@@ -625,7 +638,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
 
             {existingImages.filter(img => !img._deleted).length === 0 && newImages.length === 0 && (
               <div className="flex flex-col items-center justify-center py-5 rounded-lg border border-dashed border-line text-fg-muted gap-1.5">
-                <PhotoIcon className="w-6 h-6 opacity-40" />
+                <PhotoSvg />
                 <p className="text-xs">Sin imágenes — hacé clic en "Agregar imagen"</p>
               </div>
             )}
@@ -641,7 +654,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
                 className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-fg-soft hover:bg-raised transition-colors"
               >
                 <span>Pago inicial (anticipo)</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium transition-colors ${withDownPayment ? 'bg-brand text-white' : 'bg-raised text-fg-muted'}`}>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium transition-colors ${withDownPayment ? 'bg-brand text-base' : 'bg-raised text-fg-muted'}`}>
                   {withDownPayment ? 'Activado' : 'Opcional'}
                 </span>
               </button>
@@ -654,11 +667,11 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
                         <label className={labelCls + ' mb-0'}>Anticipo</label>
                         <div className="flex rounded-md overflow-hidden border border-line text-xs">
                           <button type="button" onClick={() => setDownPaymentMode('amount')}
-                            className={`px-2 py-0.5 font-medium transition-colors ${downPaymentMode === 'amount' ? 'bg-brand text-white' : 'bg-surface text-fg-soft hover:bg-raised'}`}>
+                            className={`px-2 py-0.5 font-medium transition-colors ${downPaymentMode === 'amount' ? 'bg-brand text-base' : 'bg-surface text-fg-soft hover:bg-raised'}`}>
                             Monto
                           </button>
                           <button type="button" onClick={() => setDownPaymentMode('percent')}
-                            className={`px-2 py-0.5 font-medium transition-colors ${downPaymentMode === 'percent' ? 'bg-brand text-white' : 'bg-surface text-fg-soft hover:bg-raised'}`}>
+                            className={`px-2 py-0.5 font-medium transition-colors ${downPaymentMode === 'percent' ? 'bg-brand text-base' : 'bg-surface text-fg-soft hover:bg-raised'}`}>
                             %
                           </button>
                         </div>
@@ -716,14 +729,20 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
                       <button
                         type="button"
                         onClick={() => setRemainderType('second')}
-                        className={`flex-1 py-2 text-xs font-medium rounded-md border transition-colors ${remainderType === 'second' ? 'border-brand bg-brand-subtle text-brand' : 'border-line text-fg-soft hover:bg-raised'}`}
+                        className="flex-1 py-2 text-xs font-medium transition-colors"
+                        style={remainderType === 'second'
+                          ? { border: `1px solid rgba(242,237,227,.35)`, background: 'rgba(242,237,227,.06)', color: C.crema, borderRadius: '0 8px 8px 0' }
+                          : { border: `1px solid ${C.linea}`, color: C.piedra, borderRadius: '0 8px 8px 0' }}
                       >
                         Segundo pago
                       </button>
                       <button
                         type="button"
                         onClick={() => setRemainderType('installments')}
-                        className={`flex-1 py-2 text-xs font-medium rounded-md border transition-colors ${remainderType === 'installments' ? 'border-brand bg-brand-subtle text-brand' : 'border-line text-fg-soft hover:bg-raised'}`}
+                        className="flex-1 py-2 text-xs font-medium transition-colors"
+                        style={remainderType === 'installments'
+                          ? { border: `1px solid rgba(242,237,227,.35)`, background: 'rgba(242,237,227,.06)', color: C.crema, borderRadius: '0 8px 8px 0' }
+                          : { border: `1px solid ${C.linea}`, color: C.piedra, borderRadius: '0 8px 8px 0' }}
                       >
                         En cuotas
                       </button>
@@ -793,7 +812,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
                     className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-fg-soft hover:bg-raised transition-colors border-t border-line"
                   >
                     <span>Configurar cuotas</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium transition-colors ${withInstallments ? 'bg-brand text-white' : 'bg-raised text-fg-muted'}`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium transition-colors ${withInstallments ? 'bg-brand text-base' : 'bg-raised text-fg-muted'}`}>
                       {withInstallments ? 'Activado' : 'Opcional'}
                     </span>
                   </button>
@@ -843,8 +862,8 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
 
         {/* Footer fijo */}
         <div className="shrink-0 border-t border-line px-5 py-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
-          <button type="button" onClick={onClose} className="px-4 py-2.5 sm:py-2 text-sm text-fg-soft hover:text-fg border border-line rounded-md sm:border-none">Cancelar</button>
-          <button type="submit" form="quote-form" disabled={loading} className="px-4 py-2.5 sm:py-2 bg-brand text-white rounded-md text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50">
+          <button type="button" onClick={onClose} className="px-4 py-2 text-sm transition-colors" style={{ color: C.arena }}>Cancelar</button>
+          <button type="submit" form="quote-form" disabled={loading} className="du-btn-pri disabled:opacity-50" style={{ width: 'auto', height: 38, paddingInline: 20, fontSize: 14 }}>
             {loading ? 'Guardando...' : 'Guardar'}
           </button>
         </div>

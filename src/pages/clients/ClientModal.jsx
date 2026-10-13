@@ -142,8 +142,8 @@ export default function ClientModal({ client, onClose, onSaved }) {
         {/* Header */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '18px 24px', background: C.linea, flexShrink: 0,
-          borderRadius: '0 16px 0 0',
+          padding: '16px 24px', background: C.s1, flexShrink: 0,
+          borderBottom: `1px solid ${C.linea}`,
         }}>
           <h3 style={{ fontSize: 15, fontWeight: 600, color: C.crema }}>
             {client ? 'Editar cliente' : 'Nuevo cliente'}
@@ -151,13 +151,7 @@ export default function ClientModal({ client, onClose, onSaved }) {
           <button
             type="button"
             onClick={onClose}
-            style={{
-              fontSize: 20, color: C.arena, background: 'none', border: 'none',
-              cursor: 'pointer', lineHeight: 1, padding: '2px 4px',
-              transition: 'color 0.12s',
-            }}
-            onMouseEnter={e => e.currentTarget.style.color = C.crema}
-            onMouseLeave={e => e.currentTarget.style.color = C.arena}
+            style={{ fontSize: 20, color: C.arena, background: 'none', border: 'none', cursor: 'pointer', lineHeight: 1, padding: '2px 4px' }}
           >
             ×
           </button>
@@ -285,14 +279,7 @@ export default function ClientModal({ client, onClose, onSaved }) {
           <button
             type="button"
             onClick={onClose}
-            style={{
-              padding: '8px 16px', borderRadius: '0 8px 8px 0',
-              background: 'none', border: `1px solid ${C.linea}`,
-              color: C.piedra, fontSize: 13, cursor: 'pointer',
-              transition: 'color 0.12s, border-color 0.12s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.arena }}
-            onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}
+            style={{ padding: '8px 16px', background: 'none', border: 'none', color: C.arena, fontSize: 13, cursor: 'pointer' }}
           >
             Cancelar
           </button>
@@ -300,16 +287,8 @@ export default function ClientModal({ client, onClose, onSaved }) {
             type="submit"
             form="client-form"
             disabled={loading}
-            style={{
-              padding: '8px 20px', borderRadius: '0 10px 10px 0',
-              background: C.crema, color: C.bg,
-              fontSize: 13, fontWeight: 600, border: 'none',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.6 : 1,
-              transition: 'opacity 0.12s, background 0.12s',
-            }}
-            onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#E8E3D9' }}
-            onMouseLeave={e => { e.currentTarget.style.background = C.crema }}
+            className="du-btn-pri disabled:opacity-50"
+            style={{ width: 'auto', height: 38, paddingInline: 20, fontSize: 14 }}
           >
             {loading ? 'Guardando...' : (client ? 'Guardar cambios' : 'Crear cliente')}
           </button>

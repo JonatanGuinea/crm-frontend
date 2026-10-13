@@ -4,13 +4,8 @@ import { Link } from 'react-router-dom'
 import { getClients, getAllClientsHistory } from '../../api/clients'
 import ClientModal from './ClientModal'
 import { useAuth } from '../../context/AuthContext'
-import {
-  ClienteIcon,
-  BuscarIcon,
-  MasIcon,
-  AgendaIcon,
-  ProyectoIcon,
-} from '../../components/DuIcons'
+import DatePicker from '../../components/DatePicker'
+import { ClienteIcon, BuscarIcon, MasIcon } from '../../components/DuIcons'
 
 // ── tokens ────────────────────────────────────────────────────────────────────
 
@@ -43,6 +38,16 @@ const SECTION_TITLE = {
 
 const PAGE_SIZE = 15
 const CTRL_H = 34
+const HISTORY_STEP = 25
+const dpClass = "h-[34px] px-3 bg-[#141415] border border-[#2C2C2F] rounded-[0_9px_9px_0] text-[13px] outline-none min-w-[130px]"
+
+function fmtDateTime(dt) {
+  if (!dt) return '—'
+  return new Date(dt).toLocaleString('es-AR', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  })
+}
 
 // ── component ─────────────────────────────────────────────────────────────────
 
@@ -50,11 +55,13 @@ export default function ClientsPage() {
   const { user } = useAuth()
   const canWrite = user?.role !== 'member'
   const qc = useQueryClient()
-  const [tab, setTab]         = useState('table')
-  const [search, setSearch]   = useState('')
-  const [visible, setVisible] = useState(PAGE_SIZE)
+  const [tab, setTab]             = useState('table')
+  const [search, setSearch]       = useState('')
+  const [visible, setVisible]     = useState(PAGE_SIZE)
   const [modalOpen, setModalOpen] = useState(false)
-  const [historyVisible, setHistoryVisible] = useState(25)
+  const [historyVisible, setHistoryVisible] = useState(HISTORY_STEP)
+  const [fromDate, setFromDate]   = useState('')
+  const [toDate, setToDate]       = useState('')
 
   const { data, isLoading } = useQuery({
     queryKey: ['clients', search],
@@ -68,6 +75,13 @@ export default function ClientsPage() {
   })
 
   function handleSearch(val) { setSearch(val); setVisible(PAGE_SIZE) }
+
+  const filteredHistory = (historyData ?? []).filter(e => {
+    const d = new Date(e.createdAt)
+    if (fromDate && d < new Date(fromDate)) return false
+    if (toDate && d > new Date(toDate + 'T23:59:59')) return false
+    return true
+  })
 
   const allClients  = data?.data ?? []
   const shownClients = allClients.slice(0, visible)
@@ -83,7 +97,7 @@ export default function ClientsPage() {
   })
 
   return (
-    <div style={{ padding: '28px 24px 40px', maxWidth: 1080, fontFamily: 'Geist, system-ui, sans-serif' }}>
+    <div style={{ padding: '28px 24px 40px', width: '100%', fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* ── Header ──────────────────────────────────────────────── */}
       {/* Fila 1 */}
@@ -98,11 +112,9 @@ export default function ClientsPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 3, padding: 4, height: CTRL_H, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0' }}>
               <button onClick={() => setTab('table')} style={tabBtn(tab === 'table')}>
-                <ProyectoIcon style={{ width: 11, height: 11 }} />
                 Tabla
               </button>
               <button onClick={() => setTab('history')} style={tabBtn(tab === 'history')}>
-                <AgendaIcon style={{ width: 11, height: 11 }} />
                 Historial
               </button>
             </div>
@@ -114,7 +126,7 @@ export default function ClientsPage() {
                 onMouseLeave={e => e.currentTarget.style.background = C.crema}
               >
                 <MasIcon style={{ width: 12, height: 12 }} />
-                Nuevo cliente
+                Nuevo
               </button>
             )}
           </div>
@@ -130,7 +142,7 @@ export default function ClientsPage() {
               onMouseLeave={e => e.currentTarget.style.background = C.crema}
             >
               <MasIcon style={{ width: 12, height: 12 }} />
-              Nuevo cliente
+              Nuevo
             </button>
           </div>
         )}
@@ -142,11 +154,9 @@ export default function ClientsPage() {
           <div style={{ marginLeft: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 3, padding: 4, height: CTRL_H, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0' }}>
               <button onClick={() => setTab('table')} style={tabBtn(tab === 'table')}>
-                <ProyectoIcon style={{ width: 11, height: 11 }} />
                 Tabla
               </button>
               <button onClick={() => setTab('history')} style={tabBtn(tab === 'history')}>
-                <AgendaIcon style={{ width: 11, height: 11 }} />
                 Historial
               </button>
             </div>
@@ -157,69 +167,88 @@ export default function ClientsPage() {
       {/* ── Historial ─────────────────────────────────────────────── */}
       {tab === 'history' && (
         <div style={{ maxWidth: 580 }}>
-          {historyData.length === 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '60px 0', gap: 12 }}>
-              <AgendaIcon style={{ width: 36, height: 36, color: C.linea }} />
-              <p style={{ fontSize: 13, color: C.piedra }}>Sin movimientos registrados.</p>
-            </div>
+          {/* Filtros de fecha */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+            <DatePicker
+              value={fromDate}
+              onChange={e => { setFromDate(e.target.value); setHistoryVisible(HISTORY_STEP) }}
+              className={dpClass}
+              placeholder="Desde"
+            />
+            <DatePicker
+              value={toDate}
+              onChange={e => { setToDate(e.target.value); setHistoryVisible(HISTORY_STEP) }}
+              className={dpClass}
+              placeholder="Hasta"
+            />
+            {(fromDate || toDate) && (
+              <button
+                onClick={() => { setFromDate(''); setToDate(''); setHistoryVisible(HISTORY_STEP) }}
+                style={{
+                  height: 34, padding: '0 12px', background: 'none',
+                  border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0',
+                  color: C.piedra, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.arena }}
+                onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}
+              >
+                Limpiar
+              </button>
+            )}
+          </div>
+
+          {filteredHistory.length === 0 ? (
+            <p style={{ fontSize: 13, color: C.piedra, textAlign: 'center', padding: '40px 0' }}>Sin movimientos registrados</p>
           ) : (
             <div>
-              {historyData.slice(0, historyVisible).map((entry, i) => {
-                const initials = entry.user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-                const date     = new Date(entry.createdAt)
-                const dateStr  = date.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
-                const timeStr  = date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
-                const shown    = historyData.slice(0, historyVisible)
-                return (
-                  <div key={entry.id} style={{ display: 'flex', gap: 14 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <div style={{
-                        width: 32, height: 32, flexShrink: 0,
-                        background: C.s2, border: `1px solid ${C.linea}`,
-                        borderRadius: '0 8px 8px 0',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 10.5, fontWeight: 700, color: C.arena,
-                      }}>
-                        {initials}
-                      </div>
-                      {i < shown.length - 1 && (
-                        <div style={{ width: 1, flex: 1, background: C.linea, margin: '4px 0', minHeight: 16 }} />
-                      )}
-                    </div>
-                    <div style={{ paddingBottom: 16, flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '0 6px' }}>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: C.crema }}>{entry.user.name}</span>
-                        <span style={{ fontSize: 13, color: C.piedra }}>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {filteredHistory.slice(0, historyVisible).map(entry => (
+                  <li key={entry.id} style={{
+                    display: 'flex', gap: 12, padding: '12px 0',
+                    borderBottom: `1px solid ${C.linea}`, fontSize: 13,
+                  }}>
+                    {/* marcador tipo L */}
+                    <div style={{
+                      width: 10, height: 16, flexShrink: 0, marginTop: 2,
+                      borderLeft: `2.5px solid ${C.piedra}`,
+                      borderBottom: `2.5px solid ${C.piedra}`,
+                    }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 4 }}>
+                        <span style={{ fontWeight: 600, color: C.crema }}>{entry.user.name}</span>
+                        <span style={{ color: C.arena }}>
                           {entry.action === 'created' ? 'creó el cliente' : 'actualizó'}
-                          {entry.detail && <span style={{ color: C.arena }}> · {entry.detail}</span>}
+                          {entry.detail && ` · ${entry.detail}`}
                         </span>
+                        <Link
+                          to={`/clients/${entry.client.id}`}
+                          style={{ fontWeight: 600, color: C.crema, textDecoration: 'none' }}
+                          onMouseEnter={e => e.currentTarget.style.color = C.arena}
+                          onMouseLeave={e => e.currentTarget.style.color = C.crema}
+                        >
+                          {entry.client.name}
+                        </Link>
                       </div>
-                      <Link
-                        to={`/clients/${entry.client.id}`}
-                        style={{ fontSize: 12, color: C.info, textDecoration: 'none' }}
-                        onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
-                        onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
-                      >
-                        {entry.client.name}
-                      </Link>
-                      <p style={{ fontSize: 11, color: C.piedra, marginTop: 2 }}>{dateStr} · {timeStr}</p>
+                      <p style={{ fontSize: 11.5, color: C.piedra, marginTop: 2 }}>{fmtDateTime(entry.createdAt)}</p>
                     </div>
-                  </div>
-                )
-              })}
-              {historyData.length > historyVisible && (
-                <button
-                  onClick={() => setHistoryVisible(v => v + 25)}
-                  style={{
-                    marginTop: 8, width: '100%', padding: '10px 0',
-                    fontSize: 12, color: C.piedra,
-                    border: `1px dashed ${C.linea}`,
-                    borderRadius: '0 12px 12px 0',
-                    background: 'none', cursor: 'pointer',
-                  }}
-                >
-                  Mostrar más ({historyData.length - historyVisible} restante{historyData.length - historyVisible !== 1 ? 's' : ''})
-                </button>
+                  </li>
+                ))}
+              </ul>
+              {historyVisible < filteredHistory.length && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20 }}>
+                  <button
+                    onClick={() => setHistoryVisible(v => v + HISTORY_STEP)}
+                    style={{
+                      padding: '8px 20px', background: 'none',
+                      border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0',
+                      color: C.piedra, fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.arena }}
+                    onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}
+                  >
+                    Mostrar más ({filteredHistory.length - historyVisible} restantes)
+                  </button>
+                </div>
               )}
             </div>
           )}
