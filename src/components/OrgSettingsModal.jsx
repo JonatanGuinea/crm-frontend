@@ -4,7 +4,30 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from './Toast'
 import { getOrganizations, updateOrganization, uploadOrgLogo } from '../api/organizations'
-import { PhotoIcon, XMarkIcon, TrashIcon } from '@heroicons/react/24/outline'
+function PhotoSvg({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" />
+      <polyline points="21 15 16 10 5 21" />
+    </svg>
+  )
+}
+function CloseSvg({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  )
+}
+function TrashSvg({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+      <path d="M10 11v6M14 11v6M9 6V4h6v2" />
+    </svg>
+  )
+}
 import ProvinceSelect from './ProvinceSelect'
 
 const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
@@ -140,7 +163,7 @@ export default function OrgSettingsModal({ onClose }) {
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-base font-semibold text-fg">Configuración de la organización</h3>
           <button onClick={onClose} className="p-1.5 rounded-md text-fg-muted hover:bg-raised transition-colors">
-            <XMarkIcon className="w-4 h-4" />
+            <CloseSvg className="w-4 h-4" />
           </button>
         </div>
 
@@ -152,7 +175,7 @@ export default function OrgSettingsModal({ onClose }) {
           >
             {logoPreview
               ? <img src={logoPreview} alt="Logo" className="w-full h-full object-contain" />
-              : <PhotoIcon className="w-7 h-7 text-fg-muted" />
+              : <PhotoSvg className="w-7 h-7 text-fg-muted" />
             }
           </div>
           <div>
@@ -297,7 +320,7 @@ export default function OrgSettingsModal({ onClose }) {
                 disabled={sigIsEmpty}
                 className="mt-1.5 flex items-center gap-1 text-xs text-fg-muted hover:text-fg disabled:opacity-40 transition-colors"
               >
-                <TrashIcon className="w-3 h-3" />
+                <TrashSvg className="w-3 h-3" />
                 Limpiar canvas
               </button>
             </div>
@@ -309,7 +332,7 @@ export default function OrgSettingsModal({ onClose }) {
               Cancelar
             </button>
             <button type="submit" disabled={saveOrg.isPending}
-              className="px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50 transition-colors">
+              className="px-4 py-2 bg-brand text-base rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50 transition-colors">
               {saveOrg.isPending ? 'Guardando...' : 'Guardar cambios'}
             </button>
           </div>

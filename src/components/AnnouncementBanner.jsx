@@ -1,12 +1,28 @@
 import { useState } from 'react'
-import { XMarkIcon, DocumentTextIcon } from '@heroicons/react/24/outline'
-import { SparklesIcon } from '@heroicons/react/24/solid'
+import { PresupuestoIcon } from './DuIcons'
+
+function SparklesSvg({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5L12 2z" />
+      <path d="M19 14l.75 2.25L22 17l-2.25.75L19 20l-.75-2.25L16 17l2.25-.75L19 14z" opacity=".6" />
+      <path d="M5 18l.5 1.5L7 20l-1.5.5L5 22l-.5-1.5L3 20l1.5-.5L5 18z" opacity=".4" />
+    </svg>
+  )
+}
+function CloseSvg({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  )
+}
 
 const ANNOUNCEMENT_KEY = 'crm_announcement_2026-09-28'
 
 const FEATURES = [
   {
-    icon: DocumentTextIcon,
+    icon: PresupuestoIcon,
     title: 'Notas en presupuestos',
     desc: 'Agregá múltiples notas con título y descripción a tus presupuestos. Aparecen en el PDF y en la vista del cliente.',
     where: 'Presupuestos → crear / editar → Notas',
@@ -35,15 +51,15 @@ export default function AnnouncementBanner() {
           className="absolute top-3 right-3 p-1 rounded-lg text-fg-muted hover:text-fg hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
           aria-label="Cerrar"
         >
-          <XMarkIcon className="w-4 h-4" />
+          <CloseSvg className="w-4 h-4" />
         </button>
 
         <div className="px-4 py-4 pr-9">
           {/* Header */}
           <div className="flex items-center gap-2 mb-3">
-            <SparklesIcon className="w-4 h-4 text-brand" />
+            <SparklesSvg className="w-4 h-4 text-brand" />
             <p className="text-sm font-semibold text-fg">Novedades</p>
-            <span className="px-2 py-0.5 rounded-full bg-brand text-white text-[10px] font-semibold tracking-wide">NUEVO</span>
+            <span className="px-2 py-0.5 rounded-full bg-brand text-base text-[10px] font-semibold tracking-wide">NUEVO</span>
           </div>
 
           {/* Features */}
@@ -66,7 +82,7 @@ export default function AnnouncementBanner() {
 
           <button
             onClick={dismiss}
-            className="mt-4 w-full py-2 rounded-lg bg-brand text-white text-sm font-medium hover:opacity-90 transition-opacity"
+            className="mt-4 w-full py-2 rounded-lg bg-brand text-base text-sm font-medium hover:opacity-90 transition-opacity"
           >
             Entendido
           </button>

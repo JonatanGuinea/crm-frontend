@@ -1,7 +1,14 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+function WarnSvg({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+      <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  )
+}
 
 const ConfirmContext = createContext(null)
 
@@ -37,11 +44,12 @@ export function ConfirmProvider({ children }) {
           {/* Panel */}
           <div
             style={{ animation: `${dialog.exiting ? 'dialog-out' : 'dialog-in'} 0.25s cubic-bezier(0.4,0,0.2,1) forwards` }}
-            className="relative bg-surface/90 backdrop-blur-xl border border-line rounded-2xl shadow-xl w-full max-w-sm p-6 flex flex-col gap-4"
+            className="relative bg-surface/90 backdrop-blur-xl border border-line shadow-xl w-full max-w-sm p-6 flex flex-col gap-4"
+            style={{ borderRadius: '0 16px 16px 0' }}
           >
             <div className="flex items-start gap-3">
               <div className="p-2 rounded-xl bg-danger-subtle shrink-0">
-                <ExclamationTriangleIcon className="w-5 h-5 text-danger" />
+                <WarnSvg className="w-5 h-5 text-danger" />
               </div>
               <p className="text-sm text-fg leading-snug pt-1.5">{dialog.message}</p>
             </div>
@@ -62,7 +70,7 @@ export function ConfirmProvider({ children }) {
                 className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                   dialog.danger
                     ? 'bg-danger text-white hover:opacity-90'
-                    : 'bg-brand text-white hover:bg-brand-hover'
+                    : 'bg-brand text-base hover:bg-brand-hover'
                 }`}
               >
                 {dialog.confirmLabel}

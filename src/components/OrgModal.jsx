@@ -3,13 +3,44 @@ import { createPortal } from 'react-dom'
 import { useAuth } from '../context/AuthContext'
 import { createOrganization } from '../api/auth'
 import { isValidPhoneNumber } from 'libphonenumber-js'
-import {
-  BuildingOffice2Icon,
-  ChevronDownIcon,
-  ExclamationCircleIcon,
-  XMarkIcon,
-  ArrowRightStartOnRectangleIcon,
-} from '@heroicons/react/24/outline'
+function BuildingSvg({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 21h18M5 21V5a2 2 0 012-2h10a2 2 0 012 2v16" />
+      <path d="M9 21V13h6v8M9 7h1M14 7h1M9 11h1M14 11h1" />
+    </svg>
+  )
+}
+function ChevronDownSvg({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  )
+}
+function ExclamationCircleSvg({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+    </svg>
+  )
+}
+function CloseSvg({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  )
+}
+function LogoutSvg({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+      <polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
+  )
+}
 import ProvinceSelect from './ProvinceSelect'
 
 const COUNTRIES = [
@@ -83,7 +114,7 @@ function OrgPhoneInput({ countryCode, phoneNumber, onChangeCountry, onChangeNumb
         >
           <span className="text-base leading-none">{selected.flag}</span>
           <span className="text-fg text-xs font-mono">{selected.dial}</span>
-          <ChevronDownIcon className={`w-3 h-3 text-fg-muted transition-transform ${open ? 'rotate-180' : ''}`} />
+          <ChevronDownSvg className={`w-3 h-3 text-fg-muted transition-transform ${open ? 'rotate-180' : ''}`} />
         </button>
         <input
           type="tel"
@@ -102,7 +133,7 @@ function OrgPhoneInput({ countryCode, phoneNumber, onChangeCountry, onChangeNumb
       </div>
       {hasError && (
         <p className="mt-1.5 text-[11px] text-danger flex items-center gap-1">
-          <ExclamationCircleIcon className="w-3.5 h-3.5 shrink-0" />
+          <ExclamationCircleSvg className="w-3.5 h-3.5 shrink-0" />
           {errorMsg}
         </p>
       )}
@@ -200,7 +231,7 @@ export function SetupOrgModal({ onCreated, onClose }) {
         <div className="px-4 pt-5 pb-3 sm:px-6 sm:pt-6 sm:pb-4 border-b border-line shrink-0">
           <div className="flex items-center justify-between mb-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-subtle text-brand text-xs font-medium">
-              <BuildingOffice2Icon className="w-3.5 h-3.5" />
+              <BuildingSvg className="w-3.5 h-3.5" />
               {onClose ? 'Nueva organización' : 'Configuración inicial'}
             </div>
             {onClose ? (
@@ -209,7 +240,7 @@ export function SetupOrgModal({ onCreated, onClose }) {
                 onClick={onClose}
                 className="p-1.5 rounded-md text-fg-muted hover:bg-raised hover:text-fg transition-colors"
               >
-                <XMarkIcon className="w-4 h-4" />
+                <CloseSvg className="w-4 h-4" />
               </button>
             ) : (
               <button
@@ -217,7 +248,7 @@ export function SetupOrgModal({ onCreated, onClose }) {
                 onClick={logout}
                 className="flex items-center gap-1.5 text-xs text-fg-muted hover:text-danger transition-colors"
               >
-                <ArrowRightStartOnRectangleIcon className="w-3.5 h-3.5" />
+                <LogoutSvg className="w-3.5 h-3.5" />
                 Cerrar sesión
               </button>
             )}
@@ -349,7 +380,7 @@ export function SetupOrgModal({ onCreated, onClose }) {
             type="submit"
             form="setup-org-form"
             disabled={loading || !allFilled}
-            className="w-full py-2.5 bg-brand hover:bg-brand-hover text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full py-2.5 bg-brand hover:bg-brand-hover text-base rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading && (
               <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
