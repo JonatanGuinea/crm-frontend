@@ -30,9 +30,11 @@ function CloseSvg({ style }) {
 
 function SectionHead({ children }) {
   return (
-    <p style={{ fontSize: 11, fontWeight: 600, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.07em', borderBottom: `1px solid ${C.linea}`, paddingBottom: 8, marginBottom: 16, marginTop: 0 }}>
-      {children}
-    </p>
+    <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderLeft: `3px solid ${C.arena}`, borderRadius: '0 8px 8px 0', padding: '8px 14px', marginBottom: 16, marginTop: 0 }}>
+      <p style={{ fontSize: 11, fontWeight: 600, color: C.arena, textTransform: 'uppercase', letterSpacing: '0.07em', margin: 0 }}>
+        {children}
+      </p>
+    </div>
   )
 }
 
@@ -391,6 +393,8 @@ export default function OrgSettingsPage() {
             <SaveRow label="Guardar colores" isPending={saveBrand.isPending} />
           </section>
         </form>
+
+        <Divider />
 
         <DefaultTasksSection />
 
