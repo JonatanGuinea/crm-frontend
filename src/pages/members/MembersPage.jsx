@@ -40,6 +40,78 @@ function PlusSvg({ style }) {
 function TrashSvg({ style }) {
   return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M9 6V4h6v2" /></svg>
 }
+function CloseSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+}
+
+function InviteModal({ myRole, onClose, onInvite, isPending, error }) {
+  const [form, setForm] = useState({ email: '', role: 'member' })
+
+  function handleSubmit(e) {
+    e.preventDefault()
+    onInvite(form)
+  }
+
+  const labelStyle = { fontSize: 11, fontWeight: 500, color: C.piedra }
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', justifyContent: 'center', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
+      className="items-end sm:items-center">
+      <div style={{ width: '100%', maxWidth: 420, background: C.s1, borderRadius: '0 16px 0 0', border: `1px solid ${C.linea}`, boxShadow: '0 24px 64px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column' }}
+        className="sm:rounded-[0_16px_16px_0]">
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 14px', borderBottom: `1px solid ${C.linea}`, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <EquipoIcon style={{ width: 15, height: 15, color: C.arena }} />
+            <span style={{ fontSize: 15, fontWeight: 600, color: C.crema }}>Invitar miembro</span>
+          </div>
+          <button onClick={onClose}
+            style={{ padding: 6, borderRadius: '0 6px 6px 0', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra }}
+            onMouseEnter={e => e.currentTarget.style.color = C.crema}
+            onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+            <CloseSvg style={{ width: 18, height: 18 }} />
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <label style={labelStyle}>Email del usuario</label>
+            <input type="email" required placeholder="usuario@email.com" autoFocus
+              value={form.email}
+              onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+              className="du-input" />
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <label style={labelStyle}>Rol</label>
+            <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))} className="du-input">
+              <option value="member">Miembro</option>
+              {myRole === 'owner' && <option value="admin">Administrador</option>}
+            </select>
+          </div>
+
+          {error && <p style={{ fontSize: 12, color: C.err, margin: 0 }}>{error}</p>}
+
+          <div style={{ display: 'flex', gap: 10, paddingTop: 4, paddingBottom: 8 }}>
+            <button type="button" onClick={onClose}
+              style={{ flex: 1, padding: '10px 0', borderRadius: '0 10px 10px 0', border: `1px solid ${C.linea}`, background: 'none', color: C.piedra, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+              onMouseEnter={e => { e.currentTarget.style.color = C.crema; e.currentTarget.style.borderColor = C.arena }}
+              onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}>
+              Cancelar
+            </button>
+            <button type="submit" disabled={isPending}
+              style={{ flex: 1, padding: '10px 0', borderRadius: '0 10px 10px 0', border: 'none', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, cursor: isPending ? 'not-allowed' : 'pointer', opacity: isPending ? 0.5 : 1 }}>
+              {isPending ? 'Enviando…' : 'Invitar'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
 
 export default function MembersPage() {
   const { user } = useAuth()
@@ -49,7 +121,6 @@ export default function MembersPage() {
   const myRole   = user?.role
   const qc       = useQueryClient()
 
-  const [inviteForm,  setInviteForm]  = useState({ email: '', role: 'member' })
   const [inviteError, setInviteError] = useState('')
   const [showInvite,  setShowInvite]  = useState(false)
 
@@ -63,7 +134,6 @@ export default function MembersPage() {
     mutationFn: (form) => inviteMember(orgId, form),
     onSuccess: (_, form) => {
       toast(`Invitación enviada a ${form.email}`, 'success')
-      setInviteForm({ email: '', role: 'member' })
       setInviteError('')
       setShowInvite(false)
       qc.invalidateQueries(['members', orgId])
@@ -103,7 +173,7 @@ export default function MembersPage() {
         </div>
         {canInvite && (
           <button
-            onClick={() => { setShowInvite(v => !v); setInviteError('') }}
+            onClick={() => { setShowInvite(true); setInviteError('') }}
             style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
             <PlusSvg style={{ width: 13, height: 13 }} />
             Invitar miembro
@@ -111,35 +181,14 @@ export default function MembersPage() {
         )}
       </div>
 
-      {/* Invite form */}
       {showInvite && (
-        <div style={{ margin: '20px 24px 0', background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', padding: 20 }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: C.crema, margin: '0 0 16px' }}>Invitar usuario</p>
-          <form onSubmit={e => { e.preventDefault(); invite.mutate(inviteForm) }}
-            style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end' }}>
-            <div style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: 5 }}>
-              <label style={{ fontSize: 11, fontWeight: 500, color: C.piedra }}>Email del usuario</label>
-              <input type="email" required placeholder="usuario@email.com"
-                value={inviteForm.email}
-                onChange={e => setInviteForm(f => ({ ...f, email: e.target.value }))}
-                className="du-input" />
-            </div>
-            <div style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', gap: 5 }}>
-              <label style={{ fontSize: 11, fontWeight: 500, color: C.piedra }}>Rol</label>
-              <select value={inviteForm.role}
-                onChange={e => setInviteForm(f => ({ ...f, role: e.target.value }))}
-                className="du-input">
-                <option value="member">Miembro</option>
-                {myRole === 'owner' && <option value="admin">Administrador</option>}
-              </select>
-            </div>
-            <button type="submit" disabled={invite.isPending}
-              style={{ height: 34, padding: '0 18px', borderRadius: '0 9px 9px 0', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, border: 'none', cursor: invite.isPending ? 'not-allowed' : 'pointer', opacity: invite.isPending ? 0.5 : 1 }}>
-              {invite.isPending ? 'Enviando…' : 'Invitar'}
-            </button>
-          </form>
-          {inviteError && <p style={{ fontSize: 12, color: C.err, marginTop: 10 }}>{inviteError}</p>}
-        </div>
+        <InviteModal
+          myRole={myRole}
+          isPending={invite.isPending}
+          error={inviteError}
+          onClose={() => { setShowInvite(false); setInviteError('') }}
+          onInvite={form => invite.mutate(form)}
+        />
       )}
 
       {/* Content */}
