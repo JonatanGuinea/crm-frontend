@@ -21,7 +21,7 @@ import isotipoUrl from '../assets/danteup/isotipo-crema.svg'
 import {
   ClienteIcon, PresupuestoIcon, ProyectoIcon, AgendaIcon,
   CobroIcon, ReporteIcon, EquipoIcon, StockIcon,
-  CampanaIcon, AjustesIcon,
+  CampanaIcon, AjustesIcon,CarpetaIcon,ModulosIcon
 } from '../components/DuIcons'
 
 const UPLOADS_BASE = import.meta.env.VITE_API_URL
@@ -40,11 +40,11 @@ const C = {
 const ROLE_LABEL = { owner: 'Dueño', admin: 'Admin', member: 'Miembro' }
 
 const navTop = [
-  { to: '/',                  label: 'Inicio',       icon: HomeSvg,         exact: true },
+  { to: '/',                  label: 'Inicio',       icon: ModulosIcon,         exact: true },
   { to: '/clients',           label: 'Clientes',     icon: ClienteIcon },
   { to: '/quotes',            label: 'Presupuestos', icon: PresupuestoIcon, memberHidden: true },
-  { to: '/projects',          label: 'Proyectos',    icon: ProyectoIcon },
-  { to: '/tasks',             label: 'Tareas',       icon: TasksSvg },
+  { to: '/projects',          label: 'Proyectos',    icon: CarpetaIcon },
+  { to: '/tasks',             label: 'Tareas',       icon: ProyectoIcon },
   { to: '/projects/calendar', label: 'Agenda',       icon: AgendaIcon },
 ]
 
