@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getFinancesDashboard } from '../../api/finances'
 import { getQuotesDashboard } from '../../api/quotes'
@@ -7,10 +7,16 @@ import { getStockDashboard, getProducts } from '../../api/stock'
 import { getTopClients } from '../../api/clients'
 import { getOrganizations } from '../../api/organizations'
 import { useAuth } from '../../context/AuthContext'
-import { fmt } from '../../utils/fmt'
+import { ReporteIcon } from '../../components/DuIcons'
 import { generateFullReportPDF } from '../../utils/generateReport'
 
-const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
+const C      = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
+const CIFRAS = "'DanteUP Cifras', Geist, sans-serif"
+
+const fmt = (n, currency = 'USD') => {
+  const num = Number(n ?? 0)
+  return `${currency} ${num.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
 
 function BanknotesSvg({ style }) {
   return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /><circle cx="12" cy="14" r="2" /><path d="M6 14h.01M18 14h.01" /></svg>
@@ -84,18 +90,102 @@ function buildEvolution(apiData) {
   })
 }
 
+// ── chart ─────────────────────────────────────────────────────────────────────
+
+function IncomeExpensesBars({ months, currency }) {
+  const [hovered, setHovered] = useState(null)
+  const [tapped,  setTapped]  = useState(null)
+  const ptrType = useRef('mouse')
+  const max   = Math.max(...months.map(m => Math.max(Number(m.income ?? 0), Number(m.expense ?? 0))), 1)
+  const total = months.length
+
+  useEffect(() => {
+    if (!tapped) return
+    const handler = () => setTapped(null)
+    document.addEventListener('click', handler)
+    return () => document.removeEventListener('click', handler)
+  }, [tapped])
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 144 }}>
+      {months.map((m, i) => {
+        const incomePct  = max ? (Number(m.income  ?? 0) / max) * 100 : 0
+        const expensePct = max ? (Number(m.expense ?? 0) / max) * 100 : 0
+        const balance    = Number(m.income ?? 0) - Number(m.expense ?? 0)
+        const isActive   = hovered === m.month || tapped === m.month
+        const label      = new Date(...m.month.split('-').map((v, j) => j === 1 ? parseInt(v) - 1 : parseInt(v)))
+          .toLocaleDateString('es-AR', { month: 'short' })
+
+        const isFirst = i === 0
+        const isLast  = i === total - 1
+        const tipAlign = isFirst
+          ? { left: 0, transform: 'none' }
+          : isLast
+          ? { right: 0, left: 'auto', transform: 'none' }
+          : { left: '50%', transform: 'translateX(-50%)' }
+
+        return (
+          <div key={m.month}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, position: 'relative', cursor: 'pointer' }}
+            onPointerDown={e => { ptrType.current = e.pointerType }}
+            onMouseEnter={() => setHovered(m.month)}
+            onMouseLeave={() => setHovered(null)}
+            onClick={e => {
+              if (ptrType.current === 'mouse') return
+              e.stopPropagation()
+              setTapped(prev => prev === m.month ? null : m.month)
+            }}>
+
+            {isActive && (
+              <div style={{ position: 'absolute', bottom: 'calc(100% + 10px)', ...tipAlign, width: 200, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 14px 14px 0', padding: '14px 16px', boxShadow: '0 16px 40px rgba(0,0,0,.65)', zIndex: 20, pointerEvents: 'none' }}>
+                <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.4px', textTransform: 'uppercase', color: C.piedra, marginBottom: 12 }}>{label}</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {[
+                    { dot: C.crema, label: 'Ingresos', value: fmt(m.income  ?? 0, currency), color: C.crema },
+                    { dot: C.arena, label: 'Egresos',  value: fmt(m.expense ?? 0, currency), color: C.arena },
+                  ].map(row => (
+                    <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: C.arena, flexShrink: 0 }}>
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: row.dot, flexShrink: 0 }} />
+                        {row.label}
+                      </span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: row.color, fontFamily: CIFRAS, textAlign: 'right' }}>{row.value}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.linea}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                  <span style={{ fontSize: 11, color: C.piedra }}>Balance</span>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: balance >= 0 ? C.ok : C.err, fontFamily: CIFRAS }}>
+                    {balance >= 0 ? '+' : ''}{fmt(balance, currency)}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 112 }}>
+              <div style={{ width: 16, borderRadius: '2px 2px 0 0', background: C.crema, opacity: isActive ? 1 : 0.85, height: `${incomePct}%`, transition: 'opacity 0.2s' }} />
+              <div style={{ width: 16, borderRadius: '2px 2px 0 0', background: C.crema, opacity: isActive ? 0.38 : 0.25, height: `${expensePct}%`, transition: 'opacity 0.2s' }} />
+            </div>
+            <p style={{ fontSize: 10, textTransform: 'capitalize', color: isActive ? C.arena : C.piedra, transition: 'color 0.2s' }}>{label}</p>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 // ── sub-components ────────────────────────────────────────────────────────────
 
 function KpiCard({ Icon, iconBg, iconColor, label, value, sub }) {
   return (
-    <div className="bg-surface border border-line rounded-xl p-4 flex items-start gap-3">
+    <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', padding: '14px 16px', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
       <div style={{ padding: 8, borderRadius: '0 8px 8px 0', background: iconBg, flexShrink: 0 }}>
-        <Icon style={{ width: 16, height: 16, color: iconColor, display: 'block' }} />
+        <Icon style={{ width: 15, height: 15, color: iconColor, display: 'block' }} />
       </div>
-      <div className="min-w-0">
-        <p className="text-xs text-fg-muted uppercase tracking-wide">{label}</p>
-        <p className="text-base md:text-lg font-bold text-fg mt-0.5 truncate" title={typeof value === 'string' ? value : undefined}>{value}</p>
-        {sub && <p className="text-xs text-fg-muted mt-0.5">{sub}</p>}
+      <div style={{ minWidth: 0 }}>
+        <p style={{ fontSize: 10, fontWeight: 500, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>{label}</p>
+        <p style={{ fontSize: 15, fontWeight: 700, color: C.crema, margin: '3px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={typeof value === 'string' ? value : undefined}>{value}</p>
+        {sub && <p style={{ fontSize: 11, color: C.piedra, margin: '2px 0 0' }}>{sub}</p>}
       </div>
     </div>
   )
@@ -103,7 +193,7 @@ function KpiCard({ Icon, iconBg, iconColor, label, value, sub }) {
 
 function SectionTitle({ children }) {
   return (
-    <h2 className="text-sm font-semibold text-fg-muted uppercase tracking-wide border-b border-line pb-2 mb-4">
+    <h2 style={{ fontSize: 11, fontWeight: 600, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.07em', borderBottom: `1px solid ${C.linea}`, paddingBottom: 8, marginBottom: 12, marginTop: 0 }}>
       {children}
     </h2>
   )
@@ -270,67 +360,78 @@ function FinancesTab({ data, year, month, currency }) {
       {/* Evolución mensual */}
       <div>
         <SectionTitle>Evolución últimos 6 meses</SectionTitle>
-        <div className="bg-surface border border-line rounded-xl overflow-hidden">
-          <div className="p-5 border-b border-line">
-            <div className="flex items-center gap-4 text-xs text-fg-muted mb-4">
-              <span className="flex items-center gap-1">
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: C.crema, display: 'inline-block' }} />Ingresos
-              </span>
-              <span className="flex items-center gap-1">
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: C.err, display: 'inline-block' }} />Egresos
-              </span>
-            </div>
-            <MiniBarChart data={evolution} keyA="income" keyB="expense"
-              colorA="rgba(242,237,227,0.7)" colorB="rgba(229,131,115,0.7)" />
+
+        {/* Chart card */}
+        <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', padding: '20px 24px', marginBottom: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, fontSize: 11, color: C.piedra }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.crema }} />Ingresos
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.arena }} />Egresos
+            </span>
           </div>
-          <table className="w-full text-sm">
+
+          <IncomeExpensesBars months={evolution} currency={currency} />
+
+          <div style={{ paddingTop: 14, borderTop: `1px solid ${C.linea}`, marginTop: 4, display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+            {[
+              { label: 'Ingresos', value: fmt(totalEvo.income, currency),  color: C.crema },
+              { label: 'Egresos',  value: fmt(totalEvo.expense, currency), color: C.arena },
+              { label: 'Balance',  value: `${totalEvo.income - totalEvo.expense >= 0 ? '+' : ''}${fmt(totalEvo.income - totalEvo.expense, currency)}`, color: totalEvo.income - totalEvo.expense >= 0 ? C.ok : C.err },
+            ].map(({ label, value, color }) => (
+              <div key={label}>
+                <p style={{ fontSize: 10, color: C.piedra, marginBottom: 3 }}>{label}</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color, fontFamily: CIFRAS }}>{value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Detail table */}
+        <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
-              <tr className="border-b border-line bg-raised/60">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Mes</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Ingresos</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Egresos</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Neto</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Var. MoM</th>
+              <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
+                {['Mes', 'Ingresos', 'Egresos', 'Neto', 'Var. MoM'].map((h, i) => (
+                  <th key={h} style={{ padding: '10px 16px', fontSize: 11, fontWeight: 600, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: i === 0 ? 'left' : 'right' }}>{h}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {evolution.map((m, i) => {
-                const neto = m.income - m.expense
-                const prev = i > 0 ? evolution[i - 1] : null
-                const momPct = (prev && prev.income > 0)
-                  ? ((m.income - prev.income) / prev.income) * 100
-                  : null
+                const neto   = m.income - m.expense
+                const prev   = i > 0 ? evolution[i - 1] : null
+                const momPct = prev && prev.income > 0
+                  ? ((m.income - prev.income) / prev.income) * 100 : null
                 const [y, mo] = m.month.split('-')
                 const label = new Date(parseInt(y), parseInt(mo) - 1, 1)
                   .toLocaleDateString('es-AR', { month: 'short', year: '2-digit' })
                 return (
-                  <tr key={m.month} className="border-b border-line last:border-0">
-                    <td className="px-4 py-3 text-fg capitalize">{label}</td>
-                    <td className="px-4 py-3 text-right font-semibold" style={{ color: C.crema }}>{fmt(m.income, currency)}</td>
-                    <td className="px-4 py-3 text-right font-semibold" style={{ color: C.err }}>{fmt(m.expense, currency)}</td>
-                    <td className="px-4 py-3 text-right font-semibold" style={{ color: neto >= 0 ? C.ok : C.err }}>
-                      {fmt(neto, currency)}
-                    </td>
-                    <td className="px-4 py-3 text-right text-xs">
-                      {momPct === null ? <span className="text-fg-muted">—</span> : (
-                        <span style={{ color: momPct >= 0 ? C.ok : C.err }}>
-                          {momPct >= 0 ? '+' : ''}{momPct.toFixed(1)}%
-                        </span>
-                      )}
+                  <tr key={m.month} style={{ borderBottom: `1px solid ${C.linea}` }}>
+                    <td style={{ padding: '10px 16px', color: C.crema, textTransform: 'capitalize' }}>{label}</td>
+                    <td style={{ padding: '10px 16px', textAlign: 'right', fontWeight: 600, color: C.crema }}>{fmt(m.income, currency)}</td>
+                    <td style={{ padding: '10px 16px', textAlign: 'right', fontWeight: 600, color: C.arena }}>{fmt(m.expense, currency)}</td>
+                    <td style={{ padding: '10px 16px', textAlign: 'right', fontWeight: 600, color: neto >= 0 ? C.ok : C.err }}>{fmt(neto, currency)}</td>
+                    <td style={{ padding: '10px 16px', textAlign: 'right', fontSize: 12 }}>
+                      {momPct === null
+                        ? <span style={{ color: C.piedra }}>—</span>
+                        : <span style={{ color: momPct >= 0 ? C.ok : C.err }}>{momPct >= 0 ? '+' : ''}{momPct.toFixed(1)}%</span>
+                      }
                     </td>
                   </tr>
                 )
               })}
             </tbody>
             <tfoot>
-              <tr className="bg-raised/60 border-t border-line">
-                <td className="px-4 py-3 text-xs font-semibold text-fg-muted uppercase">Total período</td>
-                <td className="px-4 py-3 text-right font-bold" style={{ color: C.crema }}>{fmt(totalEvo.income, currency)}</td>
-                <td className="px-4 py-3 text-right font-bold" style={{ color: C.err }}>{fmt(totalEvo.expense, currency)}</td>
-                <td className="px-4 py-3 text-right font-bold" style={{ color: totalEvo.income - totalEvo.expense >= 0 ? C.ok : C.err }}>
+              <tr style={{ background: C.s3, borderTop: `1px solid ${C.linea}` }}>
+                <td style={{ padding: '10px 16px', fontSize: 11, fontWeight: 600, color: C.piedra, textTransform: 'uppercase' }}>Total período</td>
+                <td style={{ padding: '10px 16px', textAlign: 'right', fontWeight: 700, color: C.crema }}>{fmt(totalEvo.income, currency)}</td>
+                <td style={{ padding: '10px 16px', textAlign: 'right', fontWeight: 700, color: C.arena }}>{fmt(totalEvo.expense, currency)}</td>
+                <td style={{ padding: '10px 16px', textAlign: 'right', fontWeight: 700, color: totalEvo.income - totalEvo.expense >= 0 ? C.ok : C.err }}>
                   {fmt(totalEvo.income - totalEvo.expense, currency)}
                 </td>
-                <td className="px-4 py-3" />
+                <td />
               </tr>
             </tfoot>
           </table>
@@ -341,10 +442,10 @@ function FinancesTab({ data, year, month, currency }) {
       {data?.categoryBreakdown?.length > 0 && (
         <div>
           <SectionTitle>Egresos por categoría — {periodLabel(year, month)}</SectionTitle>
-          <div className="bg-surface border border-line rounded-xl overflow-hidden">
+          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-line bg-raised/60">
+                <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Categoría</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Total</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">%</th>
@@ -430,8 +531,8 @@ function QuotesTab({ data, topClients, currency }) {
       {byStatus.length > 0 && (
         <div>
           <SectionTitle>Distribución por estado</SectionTitle>
-          <div className="bg-surface border border-line rounded-xl overflow-hidden">
-            <div className="p-5 border-b border-line">
+          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
+            <div style={{ padding: 20, borderBottom: `1px solid ${C.linea}` }}>
               <StatusBar total={totalAmt} items={[
                 { label: 'Aprobados',  color: C.crema,  value: approvedValue, formatted: fmt(approvedValue, currency) },
                 { label: 'Enviados',   color: C.info,   value: sentAmt,       formatted: fmt(sentAmt,       currency) },
@@ -441,7 +542,7 @@ function QuotesTab({ data, topClients, currency }) {
             </div>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-line bg-raised/60">
+                <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Estado</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Cant.</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Monto</th>
@@ -470,10 +571,10 @@ function QuotesTab({ data, topClients, currency }) {
       {reasons.length > 0 && (
         <div>
           <SectionTitle>Causas de rechazo ({rejectedCount} rechazados)</SectionTitle>
-          <div className="bg-surface border border-line rounded-xl overflow-hidden">
+          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-line bg-raised/60">
+                <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Motivo</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Cantidad</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">% rechazados</th>
@@ -500,8 +601,8 @@ function QuotesTab({ data, topClients, currency }) {
       {monthlyWithData.length > 0 && (
         <div>
           <SectionTitle>Evolución mensual — últimos 12 meses</SectionTitle>
-          <div className="bg-surface border border-line rounded-xl overflow-hidden">
-            <div className="p-5 border-b border-line">
+          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
+            <div style={{ padding: 20, borderBottom: `1px solid ${C.linea}` }}>
               <div className="flex items-center gap-4 text-xs text-fg-muted mb-4">
                 <span className="flex items-center gap-1">
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: C.crema, display: 'inline-block' }} />Aprobados
@@ -518,7 +619,7 @@ function QuotesTab({ data, topClients, currency }) {
             </div>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-line bg-raised/60">
+                <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Mes</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Emitidos</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Aprobados</th>
@@ -555,10 +656,10 @@ function QuotesTab({ data, topClients, currency }) {
       {data?.expiringSoon?.length > 0 && (
         <div>
           <SectionTitle>Próximos a vencer (7 días)</SectionTitle>
-          <div className="bg-surface border border-line rounded-xl overflow-hidden">
+          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-line bg-raised/60">
+                <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">#</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Título</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Cliente</th>
@@ -588,10 +689,10 @@ function QuotesTab({ data, topClients, currency }) {
       {topClients?.length > 0 && (
         <div>
           <SectionTitle>Top clientes por volumen aprobado</SectionTitle>
-          <div className="bg-surface border border-line rounded-xl overflow-hidden">
+          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-line bg-raised/60">
+                <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">#</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Cliente</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Total aprobado</th>
@@ -655,7 +756,7 @@ function ProjectsTab({ data }) {
 
       <div>
         <SectionTitle>Distribución por estado</SectionTitle>
-        <div className="bg-surface border border-line rounded-xl p-5">
+        <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', padding: 20 }}>
           <StatusBar total={total} items={byStatus.map(s => ({
             label: STATUS[s._id]?.label ?? s._id,
             color: STATUS[s._id]?.color ?? C.piedra,
@@ -666,10 +767,10 @@ function ProjectsTab({ data }) {
 
       <div>
         <SectionTitle>Detalle por estado</SectionTitle>
-        <div className="bg-surface border border-line rounded-xl overflow-hidden">
+        <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-line bg-raised/60">
+              <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Estado</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Cantidad</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">%</th>
@@ -700,10 +801,10 @@ function ProjectsTab({ data }) {
       {data?.upcomingProjects?.length > 0 && (
         <div>
           <SectionTitle>Proyectos próximos a vencer</SectionTitle>
-          <div className="bg-surface border border-line rounded-xl overflow-hidden">
+          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-line bg-raised/60">
+                <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Proyecto</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Cliente</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Vencimiento</th>
@@ -755,10 +856,10 @@ function StockTab({ summary, outOfStock, lowStock }) {
       {(summary?.productsByType || summary?.valueByType) && (
         <div>
           <SectionTitle>Por tipo de inventario</SectionTitle>
-          <div className="bg-surface border border-line rounded-xl overflow-hidden">
+          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-line bg-raised/60">
+                <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Tipo</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Productos activos</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Valor en stock</th>
@@ -791,10 +892,10 @@ function StockTab({ summary, outOfStock, lowStock }) {
       {outOfStock?.length > 0 && (
         <div>
           <SectionTitle>Productos sin stock</SectionTitle>
-          <div className="bg-surface border border-line rounded-xl overflow-hidden">
+          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-line bg-raised/60">
+                <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">SKU</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Producto</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Categoría</th>
@@ -821,10 +922,10 @@ function StockTab({ summary, outOfStock, lowStock }) {
       {lowStock?.length > 0 && (
         <div>
           <SectionTitle>Productos con stock bajo</SectionTitle>
-          <div className="bg-surface border border-line rounded-xl overflow-hidden">
+          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-line bg-raised/60">
+                <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">SKU</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Producto</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Stock actual</th>
@@ -948,63 +1049,70 @@ export default function ReportsPage() {
   const activeTab = TABS.find(t => t.key === tab)
 
   return (
-    <div className="p-4 md:p-8">
+    <div style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold text-fg">Reportes</h1>
-          <p className="text-sm text-fg-muted mt-0.5 capitalize">
-            {activeTab?.label} · {periodLabel(period.year, period.month)}
-          </p>
+      <div style={{ padding: '20px 24px 16px', borderBottom: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <ReporteIcon style={{ width: 18, height: 18, color: C.crema }} />
+          <div>
+            <h1 style={{ fontSize: 18, fontWeight: 700, color: C.crema, margin: 0, lineHeight: 1.2 }}>Reportes</h1>
+            <p style={{ fontSize: 12, color: C.piedra, margin: 0, marginTop: 2, textTransform: 'capitalize' }}>
+              {activeTab?.label} · {periodLabel(period.year, period.month)}
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Selector de período (siempre visible — afecta la sección de finanzas) */}
-          <div className="flex items-center gap-1 bg-raised border border-line rounded-xl px-1 py-1">
-            <button onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-surface text-fg-muted hover:text-fg transition-colors">
-              <ChevronLeftSvg style={{ width: 16, height: 16 }} />
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* Selector de período */}
+          <div style={{ display: 'flex', alignItems: 'center', height: 34, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', padding: '0 4px' }}>
+            <button onClick={prevMonth}
+              style={{ padding: 6, borderRadius: '0 5px 5px 0', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, display: 'flex' }}
+              onMouseEnter={e => e.currentTarget.style.color = C.crema}
+              onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+              <ChevronLeftSvg style={{ width: 14, height: 14 }} />
             </button>
-            <span className="text-sm font-medium text-fg capitalize px-2 min-w-[130px] text-center">
+            <span style={{ fontSize: 13, fontWeight: 500, color: C.crema, textTransform: 'capitalize', padding: '0 8px', minWidth: 130, textAlign: 'center' }}>
               {periodLabel(period.year, period.month)}
             </span>
-            <button onClick={nextMonth} disabled={isCurrentMonth} className="p-1.5 rounded-lg hover:bg-surface text-fg-muted hover:text-fg transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-              <ChevronRightSvg style={{ width: 16, height: 16 }} />
+            <button onClick={nextMonth} disabled={isCurrentMonth}
+              style={{ padding: 6, borderRadius: '0 5px 5px 0', background: 'none', border: 'none', cursor: isCurrentMonth ? 'not-allowed' : 'pointer', color: C.piedra, display: 'flex', opacity: isCurrentMonth ? 0.3 : 1 }}
+              onMouseEnter={e => { if (!isCurrentMonth) e.currentTarget.style.color = C.crema }}
+              onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+              <ChevronRightSvg style={{ width: 14, height: 14 }} />
             </button>
           </div>
 
-          <button
-            onClick={handleDownload}
-            disabled={isLoadingAll}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: '0 10px 10px 0', border: 'none', background: C.crema, color: C.bg, fontSize: 14, fontWeight: 500, cursor: isLoadingAll ? 'not-allowed' : 'pointer', opacity: isLoadingAll ? 0.5 : 1 }}
-          >
-            <DownloadSvg style={{ width: 16, height: 16 }} />
+          <button onClick={handleDownload} disabled={isLoadingAll}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 16px', borderRadius: '0 9px 9px 0', border: 'none', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, cursor: isLoadingAll ? 'not-allowed' : 'pointer', opacity: isLoadingAll ? 0.5 : 1 }}>
+            <DownloadSvg style={{ width: 14, height: 14 }} />
             {isLoadingAll ? 'Preparando…' : 'Reporte Completo'}
           </button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-raised border border-line rounded-xl p-1 mb-6">
-        {TABS.map(t => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === t.key
-                ? 'bg-surface text-fg shadow-sm'
-                : 'text-fg-muted hover:text-fg'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+      <div style={{ padding: '14px 24px 0', display: 'flex', gap: 4, borderBottom: `1px solid ${C.linea}` }}>
+        {TABS.map(t => {
+          const isActive = tab === t.key
+          return (
+            <button key={t.key} onClick={() => setTab(t.key)}
+              style={{ padding: '7px 16px', borderRadius: '0 8px 0 0', fontSize: 13, fontWeight: 500, background: isActive ? C.s2 : 'transparent', color: isActive ? C.crema : C.piedra, border: isActive ? `1px solid ${C.linea}` : '1px solid transparent', borderBottom: 'none', cursor: 'pointer', transition: 'color 0.15s' }}
+              onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = C.crema }}
+              onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = C.piedra }}>
+              {t.label}
+            </button>
+          )
+        })}
       </div>
 
       {/* Contenido */}
-      {tab === 'finances' && <FinancesTab data={finData}     year={period.year} month={period.month} currency={currency} />}
-      {tab === 'quotes'   && <QuotesTab   data={quotesData}  topClients={topClients} currency={currency} />}
-      {tab === 'projects' && <ProjectsTab data={projectsData} />}
-      {tab === 'stock'    && <StockTab    summary={stockSummary} outOfStock={outOfStockProducts} lowStock={lowStockProducts} />}
+      <div style={{ padding: '24px 24px 40px' }}>
+        {tab === 'finances' && <FinancesTab data={finData}     year={period.year} month={period.month} currency={currency} />}
+        {tab === 'quotes'   && <QuotesTab   data={quotesData}  topClients={topClients} currency={currency} />}
+        {tab === 'projects' && <ProjectsTab data={projectsData} />}
+        {tab === 'stock'    && <StockTab    summary={stockSummary} outOfStock={outOfStockProducts} lowStock={lowStockProducts} />}
+      </div>
     </div>
   )
 }

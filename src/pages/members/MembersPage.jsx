@@ -4,50 +4,59 @@ import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
 import { getMembers, inviteMember, updateMemberRole, removeMember } from '../../api/members'
+import { EquipoIcon } from '../../components/DuIcons'
 
 const UPLOADS_BASE = import.meta.env.VITE_API_URL
+const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
 
 const ROLE_LABELS = { owner: 'Dueño', admin: 'Administrador', member: 'Miembro' }
-const ROLE_COLORS = {
-  owner:  'bg-brand-subtle text-brand',
-  admin:  'bg-info-subtle text-info',
-  member: 'bg-raised text-fg-soft',
+const ROLE_STYLE  = {
+  owner:  { bg: 'rgba(242,237,227,0.1)',  color: C.crema  },
+  admin:  { bg: 'rgba(142,177,222,0.12)', color: C.info   },
+  member: { bg: 'rgba(140,135,126,0.15)', color: C.piedra },
 }
 
 const AVATAR_PALETTE = [
-  'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-  'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
-  'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
-  'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-  'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
-  'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300',
+  { bg: 'rgba(142,177,222,0.18)', color: C.info  },
+  { bg: 'rgba(125,190,147,0.18)', color: C.ok    },
+  { bg: 'rgba(226,182,99,0.18)',  color: C.warn  },
+  { bg: 'rgba(229,131,115,0.18)', color: C.err   },
+  { bg: 'rgba(185,180,170,0.18)', color: C.arena },
+  { bg: 'rgba(242,237,227,0.12)', color: C.crema },
 ]
 
 function getInitials(name = '') {
   return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
 }
-function avatarColor(name = '') {
+function avatarStyle(name = '') {
   let n = 0
   for (let i = 0; i < name.length; i++) n += name.charCodeAt(i)
   return AVATAR_PALETTE[n % AVATAR_PALETTE.length]
 }
 
+function PlusSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+}
+function TrashSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M9 6V4h6v2" /></svg>
+}
+
 export default function MembersPage() {
   const { user } = useAuth()
-  const confirm = useConfirm()
-  const toast = useToast()
-  const orgId = user?.org
-  const myRole = user?.role
-  const qc = useQueryClient()
+  const confirm  = useConfirm()
+  const toast    = useToast()
+  const orgId    = user?.org
+  const myRole   = user?.role
+  const qc       = useQueryClient()
 
-  const [inviteForm, setInviteForm] = useState({ email: '', role: 'member' })
+  const [inviteForm,  setInviteForm]  = useState({ email: '', role: 'member' })
   const [inviteError, setInviteError] = useState('')
-  const [showInvite, setShowInvite] = useState(false)
+  const [showInvite,  setShowInvite]  = useState(false)
 
   const { data, isLoading } = useQuery({
     queryKey: ['members', orgId],
-    queryFn: () => getMembers(orgId).then(r => r.data.data),
-    enabled: Boolean(orgId),
+    queryFn:  () => getMembers(orgId).then(r => r.data.data),
+    enabled:  Boolean(orgId),
   })
 
   const invite = useMutation({
@@ -74,146 +83,143 @@ export default function MembersPage() {
 
   const canInvite = ['owner', 'admin'].includes(myRole)
   const canManage = myRole === 'owner'
+  const members   = data ?? []
 
   return (
-    <div className="p-4 md:p-8 min-h-full">
+    <div style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <h2 className="text-xl font-semibold text-fg">Equipo</h2>
+      <div style={{ padding: '20px 24px 16px', borderBottom: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <EquipoIcon style={{ width: 18, height: 18, color: C.crema }} />
+          <div>
+            <h1 style={{ fontSize: 18, fontWeight: 700, color: C.crema, margin: 0, lineHeight: 1.2 }}>Equipo</h1>
+            {!isLoading && (
+              <p style={{ fontSize: 12, color: C.piedra, margin: 0, marginTop: 2 }}>
+                {members.length} {members.length === 1 ? 'miembro' : 'miembros'}
+              </p>
+            )}
+          </div>
         </div>
         {canInvite && (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => { setShowInvite(v => !v); setInviteError('') }}
-              className="ml-auto px-3 py-1.5 rounded-md bg-brand text-white text-xs font-medium hover:opacity-90 transition-opacity"
-            >
-              + Invitar miembro
-            </button>
-          </div>
+          <button
+            onClick={() => { setShowInvite(v => !v); setInviteError('') }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+            <PlusSvg style={{ width: 13, height: 13 }} />
+            Invitar miembro
+          </button>
         )}
       </div>
 
-      {/* Formulario de invitación */}
+      {/* Invite form */}
       {showInvite && (
-        <div className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-5 mb-6">
-          <h3 className="text-sm font-semibold text-fg-soft mb-4">Invitar usuario</h3>
-          <form
-            onSubmit={e => { e.preventDefault(); invite.mutate(inviteForm) }}
-            className="flex flex-col sm:flex-row gap-3 sm:items-end"
-          >
-            <div className="flex-1">
-              <label className="block text-xs text-fg-muted mb-1">Email del usuario</label>
-              <input
-                type="email"
-                required
-                placeholder="usuario@email.com"
+        <div style={{ margin: '20px 24px 0', background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', padding: 20 }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: C.crema, margin: '0 0 16px' }}>Invitar usuario</p>
+          <form onSubmit={e => { e.preventDefault(); invite.mutate(inviteForm) }}
+            style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end' }}>
+            <div style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+              <label style={{ fontSize: 11, fontWeight: 500, color: C.piedra }}>Email del usuario</label>
+              <input type="email" required placeholder="usuario@email.com"
                 value={inviteForm.email}
                 onChange={e => setInviteForm(f => ({ ...f, email: e.target.value }))}
-                className="w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg placeholder:text-fg-muted"
-              />
+                className="du-input" />
             </div>
-            <div>
-              <label className="block text-xs text-fg-muted mb-1">Rol</label>
-              <select
-                value={inviteForm.role}
+            <div style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', gap: 5 }}>
+              <label style={{ fontSize: 11, fontWeight: 500, color: C.piedra }}>Rol</label>
+              <select value={inviteForm.role}
                 onChange={e => setInviteForm(f => ({ ...f, role: e.target.value }))}
-                className="w-full sm:w-auto px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
-              >
+                className="du-input">
                 <option value="member">Miembro</option>
                 {myRole === 'owner' && <option value="admin">Administrador</option>}
               </select>
             </div>
-            <button
-              type="submit"
-              disabled={invite.isPending}
-              className="px-4 py-2 rounded-md bg-brand text-white text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
-            >
-              {invite.isPending ? 'Enviando...' : 'Invitar'}
+            <button type="submit" disabled={invite.isPending}
+              style={{ height: 34, padding: '0 18px', borderRadius: '0 9px 9px 0', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, border: 'none', cursor: invite.isPending ? 'not-allowed' : 'pointer', opacity: invite.isPending ? 0.5 : 1 }}>
+              {invite.isPending ? 'Enviando…' : 'Invitar'}
             </button>
           </form>
-          {inviteError && <p className="mt-2 text-sm text-danger">{inviteError}</p>}
+          {inviteError && <p style={{ fontSize: 12, color: C.err, marginTop: 10 }}>{inviteError}</p>}
         </div>
       )}
 
-      {/* Contenido */}
-      {isLoading ? (
-        <p className="text-sm text-fg-soft">Cargando...</p>
-      ) : !data?.length ? (
-        <div className="flex flex-col items-center justify-center py-20 text-fg-muted">
-          <p className="text-sm">Sin miembros en el equipo.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {data.map(m => {
-            const isMe      = m.userId === user?.uid
-            const canEdit   = canManage && m.role !== 'owner' && m.status === 'active'
-            const canRemove = canManage && m.role !== 'owner' && !isMe
+      {/* Content */}
+      <div style={{ padding: '20px 24px 40px' }}>
+        {isLoading ? (
+          <div style={{ padding: '60px 0', textAlign: 'center', fontSize: 13, color: C.piedra }}>Cargando…</div>
+        ) : members.length === 0 ? (
+          <div style={{ padding: '60px 0', textAlign: 'center' }}>
+            <EquipoIcon style={{ width: 32, height: 32, color: C.piedra, opacity: 0.3, margin: '0 auto 12px', display: 'block' }} />
+            <p style={{ fontSize: 13, color: C.piedra }}>Sin miembros en el equipo.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {members.map(m => {
+              const isMe      = m.userId === user?.uid
+              const canEdit   = canManage && m.role !== 'owner' && m.status === 'active'
+              const canRemove = canManage && m.role !== 'owner' && !isMe
+              const av        = avatarStyle(m.name)
+              const rs        = ROLE_STYLE[m.role] ?? ROLE_STYLE.member
 
-            return (
-              <div key={m.userId} className="bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-5 flex flex-col items-center text-center gap-3">
+              return (
+                <div key={m.userId}
+                  style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', padding: '24px 20px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
 
-                {/* Avatar */}
-                <div className="relative mt-1">
-                  {m.avatar ? (
-                    <img
-                      src={`${UPLOADS_BASE}/uploads/${m.avatar}`}
-                      alt={m.name}
-                      className="w-20 h-20 rounded-full object-cover"
-                    />
+                  {/* Avatar */}
+                  <div style={{ position: 'relative', flexShrink: 0 }}>
+                    {m.avatar ? (
+                      <img src={`${UPLOADS_BASE}/uploads/${m.avatar}`} alt={m.name}
+                        style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${C.linea}` }} />
+                    ) : (
+                      <div style={{ width: 72, height: 72, borderRadius: '50%', background: av.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 700, color: av.color, border: `2px solid ${C.linea}` }}>
+                        {getInitials(m.name)}
+                      </div>
+                    )}
+                    <span style={{ position: 'absolute', bottom: 2, right: 2, width: 12, height: 12, borderRadius: '50%', background: m.status === 'active' ? C.ok : C.warn, border: `2px solid ${C.s2}` }} />
+                  </div>
+
+                  {/* Info */}
+                  <div style={{ width: '100%', textAlign: 'center', minWidth: 0 }}>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: C.crema, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {m.name}
+                      {isMe && <span style={{ fontSize: 11, fontWeight: 400, color: C.piedra, marginLeft: 5 }}>(tú)</span>}
+                    </p>
+                    <p style={{ fontSize: 11, color: C.piedra, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.email}</p>
+                  </div>
+
+                  {/* Role */}
+                  {canEdit ? (
+                    <select value={m.role}
+                      onChange={e => changeRole.mutate({ userId: m.userId, role: e.target.value })}
+                      className="du-input" style={{ width: '100%', fontSize: 12 }}>
+                      <option value="admin">Administrador</option>
+                      <option value="member">Miembro</option>
+                    </select>
                   ) : (
-                    <div className={`w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold ${avatarColor(m.name)}`}>
-                      {getInitials(m.name)}
-                    </div>
+                    <span style={{ padding: '4px 12px', borderRadius: '0 8px 8px 0', fontSize: 11, fontWeight: 600, background: rs.bg, color: rs.color }}>
+                      {ROLE_LABELS[m.role]}
+                    </span>
                   )}
-                  <span className={`absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full border-2 border-surface ${
-                    m.status === 'active' ? 'bg-success' : 'bg-warning'
-                  }`} />
+
+                  {/* Remove */}
+                  {canRemove && (
+                    <button
+                      onClick={async () => {
+                        if (await confirm(`¿Remover a ${m.name} del equipo?`, { confirmLabel: 'Remover', danger: true }))
+                          remove.mutate(m.userId)
+                      }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: C.piedra, background: 'none', border: 'none', cursor: 'pointer' }}
+                      onMouseEnter={e => e.currentTarget.style.color = C.err}
+                      onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+                      <TrashSvg style={{ width: 12, height: 12 }} />
+                      Remover del equipo
+                    </button>
+                  )}
                 </div>
-
-                {/* Info */}
-                <div className="w-full min-w-0">
-                  <p className="text-sm font-semibold text-fg leading-snug">
-                    {m.name}
-                    {isMe && <span className="ml-1 text-xs font-normal text-fg-muted">(tú)</span>}
-                  </p>
-                  <p className="text-xs text-fg-muted mt-0.5 truncate">{m.email}</p>
-                </div>
-
-                {/* Rol */}
-                {canEdit ? (
-                  <select
-                    value={m.role}
-                    onChange={e => changeRole.mutate({ userId: m.userId, role: e.target.value })}
-                    className="w-full text-xs px-2.5 py-1.5 border border-line rounded-md bg-surface text-fg focus:outline-none focus:ring-1 focus:ring-brand"
-                  >
-                    <option value="admin">Administrador</option>
-                    <option value="member">Miembro</option>
-                  </select>
-                ) : (
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${ROLE_COLORS[m.role]}`}>
-                    {ROLE_LABELS[m.role]}
-                  </span>
-                )}
-
-                {/* Remover */}
-                {canRemove && (
-                  <button
-                    onClick={async () => {
-                      if (await confirm(`¿Remover a ${m.name} del equipo?`, { confirmLabel: 'Remover', danger: true }))
-                        remove.mutate(m.userId)
-                    }}
-                    className="text-xs text-danger/60 hover:text-danger transition-colors"
-                  >
-                    Remover del equipo
-                  </button>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      )}
+              )
+            })}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
