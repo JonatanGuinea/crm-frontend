@@ -438,7 +438,7 @@ export default function QuoteDetailPage() {
                   IVA ({quote.taxRate}%): <span style={{ color: C.crema, fontFamily: CIFRAS }}>{fmt(taxAmount, quote.currency)}</span>
                 </span>
               )}
-              <span style={{ fontSize: 16, fontWeight: 700, color: C.crema, fontFamily: CIFRAS, marginTop: 4 }}>
+              <span style={{ fontSize: 20, fontWeight: 700, color: C.crema, fontFamily: CIFRAS, marginTop: 4 }}>
                 Total {quote.currency}: {fmt(total, quote.currency)}
               </span>
             </div>

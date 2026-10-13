@@ -9,7 +9,7 @@ import QuoteModalPotential from './QuoteModalPotential'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import DatePicker from '../../components/DatePicker'
-import { ClienteIcon, MasIcon } from '../../components/DuIcons'
+import { ClienteIcon, MasIcon, PresupuestoIcon } from '../../components/DuIcons'
 import { fmt } from '../../utils/fmt'
 
 const C = {
@@ -547,7 +547,10 @@ export default function QuotesPage() {
 
         {/* Fila 1 — título + (desktop: tabs + nuevo) (mobile: nuevo) */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
-          <h2 style={{ fontSize: 20, fontWeight: 600, color: C.crema, margin: 0 }}>Presupuestos</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <PresupuestoIcon style={{ width: 18, height: 18, color: C.arena }} />
+            <h2 style={{ fontSize: 20, fontWeight: 600, color: C.crema, margin: 0 }}>Presupuestos</h2>
+          </div>
 
           {/* Tablet/Desktop: tabs + botón nuevo en la misma fila */}
           <div className="hidden sm:block">
@@ -567,7 +570,7 @@ export default function QuotesPage() {
 
         {/* Mobile fila 2 — tabs */}
         <div className="sm:hidden" style={{ marginBottom: tab === 'table' ? 10 : 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
             {/* Filtros — solo cuando está en tabla */}
             {tab === 'table' && (
               <button
@@ -819,7 +822,7 @@ export default function QuotesPage() {
                           <th key={i} style={{
                             background: C.linea, color: C.crema, fontSize: 11, fontWeight: 700,
                             textTransform: 'uppercase', letterSpacing: '0.06em',
-                            padding: '8px 14px', textAlign: 'left', whiteSpace: 'nowrap',
+                            padding: '12px 14px', textAlign: 'left', whiteSpace: 'nowrap',
                           }}>
                             {h}
                           </th>

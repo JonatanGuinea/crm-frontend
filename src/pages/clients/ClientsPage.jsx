@@ -304,7 +304,7 @@ export default function ClientsPage() {
                       <tr style={{ background: C.linea }}>
                         {['Cliente', 'Email', 'Empresa', 'Teléfono', ''].map((h, i) => (
                           <th key={i} style={{
-                            textAlign: 'left', padding: '11px 20px',
+                            textAlign: 'left', padding: '12px 20px',
                             fontSize: 11, fontWeight: 700,
                             textTransform: 'uppercase', letterSpacing: '0.08em',
                             color: C.crema,
