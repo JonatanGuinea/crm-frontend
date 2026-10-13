@@ -60,8 +60,8 @@ function CategoryModal({ category, onClose, onSaved }) {
   const labelStyle = { fontSize: 11, fontWeight: 500, color: C.piedra }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
-      className="sm:items-center">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', justifyContent: 'center', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
+      className="items-end sm:items-center">
       <div style={{ width: '100%', maxWidth: 400, background: C.s1, borderRadius: '0 16px 0 0', border: `1px solid ${C.linea}`, boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}
         className="sm:rounded-[0_16px_16px_0]">
 
