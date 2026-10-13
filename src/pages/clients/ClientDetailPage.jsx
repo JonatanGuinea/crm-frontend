@@ -215,11 +215,9 @@ export default function ClientDetailPage() {
             borderRadius: '0 10px 10px 0',
           }}>
             <button onClick={() => setTab('info')} style={tabBtn(tab === 'info')}>
-              <ClienteIcon style={{ width: 11, height: 11 }} />
               Info
             </button>
             <button onClick={() => setTab('history')} style={tabBtn(tab === 'history')}>
-              <AgendaIcon style={{ width: 11, height: 11 }} />
               Historial
             </button>
           </div>

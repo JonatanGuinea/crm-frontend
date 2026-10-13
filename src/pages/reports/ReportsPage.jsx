@@ -985,23 +985,19 @@ export default function ReportsPage() {
 
       {/* Tabs */}
       <div className="flex gap-1 bg-raised border border-line rounded-xl p-1 mb-6">
-        {TABS.map(t => {
-          const Icon = t.icon
-          return (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                tab === t.key
-                  ? 'bg-surface text-fg shadow-sm'
-                  : 'text-fg-muted hover:text-fg'
-              }`}
-            >
-              <Icon style={{ width: 16, height: 16, flexShrink: 0 }} />
-              <span className="hidden sm:inline">{t.label}</span>
-            </button>
-          )
-        })}
+        {TABS.map(t => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              tab === t.key
+                ? 'bg-surface text-fg shadow-sm'
+                : 'text-fg-muted hover:text-fg'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
       {/* Contenido */}
