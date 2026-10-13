@@ -19,15 +19,10 @@ import { getNewProjectsCount } from '../api/projects'
 import logoUrl from '../assets/danteup/logotipo-crema.svg'
 import isotipoUrl from '../assets/danteup/isotipo-crema.svg'
 import {
-  HomeIcon, UsersIcon, FolderIcon, DocumentTextIcon,
-  BellIcon, UserGroupIcon, Bars3Icon, XMarkIcon,
-  CalendarDaysIcon, ClipboardDocumentListIcon,
-  UserCircleIcon, BuildingOffice2Icon,
-  ArrowRightStartOnRectangleIcon, CubeIcon,
-  ChevronDownIcon, BuildingStorefrontIcon,
-  BanknotesIcon, ChartBarIcon, QuestionMarkCircleIcon,
-  ReceiptRefundIcon, ChevronLeftIcon,
-} from '@heroicons/react/24/outline'
+  ClienteIcon, PresupuestoIcon, ProyectoIcon, AgendaIcon,
+  CobroIcon, ReporteIcon, EquipoIcon, StockIcon,
+  CampanaIcon, AjustesIcon,
+} from '../components/DuIcons'
 
 const UPLOADS_BASE = import.meta.env.VITE_API_URL
 
@@ -45,24 +40,24 @@ const C = {
 const ROLE_LABEL = { owner: 'Dueño', admin: 'Admin', member: 'Miembro' }
 
 const navTop = [
-  { to: '/',                  label: 'Inicio',       icon: HomeIcon,                   exact: true },
-  { to: '/clients',           label: 'Clientes',     icon: UsersIcon },
-  { to: '/quotes',            label: 'Presupuestos', icon: DocumentTextIcon,            memberHidden: true },
-  { to: '/projects',          label: 'Proyectos',    icon: FolderIcon },
-  { to: '/tasks',             label: 'Tareas',       icon: ClipboardDocumentListIcon },
-  { to: '/projects/calendar', label: 'Agenda',       icon: CalendarDaysIcon },
+  { to: '/',                  label: 'Inicio',       icon: HomeSvg,         exact: true },
+  { to: '/clients',           label: 'Clientes',     icon: ClienteIcon },
+  { to: '/quotes',            label: 'Presupuestos', icon: PresupuestoIcon, memberHidden: true },
+  { to: '/projects',          label: 'Proyectos',    icon: ProyectoIcon },
+  { to: '/tasks',             label: 'Tareas',       icon: TasksSvg },
+  { to: '/projects/calendar', label: 'Agenda',       icon: AgendaIcon },
 ]
 
 const navBottom = [
-  { to: '/finances', label: 'Finanzas', icon: BanknotesIcon,  memberHidden: true },
-  { to: '/reports',  label: 'Reportes', icon: ChartBarIcon,   memberHidden: true },
-  { to: '/members',  label: 'Equipo',   icon: UserGroupIcon },
+  { to: '/finances', label: 'Finanzas', icon: CobroIcon,   memberHidden: true },
+  { to: '/reports',  label: 'Reportes', icon: ReporteIcon, memberHidden: true },
+  { to: '/members',  label: 'Equipo',   icon: EquipoIcon },
 ]
 
 const stockSub = [
-  { to: '/stock',           label: 'Dashboard',   icon: CubeIcon,              exact: true },
-  { to: '/stock/products',  label: 'Productos',   icon: ReceiptRefundIcon },
-  { to: '/stock/providers', label: 'Proveedores', icon: BuildingStorefrontIcon },
+  { to: '/stock',           label: 'Dashboard',   icon: StockIcon,       exact: true },
+  { to: '/stock/products',  label: 'Productos',   icon: ProductosSvg },
+  { to: '/stock/providers', label: 'Proveedores', icon: ProveedoresSvg },
 ]
 
 function NavItem({ to, label, icon: Icon, exact, collapsed, onNavClick, badge }) {
@@ -118,11 +113,11 @@ function StockGroup({ collapsed, onNavClick }) {
             width: 2, background: C.crema, borderRadius: '0 2px 2px 0',
           }} />
         )}
-        <CubeIcon style={{ width: 18, height: 18, flexShrink: 0 }} />
+        <StockIcon style={{ width: 18, height: 18, flexShrink: 0 }} />
         {!collapsed && (
           <>
             <span style={{ flex: 1, textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis' }}>Stock</span>
-            <ChevronDownIcon style={{
+            <ChevronDownSvg style={{
               width: 13, height: 13, flexShrink: 0,
               transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
               transition: 'transform 0.2s',
@@ -253,9 +248,9 @@ function ProfileDropdown({ profile, user, compact = false, position = 'up' }) {
 
   const isOwner = user?.role === 'owner'
   const items = [
-    { label: 'Perfil',   icon: UserCircleIcon,         action: () => go('/profile') },
-    ...(isOwner ? [{ label: 'Empresa', icon: BuildingOffice2Icon, action: () => go('/organization') }] : []),
-    { label: 'Ayuda',    icon: QuestionMarkCircleIcon,  action: () => go('/help') },
+    { label: 'Perfil',   icon: ProfileSvg,  action: () => go('/profile') },
+    ...(isOwner ? [{ label: 'Empresa', icon: AjustesIcon, action: () => go('/organization') }] : []),
+    { label: 'Ayuda',    icon: AyudaSvg,    action: () => go('/help') },
   ]
 
   return (
@@ -344,7 +339,7 @@ function ProfileDropdown({ profile, user, compact = false, position = 'up' }) {
               onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(229,131,115,0.08)'}
               onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
             >
-              <ArrowRightStartOnRectangleIcon style={{ width: 15, height: 15, flexShrink: 0 }} />
+              <LogoutSvg style={{ width: 15, height: 15, flexShrink: 0 }} />
               Cerrar sesión
             </button>
           </div>
@@ -352,6 +347,111 @@ function ProfileDropdown({ profile, user, compact = false, position = 'up' }) {
         document.body
       )}
     </div>
+  )
+}
+
+/* ── SVG helpers ─────────────────────────────────────────────────────────── */
+
+function HomeSvg({ style }) {
+  return (
+    <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+      <polyline points="9 22 9 12 15 12 15 22" />
+    </svg>
+  )
+}
+
+function TasksSvg({ style }) {
+  return (
+    <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="9" y="3" width="11" height="18" rx="2" />
+      <path d="M4 7h2M4 11h2M4 15h2" />
+      <path d="M12 8h5M12 12h5M12 16h5" />
+    </svg>
+  )
+}
+
+function ProductosSvg({ style }) {
+  return (
+    <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+      <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+      <line x1="12" y1="22.08" x2="12" y2="12" />
+    </svg>
+  )
+}
+
+function ProveedoresSvg({ style }) {
+  return (
+    <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+      <path d="M9 22V12h6v10" />
+      <rect x="2" y="9" width="20" height="3" />
+    </svg>
+  )
+}
+
+function HamburgerSvg({ style }) {
+  return (
+    <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="18" x2="21" y2="18" />
+    </svg>
+  )
+}
+
+function CloseSvg({ style }) {
+  return (
+    <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  )
+}
+
+function ChevronDownSvg({ style }) {
+  return (
+    <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  )
+}
+
+function ChevronLeftSvg({ style }) {
+  return (
+    <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="15 18 9 12 15 6" />
+    </svg>
+  )
+}
+
+function ProfileSvg({ style }) {
+  return (
+    <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+    </svg>
+  )
+}
+
+function AyudaSvg({ style }) {
+  return (
+    <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  )
+}
+
+function LogoutSvg({ style }) {
+  return (
+    <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
   )
 }
 
@@ -548,7 +648,7 @@ export default function AppLayout() {
             onClick={() => setMobileOpen(false)}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, padding: 4 }}
           >
-            <XMarkIcon style={{ width: 18, height: 18 }} />
+            <CloseSvg style={{ width: 18, height: 18 }} />
           </button>
         </div>
         <SidebarContent
@@ -599,7 +699,7 @@ export default function AppLayout() {
                 onMouseEnter={e => e.currentTarget.style.color = C.arena}
                 onMouseLeave={e => e.currentTarget.style.color = C.piedra}
               >
-                <ChevronLeftIcon style={{ width: 15, height: 15 }} />
+                <ChevronLeftSvg style={{ width: 15, height: 15 }} />
               </button>
             </>
           )}
@@ -631,7 +731,7 @@ export default function AppLayout() {
             onClick={() => setMobileOpen(true)}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, padding: 4, flexShrink: 0 }}
           >
-            <Bars3Icon style={{ width: 20, height: 20 }} />
+            <HamburgerSvg style={{ width: 20, height: 20 }} />
           </button>
 
           {/* Search */}
@@ -646,7 +746,7 @@ export default function AppLayout() {
             onMouseEnter={e => e.currentTarget.style.color = C.arena}
             onMouseLeave={e => e.currentTarget.style.color = C.piedra}
           >
-            <BellIcon style={{ width: 20, height: 20 }} />
+            <CampanaIcon style={{ width: 20, height: 20 }} />
             {unreadCount > 0 && (
               <span style={{
                 position: 'absolute', top: 4, right: 4,
