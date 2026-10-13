@@ -2,15 +2,30 @@ import { useState } from 'react'
 import { createTransfer } from '../../api/finances'
 import { useToast } from '../../components/Toast'
 import DatePicker from '../../components/DatePicker'
-import { XMarkIcon, ArrowsRightLeftIcon } from '@heroicons/react/24/outline'
+
+const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
+const dpClass = "h-[34px] px-3 bg-[#141415] border border-[#2C2C2F] rounded-[0_9px_9px_0] text-[13px] outline-none w-full"
+
+function CloseSvg({ style }) {
+  return (
+    <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  )
+}
+function TransferSvg({ style }) {
+  return (
+    <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" />
+      <polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 0 1-4 4H3" />
+    </svg>
+  )
+}
 
 const today = () => {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
-
-const inputCls = 'w-full rounded-lg border border-line bg-raised text-fg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40'
-const labelCls = 'text-xs font-medium text-fg-muted'
 
 export default function TransferModal({ accounts, onClose, onSaved }) {
   const toast = useToast()
@@ -43,93 +58,74 @@ export default function TransferModal({ accounts, onClose, onSaved }) {
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="w-full sm:max-w-md bg-surface rounded-t-2xl sm:rounded-2xl border border-line shadow-xl max-h-[92dvh] flex flex-col">
+  const labelStyle = { fontSize: 11, fontWeight: 500, color: C.piedra }
 
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-line shrink-0">
-          <div className="flex items-center gap-2">
-            <ArrowsRightLeftIcon className="w-5 h-5 text-fg-muted" />
-            <h2 className="text-base font-semibold text-fg">Transferencia entre cuentas</h2>
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
+      className="sm:items-center">
+      <div style={{ width: '100%', maxWidth: 448, background: C.s1, borderRadius: '0 16px 0 0', border: `1px solid ${C.linea}`, boxShadow: '0 24px 64px rgba(0,0,0,0.5)', maxHeight: '92dvh', display: 'flex', flexDirection: 'column' }}
+        className="sm:rounded-[0_16px_16px_0]">
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 14px', borderBottom: `1px solid ${C.linea}`, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <TransferSvg style={{ width: 16, height: 16, color: C.arena }} />
+            <span style={{ fontSize: 15, fontWeight: 600, color: C.crema }}>Transferencia entre cuentas</span>
           </div>
-          <button onClick={onClose} className="text-fg-muted hover:text-fg transition-colors p-1">
-            <XMarkIcon className="w-5 h-5" />
+          <button onClick={onClose}
+            style={{ padding: 6, borderRadius: '0 6px 6px 0', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra }}
+            onMouseEnter={e => e.currentTarget.style.color = C.crema}
+            onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+            <CloseSvg style={{ width: 18, height: 18 }} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-5 py-4 flex flex-col gap-4 overflow-y-auto">
+        <form onSubmit={handleSubmit} style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
 
-          {/* Desde */}
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>Desde</label>
-            <select value={form.fromAccountId} onChange={e => set('fromAccountId', e.target.value)} className={inputCls}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <label style={labelStyle}>Desde</label>
+            <select value={form.fromAccountId} onChange={e => set('fromAccountId', e.target.value)} className="du-input">
               {activeAccounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
           </div>
 
-          {/* Hacia */}
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>Hacia</label>
-            <select value={form.toAccountId} onChange={e => set('toAccountId', e.target.value)} className={inputCls}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <label style={labelStyle}>Hacia</label>
+            <select value={form.toAccountId} onChange={e => set('toAccountId', e.target.value)} className="du-input">
               {activeAccounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
           </div>
 
-          {/* Monto */}
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>Monto</label>
-            <div className="flex rounded-lg border border-line overflow-hidden focus-within:ring-2 focus-within:ring-brand/40">
-              <span className="flex items-center px-3 border-r border-line bg-raised text-sm font-semibold text-fg-muted shrink-0">
-                $
-              </span>
-              <input
-                type="number"
-                min="0.01"
-                step="0.01"
-                placeholder="0.00"
-                value={form.amount}
-                onChange={e => set('amount', e.target.value)}
-                className="flex-1 min-w-0 bg-raised text-fg text-sm px-3 py-2.5 focus:outline-none"
-                required
-              />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <label style={labelStyle}>Monto</label>
+            <div style={{ display: 'flex', overflow: 'hidden', border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0' }}>
+              <span style={{ display: 'flex', alignItems: 'center', padding: '0 12px', borderRight: `1px solid ${C.linea}`, background: C.s2, fontSize: 13, fontWeight: 600, color: C.piedra, flexShrink: 0 }}>$</span>
+              <input type="number" min="0.01" step="0.01" placeholder="0.00"
+                value={form.amount} onChange={e => set('amount', e.target.value)}
+                style={{ flex: 1, minWidth: 0, background: C.s2, color: C.crema, fontSize: 13, padding: '0 12px', height: 36, outline: 'none', border: 'none' }}
+                required />
             </div>
           </div>
 
-          {/* Fecha */}
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>Fecha</label>
-            <DatePicker
-              value={form.date}
-              onChange={e => set('date', e.target.value)}
-              className={inputCls}
-            />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <label style={labelStyle}>Fecha</label>
+            <DatePicker value={form.date} onChange={e => set('date', e.target.value)} className={dpClass} />
           </div>
 
-          {/* Descripción */}
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>Descripción <span className="font-normal text-fg-muted/70">(opcional)</span></label>
-            <input
-              type="text"
-              placeholder="Ej: Pase a banco"
-              value={form.description}
-              onChange={e => set('description', e.target.value)}
-              className={inputCls}
-            />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <label style={labelStyle}>Descripción <span style={{ fontWeight: 400, color: C.piedra }}>opcional</span></label>
+            <input type="text" placeholder="Ej: Pase a banco"
+              value={form.description} onChange={e => set('description', e.target.value)} className="du-input" />
           </div>
 
-          <div className="flex gap-3 pt-1 pb-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl border border-line text-sm font-medium text-fg-muted hover:text-fg hover:bg-raised transition-colors"
-            >
+          <div style={{ display: 'flex', gap: 10, paddingTop: 4, paddingBottom: 8 }}>
+            <button type="button" onClick={onClose}
+              style={{ flex: 1, padding: '10px 0', borderRadius: '0 10px 10px 0', border: `1px solid ${C.linea}`, background: 'none', color: C.piedra, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+              onMouseEnter={e => { e.currentTarget.style.color = C.crema; e.currentTarget.style.borderColor = C.arena }}
+              onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}>
               Cancelar
             </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-brand hover:opacity-90 transition-opacity disabled:opacity-50"
-            >
+            <button type="submit" disabled={saving}
+              style={{ flex: 1, padding: '10px 0', borderRadius: '0 10px 10px 0', border: 'none', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.5 : 1 }}>
               {saving ? 'Transfiriendo…' : 'Transferir'}
             </button>
           </div>

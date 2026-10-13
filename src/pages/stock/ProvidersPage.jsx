@@ -4,38 +4,55 @@ import { getSuppliers, createSupplier, updateSupplier, deleteSupplier } from '..
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
 import { useAuth } from '../../context/AuthContext'
-import {
-  PlusIcon, PencilIcon, TrashIcon, MagnifyingGlassIcon,
-  XMarkIcon, BuildingStorefrontIcon, EnvelopeIcon, PhoneIcon, GlobeAltIcon,
-} from '@heroicons/react/24/outline'
+
+const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
+
+function PlusSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+}
+function PencilSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+}
+function TrashSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" /></svg>
+}
+function SearchSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+}
+function CloseSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+}
+function StoreSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
+}
+function MailSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
+}
+function PhoneSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.55 1.27h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.17a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
+}
+function GlobeSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
+}
+
+const WA_PATH = 'M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.121 1.531 5.847L.057 23.882l6.196-1.448A11.934 11.934 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.794 9.794 0 01-5.031-1.388l-.361-.214-3.736.873.936-3.629-.235-.373A9.775 9.775 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z'
 
 function WhatsAppButton({ phone, name, toast }) {
-  const waIcon = (
-    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-      <path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.121 1.531 5.847L.057 23.882l6.196-1.448A11.934 11.934 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.794 9.794 0 01-5.031-1.388l-.361-.214-3.736.873.936-3.629-.235-.373A9.775 9.775 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/>
-    </svg>
-  )
+  const icon = <svg style={{ width: 14, height: 14 }} viewBox="0 0 24 24" fill="currentColor"><path d={WA_PATH} /></svg>
   if (phone) {
     return (
-      <a
-        href={`https://wa.me/${phone.replace(/\D/g, '')}`}
-        target="_blank"
-        rel="noreferrer"
+      <a href={`https://wa.me/${phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer"
         title={`WhatsApp ${name}`}
-        className="p-1.5 rounded-md bg-success-subtle text-success hover:opacity-80 transition-opacity shrink-0"
-      >
-        {waIcon}
+        style={{ padding: 6, borderRadius: '0 6px 6px 0', background: 'rgba(125,190,147,0.12)', color: C.ok, display: 'flex', flexShrink: 0 }}>
+        {icon}
       </a>
     )
   }
   return (
-    <button
-      onClick={() => toast('Agregá un número de teléfono al proveedor para usar WhatsApp', 'error')}
+    <button onClick={() => toast('Agregá un número de teléfono al proveedor para usar WhatsApp', 'error')}
       title="Sin número de contacto"
-      className="p-1.5 rounded-md text-fg-muted/30 hover:text-fg-muted transition-colors shrink-0"
-    >
-      {waIcon}
+      style={{ padding: 6, borderRadius: '0 6px 6px 0', background: 'none', border: 'none', color: C.piedra, opacity: 0.35, cursor: 'pointer', display: 'flex', flexShrink: 0 }}>
+      {icon}
     </button>
   )
 }
@@ -81,54 +98,63 @@ function SupplierModal({ supplier, onClose }) {
     })
   }
 
-  const inputCls = 'w-full px-3 py-2 rounded-lg bg-raised border border-line text-sm text-fg focus:outline-none focus:border-brand transition-colors placeholder:text-fg-muted'
-  const labelCls = 'block text-xs font-medium text-fg-muted mb-1'
+  const labelStyle = { fontSize: 11, fontWeight: 500, color: C.piedra, display: 'block', marginBottom: 4 }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-surface border border-line rounded-t-2xl sm:rounded-2xl shadow-xl w-full sm:max-w-lg max-h-[92dvh] sm:max-h-[85vh] flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-line shrink-0">
-          <h2 className="text-base font-semibold text-fg">{isEdit ? 'Editar proveedor' : 'Nuevo proveedor'}</h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-raised text-fg-muted hover:text-fg transition-colors">
-            <XMarkIcon className="w-4 h-4" />
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
+      className="sm:items-center">
+      <div style={{ width: '100%', maxWidth: 512, background: C.s1, borderRadius: '0 16px 0 0', border: `1px solid ${C.linea}`, boxShadow: '0 24px 64px rgba(0,0,0,0.5)', maxHeight: '92dvh', display: 'flex', flexDirection: 'column' }}
+        className="sm:rounded-[0_16px_16px_0] sm:max-h-[85vh]">
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 14px', borderBottom: `1px solid ${C.linea}`, flexShrink: 0 }}>
+          <span style={{ fontSize: 15, fontWeight: 600, color: C.crema }}>{isEdit ? 'Editar proveedor' : 'Nuevo proveedor'}</span>
+          <button onClick={onClose}
+            style={{ padding: 6, borderRadius: '0 6px 6px 0', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra }}
+            onMouseEnter={e => e.currentTarget.style.color = C.crema}
+            onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+            <CloseSvg style={{ width: 18, height: 18 }} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-          <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-4">
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>
-              <label className={labelCls}>Nombre *</label>
-              <input className={inputCls} placeholder="Ej: Distribuidora García" value={form.name} onChange={set('name')} required autoFocus />
+              <label style={labelStyle}>Nombre *</label>
+              <input className="du-input" placeholder="Ej: Distribuidora García" value={form.name} onChange={set('name')} required autoFocus />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>Email</label>
-                <input className={inputCls} type="email" placeholder="contacto@proveedor.com" value={form.email} onChange={set('email')} />
+                <label style={labelStyle}>Email</label>
+                <input className="du-input" type="email" placeholder="contacto@proveedor.com" value={form.email} onChange={set('email')} />
               </div>
               <div>
-                <label className={labelCls}>Teléfono</label>
-                <input className={inputCls} placeholder="+54 11 1234-5678" value={form.phone} onChange={set('phone')} />
+                <label style={labelStyle}>Teléfono</label>
+                <input className="du-input" placeholder="+54 11 1234-5678" value={form.phone} onChange={set('phone')} />
               </div>
             </div>
             <div>
-              <label className={labelCls}>Sitio web</label>
-              <input className={inputCls} placeholder="https://proveedor.com" value={form.website} onChange={set('website')} />
+              <label style={labelStyle}>Sitio web</label>
+              <input className="du-input" placeholder="https://proveedor.com" value={form.website} onChange={set('website')} />
             </div>
             <div>
-              <label className={labelCls}>Dirección</label>
-              <input className={inputCls} placeholder="Av. Corrientes 1234, CABA" value={form.address} onChange={set('address')} />
+              <label style={labelStyle}>Dirección</label>
+              <input className="du-input" placeholder="Av. Corrientes 1234, CABA" value={form.address} onChange={set('address')} />
             </div>
             <div>
-              <label className={labelCls}>Notas</label>
-              <textarea className={inputCls} rows={3} placeholder="Condiciones de pago, contacto, etc." value={form.notes} onChange={set('notes')} />
+              <label style={labelStyle}>Notas</label>
+              <textarea className="du-input" rows={3} placeholder="Condiciones de pago, contacto, etc." value={form.notes} onChange={set('notes')} />
             </div>
           </div>
 
-          <div className="px-6 py-4 border-t border-line flex justify-end gap-2 shrink-0">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg border border-line text-sm text-fg-muted hover:text-fg hover:bg-raised transition-colors">
+          <div style={{ padding: '14px 20px', borderTop: `1px solid ${C.linea}`, display: 'flex', justifyContent: 'flex-end', gap: 10, flexShrink: 0 }}>
+            <button type="button" onClick={onClose}
+              style={{ padding: '10px 16px', borderRadius: '0 10px 10px 0', border: `1px solid ${C.linea}`, background: 'none', color: C.piedra, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+              onMouseEnter={e => { e.currentTarget.style.color = C.crema; e.currentTarget.style.borderColor = C.arena }}
+              onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}>
               Cancelar
             </button>
-            <button type="submit" disabled={mutation.isPending} className="px-4 py-2 rounded-lg bg-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60">
+            <button type="submit" disabled={mutation.isPending}
+              style={{ padding: '10px 16px', borderRadius: '0 10px 10px 0', border: 'none', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, cursor: mutation.isPending ? 'not-allowed' : 'pointer', opacity: mutation.isPending ? 0.5 : 1 }}>
               {mutation.isPending ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear proveedor'}
             </button>
           </div>
@@ -145,8 +171,8 @@ export default function ProvidersPage() {
   const { user } = useAuth()
   const canWrite = user?.role !== 'member'
 
-  const [search, setSearch]     = useState('')
-  const [modal, setModal]       = useState(null) // null | supplier object | 'new'
+  const [search, setSearch] = useState('')
+  const [modal, setModal]   = useState(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['suppliers', { search: search || undefined }],
@@ -169,47 +195,51 @@ export default function ProvidersPage() {
     if (ok) deleteMutation.mutate(supplier.id)
   }
 
+  const thStyle = { textAlign: 'left', padding: '12px 14px', fontSize: 11, fontWeight: 600, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.05em' }
+  const tdStyle = { padding: '12px 14px' }
+
   return (
-    <div className="p-4 md:p-8 flex flex-col gap-6">
+    <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 24 }} className="md:p-8">
+
       {/* Header */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
         <div>
-          <h1 className="text-2xl font-bold text-fg">Proveedores</h1>
-          <p className="text-sm text-fg-muted mt-0.5">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <StoreSvg style={{ width: 18, height: 18, color: C.arena }} />
+            <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Proveedores</h2>
+          </div>
+          <p style={{ fontSize: 12, color: C.piedra, marginTop: 2 }}>
             {suppliers.length} proveedor{suppliers.length !== 1 ? 'es' : ''}{search ? ' (filtrados)' : ''}
           </p>
         </div>
         {canWrite && (
-          <button
-            onClick={() => setModal('new')}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
-          >
-            <PlusIcon className="w-4 h-4" />
+          <button onClick={() => setModal('new')}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: '0 10px 10px 0', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+            <PlusSvg style={{ width: 16, height: 16 }} />
             Nuevo proveedor
           </button>
         )}
       </div>
 
       {/* Buscador */}
-      <div className="relative max-w-xs">
-        <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted pointer-events-none" />
-        <input
-          value={search}
-          onChange={e => setSearch(e.target.value)}
+      <div style={{ position: 'relative', maxWidth: 320 }}>
+        <SearchSvg style={{ width: 16, height: 16, color: C.piedra, position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+        <input value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Buscar proveedor…"
-          className="pl-9 pr-3 py-1.5 rounded-lg bg-raised border border-line text-sm text-fg focus:outline-none focus:border-brand transition-colors w-full"
-        />
+          style={{ paddingLeft: 36, paddingRight: 12, paddingTop: 6, paddingBottom: 6, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', fontSize: 13, color: C.crema, outline: 'none', width: '100%' }}
+          className="placeholder:text-[#8C877E]" />
       </div>
 
       {/* Contenido */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-20 text-fg-muted text-sm">Cargando…</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 0', color: C.piedra, fontSize: 14 }}>Cargando…</div>
       ) : suppliers.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-4 text-fg-muted">
-          <BuildingStorefrontIcon className="w-12 h-12 opacity-20" />
-          <p className="text-sm">{search ? 'Sin proveedores con esa búsqueda.' : 'Aún no hay proveedores. ¡Agregá el primero!'}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', gap: 16, color: C.piedra }}>
+          <StoreSvg style={{ width: 48, height: 48, opacity: 0.2 }} />
+          <p style={{ fontSize: 14 }}>{search ? 'Sin proveedores con esa búsqueda.' : 'Aún no hay proveedores. ¡Agregá el primero!'}</p>
           {!search && canWrite && (
-            <button onClick={() => setModal('new')} className="text-sm text-brand hover:underline">
+            <button onClick={() => setModal('new')}
+              style={{ fontSize: 14, color: C.arena, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
               + Nuevo proveedor
             </button>
           )}
@@ -217,59 +247,72 @@ export default function ProvidersPage() {
       ) : (
         <>
           {/* Desktop */}
-          <div className="hidden md:block overflow-hidden rounded-2xl border border-line">
-            <table className="w-full text-sm">
+          <div className="hidden md:block" style={{ overflow: 'hidden', borderRadius: '0 16px 16px 0', border: `1px solid ${C.linea}` }}>
+            <table style={{ width: '100%', fontSize: 14, borderCollapse: 'collapse' }}>
               <thead>
-                <tr className="border-b border-line bg-raised/60">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Nombre</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Contacto</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Dirección</th>
-                  <th className="text-center px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Productos</th>
-                  <th className="px-4 py-3" />
+                <tr style={{ borderBottom: `1px solid ${C.linea}`, background: 'rgba(38,38,42,0.6)' }}>
+                  <th style={thStyle}>Nombre</th>
+                  <th style={thStyle}>Contacto</th>
+                  <th style={thStyle}>Dirección</th>
+                  <th style={{ ...thStyle, textAlign: 'center' }}>Productos</th>
+                  <th style={tdStyle} />
                 </tr>
               </thead>
               <tbody>
                 {suppliers.map((s, i) => (
-                  <tr key={s.id} className={`border-b border-line last:border-0 hover:bg-raised/40 transition-colors ${i % 2 !== 0 ? 'bg-raised/20' : ''}`}>
-                    <td className="px-4 py-3">
-                      <p className="font-medium text-fg">{s.name}</p>
-                      {s.notes && <p className="text-xs text-fg-muted mt-0.5 truncate max-w-[200px]">{s.notes}</p>}
+                  <tr key={s.id} style={{ borderBottom: `1px solid ${C.linea}`, background: i % 2 !== 0 ? 'rgba(30,30,32,0.3)' : 'transparent' }}
+                    className="hover:bg-[rgba(38,38,42,0.4)] last:border-0 transition-colors">
+                    <td style={tdStyle}>
+                      <p style={{ fontWeight: 500, color: C.crema }}>{s.name}</p>
+                      {s.notes && <p style={{ fontSize: 12, color: C.piedra, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>{s.notes}</p>}
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="flex flex-col gap-0.5">
+                    <td style={tdStyle}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                           {s.email && (
-                            <a href={`mailto:${s.email}`} className="text-xs text-fg-soft hover:text-brand flex items-center gap-1 transition-colors">
-                              <EnvelopeIcon className="w-3 h-3 shrink-0" />{s.email}
+                            <a href={`mailto:${s.email}`} style={{ fontSize: 12, color: C.piedra, display: 'flex', alignItems: 'center', gap: 4 }}
+                              onMouseEnter={e => e.currentTarget.style.color = C.arena}
+                              onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+                              <MailSvg style={{ width: 12, height: 12, flexShrink: 0 }} />{s.email}
                             </a>
                           )}
                           {s.phone && (
-                            <a href={`tel:${s.phone}`} className="text-xs text-fg-soft hover:text-brand flex items-center gap-1 transition-colors">
-                              <PhoneIcon className="w-3 h-3 shrink-0" />{s.phone}
+                            <a href={`tel:${s.phone}`} style={{ fontSize: 12, color: C.piedra, display: 'flex', alignItems: 'center', gap: 4 }}
+                              onMouseEnter={e => e.currentTarget.style.color = C.arena}
+                              onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+                              <PhoneSvg style={{ width: 12, height: 12, flexShrink: 0 }} />{s.phone}
                             </a>
                           )}
                           {s.website && (
-                            <a href={s.website} target="_blank" rel="noreferrer" className="text-xs text-fg-soft hover:text-brand flex items-center gap-1 transition-colors">
-                              <GlobeAltIcon className="w-3 h-3 shrink-0" />{s.website.replace(/^https?:\/\//, '')}
+                            <a href={s.website} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: C.piedra, display: 'flex', alignItems: 'center', gap: 4 }}
+                              onMouseEnter={e => e.currentTarget.style.color = C.arena}
+                              onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+                              <GlobeSvg style={{ width: 12, height: 12, flexShrink: 0 }} />{s.website.replace(/^https?:\/\//, '')}
                             </a>
                           )}
-                          {!s.email && !s.phone && !s.website && <span className="text-xs text-fg-muted">—</span>}
+                          {!s.email && !s.phone && !s.website && <span style={{ fontSize: 12, color: C.piedra }}>—</span>}
                         </div>
                         <WhatsAppButton phone={s.phone} name={s.name} toast={toast} />
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-fg-muted text-sm">{s.address || '—'}</td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="text-sm font-semibold text-fg">{s._count?.products ?? 0}</span>
+                    <td style={{ ...tdStyle, color: C.piedra, fontSize: 13 }}>{s.address || '—'}</td>
+                    <td style={{ ...tdStyle, textAlign: 'center' }}>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: C.crema }}>{s._count?.products ?? 0}</span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td style={tdStyle}>
                       {canWrite && (
-                        <div className="flex items-center justify-end gap-1">
-                          <button onClick={() => setModal(s)} className="p-1.5 rounded-md hover:bg-raised text-fg-muted hover:text-fg transition-colors">
-                            <PencilIcon className="w-3.5 h-3.5" />
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
+                          <button onClick={() => setModal(s)}
+                            style={{ padding: 6, borderRadius: '0 6px 6px 0', background: 'none', border: 'none', color: C.piedra, cursor: 'pointer' }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(185,180,170,0.08)'; e.currentTarget.style.color = C.crema }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = C.piedra }}>
+                            <PencilSvg style={{ width: 14, height: 14 }} />
                           </button>
-                          <button onClick={() => handleDelete(s)} className="p-1.5 rounded-md hover:bg-danger-subtle text-fg-muted hover:text-danger transition-colors">
-                            <TrashIcon className="w-3.5 h-3.5" />
+                          <button onClick={() => handleDelete(s)}
+                            style={{ padding: 6, borderRadius: '0 6px 6px 0', background: 'none', border: 'none', color: C.piedra, cursor: 'pointer' }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(229,131,115,0.12)'; e.currentTarget.style.color = C.err }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = C.piedra }}>
+                            <TrashSvg style={{ width: 14, height: 14 }} />
                           </button>
                         </div>
                       )}
@@ -283,38 +326,40 @@ export default function ProvidersPage() {
           {/* Mobile cards */}
           <div className="flex flex-col gap-3 md:hidden">
             {suppliers.map(s => (
-              <div key={s.id} className="bg-surface border border-line rounded-xl p-4 flex flex-col gap-3">
-                <div className="flex items-start justify-between gap-2">
+              <div key={s.id} style={{ background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 12px 12px 0', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
                   <div>
-                    <p className="font-semibold text-fg">{s.name}</p>
-                    {s.notes && <p className="text-xs text-fg-muted mt-0.5 line-clamp-2">{s.notes}</p>}
+                    <p style={{ fontWeight: 600, color: C.crema }}>{s.name}</p>
+                    {s.notes && <p style={{ fontSize: 12, color: C.piedra, marginTop: 2 }}>{s.notes}</p>}
                   </div>
-                  <span className="text-xs text-fg-muted bg-raised px-2 py-0.5 rounded-full shrink-0">
+                  <span style={{ fontSize: 12, color: C.piedra, background: C.s2, padding: '2px 8px', borderRadius: 100, flexShrink: 0 }}>
                     {s._count?.products ?? 0} prod.
                   </span>
                 </div>
-                <div className="flex flex-col gap-1">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {s.email && (
-                    <a href={`mailto:${s.email}`} className="text-xs text-fg-soft hover:text-brand flex items-center gap-1.5 transition-colors">
-                      <EnvelopeIcon className="w-3.5 h-3.5 shrink-0" />{s.email}
+                    <a href={`mailto:${s.email}`} style={{ fontSize: 12, color: C.piedra, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <MailSvg style={{ width: 14, height: 14, flexShrink: 0 }} />{s.email}
                     </a>
                   )}
                   {s.phone && (
-                    <a href={`tel:${s.phone}`} className="text-xs text-fg-soft hover:text-brand flex items-center gap-1.5 transition-colors">
-                      <PhoneIcon className="w-3.5 h-3.5 shrink-0" />{s.phone}
+                    <a href={`tel:${s.phone}`} style={{ fontSize: 12, color: C.piedra, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <PhoneSvg style={{ width: 14, height: 14, flexShrink: 0 }} />{s.phone}
                     </a>
                   )}
-                  {s.address && <p className="text-xs text-fg-muted">{s.address}</p>}
+                  {s.address && <p style={{ fontSize: 12, color: C.piedra }}>{s.address}</p>}
                 </div>
-                <div className="flex items-center gap-2 pt-2 border-t border-line">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 8, borderTop: `1px solid ${C.linea}` }}>
                   <WhatsAppButton phone={s.phone} name={s.name} toast={toast} />
                   {canWrite && (
                     <>
-                      <button onClick={() => setModal(s)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium border border-line text-fg-soft hover:bg-raised transition-colors">
-                        <PencilIcon className="w-3.5 h-3.5" />Editar
+                      <button onClick={() => setModal(s)}
+                        style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '6px 0', borderRadius: '0 8px 8px 0', fontSize: 12, fontWeight: 500, border: `1px solid ${C.linea}`, background: 'none', color: C.piedra, cursor: 'pointer' }}>
+                        <PencilSvg style={{ width: 14, height: 14 }} />Editar
                       </button>
-                      <button onClick={() => handleDelete(s)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium bg-danger-subtle text-danger hover:opacity-80 transition-opacity">
-                        <TrashIcon className="w-3.5 h-3.5" />Eliminar
+                      <button onClick={() => handleDelete(s)}
+                        style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '6px 0', borderRadius: '0 8px 8px 0', fontSize: 12, fontWeight: 500, border: 'none', background: 'rgba(229,131,115,0.12)', color: C.err, cursor: 'pointer' }}>
+                        <TrashSvg style={{ width: 14, height: 14 }} />Eliminar
                       </button>
                     </>
                   )}

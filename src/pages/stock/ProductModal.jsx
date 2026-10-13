@@ -2,7 +2,12 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createProduct, updateProduct, getCategories, getSuppliers } from '../../api/stock'
 import { useToast } from '../../components/Toast'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+
+const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
+
+function CloseSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+}
 
 const UNITS = ['unidad', 'kg', 'g', 'litro', 'ml', 'm', 'cm', 'm²', 'm³', 'caja', 'par', 'rollo', 'bolsa']
 
@@ -86,45 +91,50 @@ export default function ProductModal({ product, onClose }) {
     mutation.mutate(data)
   }
 
-  const inputCls = 'w-full px-3 py-2 rounded-lg bg-raised border border-line text-sm text-fg focus:outline-none focus:border-brand transition-colors placeholder:text-fg-muted'
-  const labelCls = 'block text-xs font-medium text-fg-muted mb-1'
+  const labelStyle = { fontSize: 11, fontWeight: 500, color: C.piedra, display: 'block', marginBottom: 4 }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-surface border border-line rounded-t-2xl sm:rounded-2xl shadow-xl w-full sm:max-w-lg max-h-[92dvh] sm:max-h-[90vh] flex flex-col">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
+      className="sm:items-center">
+      <div style={{ width: '100%', maxWidth: 512, background: C.s1, borderRadius: '0 16px 0 0', border: `1px solid ${C.linea}`, boxShadow: '0 24px 64px rgba(0,0,0,0.5)', maxHeight: '92dvh', display: 'flex', flexDirection: 'column' }}
+        className="sm:rounded-[0_16px_16px_0]">
+
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-line shrink-0">
-          <h2 className="text-base font-semibold text-fg">{isEdit ? 'Editar producto' : 'Nuevo producto'}</h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-raised text-fg-muted hover:text-fg transition-colors">
-            <XMarkIcon className="w-4 h-4" />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 14px', borderBottom: `1px solid ${C.linea}`, flexShrink: 0 }}>
+          <span style={{ fontSize: 15, fontWeight: 600, color: C.crema }}>{isEdit ? 'Editar producto' : 'Nuevo producto'}</span>
+          <button onClick={onClose}
+            style={{ padding: 6, borderRadius: '0 6px 6px 0', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra }}
+            onMouseEnter={e => e.currentTarget.style.color = C.crema}
+            onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+            <CloseSvg style={{ width: 18, height: 18 }} />
           </button>
         </div>
 
         {/* Body */}
-        <form onSubmit={handleSubmit} className="overflow-y-auto flex-1">
-          <div className="px-6 py-5 flex flex-col gap-4">
+        <form onSubmit={handleSubmit} style={{ overflowY: 'auto', flex: 1 }}>
+          <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>SKU *</label>
-                <input className={inputCls} placeholder="Ej: PROD-001" value={form.sku} onChange={set('sku')} required />
+                <label style={labelStyle}>SKU *</label>
+                <input className="du-input" placeholder="Ej: PROD-001" value={form.sku} onChange={set('sku')} required />
               </div>
               <div>
-                <label className={labelCls}>Unidad</label>
-                <select className={inputCls} value={form.unit} onChange={set('unit')}>
+                <label style={labelStyle}>Unidad</label>
+                <select className="du-input" value={form.unit} onChange={set('unit')}>
                   {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
                 </select>
               </div>
             </div>
 
             <div>
-              <label className={labelCls}>Nombre *</label>
-              <input className={inputCls} placeholder="Nombre del producto" value={form.name} onChange={set('name')} required />
+              <label style={labelStyle}>Nombre *</label>
+              <input className="du-input" placeholder="Nombre del producto" value={form.name} onChange={set('name')} required />
             </div>
 
             <div>
-              <label className={labelCls}>Tipo de inventario *</label>
-              <select className={inputCls} value={form.inventoryType} onChange={set('inventoryType')} required>
+              <label style={labelStyle}>Tipo de inventario *</label>
+              <select className="du-input" value={form.inventoryType} onChange={set('inventoryType')} required>
                 {INVENTORY_TYPE_OPTIONS.map(o => (
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
@@ -132,14 +142,14 @@ export default function ProductModal({ product, onClose }) {
             </div>
 
             <div>
-              <label className={labelCls}>Descripción</label>
-              <textarea className={inputCls} rows={2} placeholder="Descripción opcional" value={form.description} onChange={set('description')} />
+              <label style={labelStyle}>Descripción</label>
+              <textarea className="du-input" rows={2} placeholder="Descripción opcional" value={form.description} onChange={set('description')} />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>Categoría</label>
-                <select className={inputCls} value={form.categoryId} onChange={set('categoryId')}>
+                <label style={labelStyle}>Categoría</label>
+                <select className="du-input" value={form.categoryId} onChange={set('categoryId')}>
                   <option value="">Sin categoría</option>
                   {categories.map(c => (
                     <optgroup key={c.id} label={c.name}>
@@ -152,8 +162,8 @@ export default function ProductModal({ product, onClose }) {
                 </select>
               </div>
               <div>
-                <label className={labelCls}>Proveedor</label>
-                <select className={inputCls} value={form.supplierId} onChange={set('supplierId')}>
+                <label style={labelStyle}>Proveedor</label>
+                <select className="du-input" value={form.supplierId} onChange={set('supplierId')}>
                   <option value="">Sin proveedor</option>
                   {suppliers.filter(s => s.status === 'active').map(s => (
                     <option key={s.id} value={s.id}>{s.name}</option>
@@ -164,30 +174,30 @@ export default function ProductModal({ product, onClose }) {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>Precio de costo</label>
-                <input className={inputCls} type="number" min="0" step="0.01" placeholder="0.00" value={form.costPrice} onChange={set('costPrice')} />
+                <label style={labelStyle}>Precio de costo</label>
+                <input className="du-input" type="number" min="0" step="0.01" placeholder="0.00" value={form.costPrice} onChange={set('costPrice')} />
               </div>
               <div>
-                <label className={labelCls}>Precio de venta</label>
-                <input className={inputCls} type="number" min="0" step="0.01" placeholder="0.00" value={form.salePrice} onChange={set('salePrice')} />
+                <label style={labelStyle}>Precio de venta</label>
+                <input className="du-input" type="number" min="0" step="0.01" placeholder="0.00" value={form.salePrice} onChange={set('salePrice')} />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>Stock mínimo (alerta)</label>
-                <input className={inputCls} type="number" min="0" step="0.01" placeholder="0" value={form.minStock} onChange={set('minStock')} />
+                <label style={labelStyle}>Stock mínimo (alerta)</label>
+                <input className="du-input" type="number" min="0" step="0.01" placeholder="0" value={form.minStock} onChange={set('minStock')} />
               </div>
               <div>
-                <label className={labelCls}>Stock máximo</label>
-                <input className={inputCls} type="number" min="0" step="0.01" placeholder="Sin límite" value={form.maxStock} onChange={set('maxStock')} />
+                <label style={labelStyle}>Stock máximo</label>
+                <input className="du-input" type="number" min="0" step="0.01" placeholder="Sin límite" value={form.maxStock} onChange={set('maxStock')} />
               </div>
             </div>
 
             {isEdit && (
               <div>
-                <label className={labelCls}>Estado</label>
-                <select className={inputCls} value={form.status} onChange={set('status')}>
+                <label style={labelStyle}>Estado</label>
+                <select className="du-input" value={form.status} onChange={set('status')}>
                   <option value="active">Activo</option>
                   <option value="inactive">Inactivo</option>
                   <option value="discontinued">Descontinuado</option>
@@ -196,16 +206,16 @@ export default function ProductModal({ product, onClose }) {
             )}
 
             {!isEdit && (
-              <div className="border-t border-line pt-4 flex flex-col gap-3">
-                <p className="text-xs font-semibold text-fg-muted uppercase tracking-wide">Stock inicial</p>
+              <div style={{ borderTop: `1px solid ${C.linea}`, paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Stock inicial</p>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className={labelCls}>Cantidad</label>
-                    <input className={inputCls} type="number" min="0" step="0.01" placeholder="0" value={form.initialStock} onChange={set('initialStock')} />
+                    <label style={labelStyle}>Cantidad</label>
+                    <input className="du-input" type="number" min="0" step="0.01" placeholder="0" value={form.initialStock} onChange={set('initialStock')} />
                   </div>
                   <div>
-                    <label className={labelCls}>Motivo</label>
-                    <input className={inputCls} placeholder="Carga inicial" value={form.initialReason} onChange={set('initialReason')} />
+                    <label style={labelStyle}>Motivo</label>
+                    <input className="du-input" placeholder="Carga inicial" value={form.initialReason} onChange={set('initialReason')} />
                   </div>
                 </div>
               </div>
@@ -214,15 +224,15 @@ export default function ProductModal({ product, onClose }) {
         </form>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-line flex justify-end gap-2 shrink-0">
-          <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg border border-line text-sm text-fg-muted hover:text-fg hover:bg-raised transition-colors">
+        <div style={{ padding: '14px 20px', borderTop: `1px solid ${C.linea}`, display: 'flex', justifyContent: 'flex-end', gap: 10, flexShrink: 0 }}>
+          <button type="button" onClick={onClose}
+            style={{ padding: '10px 16px', borderRadius: '0 10px 10px 0', border: `1px solid ${C.linea}`, background: 'none', color: C.piedra, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+            onMouseEnter={e => { e.currentTarget.style.color = C.crema; e.currentTarget.style.borderColor = C.arena }}
+            onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}>
             Cancelar
           </button>
-          <button
-            onClick={handleSubmit}
-            disabled={mutation.isPending}
-            className="px-4 py-2 rounded-lg bg-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60"
-          >
+          <button onClick={handleSubmit} disabled={mutation.isPending}
+            style={{ padding: '10px 16px', borderRadius: '0 10px 10px 0', border: 'none', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, cursor: mutation.isPending ? 'not-allowed' : 'pointer', opacity: mutation.isPending ? 0.5 : 1 }}>
             {mutation.isPending ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear producto'}
           </button>
         </div>

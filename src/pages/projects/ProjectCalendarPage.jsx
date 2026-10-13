@@ -2,7 +2,9 @@ import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { getProjects } from '../../api/projects'
-import { ChevronLeftIcon, ChevronRightIcon, CalendarDaysIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline'
+import { AgendaIcon } from '../../components/DuIcons'
+
+const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
 
 const STATUS_LABELS = {
   pending:     'Pendiente',
@@ -11,26 +13,54 @@ const STATUS_LABELS = {
   cancelled:   'Cancelado',
 }
 
-const STATUS_COLORS = {
-  pending:     'bg-warning-subtle text-warning',
-  approved:    'bg-info-subtle text-info',
-  in_progress: 'bg-brand-subtle text-brand',
-  cancelled:   'bg-raised text-fg-muted',
+const STATUS_BADGE = {
+  pending:     { bg: 'rgba(226,182,99,0.12)',  color: C.warn },
+  approved:    { bg: 'rgba(142,177,222,0.12)', color: C.info },
+  in_progress: { bg: 'rgba(242,237,227,0.08)', color: C.crema },
+  cancelled:   { bg: 'rgba(140,135,126,0.12)', color: C.piedra },
 }
 
-const STATUS_BAR_COLORS = {
-  pending:     'bg-warning text-fg font-semibold',
-  approved:    'bg-info text-white',
-  in_progress: 'bg-brand text-white',
-  cancelled:   'bg-raised text-fg-muted opacity-60',
+const STATUS_BAR = {
+  pending:     { bg: C.warn,    color: C.bg,    fw: 600 },
+  approved:    { bg: C.info,    color: C.bg,    fw: 600 },
+  in_progress: { bg: C.crema,   color: C.bg,    fw: 600 },
+  cancelled:   { bg: C.s3,      color: C.piedra, fw: 400 },
 }
 
-const DAY_W = 44        // px per day column
-const ROW_H = 56        // px per project row
-const HEADER_H = 72     // month row + day row combined
-const LEFT_W = 208      // sticky left panel width
+const DAY_W = 44
+const ROW_H = 56
+const HEADER_H = 72
+const LEFT_W = 208
 
-// Parse date safely from ISO string, avoiding timezone shift
+function ChevronLSvg() {
+  return (
+    <svg style={{ display: 'block', width: 16, height: 16 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="15 18 9 12 15 6" />
+    </svg>
+  )
+}
+function ChevronRSvg() {
+  return (
+    <svg style={{ display: 'block', width: 16, height: 16 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  )
+}
+function CalSvg({ style }) {
+  return (
+    <svg style={{ display: 'block', width: 13, height: 13, ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  )
+}
+function WarnSvg({ style }) {
+  return (
+    <svg style={{ display: 'block', width: 11, height: 11, ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+    </svg>
+  )
+}
+
 function parseDate(d) {
   if (!d) return null
   if (d instanceof Date) return new Date(d.getFullYear(), d.getMonth(), d.getDate())
@@ -54,7 +84,6 @@ export default function ProjectCalendarPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const scrollRef = useRef(null)
 
-  // Range: 3 months starting from (current month + offset)
   const rangeStart = useMemo(
     () => new Date(today.getFullYear(), today.getMonth() + monthOffset, 1),
     [today, monthOffset]
@@ -79,7 +108,6 @@ export default function ProjectCalendarPage() {
     [days, today]
   )
 
-  // Scroll so today is centered in the viewport (desktop)
   const centerToday = useCallback(() => {
     const el = scrollRef.current
     if (!el || todayIdx < 0) return
@@ -111,11 +139,7 @@ export default function ProjectCalendarPage() {
     days.forEach((d) => {
       const key = `${d.getFullYear()}-${d.getMonth()}`
       if (!cur || cur.key !== key) {
-        cur = {
-          key,
-          label: d.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' }),
-          count: 1,
-        }
+        cur = { key, label: d.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' }), count: 1 }
         groups.push(cur)
       } else {
         cur.count++
@@ -127,350 +151,275 @@ export default function ProjectCalendarPage() {
   const totalW = days.length * DAY_W
 
   return (
-    <div className="p-4 md:p-8">
+    <div style={{ padding: '28px 24px 40px', fontFamily: 'Geist, system-ui, sans-serif' }}>
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h2 className="text-xl font-semibold text-fg">Agenda de Proyectos</h2>
-        <div className="flex flex-wrap items-center gap-2">
-          <select
-            value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-line-soft rounded-md text-sm bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-brand"
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <AgendaIcon style={{ width: 18, height: 18, color: C.arena }} />
+          <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Agenda de Proyectos</h2>
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
+            style={{ height: 34, padding: '0 12px', background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', color: C.crema, fontSize: 13, outline: 'none', appearance: 'none', cursor: 'pointer' }}
           >
             <option value="">Solo activos</option>
             {Object.entries(STATUS_LABELS).map(([v, l]) => (
               <option key={v} value={v}>{l}</option>
             ))}
           </select>
-          <div className="hidden md:flex items-center gap-1">
-            <button
-              onClick={() => setMonthOffset(m => m - 1)}
-              className="p-1.5 rounded-md border border-line-soft text-fg-soft hover:bg-raised transition-colors"
+          <div className="hidden md:flex" style={{ alignItems: 'center', gap: 4 }}>
+            <button onClick={() => setMonthOffset(m => m - 1)}
+              style={{ padding: 6, border: `1px solid ${C.linea}`, borderRadius: '0 8px 8px 0', background: 'none', color: C.piedra, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = C.arena; e.currentTarget.style.color = C.arena }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = C.linea; e.currentTarget.style.color = C.piedra }}
             >
-              <ChevronLeftIcon className="w-4 h-4" />
+              <ChevronLSvg />
             </button>
-            <button
-              onClick={() => { setMonthOffset(0); requestAnimationFrame(centerToday) }}
-              className="px-3 py-1.5 rounded-md border border-line-soft text-sm text-fg-soft hover:bg-raised transition-colors"
+            <button onClick={() => { setMonthOffset(0); requestAnimationFrame(centerToday) }}
+              style={{ padding: '6px 14px', border: `1px solid ${C.linea}`, borderRadius: '0 8px 8px 0', fontSize: 13, color: C.arena, background: 'none', cursor: 'pointer' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = C.arena; e.currentTarget.style.color = C.crema }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = C.linea; e.currentTarget.style.color = C.arena }}
             >
               Hoy
             </button>
-            <button
-              onClick={() => setMonthOffset(m => m + 1)}
-              className="p-1.5 rounded-md border border-line-soft text-fg-soft hover:bg-raised transition-colors"
+            <button onClick={() => setMonthOffset(m => m + 1)}
+              style={{ padding: 6, border: `1px solid ${C.linea}`, borderRadius: '0 8px 8px 0', background: 'none', color: C.piedra, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = C.arena; e.currentTarget.style.color = C.arena }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = C.linea; e.currentTarget.style.color = C.piedra }}
             >
-              <ChevronRightIcon className="w-4 h-4" />
+              <ChevronRSvg />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        {Object.entries(STATUS_LABELS)
-          .filter(([v]) => v !== 'cancelled')
-          .map(([v, l]) => (
-            <span key={v} className={`px-2 py-0.5 rounded-full text-xs ${STATUS_BAR_COLORS[v]}`}>
+      {/* Leyenda */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
+        {Object.entries(STATUS_LABELS).filter(([v]) => v !== 'cancelled').map(([v, l]) => {
+          const bar = STATUS_BAR[v]
+          return (
+            <span key={v} style={{ padding: '2px 10px', borderRadius: '0 6px 6px 0', fontSize: 11, fontWeight: bar.fw, background: bar.bg, color: bar.color }}>
               {l}
             </span>
-          ))}
-        <span className="px-2 py-0.5 rounded-full text-xs bg-danger text-white">
+          )
+        })}
+        <span style={{ padding: '2px 10px', borderRadius: '0 6px 6px 0', fontSize: 11, fontWeight: 600, background: C.err, color: C.bg }}>
           Vencido
         </span>
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-fg-soft">Cargando...</p>
+        <p style={{ fontSize: 13, color: C.piedra }}>Cargando...</p>
       ) : (
         <>
-        {/* ── Mobile: lista de proyectos ── */}
-        <div className="md:hidden space-y-3">
-          {projects.length === 0 ? (
-            <p className="text-sm text-fg-muted text-center py-10">Sin proyectos para mostrar</p>
-          ) : (
-            [...projects]
-              .sort((a, b) => {
-                const ea = parseDate(a.endDate), eb = parseDate(b.endDate)
-                if (!ea && !eb) return 0
-                if (!ea) return 1
-                if (!eb) return -1
-                return ea - eb
-              })
-              .map(p => {
-                const start    = parseDate(p.startDate)
-                const end      = parseDate(p.endDate)
-                const isOverdue = end && end < today && p.status !== 'finished' && p.status !== 'cancelled'
-                const daysLeft  = end ? Math.ceil((end - today) / 86400000) : null
+          {/* Mobile: lista */}
+          <div className="md:hidden flex flex-col" style={{ gap: 10 }}>
+            {projects.length === 0 ? (
+              <p style={{ fontSize: 13, color: C.piedra, textAlign: 'center', padding: '40px 0' }}>Sin proyectos para mostrar</p>
+            ) : (
+              [...projects]
+                .sort((a, b) => {
+                  const ea = parseDate(a.endDate), eb = parseDate(b.endDate)
+                  if (!ea && !eb) return 0
+                  if (!ea) return 1
+                  if (!eb) return -1
+                  return ea - eb
+                })
+                .map(p => {
+                  const start = parseDate(p.startDate)
+                  const end   = parseDate(p.endDate)
+                  const isOD  = end && end < today && p.status !== 'finished' && p.status !== 'cancelled'
+                  const daysLeft = end ? Math.ceil((end - today) / 86400000) : null
+                  let progress = null
+                  if (start && end && end > start) {
+                    const total = end - start
+                    const elapsed = Math.min(Math.max(today - start, 0), total)
+                    progress = Math.round((elapsed / total) * 100)
+                  }
+                  const fmtDate = d => d ? d.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'
+                  const badge = isOD
+                    ? { bg: 'rgba(229,131,115,0.12)', color: C.err }
+                    : STATUS_BADGE[p.status] || { bg: 'transparent', color: C.piedra }
 
-                let progress = null
-                if (start && end && end > start) {
-                  const total   = end - start
-                  const elapsed = Math.min(Math.max(today - start, 0), total)
-                  progress = Math.round((elapsed / total) * 100)
-                }
-
-                const fmtDate = d => d
-                  ? d.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
-                  : '—'
-
-                return (
-                  <Link
-                    key={p.id}
-                    to={`/projects/${p.id}`}
-                    className="block bg-surface/60 backdrop-blur-xl rounded-xl border border-line p-4 hover:border-brand/40 transition-colors"
-                  >
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="min-w-0">
-                        <p className="font-semibold text-fg truncate leading-snug">{p.title}</p>
-                        {p.client?.name && (
-                          <p className="text-xs text-fg-muted truncate">{p.client.name}</p>
-                        )}
-                      </div>
-                      <span className={`shrink-0 text-xs font-medium px-2 py-0.5 rounded-full ${
-                        isOverdue ? 'bg-danger-subtle text-danger' : STATUS_COLORS[p.status]
-                      }`}>
-                        {isOverdue ? 'Vencido' : STATUS_LABELS[p.status]}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 text-xs text-fg-muted mb-3">
-                      <CalendarDaysIcon className="w-3.5 h-3.5 shrink-0" />
-                      <span>{fmtDate(start)}</span>
-                      <span>→</span>
-                      <span className={isOverdue ? 'text-danger font-medium' : ''}>{fmtDate(end)}</span>
-                    </div>
-
-                    {progress !== null && (
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[11px] text-fg-muted">Progreso del período</span>
-                          {daysLeft !== null && (
-                            <span className={`text-[11px] font-medium flex items-center gap-1 ${
-                              isOverdue ? 'text-danger' : daysLeft <= 7 ? 'text-warning' : 'text-fg-muted'
-                            }`}>
-                              {isOverdue
-                                ? <><ExclamationCircleIcon className="w-3 h-3" />Vencido hace {Math.abs(daysLeft)}d</>
-                                : daysLeft === 0 ? 'Vence hoy'
-                                : `${daysLeft}d restantes`}
-                            </span>
+                  return (
+                    <Link key={p.id} to={`/projects/${p.id}`}
+                      style={{ display: 'block', background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', padding: 16, textDecoration: 'none' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                        <div style={{ minWidth: 0 }}>
+                          <p style={{ fontWeight: 600, color: C.crema, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.3 }}>{p.title}</p>
+                          {p.client?.name && (
+                            <p style={{ fontSize: 11, color: C.piedra, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 2 }}>{p.client.name}</p>
                           )}
                         </div>
-                        <div className="h-1.5 rounded-full bg-raised overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all ${isOverdue ? 'bg-danger' : 'bg-brand'}`}
-                            style={{ width: `${Math.min(progress, 100)}%` }}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </Link>
-                )
-              })
-          )}
-        </div>
-
-        {/* ── Desktop: Gantt ── */}
-        <div className="hidden md:block bg-surface/60 backdrop-blur-xl rounded-xl border border-line overflow-hidden">
-          <div ref={scrollRef} className="overflow-x-auto">
-            <div className="flex" style={{ minWidth: LEFT_W + totalW }}>
-
-              {/* ── Sticky left: project names ── */}
-              <div
-                className="sticky left-0 z-20 bg-surface border-r border-line shrink-0"
-                style={{ width: LEFT_W }}
-              >
-                {/* Header spacer */}
-                <div
-                  className="bg-raised border-b border-line flex items-end px-4 pb-2"
-                  style={{ height: HEADER_H }}
-                >
-                  <span className="text-xs font-semibold text-fg-soft uppercase tracking-wide">
-                    Proyecto
-                  </span>
-                </div>
-
-                {projects.length === 0 ? (
-                  <div
-                    className="flex items-center px-4 text-sm text-fg-muted"
-                    style={{ height: ROW_H }}
-                  >
-                    Sin proyectos
-                  </div>
-                ) : (
-                  projects.map(p => (
-                    <div
-                      key={p.id}
-                      className="flex flex-col justify-center px-4 border-b border-line"
-                      style={{ height: ROW_H }}
-                    >
-                      <Link
-                        to={`/projects/${p.id}`}
-                        className="text-sm font-medium text-fg hover:text-brand truncate leading-snug"
-                      >
-                        {p.title}
-                      </Link>
-                      {p.client?.name && (
-                        <p className="text-xs text-fg-muted truncate">{p.client.name}</p>
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* ── Timeline ── */}
-              <div style={{ width: totalW }}>
-
-                {/* Month row */}
-                <div className="flex bg-raised border-b border-line" style={{ height: 36 }}>
-                  {monthGroups.map(g => (
-                    <div
-                      key={g.key}
-                      style={{ width: g.count * DAY_W }}
-                      className="shrink-0 flex items-center px-3 border-r border-line text-s font-semibold text-fg capitalize overflow-hidden"
-                    >
-                      <span className="truncate">{g.label}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Day row */}
-                <div className="flex bg-raised border-b border-line" style={{ height: 36 }}>
-                  {days.map((d, i) => {
-                    const isToday   = isSameDay(d, today)
-                    const isWeekend = d.getDay() === 0 || d.getDay() === 6
-                    return (
-                      <div
-                        key={i}
-                        style={{ width: DAY_W }}
-                        className={`shrink-0 flex flex-col items-center justify-center border-r border-line select-none ${
-                          isToday
-                            ? 'bg-brand text-white font-bold'
-                            : isWeekend
-                            ? 'text-fg-muted'
-                            : 'text-fg-soft'
-                        }`}
-                      >
-                        <span className="text-[9px] uppercase leading-none">
-                          {d.toLocaleDateString('es-AR', { weekday: 'short' }).slice(0, 2)}
+                        <span style={{ flexShrink: 0, fontSize: 10.5, fontWeight: 600, padding: '2px 8px', borderRadius: '0 6px 6px 0', background: badge.bg, color: badge.color }}>
+                          {isOD ? 'Vencido' : STATUS_LABELS[p.status]}
                         </span>
-                        <span className="text-xs leading-snug">{d.getDate()}</span>
                       </div>
-                    )
-                  })}
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: C.piedra, marginBottom: 10 }}>
+                        <CalSvg />
+                        <span>{fmtDate(start)}</span>
+                        <span>→</span>
+                        <span style={{ color: isOD ? C.err : C.piedra, fontWeight: isOD ? 500 : 400 }}>{fmtDate(end)}</span>
+                      </div>
+
+                      {progress !== null && (
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                            <span style={{ fontSize: 11, color: C.piedra }}>Progreso del período</span>
+                            {daysLeft !== null && (
+                              <span style={{ fontSize: 11, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4, color: isOD ? C.err : daysLeft <= 7 ? C.warn : C.piedra }}>
+                                {isOD
+                                  ? <><WarnSvg />Vencido hace {Math.abs(daysLeft)}d</>
+                                  : daysLeft === 0 ? 'Vence hoy'
+                                  : `${daysLeft}d restantes`}
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ height: 5, borderRadius: 999, background: C.s3, overflow: 'hidden' }}>
+                            <div style={{ height: '100%', borderRadius: 999, width: `${Math.min(progress, 100)}%`, background: isOD ? C.err : C.crema, transition: 'width 0.5s' }} />
+                          </div>
+                        </div>
+                      )}
+                    </Link>
+                  )
+                })
+            )}
+          </div>
+
+          {/* Desktop: Gantt */}
+          <div className="hidden md:block" style={{ background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
+            <div ref={scrollRef} style={{ overflowX: 'auto' }}>
+              <div style={{ display: 'flex', minWidth: LEFT_W + totalW }}>
+
+                {/* Sticky left */}
+                <div style={{ position: 'sticky', left: 0, zIndex: 20, background: C.s1, borderRight: `1px solid ${C.linea}`, flexShrink: 0, width: LEFT_W }}>
+                  <div style={{ height: HEADER_H, background: C.s2, borderBottom: `1px solid ${C.linea}`, display: 'flex', alignItems: 'flex-end', padding: '0 16px 8px' }}>
+                    <span style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: C.arena }}>Proyecto</span>
+                  </div>
+                  {projects.length === 0 ? (
+                    <div style={{ height: ROW_H, display: 'flex', alignItems: 'center', padding: '0 16px', fontSize: 13, color: C.piedra }}>
+                      Sin proyectos
+                    </div>
+                  ) : (
+                    projects.map(p => (
+                      <div key={p.id} style={{ height: ROW_H, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 16px', borderBottom: `1px solid ${C.linea}` }}>
+                        <Link to={`/projects/${p.id}`}
+                          style={{ fontSize: 13, fontWeight: 500, color: C.crema, textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.3 }}
+                          onMouseEnter={e => e.currentTarget.style.color = C.arena}
+                          onMouseLeave={e => e.currentTarget.style.color = C.crema}
+                        >
+                          {p.title}
+                        </Link>
+                        {p.client?.name && (
+                          <p style={{ fontSize: 11, color: C.piedra, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>{p.client.name}</p>
+                        )}
+                      </div>
+                    ))
+                  )}
                 </div>
 
-                {/* Project rows */}
-                {projects.length === 0 ? (
-                  <div
-                    className="flex items-center justify-center text-sm text-fg-muted"
-                    style={{ height: ROW_H }}
-                  >
-                    Sin proyectos para mostrar
-                  </div>
-                ) : (
-                  projects.map(p => {
-                    const start = parseDate(p.startDate)
-                    const end   = parseDate(p.endDate)
-
-                    let barLeft  = -1
-                    let barWidth = -1
-
-                    if (start && end && end >= start) {
-                      const startIdx    = Math.round((start - rangeStart) / 86400000)
-                      const endIdx      = Math.round((end   - rangeStart) / 86400000)
-                      const cStart      = Math.max(0, startIdx)
-                      const cEnd        = Math.min(days.length - 1, endIdx)
-
-                      if (cEnd >= 0 && cStart <= days.length - 1 && cEnd >= cStart) {
-                        barLeft  = cStart * DAY_W + 3
-                        barWidth = (cEnd - cStart + 1) * DAY_W - 6
-                      }
-                    }
-
-                    const isOverdue =
-                      end &&
-                      end < today &&
-                      p.status !== 'finished' &&
-                      p.status !== 'cancelled'
-
-                    return (
-                      <div
-                        key={p.id}
-                        className="relative border-b border-line"
-                        style={{ height: ROW_H, width: totalW }}
-                      >
-                        {/* Day column backgrounds */}
-                        {days.map((d, i) => {
-                          const isToday   = isSameDay(d, today)
-                          const isWeekend = d.getDay() === 0 || d.getDay() === 6
-                          if (!isToday && !isWeekend) return null
-                          return (
-                            <div
-                              key={i}
-                              style={{ width: DAY_W, left: i * DAY_W }}
-                              className={`absolute top-0 h-full border-r border-line pointer-events-none ${
-                                isToday ? 'bg-brand-subtle/25' : 'bg-raised/50'
-                              }`}
-                            />
-                          )
-                        })}
-
-                        {/* Transparent border lines for non-highlighted days */}
-                        {days.map((d, i) => {
-                          const isToday   = isSameDay(d, today)
-                          const isWeekend = d.getDay() === 0 || d.getDay() === 6
-                          if (isToday || isWeekend) return null
-                          return (
-                            <div
-                              key={`line-${i}`}
-                              style={{ width: 1, left: (i + 1) * DAY_W - 1 }}
-                              className="absolute top-0 h-full bg-line pointer-events-none opacity-60"
-                            />
-                          )
-                        })}
-
-                        {/* Project bar */}
-                        {barLeft >= 0 && barWidth > 0 && (
-                          <Link
-                            to={`/projects/${p.id}`}
-                            style={{ left: barLeft, width: barWidth, top: 10, bottom: 10 }}
-                            className={`absolute rounded-md px-2 flex items-center text-xs font-medium shadow-sm overflow-hidden transition-opacity hover:opacity-80 ${
-                              isOverdue
-                                ? 'bg-danger text-white'
-                                : STATUS_BAR_COLORS[p.status]
-                            }`}
-                          >
-                            <span className="truncate">{p.title}</span>
-                          </Link>
-                        )}
-
-                        {/* No dates — show a dashed pill at the start */}
-                        {!start && !end && (
-                          <div
-                            style={{ left: 4, top: 14, bottom: 14 }}
-                            className="absolute px-2 flex items-center rounded-md text-xs text-fg-muted border border-dashed border-line-soft bg-raised/60"
-                          >
-                            Sin fechas
-                          </div>
-                        )}
-
-                        {/* Has start but no end (or vice versa) */}
-                        {((start && !end) || (!start && end)) && (
-                          <div
-                            style={{ left: 4, top: 14, bottom: 14 }}
-                            className="absolute px-2 flex items-center rounded-md text-xs text-fg-muted border border-dashed border-warning/50 bg-warning-subtle/40"
-                          >
-                            Fecha incompleta
-                          </div>
-                        )}
+                {/* Timeline */}
+                <div style={{ width: totalW }}>
+                  {/* Mes */}
+                  <div style={{ display: 'flex', background: C.s2, borderBottom: `1px solid ${C.linea}`, height: 36 }}>
+                    {monthGroups.map(g => (
+                      <div key={g.key} style={{ width: g.count * DAY_W, flexShrink: 0, display: 'flex', alignItems: 'center', padding: '0 12px', borderRight: `1px solid ${C.linea}`, fontSize: 12, fontWeight: 600, color: C.crema, overflow: 'hidden' }}>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textTransform: 'capitalize' }}>{g.label}</span>
                       </div>
-                    )
-                  })
-                )}
+                    ))}
+                  </div>
+
+                  {/* Días */}
+                  <div style={{ display: 'flex', background: C.s2, borderBottom: `1px solid ${C.linea}`, height: 36 }}>
+                    {days.map((d, i) => {
+                      const isToday   = isSameDay(d, today)
+                      const isWeekend = d.getDay() === 0 || d.getDay() === 6
+                      return (
+                        <div key={i} style={{ width: DAY_W, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRight: `1px solid ${C.linea}`, userSelect: 'none', background: isToday ? C.crema : 'transparent', color: isToday ? C.bg : isWeekend ? C.piedra : C.arena }}>
+                          <span style={{ fontSize: 9, textTransform: 'uppercase', lineHeight: 1 }}>
+                            {d.toLocaleDateString('es-AR', { weekday: 'short' }).slice(0, 2)}
+                          </span>
+                          <span style={{ fontSize: 12, lineHeight: 1.4, fontWeight: isToday ? 700 : 400 }}>{d.getDate()}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  {/* Filas de proyectos */}
+                  {projects.length === 0 ? (
+                    <div style={{ height: ROW_H, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: C.piedra }}>
+                      Sin proyectos para mostrar
+                    </div>
+                  ) : (
+                    projects.map(p => {
+                      const start = parseDate(p.startDate)
+                      const end   = parseDate(p.endDate)
+                      let barLeft = -1, barWidth = -1
+
+                      if (start && end && end >= start) {
+                        const startIdx = Math.round((start - rangeStart) / 86400000)
+                        const endIdx   = Math.round((end   - rangeStart) / 86400000)
+                        const cStart   = Math.max(0, startIdx)
+                        const cEnd     = Math.min(days.length - 1, endIdx)
+                        if (cEnd >= 0 && cStart <= days.length - 1 && cEnd >= cStart) {
+                          barLeft  = cStart * DAY_W + 3
+                          barWidth = (cEnd - cStart + 1) * DAY_W - 6
+                        }
+                      }
+
+                      const isOD = end && end < today && p.status !== 'finished' && p.status !== 'cancelled'
+                      const bar = isOD ? { bg: C.err, color: C.bg } : { bg: STATUS_BAR[p.status]?.bg || C.s3, color: STATUS_BAR[p.status]?.color || C.piedra }
+
+                      return (
+                        <div key={p.id} style={{ position: 'relative', height: ROW_H, width: totalW, borderBottom: `1px solid ${C.linea}` }}>
+                          {days.map((d, i) => {
+                            const isToday   = isSameDay(d, today)
+                            const isWeekend = d.getDay() === 0 || d.getDay() === 6
+                            if (!isToday && !isWeekend) return null
+                            return (
+                              <div key={i} style={{ position: 'absolute', top: 0, left: i * DAY_W, width: DAY_W, height: '100%', borderRight: `1px solid ${C.linea}`, pointerEvents: 'none', background: isToday ? 'rgba(242,237,227,0.04)' : 'rgba(44,44,47,0.3)' }} />
+                            )
+                          })}
+                          {days.map((d, i) => {
+                            const isToday   = isSameDay(d, today)
+                            const isWeekend = d.getDay() === 0 || d.getDay() === 6
+                            if (isToday || isWeekend) return null
+                            return (
+                              <div key={`line-${i}`} style={{ position: 'absolute', top: 0, left: (i + 1) * DAY_W - 1, width: 1, height: '100%', background: C.linea, pointerEvents: 'none', opacity: 0.6 }} />
+                            )
+                          })}
+
+                          {barLeft >= 0 && barWidth > 0 && (
+                            <Link to={`/projects/${p.id}`}
+                              style={{ position: 'absolute', left: barLeft, width: barWidth, top: 10, bottom: 10, borderRadius: '0 6px 6px 0', padding: '0 8px', display: 'flex', alignItems: 'center', fontSize: 11, fontWeight: 600, overflow: 'hidden', textDecoration: 'none', background: bar.bg, color: bar.color, transition: 'opacity 0.15s' }}
+                              onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+                              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                            >
+                              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</span>
+                            </Link>
+                          )}
+
+                          {!start && !end && (
+                            <div style={{ position: 'absolute', left: 4, top: 14, bottom: 14, padding: '0 8px', display: 'flex', alignItems: 'center', borderRadius: '0 6px 6px 0', fontSize: 11, color: C.piedra, border: `1px dashed ${C.linea}`, background: C.s2 }}>
+                              Sin fechas
+                            </div>
+                          )}
+
+                          {((start && !end) || (!start && end)) && (
+                            <div style={{ position: 'absolute', left: 4, top: 14, bottom: 14, padding: '0 8px', display: 'flex', alignItems: 'center', borderRadius: '0 6px 6px 0', fontSize: 11, color: C.warn, border: `1px dashed rgba(226,182,99,0.4)`, background: 'rgba(226,182,99,0.06)' }}>
+                              Fecha incompleta
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
         </>
       )}
     </div>

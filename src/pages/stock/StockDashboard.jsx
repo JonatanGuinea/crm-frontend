@@ -3,11 +3,36 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getStockDashboard, getStockHistory } from '../../api/stock'
 import StockMovementModal from './StockMovementModal'
-import {
-  CubeIcon, ExclamationTriangleIcon, XCircleIcon,
-  ArrowDownTrayIcon, ArrowUpTrayIcon, ClockIcon,
-  ShoppingCartIcon, WrenchScrewdriverIcon, BeakerIcon,
-} from '@heroicons/react/24/outline'
+
+const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
+
+function CubeSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" /></svg>
+}
+function XCircleSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+}
+function WarnSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+}
+function ClockSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+}
+function ArrowDownSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+}
+function ArrowUpSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+}
+function CartSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" /></svg>
+}
+function WrenchSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>
+}
+function BeakerSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 3h6v11l3.5 5.5A1 1 0 0 1 17.64 21H6.36a1 1 0 0 1-.86-1.5L9 14V3z" /><line x1="9" y1="3" x2="15" y2="3" /></svg>
+}
 
 const MOVEMENT_LABELS = {
   initial: 'Carga inicial', purchase: 'Compra', sale: 'Venta',
@@ -42,20 +67,21 @@ function fmtDateTime(iso) {
     ' ' + d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
 }
 
-function StatCard({ icon: CardIcon, label, value, sub, color = 'text-fg', bg = 'bg-surface', border = 'border-line', to }) {
+function StatCard({ Icon, label, value, sub, accentColor = C.crema, cardBg = C.s1, borderColor = C.linea, to }) {
   const content = (
-    <div className={`h-full rounded-xl border p-5 flex flex-col gap-3 ${bg} ${border} ${to ? 'hover:shadow-md transition-shadow cursor-pointer' : ''}`}>
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-fg-muted">{label}</p>
-        <CardIcon className={`w-4 h-4 ${color} opacity-70`} />
+    <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '0 16px 16px 0', padding: 20, display: 'flex', flexDirection: 'column', gap: 12, height: '100%' }}
+      className={to ? 'cursor-pointer transition-shadow hover:shadow-md' : ''}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <p style={{ fontSize: 12, fontWeight: 500, color: C.piedra }}>{label}</p>
+        <Icon style={{ width: 16, height: 16, color: accentColor, opacity: 0.7 }} />
       </div>
       <div>
-        <p className={`text-2xl sm:text-3xl font-bold ${color}`}>{value}</p>
-        {sub && <p className="text-xs text-fg-muted mt-1">{sub}</p>}
+        <p style={{ fontSize: 28, fontWeight: 700, color: accentColor }}>{value}</p>
+        {sub && <p style={{ fontSize: 12, color: C.piedra, marginTop: 4 }}>{sub}</p>}
       </div>
     </div>
   )
-  return to ? <Link to={to} className="block h-full">{content}</Link> : content
+  return to ? <Link to={to} style={{ display: 'block', height: '100%' }}>{content}</Link> : content
 }
 
 export default function StockDashboard() {
@@ -76,42 +102,34 @@ export default function StockDashboard() {
   })
 
   return (
-    <div className="p-4 md:p-8 flex flex-col gap-6">
+    <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 24 }} className="md:p-8">
+
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-fg">Stock</h1>
-          <p className="text-sm text-fg-muted mt-0.5">Resumen del inventario</p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <CubeSvg style={{ width: 18, height: 18, color: C.arena }} />
+          <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Stock</h2>
         </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          {/* Tab switcher */}
-          <div className="flex items-center gap-0.5 bg-raised rounded-lg border border-line overflow-hidden">
-            <button
-              onClick={() => setTab('dashboard')}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${tab === 'dashboard' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'}`}
-            >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 2, background: C.s2, borderRadius: '0 10px 10px 0', padding: 3 }}>
+            <button onClick={() => setTab('dashboard')}
+              style={{ padding: '6px 12px', borderRadius: '0 8px 8px 0', background: tab === 'dashboard' ? C.s3 : 'transparent', color: tab === 'dashboard' ? C.crema : C.piedra, fontSize: 13, fontWeight: 500, border: 'none', cursor: 'pointer' }}>
               Inventario
             </button>
-            <button
-              onClick={() => setTab('history')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${tab === 'history' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'}`}
-            >
-              <ClockIcon className="w-4 h-4" />
+            <button onClick={() => setTab('history')}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: '0 8px 8px 0', background: tab === 'history' ? C.s3 : 'transparent', color: tab === 'history' ? C.crema : C.piedra, fontSize: 13, fontWeight: 500, border: 'none', cursor: 'pointer' }}>
+              <ClockSvg style={{ width: 14, height: 14 }} />
               Historial
             </button>
           </div>
-          <button
-            onClick={() => setModal('in')}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-success text-white text-sm font-semibold hover:opacity-90 transition-opacity"
-          >
-            <ArrowDownTrayIcon className="w-4 h-4" />
+          <button onClick={() => setModal('in')}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: '0 10px 10px 0', background: 'rgba(125,190,147,0.12)', color: C.ok, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+            <ArrowDownSvg style={{ width: 16, height: 16 }} />
             Ingreso
           </button>
-          <button
-            onClick={() => setModal('out')}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-danger text-white text-sm font-semibold hover:opacity-90 transition-opacity"
-          >
-            <ArrowUpTrayIcon className="w-4 h-4" />
+          <button onClick={() => setModal('out')}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: '0 10px 10px 0', background: 'rgba(229,131,115,0.12)', color: C.err, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+            <ArrowUpSvg style={{ width: 16, height: 16 }} />
             Egreso
           </button>
         </div>
@@ -119,14 +137,14 @@ export default function StockDashboard() {
 
       {/* ── Historial ── */}
       {tab === 'history' && (
-        <div className="flex flex-col gap-4 max-w-2xl">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 672 }}>
           {historyData.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3 text-fg-muted">
-              <ClockIcon className="w-10 h-10 opacity-30" />
-              <p className="text-sm">Sin movimientos registrados.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', gap: 12 }}>
+              <ClockSvg style={{ width: 40, height: 40, color: C.piedra, opacity: 0.3 }} />
+              <p style={{ fontSize: 14, color: C.piedra }}>Sin movimientos registrados.</p>
             </div>
           ) : (
-            <div className="flex flex-col gap-1">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {historyData.slice(0, historyVisible).map((entry, i) => {
                 const initials = entry.createdBy?.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() ?? '?'
                 const date = new Date(entry.createdAt)
@@ -136,41 +154,39 @@ export default function StockDashboard() {
                 const qty = Number(entry.quantity).toLocaleString('es-AR')
                 const unit = entry.product?.unit ?? ''
                 return (
-                  <div key={entry.id} className="flex gap-4">
-                    <div className="flex flex-col items-center">
-                      <div className="w-8 h-8 rounded-full bg-brand-subtle text-brand text-[11px] font-bold flex items-center justify-center shrink-0">
+                  <div key={entry.id} style={{ display: 'flex', gap: 16 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(242,237,227,0.08)', color: C.arena, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         {initials}
                       </div>
-                      {i < shown.length - 1 && <div className="w-px flex-1 bg-line mt-1 mb-1 min-h-[16px]" />}
+                      {i < shown.length - 1 && <div style={{ width: 1, flex: 1, background: C.linea, marginTop: 3, marginBottom: 3, minHeight: 14 }} />}
                     </div>
-                    <div className="pb-4 flex-1 min-w-0">
-                      <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-                        <span className="text-sm font-semibold text-fg">{entry.createdBy?.name ?? 'Sistema'}</span>
-                        <span className="text-sm text-fg-muted">
-                          {STOCK_ACTION_LABEL[entry.type] ?? 'registró un movimiento de'}
-                        </span>
-                        <span className={`text-sm font-medium ${entry.direction === 'IN' ? 'text-success' : 'text-danger'}`}>
+                    <div style={{ paddingBottom: 16, flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '2px 6px' }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: C.crema }}>{entry.createdBy?.name ?? 'Sistema'}</span>
+                        <span style={{ fontSize: 14, color: C.piedra }}>{STOCK_ACTION_LABEL[entry.type] ?? 'registró un movimiento de'}</span>
+                        <span style={{ fontSize: 14, fontWeight: 500, color: entry.direction === 'IN' ? C.ok : C.err }}>
                           {entry.direction === 'IN' ? '+' : '−'}{qty} {unit}
                         </span>
                       </div>
-                      <Link to={`/stock/products/${entry.product?.id}`} className="text-xs text-brand hover:underline">
+                      <Link to={`/stock/products/${entry.product?.id}`} style={{ fontSize: 12, color: C.arena }} className="hover:underline">
                         {entry.product?.name}
                       </Link>
                       {(entry.reason || entry.client?.name) && (
-                        <p className="text-xs text-fg-muted/80 mt-0.5">
+                        <p style={{ fontSize: 12, color: C.piedra, marginTop: 2, opacity: 0.8 }}>
                           {[entry.reason, entry.client?.name].filter(Boolean).join(' · ')}
                         </p>
                       )}
-                      <p className="text-[11px] text-fg-muted/70 mt-0.5">{dateStr} · {timeStr}</p>
+                      <p style={{ fontSize: 11, color: C.piedra, marginTop: 2, opacity: 0.7 }}>{dateStr} · {timeStr}</p>
                     </div>
                   </div>
                 )
               })}
               {historyData.length > historyVisible && (
-                <button
-                  onClick={() => setHistoryVisible(v => v + 25)}
-                  className="mt-2 text-xs text-fg-muted hover:text-fg text-center py-2 border border-dashed border-line rounded-xl transition-colors"
-                >
+                <button onClick={() => setHistoryVisible(v => v + 25)}
+                  style={{ marginTop: 8, fontSize: 12, color: C.piedra, padding: '8px 0', border: `1px dashed ${C.linea}`, borderRadius: '0 12px 12px 0', background: 'none', cursor: 'pointer' }}
+                  onMouseEnter={e => e.currentTarget.style.color = C.crema}
+                  onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
                   Mostrar más ({historyData.length - historyVisible} restante{historyData.length - historyVisible !== 1 ? 's' : ''})
                 </button>
               )}
@@ -183,103 +199,82 @@ export default function StockDashboard() {
       {tab === 'dashboard' && (
         <>
           {isLoading ? (
-            <div className="flex items-center justify-center py-20 text-fg-muted text-sm">Cargando…</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 0', color: C.piedra, fontSize: 14 }}>Cargando…</div>
           ) : !data ? null : (
             <>
-              {/* Stats — fila 1: totales y alertas */}
+              {/* Stats fila 1: totales y alertas */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <StatCard
-                  icon={CubeIcon}
-                  label="Total productos"
-                  value={data.totalProducts}
+                <StatCard Icon={CubeSvg} label="Total productos" value={data.totalProducts}
                   sub={`${data.activeProducts} activos`}
-                  to="/stock/products"
-                />
-                <StatCard
-                  icon={XCircleIcon}
-                  label="Sin stock"
+                  accentColor={C.crema} to="/stock/products" />
+                <StatCard Icon={XCircleSvg} label="Sin stock"
                   value={data.outOfStock}
-                  color={data.outOfStock > 0 ? 'text-danger' : 'text-fg'}
-                  bg={data.outOfStock > 0 ? 'bg-danger-subtle/10' : 'bg-surface'}
-                  border={data.outOfStock > 0 ? 'border-danger/30' : 'border-line'}
-                  to={data.outOfStock > 0 ? '/stock/products?outOfStock=true' : undefined}
-                />
-                <StatCard
-                  icon={ExclamationTriangleIcon}
-                  label="Stock bajo"
+                  accentColor={data.outOfStock > 0 ? C.err : C.crema}
+                  cardBg={data.outOfStock > 0 ? 'rgba(229,131,115,0.06)' : C.s1}
+                  borderColor={data.outOfStock > 0 ? 'rgba(229,131,115,0.3)' : C.linea}
+                  to={data.outOfStock > 0 ? '/stock/products?outOfStock=true' : undefined} />
+                <StatCard Icon={WarnSvg} label="Stock bajo"
                   value={data.lowStock}
-                  color={data.lowStock > 0 ? 'text-warning' : 'text-fg'}
-                  bg={data.lowStock > 0 ? 'bg-warning-subtle/10' : 'bg-surface'}
-                  border={data.lowStock > 0 ? 'border-warning/30' : 'border-line'}
-                  to={data.lowStock > 0 ? '/stock/products?lowStock=true' : undefined}
-                />
+                  accentColor={data.lowStock > 0 ? C.warn : C.crema}
+                  cardBg={data.lowStock > 0 ? 'rgba(226,182,99,0.06)' : C.s1}
+                  borderColor={data.lowStock > 0 ? 'rgba(226,182,99,0.3)' : C.linea}
+                  to={data.lowStock > 0 ? '/stock/products?lowStock=true' : undefined} />
               </div>
 
-              {/* Stats — fila 2: por tipo de inventario */}
+              {/* Stats fila 2: por tipo de inventario */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <StatCard
-                  icon={ShoppingCartIcon}
-                  label="Productos para venta"
+                <StatCard Icon={CartSvg} label="Productos para venta"
                   value={data.productsByType?.sale ?? 0}
                   sub={data.valueByType?.sale ? `$${Number(data.valueByType.sale).toLocaleString('es-AR', { maximumFractionDigits: 0 })} en stock` : 'Sin valorización'}
-                  color="text-brand"
-                  to="/stock/products?inventoryType=sale"
-                />
-                <StatCard
-                  icon={WrenchScrewdriverIcon}
-                  label="Stock interno"
+                  accentColor={C.info} to="/stock/products?inventoryType=sale" />
+                <StatCard Icon={WrenchSvg} label="Stock interno"
                   value={data.productsByType?.internal ?? 0}
                   sub={data.valueByType?.internal ? `$${Number(data.valueByType.internal).toLocaleString('es-AR', { maximumFractionDigits: 0 })} en stock` : 'Sin valorización'}
-                  color="text-warning"
-                  to="/stock/products?inventoryType=internal"
-                />
-                <StatCard
-                  icon={BeakerIcon}
-                  label="Materias primas"
+                  accentColor={C.warn} to="/stock/products?inventoryType=internal" />
+                <StatCard Icon={BeakerSvg} label="Materias primas"
                   value={data.productsByType?.raw_material ?? 0}
                   sub={data.valueByType?.raw_material ? `$${Number(data.valueByType.raw_material).toLocaleString('es-AR', { maximumFractionDigits: 0 })} en stock` : 'Sin valorización'}
-                  color="text-success"
-                  to="/stock/products?inventoryType=raw_material"
-                />
+                  accentColor={C.ok} to="/stock/products?inventoryType=raw_material" />
               </div>
 
               {/* Últimos movimientos */}
-              <div className="flex flex-col gap-3">
-                <h2 className="text-sm font-semibold text-fg">Últimos movimientos</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <h2 style={{ fontSize: 14, fontWeight: 600, color: C.crema, margin: 0 }}>Últimos movimientos</h2>
 
                 {data.recentMovements.length === 0 ? (
-                  <p className="text-sm text-fg-muted py-4 text-center border border-dashed border-line rounded-xl">Sin movimientos aún.</p>
+                  <p style={{ fontSize: 14, color: C.piedra, padding: '16px 0', textAlign: 'center', border: `1px dashed ${C.linea}`, borderRadius: '0 12px 12px 0' }}>Sin movimientos aún.</p>
                 ) : (
                   <>
                     {/* Desktop */}
-                    <div className="hidden md:block overflow-hidden rounded-2xl border border-line">
-                      <table className="w-full text-sm">
+                    <div className="hidden md:block" style={{ overflow: 'hidden', borderRadius: '0 16px 16px 0', border: `1px solid ${C.linea}` }}>
+                      <table style={{ width: '100%', fontSize: 14, borderCollapse: 'collapse' }}>
                         <thead>
-                          <tr className="border-b border-line bg-raised/60">
-                            <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Tipo</th>
-                            <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Producto</th>
-                            <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Motivo</th>
-                            <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Fecha</th>
-                            <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Cantidad</th>
+                          <tr style={{ borderBottom: `1px solid ${C.linea}`, background: 'rgba(38,38,42,0.6)' }}>
+                            <th style={{ textAlign: 'left', padding: '12px 14px', fontSize: 11, fontWeight: 600, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tipo</th>
+                            <th style={{ textAlign: 'left', padding: '12px 14px', fontSize: 11, fontWeight: 600, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Producto</th>
+                            <th style={{ textAlign: 'left', padding: '12px 14px', fontSize: 11, fontWeight: 600, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Motivo</th>
+                            <th style={{ textAlign: 'left', padding: '12px 14px', fontSize: 11, fontWeight: 600, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fecha</th>
+                            <th style={{ textAlign: 'right', padding: '12px 14px', fontSize: 11, fontWeight: 600, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cantidad</th>
                           </tr>
                         </thead>
                         <tbody>
                           {data.recentMovements.map((m, i) => (
-                            <tr key={m.id} className={`border-b border-line last:border-0 hover:bg-raised/40 transition-colors ${i % 2 === 0 ? '' : 'bg-raised/20'}`}>
-                              <td className="px-4 py-3">
-                                <div className={`w-7 h-7 rounded-full flex items-center justify-center ${m.direction === 'IN' ? 'bg-success-subtle' : 'bg-danger-subtle'}`}>
+                            <tr key={m.id} style={{ borderBottom: `1px solid ${C.linea}` }}
+                              className="hover:bg-[rgba(38,38,42,0.4)] last:border-0 transition-colors">
+                              <td style={{ padding: '12px 14px' }}>
+                                <div style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: m.direction === 'IN' ? 'rgba(125,190,147,0.12)' : 'rgba(229,131,115,0.12)' }}>
                                   {m.direction === 'IN'
-                                    ? <ArrowDownTrayIcon className="w-3.5 h-3.5 text-success" />
-                                    : <ArrowUpTrayIcon className="w-3.5 h-3.5 text-danger" />
+                                    ? <ArrowDownSvg style={{ width: 14, height: 14, color: C.ok }} />
+                                    : <ArrowUpSvg style={{ width: 14, height: 14, color: C.err }} />
                                   }
                                 </div>
                               </td>
-                              <td className="px-4 py-3 font-medium text-fg">{m.product?.name}</td>
-                              <td className="px-4 py-3 text-fg-muted">{MOVEMENT_LABELS[m.type] ?? m.type}</td>
-                              <td className="px-4 py-3 text-fg-muted text-xs">{fmtDateTime(m.createdAt)}</td>
-                              <td className={`px-4 py-3 text-right font-semibold ${m.direction === 'IN' ? 'text-success' : 'text-danger'}`}>
+                              <td style={{ padding: '12px 14px', fontWeight: 500, color: C.crema }}>{m.product?.name}</td>
+                              <td style={{ padding: '12px 14px', color: C.piedra }}>{MOVEMENT_LABELS[m.type] ?? m.type}</td>
+                              <td style={{ padding: '12px 14px', color: C.piedra, fontSize: 12 }}>{fmtDateTime(m.createdAt)}</td>
+                              <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 600, color: m.direction === 'IN' ? C.ok : C.err }}>
                                 {m.direction === 'IN' ? '+' : '−'}{Number(m.quantity).toLocaleString('es-AR')}
-                                <span className="text-xs text-fg-muted font-normal ml-1">{m.product?.unit}</span>
+                                <span style={{ fontSize: 12, color: C.piedra, fontWeight: 400, marginLeft: 4 }}>{m.product?.unit}</span>
                               </td>
                             </tr>
                           ))}
@@ -290,22 +285,22 @@ export default function StockDashboard() {
                     {/* Mobile */}
                     <div className="flex flex-col gap-3 md:hidden">
                       {data.recentMovements.map(m => (
-                        <div key={m.id} className="bg-surface border border-line rounded-xl p-4 flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${m.direction === 'IN' ? 'bg-success-subtle' : 'bg-danger-subtle'}`}>
+                        <div key={m.id} style={{ background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 12px 12px 0', padding: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <div style={{ width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: m.direction === 'IN' ? 'rgba(125,190,147,0.12)' : 'rgba(229,131,115,0.12)' }}>
                             {m.direction === 'IN'
-                              ? <ArrowDownTrayIcon className="w-3.5 h-3.5 text-success" />
-                              : <ArrowUpTrayIcon className="w-3.5 h-3.5 text-danger" />
+                              ? <ArrowDownSvg style={{ width: 14, height: 14, color: C.ok }} />
+                              : <ArrowUpSvg style={{ width: 14, height: 14, color: C.err }} />
                             }
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-fg truncate">{m.product?.name}</p>
-                            <p className="text-xs text-fg-muted">{MOVEMENT_LABELS[m.type] ?? m.type} · {fmtDateTime(m.createdAt)}</p>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ fontSize: 14, fontWeight: 500, color: C.crema, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.product?.name}</p>
+                            <p style={{ fontSize: 12, color: C.piedra }}>{MOVEMENT_LABELS[m.type] ?? m.type} · {fmtDateTime(m.createdAt)}</p>
                           </div>
-                          <div className="text-right shrink-0">
-                            <p className={`text-sm font-semibold ${m.direction === 'IN' ? 'text-success' : 'text-danger'}`}>
+                          <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                            <p style={{ fontSize: 14, fontWeight: 600, color: m.direction === 'IN' ? C.ok : C.err }}>
                               {m.direction === 'IN' ? '+' : '−'}{Number(m.quantity).toLocaleString('es-AR')}
                             </p>
-                            <p className="text-xs text-fg-muted">{m.product?.unit}</p>
+                            <p style={{ fontSize: 12, color: C.piedra }}>{m.product?.unit}</p>
                           </div>
                         </div>
                       ))}

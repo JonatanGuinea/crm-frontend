@@ -8,49 +8,89 @@ import {
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
 import MovementModal from './MovementModal'
-import {
-  ArrowTrendingUpIcon, ArrowTrendingDownIcon,
-  ChevronLeftIcon, ChevronRightIcon, FunnelIcon, CheckCircleIcon, XCircleIcon,
-  TrashIcon, PencilIcon, TagIcon, ClockIcon,
-} from '@heroicons/react/24/outline'
+
+const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
+
+// ── inline SVGs ────────────────────────────────────────────────────────────────
+
+function ChevronLSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+}
+function ChevronRSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+}
+function TrendUpSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>
+}
+function TrendDownSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6" /><polyline points="17 18 23 18 23 12" /></svg>
+}
+function FunnelSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></svg>
+}
+function CheckCircleSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+}
+function XCircleSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+}
+function TrashSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M9 6V4h6v2" /></svg>
+}
+function PencilSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+}
+function TagSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" /></svg>
+}
+function ClockSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+}
+function BankSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg>
+}
+
+// ── constants ──────────────────────────────────────────────────────────────────
 
 const TYPE_LABELS = {
   income: 'Ingreso', expense: 'Egreso',
-  transfer_out: 'Transf. salida', transfer_in: 'Transf. entrada',
-  adjustment: 'Ajuste',
+  transfer_out: 'Transf. salida', transfer_in: 'Transf. entrada', adjustment: 'Ajuste',
 }
-const TYPE_COLORS = {
-  income:       'text-success bg-success-subtle/20',
-  expense:      'text-danger bg-danger-subtle/20',
-  transfer_out: 'text-warning bg-warning-subtle/20',
-  transfer_in:  'text-info bg-info-subtle/20',
-  adjustment:   'text-fg-muted bg-raised',
+const TYPE_STYLE = {
+  income:       { bg: 'rgba(125,190,147,0.12)', color: C.ok },
+  expense:      { bg: 'rgba(229,131,115,0.12)', color: C.err },
+  transfer_out: { bg: 'rgba(226,182,99,0.12)',  color: C.warn },
+  transfer_in:  { bg: 'rgba(142,177,222,0.12)', color: C.info },
+  adjustment:   { bg: 'rgba(140,135,126,0.12)', color: C.piedra },
 }
-const STATUS_COLORS  = { confirmed: 'text-success', pending: 'text-warning', annulled: 'text-fg-muted line-through' }
-const STATUS_LABELS  = { confirmed: 'Confirmado', pending: 'Pendiente', annulled: 'Anulado' }
+const STATUS_STYLE  = {
+  confirmed: { color: C.ok },
+  pending:   { color: C.warn },
+  annulled:  { color: C.piedra, textDecoration: 'line-through' },
+}
+const STATUS_LABELS = { confirmed: 'Confirmado', pending: 'Pendiente', annulled: 'Anulado' }
 
-const amountColor = (m) => {
-  if (m.status === 'pending')  return 'text-warning'
-  if (m.status === 'annulled') return 'text-fg-muted'
-  return m.type === 'income' || m.type === 'transfer_in' ? 'text-success' : 'text-danger'
+function amountColor(m) {
+  if (m.status === 'pending')  return C.warn
+  if (m.status === 'annulled') return C.piedra
+  return (m.type === 'income' || m.type === 'transfer_in') ? C.ok : C.err
 }
 
 const fmt = (n) => Number(n ?? 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-
 const isOverdue = (m) => m.status === 'pending' && m.date?.slice(0, 10) < new Date().toISOString().slice(0, 10)
 
-const selectCls = 'w-full rounded-lg border border-line bg-raised text-fg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40'
-
 function periodLabel(year, month) {
-  return new Date(year, month - 1, 1)
-    .toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
+  return new Date(year, month - 1, 1).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
+}
+function periodRange(year, month) {
+  return {
+    from: new Date(year, month - 1, 1).toISOString().slice(0, 10),
+    to:   new Date(year, month, 0).toISOString().slice(0, 10),
+  }
 }
 
-function periodRange(year, month) {
-  const from = new Date(year, month - 1, 1).toISOString().slice(0, 10)
-  const to   = new Date(year, month, 0).toISOString().slice(0, 10)
-  return { from, to }
-}
+const thStyle = { padding: '12px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }
+const tdStyle = { padding: '12px 14px', fontSize: 13 }
 
 export default function MovementsPage() {
   const toast   = useToast()
@@ -58,7 +98,7 @@ export default function MovementsPage() {
   const qc      = useQueryClient()
 
   const now = new Date()
-  const [period,       setPeriod]       = useState({ year: now.getFullYear(), month: now.getMonth() + 1 })
+  const [period,        setPeriod]        = useState({ year: now.getFullYear(), month: now.getMonth() + 1 })
   const [movementModal, setMovementModal] = useState(null)
   const [editTarget,    setEditTarget]    = useState(null)
   const [showFilters,   setShowFilters]   = useState(false)
@@ -68,17 +108,10 @@ export default function MovementsPage() {
   const [filters, setFilters] = useState({ accountId: '', type: '', status: '', reference: '' })
 
   function prevMonth() {
-    setPeriod(p => {
-      if (p.month === 1) return { year: p.year - 1, month: 12 }
-      return { ...p, month: p.month - 1 }
-    })
+    setPeriod(p => p.month === 1 ? { year: p.year - 1, month: 12 } : { ...p, month: p.month - 1 })
   }
-
   function nextMonth() {
-    setPeriod(p => {
-      if (p.month === 12) return { year: p.year + 1, month: 1 }
-      return { ...p, month: p.month + 1 }
-    })
+    setPeriod(p => p.month === 12 ? { year: p.year + 1, month: 1 } : { ...p, month: p.month + 1 })
   }
 
   const isCurrentMonth = period.year === now.getFullYear() && period.month === now.getMonth() + 1
@@ -89,7 +122,6 @@ export default function MovementsPage() {
   })
 
   const { from, to } = periodRange(period.year, period.month)
-
   const { data, isLoading } = useQuery({
     queryKey: ['cash-movements', filters, period],
     queryFn: () => getCashMovements({ ...filters, from, to, limit: 200 }).then(r => r.data.data),
@@ -152,400 +184,393 @@ export default function MovementsPage() {
     }
   }
 
-  const hasActiveFilters = Object.values(filters).some(Boolean)
+  const hasActiveFilters  = Object.values(filters).some(Boolean)
   const activeFilterCount = Object.values(filters).filter(Boolean).length
 
+  const filterSelectStyle = {
+    height: 36, padding: '0 12px', background: C.s2, border: `1px solid ${C.linea}`,
+    borderRadius: '0 9px 9px 0', color: C.crema, fontSize: 13, outline: 'none',
+  }
+
   return (
-    <div className="p-4 md:p-8 flex flex-col gap-5">
+    <div style={{ padding: '28px 24px 40px', fontFamily: 'Geist, system-ui, sans-serif', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
       {/* Header */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3 min-w-0">
-          <Link to="/finances" className="text-fg-muted hover:text-fg transition-colors shrink-0">
-            <ChevronLeftIcon className="w-5 h-5" />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+          <Link to="/finances"
+            style={{ color: C.piedra, display: 'flex', alignItems: 'center', flexShrink: 0 }}
+            onMouseEnter={e => e.currentTarget.style.color = C.crema}
+            onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+            <ChevronLSvg style={{ width: 18, height: 18 }} />
           </Link>
-          <div className="min-w-0">
-            <h1 className="text-xl font-semibold text-fg">Movimientos</h1>
-            <p className="text-xs text-fg-muted mt-0.5">{movements.length} registros</p>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <BankSvg style={{ width: 18, height: 18, color: C.arena }} />
+              <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Movimientos</h2>
+            </div>
+            <p style={{ fontSize: 12, color: C.piedra, marginTop: 3 }}>{movements.length} registros</p>
           </div>
         </div>
 
-        {/* Tab switcher */}
-        <div className="flex items-center gap-0.5 bg-raised rounded-lg border border-line overflow-hidden">
-          <button
-            onClick={() => setTab('movements')}
-            className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${tab === 'movements' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'}`}
-          >
-            Movimientos
-          </button>
-          <button
-            onClick={() => setTab('history')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${tab === 'history' ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'}`}
-          >
-            <ClockIcon className="w-4 h-4" />
-            Historial
-          </button>
-        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          {/* Tab switcher */}
+          <div style={{ display: 'flex', gap: 3, padding: 4, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0' }}>
+            {[
+              { id: 'movements', label: 'Movimientos' },
+              { id: 'history',   label: 'Historial',  icon: ClockSvg },
+            ].map(({ id, label, icon: Icon }) => (
+              <button key={id} onClick={() => setTab(id)}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '0 10px', height: 28, borderRadius: '0 7px 7px 0', fontSize: 12, fontWeight: 500, border: 'none', cursor: 'pointer', background: tab === id ? C.s3 : 'transparent', color: tab === id ? C.crema : C.piedra }}>
+                {Icon && <Icon style={{ width: 13, height: 13 }} />}
+                {label}
+              </button>
+            ))}
+          </div>
 
-        {/* Navegador de mes */}
-        <div className={`flex items-center gap-1 bg-raised border border-line rounded-xl px-1 py-1 ${tab === 'history' ? 'hidden' : ''}`}>
-          <button
-            onClick={prevMonth}
-            className="p-1.5 rounded-lg hover:bg-surface text-fg-muted hover:text-fg transition-colors"
-          >
-            <ChevronLeftIcon className="w-4 h-4" />
-          </button>
-          <span className="text-sm font-medium text-fg capitalize px-2 min-w-[140px] text-center">
-            {periodLabel(period.year, period.month)}
-          </span>
-          <button
-            onClick={nextMonth}
-            disabled={isCurrentMonth}
-            className="p-1.5 rounded-lg hover:bg-surface text-fg-muted hover:text-fg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <ChevronRightIcon className="w-4 h-4" />
-          </button>
-        </div>
+          {/* Navegador de mes */}
+          {tab !== 'history' && (
+            <div style={{ display: 'flex', alignItems: 'center', background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0', padding: '2px 4px' }}>
+              <button onClick={prevMonth}
+                style={{ padding: 5, borderRadius: '0 6px 6px 0', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, display: 'flex' }}
+                onMouseEnter={e => e.currentTarget.style.color = C.crema}
+                onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+                <ChevronLSvg style={{ width: 14, height: 14 }} />
+              </button>
+              <span style={{ fontSize: 13, fontWeight: 500, color: C.crema, textTransform: 'capitalize', padding: '0 8px', minWidth: 130, textAlign: 'center' }}>
+                {periodLabel(period.year, period.month)}
+              </span>
+              <button onClick={nextMonth} disabled={isCurrentMonth}
+                style={{ padding: 5, borderRadius: '0 6px 6px 0', background: 'none', border: 'none', cursor: isCurrentMonth ? 'not-allowed' : 'pointer', color: isCurrentMonth ? C.linea : C.piedra, display: 'flex' }}
+                onMouseEnter={e => { if (!isCurrentMonth) e.currentTarget.style.color = C.crema }}
+                onMouseLeave={e => { if (!isCurrentMonth) e.currentTarget.style.color = C.piedra }}>
+                <ChevronRSvg style={{ width: 14, height: 14 }} />
+              </button>
+            </div>
+          )}
 
-        {/* Desktop actions */}
-        <div className="hidden sm:flex items-center gap-2 shrink-0">
-          <button
-            onClick={() => setShowFilters(p => !p)}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${hasActiveFilters ? 'border-brand text-brand bg-brand-subtle/10' : 'border-line text-fg-muted hover:text-fg hover:bg-raised'}`}
-          >
-            <FunnelIcon className="w-4 h-4" />
-            Filtros{hasActiveFilters && ` (${activeFilterCount})`}
-          </button>
-          <Link
-            to="/finances/categories"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-line text-sm font-medium text-fg-muted hover:text-fg hover:bg-raised transition-colors"
-          >
-            <TagIcon className="w-4 h-4" />
-            Categorías
-          </Link>
-          <button
-            onClick={() => setMovementModal('expense')}
-            disabled={accounts.length === 0}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-danger text-white text-sm font-medium hover:opacity-90 disabled:opacity-40"
-          >
-            <ArrowTrendingDownIcon className="w-4 h-4" />
-            Egreso
-          </button>
-          <button
-            onClick={() => setMovementModal('income')}
-            disabled={accounts.length === 0}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-success text-white text-sm font-medium hover:opacity-90 disabled:opacity-40"
-          >
-            <ArrowTrendingUpIcon className="w-4 h-4" />
-            Ingreso
-          </button>
-        </div>
+          {/* Desktop actions */}
+          {tab !== 'history' && (
+            <div className="hidden sm:flex" style={{ alignItems: 'center', gap: 6 }}>
+              <button onClick={() => setShowFilters(p => !p)}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 12px', borderRadius: '0 9px 9px 0', border: `1px solid ${hasActiveFilters ? C.arena : C.linea}`, background: hasActiveFilters ? 'rgba(242,237,227,0.06)' : 'none', color: hasActiveFilters ? C.crema : C.piedra, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
+                <FunnelSvg style={{ width: 14, height: 14 }} />
+                Filtros{hasActiveFilters && ` (${activeFilterCount})`}
+              </button>
+              <Link to="/finances/categories"
+                style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 12px', borderRadius: '0 9px 9px 0', border: `1px solid ${C.linea}`, color: C.piedra, fontSize: 13, fontWeight: 500, textDecoration: 'none' }}
+                onMouseEnter={e => { e.currentTarget.style.color = C.crema; e.currentTarget.style.borderColor = C.arena }}
+                onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}>
+                <TagSvg style={{ width: 14, height: 14 }} /> Categorías
+              </Link>
+              <button onClick={() => setMovementModal('expense')} disabled={accounts.length === 0}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, height: 34, padding: '0 12px', background: 'rgba(229,131,115,0.12)', color: C.err, border: `1px solid rgba(229,131,115,0.25)`, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 500, cursor: accounts.length === 0 ? 'not-allowed' : 'pointer', opacity: accounts.length === 0 ? 0.4 : 1 }}>
+                <TrendDownSvg style={{ width: 14, height: 14 }} /> Egreso
+              </button>
+              <button onClick={() => setMovementModal('income')} disabled={accounts.length === 0}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, height: 34, padding: '0 12px', background: 'rgba(125,190,147,0.12)', color: C.ok, border: `1px solid rgba(125,190,147,0.25)`, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 500, cursor: accounts.length === 0 ? 'not-allowed' : 'pointer', opacity: accounts.length === 0 ? 0.4 : 1 }}>
+                <TrendUpSvg style={{ width: 14, height: 14 }} /> Ingreso
+              </button>
+            </div>
+          )}
 
-        {/* Mobile: filtros + categorías */}
-        <div className="flex sm:hidden items-center gap-2 shrink-0">
-          <button
-            onClick={() => setShowFilters(p => !p)}
-            className={`p-2 rounded-lg border text-sm transition-colors ${hasActiveFilters ? 'border-brand text-brand bg-brand-subtle/10' : 'border-line text-fg-muted hover:bg-raised'}`}
-          >
-            <FunnelIcon className="w-4 h-4" />
-          </button>
-          <Link
-            to="/finances/categories"
-            className="p-2 rounded-lg border border-line text-fg-muted hover:bg-raised transition-colors"
-          >
-            <TagIcon className="w-4 h-4" />
-          </Link>
+          {/* Mobile: filtros + categorías */}
+          {tab !== 'history' && (
+            <div className="flex sm:hidden" style={{ alignItems: 'center', gap: 6 }}>
+              <button onClick={() => setShowFilters(p => !p)}
+                style={{ padding: 8, borderRadius: '0 8px 8px 0', border: `1px solid ${hasActiveFilters ? C.arena : C.linea}`, background: hasActiveFilters ? 'rgba(242,237,227,0.06)' : 'none', color: hasActiveFilters ? C.crema : C.piedra, display: 'flex', cursor: 'pointer' }}>
+                <FunnelSvg style={{ width: 15, height: 15 }} />
+              </button>
+              <Link to="/finances/categories"
+                style={{ padding: 8, borderRadius: '0 8px 8px 0', border: `1px solid ${C.linea}`, color: C.piedra, display: 'flex' }}>
+                <TagSvg style={{ width: 15, height: 15 }} />
+              </Link>
+            </div>
+          )}
         </div>
       </div>
 
       {/* ── Historial ── */}
       {tab === 'history' && (
-        <div className="flex flex-col gap-4 max-w-2xl">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 680 }}>
           {historyData.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3 text-fg-muted">
-              <ClockIcon className="w-10 h-10 opacity-30" />
-              <p className="text-sm">Sin movimientos registrados.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: '60px 0', color: C.piedra }}>
+              <ClockSvg style={{ width: 36, height: 36, opacity: 0.3 }} />
+              <p style={{ fontSize: 13 }}>Sin movimientos registrados.</p>
             </div>
           ) : (
-            <div className="flex flex-col gap-1">
-              {historyData.slice(0, historyVisible).map((entry, i) => {
-                const initials = entry.createdBy?.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() ?? '?'
-                const date = new Date(entry.createdAt)
-                const dateStr = date.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
-                const timeStr = date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
-                const shown = historyData.slice(0, historyVisible)
-                const isIncome = entry.type === 'income' || entry.type === 'transfer_in'
-                const actionText = {
-                  income: 'registró un ingreso',
-                  expense: 'registró un egreso',
-                  transfer_out: 'registró una transferencia saliente',
-                  transfer_in: 'registró una transferencia entrante',
-                  adjustment: 'realizó un ajuste',
-                }[entry.type] ?? 'registró un movimiento'
-                return (
-                  <div key={entry.id} className="flex gap-4">
-                    <div className="flex flex-col items-center">
-                      <div className="w-8 h-8 rounded-full bg-brand-subtle text-brand text-[11px] font-bold flex items-center justify-center shrink-0">
-                        {initials}
+            <>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {historyData.slice(0, historyVisible).map((entry, i) => {
+                  const initials   = entry.createdBy?.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() ?? '?'
+                  const date       = new Date(entry.createdAt)
+                  const dateStr    = date.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
+                  const timeStr    = date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+                  const isIncome   = entry.type === 'income' || entry.type === 'transfer_in'
+                  const amtColor   = isIncome ? C.ok : C.err
+                  const shown      = historyData.slice(0, historyVisible)
+                  const actionText = {
+                    income: 'registró un ingreso', expense: 'registró un egreso',
+                    transfer_out: 'registró una transferencia saliente',
+                    transfer_in: 'registró una transferencia entrante',
+                    adjustment: 'realizó un ajuste',
+                  }[entry.type] ?? 'registró un movimiento'
+
+                  return (
+                    <div key={entry.id} style={{ display: 'flex', gap: 12 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(242,237,227,0.08)', color: C.crema, fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          {initials}
+                        </div>
+                        {i < shown.length - 1 && <div style={{ width: 1, flex: 1, background: C.linea, marginTop: 3, marginBottom: 3, minHeight: 14 }} />}
                       </div>
-                      {i < shown.length - 1 && <div className="w-px flex-1 bg-line mt-1 mb-1 min-h-[16px]" />}
-                    </div>
-                    <div className="pb-4 flex-1 min-w-0">
-                      <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-                        <span className="text-sm font-semibold text-fg">{entry.createdBy?.name ?? 'Sistema'}</span>
-                        <span className="text-sm text-fg-muted">{actionText} de</span>
-                        <span className={`text-sm font-medium ${isIncome ? 'text-success' : 'text-danger'}`}>
-                          {isIncome ? '+' : '−'}${fmt(entry.amount)}
-                        </span>
-                        {entry.status === 'annulled' && (
-                          <span className="text-[10px] font-semibold uppercase tracking-wide bg-fg-muted/10 text-fg-muted px-1.5 py-0.5 rounded-full">Anulado</span>
-                        )}
+                      <div style={{ paddingBottom: 14, flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '0 6px', rowGap: 2, fontSize: 13 }}>
+                          <span style={{ fontWeight: 600, color: C.crema }}>{entry.createdBy?.name ?? 'Sistema'}</span>
+                          <span style={{ color: C.piedra }}>{actionText} de</span>
+                          <span style={{ fontWeight: 500, color: amtColor }}>
+                            {isIncome ? '+' : '−'}${fmt(entry.amount)}
+                          </span>
+                          {entry.status === 'annulled' && (
+                            <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', background: C.s3, color: C.piedra, padding: '1px 6px', borderRadius: '0 4px 4px 0' }}>Anulado</span>
+                          )}
+                        </div>
+                        <p style={{ fontSize: 11, color: C.piedra, marginTop: 2 }}>
+                          {entry.account?.name}
+                          {entry.client && ` · ${entry.client.name}`}
+                          {entry.description && ` · ${entry.description}`}
+                        </p>
+                        <p style={{ fontSize: 11, color: C.piedra, opacity: 0.7, marginTop: 2 }}>{dateStr} · {timeStr}</p>
                       </div>
-                      <p className="text-xs text-fg-muted mt-0.5">
-                        {entry.account?.name}
-                        {entry.client && ` · ${entry.client.name}`}
-                        {entry.description && ` · ${entry.description}`}
-                      </p>
-                      <p className="text-[11px] text-fg-muted/70 mt-0.5">{dateStr} · {timeStr}</p>
                     </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
               {historyData.length > historyVisible && (
-                <button
-                  onClick={() => setHistoryVisible(v => v + 25)}
-                  className="mt-2 text-xs text-fg-muted hover:text-fg text-center py-2 border border-dashed border-line rounded-xl transition-colors"
-                >
+                <button onClick={() => setHistoryVisible(v => v + 25)}
+                  style={{ fontSize: 12, color: C.piedra, textAlign: 'center', padding: '8px 0', border: `1px dashed ${C.linea}`, borderRadius: '0 10px 10px 0', background: 'none', cursor: 'pointer' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.arena }}
+                  onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}>
                   Mostrar más ({historyData.length - historyVisible} restante{historyData.length - historyVisible !== 1 ? 's' : ''})
                 </button>
               )}
-            </div>
+            </>
           )}
         </div>
       )}
 
       {/* ── Movimientos ── */}
-      {tab === 'movements' && <>
-
-      {/* Mobile FAB strip */}
-      <div className="flex sm:hidden gap-2">
-        <button
-          onClick={() => setMovementModal('expense')}
-          disabled={accounts.length === 0}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-danger text-white text-sm font-medium disabled:opacity-40"
-        >
-          <ArrowTrendingDownIcon className="w-4 h-4" />
-          Egreso
-        </button>
-        <button
-          onClick={() => setMovementModal('income')}
-          disabled={accounts.length === 0}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-success text-white text-sm font-medium disabled:opacity-40"
-        >
-          <ArrowTrendingUpIcon className="w-4 h-4" />
-          Ingreso
-        </button>
-      </div>
-
-      {/* Filtros */}
-      {showFilters && (
-        <div className="flex flex-col gap-3 p-4 bg-surface border border-line rounded-xl">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-            <select value={filters.accountId} onChange={e => setFilter('accountId', e.target.value)} className={selectCls}>
-              <option value="">Todas las cuentas</option>
-              {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-            </select>
-            <select value={filters.type} onChange={e => setFilter('type', e.target.value)} className={selectCls}>
-              <option value="">Todos los tipos</option>
-              <option value="income">Ingreso</option>
-              <option value="expense">Egreso</option>
-              <option value="transfer_out">Transf. salida</option>
-              <option value="transfer_in">Transf. entrada</option>
-            </select>
-            <select value={filters.status} onChange={e => setFilter('status', e.target.value)} className={selectCls}>
-              <option value="">Todos los estados</option>
-              <option value="confirmed">Confirmado</option>
-              <option value="pending">Pendiente</option>
-              <option value="annulled">Anulado</option>
-            </select>
-            <input
-              type="text"
-              placeholder="Referencia (N° factura, recibo…)"
-              value={filters.reference}
-              onChange={e => setFilter('reference', e.target.value)}
-              className={selectCls}
-            />
-          </div>
-          {hasActiveFilters && (
-            <button onClick={clearFilters} className="self-end text-xs text-fg-muted hover:text-fg transition-colors">
-              Limpiar filtros
+      {tab === 'movements' && (
+        <>
+          {/* Mobile FAB strip */}
+          <div className="flex sm:hidden" style={{ gap: 8 }}>
+            <button onClick={() => setMovementModal('expense')} disabled={accounts.length === 0}
+              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 0', borderRadius: '0 10px 10px 0', background: 'rgba(229,131,115,0.14)', color: C.err, border: `1px solid rgba(229,131,115,0.25)`, fontSize: 13, fontWeight: 500, cursor: 'pointer', opacity: accounts.length === 0 ? 0.4 : 1 }}>
+              <TrendDownSvg style={{ width: 15, height: 15 }} /> Egreso
             </button>
-          )}
-        </div>
-      )}
+            <button onClick={() => setMovementModal('income')} disabled={accounts.length === 0}
+              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 0', borderRadius: '0 10px 10px 0', background: 'rgba(125,190,147,0.14)', color: C.ok, border: `1px solid rgba(125,190,147,0.25)`, fontSize: 13, fontWeight: 500, cursor: 'pointer', opacity: accounts.length === 0 ? 0.4 : 1 }}>
+              <TrendUpSvg style={{ width: 15, height: 15 }} /> Ingreso
+            </button>
+          </div>
 
-      {/* Tabla desktop */}
-      <div className="hidden md:block bg-surface/60 backdrop-blur-xl rounded-2xl border border-line overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-raised border-b border-line">
-              <tr>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Fecha</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Tipo</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Descripción</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Cliente</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Cuenta</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Categoría</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Estado</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Monto</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-line">
-              {isLoading ? (
-                <tr><td colSpan={9} className="py-12 text-center text-fg-muted text-sm">Cargando…</td></tr>
-              ) : movements.length === 0 ? (
-                <tr><td colSpan={9} className="py-12 text-center text-fg-muted text-sm">Sin movimientos{hasActiveFilters ? ' con esos filtros' : ''} en {periodLabel(period.year, period.month)}.</td></tr>
-              ) : movements.map(m => (
-                <tr key={m.id} className={`group hover:bg-raised/50 transition-colors ${m.status === 'annulled' ? 'opacity-50' : ''}`}>
-                  <td className="px-4 py-3 text-fg-muted whitespace-nowrap text-xs">
-                    {new Date(m.date.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' })}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${TYPE_COLORS[m.type]}`}>
+          {/* Filtros */}
+          {showFilters && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '14px 16px', background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 12px 12px 0' }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                <select value={filters.accountId} onChange={e => setFilter('accountId', e.target.value)} style={filterSelectStyle}>
+                  <option value="">Todas las cuentas</option>
+                  {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                </select>
+                <select value={filters.type} onChange={e => setFilter('type', e.target.value)} style={filterSelectStyle}>
+                  <option value="">Todos los tipos</option>
+                  <option value="income">Ingreso</option><option value="expense">Egreso</option>
+                  <option value="transfer_out">Transf. salida</option><option value="transfer_in">Transf. entrada</option>
+                </select>
+                <select value={filters.status} onChange={e => setFilter('status', e.target.value)} style={filterSelectStyle}>
+                  <option value="">Todos los estados</option>
+                  <option value="confirmed">Confirmado</option><option value="pending">Pendiente</option><option value="annulled">Anulado</option>
+                </select>
+                <input type="text" placeholder="Referencia (N° factura…)"
+                  value={filters.reference} onChange={e => setFilter('reference', e.target.value)}
+                  style={{ ...filterSelectStyle, appearance: 'auto' }} />
+              </div>
+              {hasActiveFilters && (
+                <button onClick={clearFilters}
+                  style={{ alignSelf: 'flex-end', fontSize: 12, color: C.piedra, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                  onMouseEnter={e => e.currentTarget.style.color = C.arena}
+                  onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+                  Limpiar filtros
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Tabla desktop */}
+          <div className="hidden md:block" style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 12px 12px 0', overflow: 'hidden' }}>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead style={{ background: C.s3, borderBottom: `1px solid ${C.linea}` }}>
+                  <tr>
+                    {['Fecha','Tipo','Descripción','Cliente','Cuenta','Categoría','Estado','Monto',''].map((h, i) => (
+                      <th key={i} style={{ ...thStyle, textAlign: i === 7 ? 'right' : 'left' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {isLoading ? (
+                    <tr><td colSpan={9} style={{ ...tdStyle, padding: '40px 14px', textAlign: 'center', color: C.piedra }}>Cargando…</td></tr>
+                  ) : movements.length === 0 ? (
+                    <tr><td colSpan={9} style={{ ...tdStyle, padding: '40px 14px', textAlign: 'center', color: C.piedra }}>
+                      Sin movimientos{hasActiveFilters ? ' con esos filtros' : ''} en {periodLabel(period.year, period.month)}.
+                    </td></tr>
+                  ) : movements.map(m => {
+                    const ts = TYPE_STYLE[m.type] ?? TYPE_STYLE.adjustment
+                    const ss = STATUS_STYLE[m.status] ?? STATUS_STYLE.confirmed
+                    return (
+                      <tr key={m.id} style={{ borderBottom: `1px solid ${C.linea}`, opacity: m.status === 'annulled' ? 0.5 : 1 }} className="group hover:bg-[#26262A]/50 transition-colors">
+                        <td style={tdStyle}>
+                          <span style={{ color: C.piedra, fontSize: 12 }}>
+                            {new Date(m.date.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' })}
+                          </span>
+                        </td>
+                        <td style={tdStyle}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: '0 5px 5px 0', fontSize: 11, fontWeight: 500, background: ts.bg, color: ts.color }}>
+                            {TYPE_LABELS[m.type]}
+                          </span>
+                        </td>
+                        <td style={tdStyle}>
+                          <p style={{ color: C.crema }}>{m.description || '—'}</p>
+                          {m.reference && <p style={{ fontSize: 11, color: C.piedra }}>{m.reference}</p>}
+                        </td>
+                        <td style={{ ...tdStyle, color: C.piedra }}>{m.client?.name ?? '—'}</td>
+                        <td style={{ ...tdStyle, color: C.piedra }}>{m.account?.name ?? '—'}</td>
+                        <td style={{ ...tdStyle, color: C.piedra }}>{m.category?.name ?? '—'}</td>
+                        <td style={tdStyle}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                            <span style={{ fontSize: 12, fontWeight: 500, ...ss }}>{STATUS_LABELS[m.status]}</span>
+                            {isOverdue(m) && (
+                              <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', background: 'rgba(229,131,115,0.1)', color: C.err, padding: '1px 5px', borderRadius: '0 4px 4px 0' }}>Atrasado</span>
+                            )}
+                          </div>
+                        </td>
+                        <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 600, whiteSpace: 'nowrap', color: amountColor(m) }}>
+                          {m.type === 'income' || m.type === 'transfer_in' ? '+' : '−'}${fmt(m.amount)}
+                        </td>
+                        <td style={tdStyle}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }} className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            {m.status === 'pending' && (
+                              <>
+                                <button onClick={() => { setEditTarget(m); setMovementModal(m.type) }}
+                                  style={{ padding: 5, borderRadius: '0 5px 5px 0', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, display: 'flex' }}
+                                  onMouseEnter={e => e.currentTarget.style.color = C.crema}
+                                  onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+                                  <PencilSvg style={{ width: 13, height: 13 }} />
+                                </button>
+                                <button onClick={() => handleConfirm(m.id)}
+                                  style={{ padding: 5, borderRadius: '0 5px 5px 0', background: 'none', border: 'none', cursor: 'pointer', color: C.ok, display: 'flex' }}>
+                                  <CheckCircleSvg style={{ width: 13, height: 13 }} />
+                                </button>
+                                <button onClick={() => handleDelete(m)}
+                                  style={{ padding: 5, borderRadius: '0 5px 5px 0', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, display: 'flex' }}
+                                  onMouseEnter={e => e.currentTarget.style.color = C.err}
+                                  onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+                                  <TrashSvg style={{ width: 13, height: 13 }} />
+                                </button>
+                              </>
+                            )}
+                            {m.status === 'confirmed' && !m.type.startsWith('transfer') && (
+                              <button onClick={() => handleAnnul(m)}
+                                style={{ padding: 5, borderRadius: '0 5px 5px 0', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, display: 'flex' }}
+                                onMouseEnter={e => e.currentTarget.style.color = C.err}
+                                onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+                                <XCircleSvg style={{ width: 13, height: 13 }} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Cards móvil */}
+          <div className="flex flex-col gap-2 md:hidden">
+            {isLoading ? (
+              <p style={{ padding: '40px 0', textAlign: 'center', fontSize: 13, color: C.piedra }}>Cargando…</p>
+            ) : movements.length === 0 ? (
+              <p style={{ padding: '40px 0', textAlign: 'center', fontSize: 13, color: C.piedra }}>
+                Sin movimientos{hasActiveFilters ? ' con esos filtros' : ''} en {periodLabel(period.year, period.month)}.
+              </p>
+            ) : movements.map(m => {
+              const ts   = TYPE_STYLE[m.type] ?? TYPE_STYLE.adjustment
+              const ss   = STATUS_STYLE[m.status] ?? STATUS_STYLE.confirmed
+              const dot  = (m.type === 'income' || m.type === 'transfer_in') ? C.ok : C.err
+              return (
+                <div key={m.id}
+                  style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 12px 12px 0', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10, opacity: m.status === 'annulled' ? 0.5 : 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                    <div style={{ width: 7, height: 7, borderRadius: '50%', background: dot, marginTop: 5, flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 13, fontWeight: 500, color: C.crema }}>{m.description || TYPE_LABELS[m.type]}</p>
+                      <p style={{ fontSize: 11, color: C.piedra, marginTop: 2 }}>
+                        {m.account?.name} · {new Date(m.date.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' })}
+                        {m.client && ` · ${m.client.name}`}
+                        {m.category && ` · ${m.category.name}`}
+                      </p>
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: amountColor(m) }}>
+                        {(m.type === 'income' || m.type === 'transfer_in') ? '+' : '−'}${fmt(m.amount)}
+                      </p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
+                        <span style={{ fontSize: 11, fontWeight: 500, ...ss }}>{STATUS_LABELS[m.status]}</span>
+                        {isOverdue(m) && (
+                          <span style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', background: 'rgba(229,131,115,0.1)', color: C.err, padding: '1px 4px', borderRadius: '0 3px 3px 0' }}>Atrasado</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 8, borderTop: `1px solid ${C.linea}` }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: '0 5px 5px 0', fontSize: 11, fontWeight: 500, background: ts.bg, color: ts.color }}>
                       {TYPE_LABELS[m.type]}
                     </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <p className="text-sm text-fg">{m.description || '—'}</p>
-                    {m.reference && <p className="text-xs text-fg-muted">{m.reference}</p>}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-fg-muted">{m.client?.name ?? '—'}</td>
-                  <td className="px-4 py-3 text-sm text-fg-muted">{m.account?.name ?? '—'}</td>
-                  <td className="px-4 py-3 text-sm text-fg-muted">{m.category?.name ?? '—'}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1.5">
-                      <span className={`text-xs font-medium ${STATUS_COLORS[m.status]}`}>{STATUS_LABELS[m.status]}</span>
-                      {isOverdue(m) && (
-                        <span className="text-[10px] font-semibold uppercase tracking-wide bg-danger/10 text-danger px-1.5 py-0.5 rounded-full">
-                          Atrasado
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className={`px-4 py-3 font-semibold text-right whitespace-nowrap text-sm ${amountColor(m)}`}>
-                    {m.type === 'income' || m.type === 'transfer_in' ? '+' : '−'}${fmt(m.amount)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity justify-end">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       {m.status === 'pending' && (
                         <>
-                          <button onClick={() => { setEditTarget(m); setMovementModal(m.type) }} className="p-1.5 text-fg-muted hover:text-fg rounded-lg hover:bg-raised transition-colors" title="Editar">
-                            <PencilIcon className="w-3.5 h-3.5" />
+                          <button onClick={() => { setEditTarget(m); setMovementModal(m.type) }}
+                            style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', borderRadius: '0 7px 7px 0', fontSize: 12, fontWeight: 500, color: C.piedra, border: `1px solid ${C.linea}`, background: 'none', cursor: 'pointer' }}>
+                            <PencilSvg style={{ width: 12, height: 12 }} /> Editar
                           </button>
-                          <button onClick={() => handleConfirm(m.id)} className="p-1.5 text-success rounded-lg hover:bg-success-subtle/20 transition-colors" title="Confirmar">
-                            <CheckCircleIcon className="w-3.5 h-3.5" />
+                          <button onClick={() => handleConfirm(m.id)}
+                            style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', borderRadius: '0 7px 7px 0', fontSize: 12, fontWeight: 500, color: C.ok, border: `1px solid rgba(125,190,147,0.25)`, background: 'none', cursor: 'pointer' }}>
+                            <CheckCircleSvg style={{ width: 12, height: 12 }} /> Confirmar
                           </button>
-                          <button onClick={() => handleDelete(m)} className="p-1.5 text-danger rounded-lg hover:bg-danger-subtle/20 transition-colors" title="Eliminar">
-                            <TrashIcon className="w-3.5 h-3.5" />
+                          <button onClick={() => handleDelete(m)}
+                            style={{ padding: 6, borderRadius: '0 6px 6px 0', color: C.err, background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }}>
+                            <TrashSvg style={{ width: 14, height: 14 }} />
                           </button>
                         </>
                       )}
                       {m.status === 'confirmed' && !m.type.startsWith('transfer') && (
-                        <button onClick={() => handleAnnul(m)} className="p-1.5 text-fg-muted hover:text-danger rounded-lg hover:bg-danger-subtle/20 transition-colors" title="Anular">
-                          <XCircleIcon className="w-3.5 h-3.5" />
+                        <button onClick={() => handleAnnul(m)}
+                          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', borderRadius: '0 7px 7px 0', fontSize: 12, fontWeight: 500, color: C.piedra, border: `1px solid ${C.linea}`, background: 'none', cursor: 'pointer' }}
+                          onMouseEnter={e => { e.currentTarget.style.color = C.err; e.currentTarget.style.borderColor = 'rgba(229,131,115,0.25)' }}
+                          onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}>
+                          <XCircleSvg style={{ width: 12, height: 12 }} /> Anular
                         </button>
                       )}
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Cards móvil */}
-      <div className="flex flex-col gap-2 md:hidden">
-        {isLoading ? (
-          <p className="py-12 text-center text-fg-muted text-sm">Cargando…</p>
-        ) : movements.length === 0 ? (
-          <p className="py-12 text-center text-fg-muted text-sm">Sin movimientos{hasActiveFilters ? ' con esos filtros' : ''} en {periodLabel(period.year, period.month)}.</p>
-        ) : movements.map(m => (
-          <div
-            key={m.id}
-            className={`bg-surface border border-line rounded-xl p-4 flex flex-col gap-3 ${m.status === 'annulled' ? 'opacity-50' : ''}`}
-          >
-            <div className="flex items-start gap-3">
-              <div className={`mt-0.5 w-2 h-2 rounded-full shrink-0 ${m.type === 'income' || m.type === 'transfer_in' ? 'bg-success' : 'bg-danger'}`} />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-fg">{m.description || TYPE_LABELS[m.type]}</p>
-                <p className="text-xs text-fg-muted mt-0.5">
-                  {m.account?.name} · {new Date(m.date.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' })}
-                  {m.client && ` · ${m.client.name}`}
-                  {m.category && ` · ${m.category.name}`}
-                </p>
-              </div>
-              <div className="text-right shrink-0">
-                <p className={`text-sm font-bold ${amountColor(m)}`}>
-                  {m.type === 'income' || m.type === 'transfer_in' ? '+' : '−'}${fmt(m.amount)}
-                </p>
-                <div className="flex items-center gap-1 justify-end">
-                  <span className={`text-xs ${STATUS_COLORS[m.status]}`}>{STATUS_LABELS[m.status]}</span>
-                  {isOverdue(m) && (
-                    <span className="text-[10px] font-semibold uppercase tracking-wide bg-danger/10 text-danger px-1.5 py-0.5 rounded-full">
-                      Atrasado
-                    </span>
-                  )}
+                  </div>
                 </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-2 border-t border-line">
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${TYPE_COLORS[m.type]}`}>
-                {TYPE_LABELS[m.type]}
-              </span>
-              <div className="flex items-center gap-1">
-                {m.status === 'pending' && (
-                  <>
-                    <button
-                      onClick={() => { setEditTarget(m); setMovementModal(m.type) }}
-                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-fg-muted border border-line hover:bg-raised transition-colors"
-                    >
-                      <PencilIcon className="w-3.5 h-3.5" />
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleConfirm(m.id)}
-                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-success border border-success/30 hover:bg-success-subtle/20 transition-colors"
-                    >
-                      <CheckCircleIcon className="w-3.5 h-3.5" />
-                      Confirmar
-                    </button>
-                    <button
-                      onClick={() => handleDelete(m)}
-                      className="p-1.5 rounded-lg text-danger hover:bg-danger-subtle/20 transition-colors"
-                    >
-                      <TrashIcon className="w-4 h-4" />
-                    </button>
-                  </>
-                )}
-                {m.status === 'confirmed' && !m.type.startsWith('transfer') && (
-                  <button
-                    onClick={() => handleAnnul(m)}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-fg-muted border border-line hover:text-danger hover:border-danger/30 hover:bg-danger-subtle/10 transition-colors"
-                  >
-                    <XCircleIcon className="w-3.5 h-3.5" />
-                    Anular
-                  </button>
-                )}
-              </div>
-            </div>
+              )
+            })}
           </div>
-        ))}
-      </div>
-
-      </>}
+        </>
+      )}
 
       {movementModal && (
         <MovementModal

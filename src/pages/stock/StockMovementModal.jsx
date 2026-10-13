@@ -2,11 +2,30 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { stockIn, stockOut, stockAdjustment, getProducts } from '../../api/stock'
 import { useToast } from '../../components/Toast'
-import {
-  XMarkIcon, ArrowDownTrayIcon, ArrowUpTrayIcon,
-  AdjustmentsHorizontalIcon, MagnifyingGlassIcon, ChevronLeftIcon,
-  ExclamationTriangleIcon,
-} from '@heroicons/react/24/outline'
+
+const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
+
+function CloseSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+}
+function ArrowDownSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+}
+function ArrowUpSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+}
+function AdjustSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="4" y1="21" x2="4" y2="14" /><line x1="4" y1="10" x2="4" y2="3" /><line x1="12" y1="21" x2="12" y2="12" /><line x1="12" y1="8" x2="12" y2="3" /><line x1="20" y1="21" x2="20" y2="16" /><line x1="20" y1="12" x2="20" y2="3" /><line x1="1" y1="14" x2="7" y2="14" /><line x1="9" y1="8" x2="15" y2="8" /><line x1="17" y1="16" x2="23" y2="16" /></svg>
+}
+function SearchSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+}
+function ChevronLSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+}
+function WarnSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+}
 
 const IN_TYPES = [
   { value: 'purchase',       label: 'Compra a proveedor' },
@@ -26,20 +45,21 @@ const OUT_TYPES = [
 ]
 
 const INVENTORY_TYPE_BADGES = {
-  sale:         { label: 'Para venta',   cls: 'bg-brand/10 text-brand' },
-  internal:     { label: 'Interno',      cls: 'bg-warning-subtle text-warning' },
-  raw_material: { label: 'Materia prima', cls: 'bg-success-subtle text-success' },
+  sale:         { label: 'Para venta',    bg: 'rgba(142,177,222,0.12)', color: C.info },
+  internal:     { label: 'Interno',       bg: 'rgba(226,182,99,0.12)',  color: C.warn },
+  raw_material: { label: 'Materia prima', bg: 'rgba(125,190,147,0.12)', color: C.ok },
 }
 
 const titles = { in: 'Ingreso de stock', out: 'Egreso de stock', adjustment: 'Ajuste de inventario' }
-const icons  = {
-  in:         <ArrowDownTrayIcon className="w-4 h-4 text-success" />,
-  out:        <ArrowUpTrayIcon className="w-4 h-4 text-danger" />,
-  adjustment: <AdjustmentsHorizontalIcon className="w-4 h-4 text-warning" />,
+const modeIconColor = { in: C.ok, out: C.err, adjustment: C.warn }
+
+function ModeIcon({ mode, style }) {
+  if (mode === 'in')         return <ArrowDownSvg style={{ ...style, color: C.ok }} />
+  if (mode === 'out')        return <ArrowUpSvg style={{ ...style, color: C.err }} />
+  return <AdjustSvg style={{ ...style, color: C.warn }} />
 }
 
-const inputCls = 'w-full px-3 py-2 rounded-lg bg-raised border border-line text-sm text-fg focus:outline-none focus:border-brand transition-colors placeholder:text-fg-muted'
-const labelCls = 'block text-xs font-medium text-fg-muted mb-1'
+const labelStyle = { fontSize: 11, fontWeight: 500, color: C.piedra, display: 'block', marginBottom: 4 }
 
 // ── Paso 1: seleccionar producto ──────────────────────────────────────────────
 function ProductPicker({ mode, onSelect, onClose }) {
@@ -61,74 +81,75 @@ function ProductPicker({ mode, onSelect, onClose }) {
 
   function stockState(p) {
     const s = Number(p.stock), m = Number(p.minStock)
-    if (s <= 0)           return 'out'
-    if (m > 0 && s <= m)  return 'low'
+    if (s <= 0)          return 'out'
+    if (m > 0 && s <= m) return 'low'
     return 'ok'
   }
 
   return (
-    <div className="bg-surface border border-line rounded-t-2xl sm:rounded-2xl shadow-xl w-full sm:max-w-md flex flex-col max-h-[92dvh] sm:max-h-[85vh]">
+    <div style={{ width: '100%', maxWidth: 448, background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 16px 0 0', boxShadow: '0 24px 64px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column', maxHeight: '92dvh' }}
+      className="sm:rounded-[0_16px_16px_0] sm:max-h-[85vh]">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-line shrink-0">
-        <div className="flex items-center gap-2">
-          {icons[mode]}
-          <h2 className="text-base font-semibold text-fg">{titles[mode]}</h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 14px', borderBottom: `1px solid ${C.linea}`, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <ModeIcon mode={mode} style={{ width: 16, height: 16 }} />
+          <span style={{ fontSize: 15, fontWeight: 600, color: C.crema }}>{titles[mode]}</span>
         </div>
-        <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-raised text-fg-muted hover:text-fg transition-colors">
-          <XMarkIcon className="w-4 h-4" />
+        <button onClick={onClose}
+          style={{ padding: 6, borderRadius: '0 6px 6px 0', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra }}
+          onMouseEnter={e => e.currentTarget.style.color = C.crema}
+          onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+          <CloseSvg style={{ width: 18, height: 18 }} />
         </button>
       </div>
 
       {/* Buscador */}
-      <div className="px-4 pt-4 pb-2 shrink-0">
-        <p className="text-xs text-fg-muted mb-2 font-medium">Seleccioná un producto</p>
-        <div className="relative">
-          <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted pointer-events-none" />
-          <input
-            autoFocus
-            value={search}
-            onChange={e => setSearch(e.target.value)}
+      <div style={{ padding: '16px 16px 8px', flexShrink: 0 }}>
+        <p style={{ fontSize: 12, color: C.piedra, marginBottom: 8, fontWeight: 500 }}>Seleccioná un producto</p>
+        <div style={{ position: 'relative' }}>
+          <SearchSvg style={{ width: 16, height: 16, color: C.piedra, position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+          <input autoFocus value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Buscar por nombre o SKU…"
-            className="pl-9 pr-3 py-2 w-full rounded-lg bg-raised border border-line text-sm text-fg focus:outline-none focus:border-brand transition-colors placeholder:text-fg-muted"
-          />
+            style={{ paddingLeft: 36, paddingRight: 12, paddingTop: 8, paddingBottom: 8, width: '100%', background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', fontSize: 13, color: C.crema, outline: 'none' }}
+            className="placeholder:text-[#8C877E]" />
         </div>
       </div>
 
       {/* Lista */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4 flex flex-col gap-1.5 min-h-0">
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 6, minHeight: 0 }}>
         {isLoading ? (
-          <p className="text-sm text-fg-muted text-center py-8">Cargando…</p>
+          <p style={{ fontSize: 14, color: C.piedra, textAlign: 'center', padding: '32px 0' }}>Cargando…</p>
         ) : filtered.length === 0 ? (
-          <p className="text-sm text-fg-muted text-center py-8">
+          <p style={{ fontSize: 14, color: C.piedra, textAlign: 'center', padding: '32px 0' }}>
             {search ? 'Sin resultados.' : 'No hay productos activos.'}
           </p>
         ) : filtered.map(p => {
           const state = stockState(p)
+          const badge = INVENTORY_TYPE_BADGES[p.inventoryType]
           return (
-            <button
-              key={p.id}
-              onClick={() => onSelect(p)}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-line hover:border-brand/40 hover:bg-brand-subtle/10 text-left transition-colors"
-            >
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-fg truncate">{p.name}</p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <p className="text-xs text-fg-muted font-mono">{p.sku}</p>
-                  {p.inventoryType && INVENTORY_TYPE_BADGES[p.inventoryType] && (
-                    <span className={`text-xs px-1.5 py-0 rounded-full font-medium ${INVENTORY_TYPE_BADGES[p.inventoryType].cls}`}>
-                      {INVENTORY_TYPE_BADGES[p.inventoryType].label}
+            <button key={p.id} onClick={() => onSelect(p)}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: '0 12px 12px 0', border: `1px solid ${C.linea}`, background: 'none', textAlign: 'left', cursor: 'pointer' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(185,180,170,0.3)'; e.currentTarget.style.background = 'rgba(185,180,170,0.05)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = C.linea; e.currentTarget.style.background = 'none' }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 14, fontWeight: 500, color: C.crema, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                  <p style={{ fontSize: 12, color: C.piedra, fontFamily: 'monospace' }}>{p.sku}</p>
+                  {badge && (
+                    <span style={{ fontSize: 11, padding: '1px 6px', borderRadius: 100, fontWeight: 500, background: badge.bg, color: badge.color }}>
+                      {badge.label}
                     </span>
                   )}
                 </div>
               </div>
-              <div className="text-right shrink-0 flex items-center gap-1.5">
-                {state === 'out' && <ExclamationTriangleIcon className="w-3.5 h-3.5 text-danger shrink-0" />}
-                {state === 'low' && <ExclamationTriangleIcon className="w-3.5 h-3.5 text-warning shrink-0" />}
+              <div style={{ textAlign: 'right', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+                {state === 'out' && <WarnSvg style={{ width: 14, height: 14, color: C.err, flexShrink: 0 }} />}
+                {state === 'low' && <WarnSvg style={{ width: 14, height: 14, color: C.warn, flexShrink: 0 }} />}
                 <div>
-                  <p className={`text-sm font-semibold ${state === 'out' ? 'text-danger' : state === 'low' ? 'text-warning' : 'text-fg'}`}>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: state === 'out' ? C.err : state === 'low' ? C.warn : C.crema }}>
                     {Number(p.stock).toLocaleString('es-AR')}
                   </p>
-                  <p className="text-xs text-fg-muted">{p.unit}</p>
+                  <p style={{ fontSize: 12, color: C.piedra }}>{p.unit}</p>
                 </div>
               </div>
             </button>
@@ -202,133 +223,135 @@ function MovementForm({ product, mode, onBack, onClose }) {
     }
   }
 
+  const submitBg = mode === 'out' ? C.err : mode === 'adjustment' ? C.warn : C.ok
+  const badge = INVENTORY_TYPE_BADGES[product.inventoryType]
+
   return (
-    <div className="bg-surface border border-line rounded-t-2xl sm:rounded-2xl shadow-xl w-full sm:max-w-md flex flex-col max-h-[92dvh] sm:max-h-[85vh]">
+    <div style={{ width: '100%', maxWidth: 448, background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 16px 0 0', boxShadow: '0 24px 64px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column', maxHeight: '92dvh' }}
+      className="sm:rounded-[0_16px_16px_0] sm:max-h-[85vh]">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-line shrink-0">
-        <div className="flex items-center gap-2">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 14px', borderBottom: `1px solid ${C.linea}`, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {onBack && (
-            <button onClick={onBack} className="p-1 rounded-md hover:bg-raised text-fg-muted hover:text-fg transition-colors mr-1">
-              <ChevronLeftIcon className="w-4 h-4" />
+            <button onClick={onBack}
+              style={{ padding: 4, borderRadius: '0 6px 6px 0', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, marginRight: 4 }}
+              onMouseEnter={e => { e.currentTarget.style.background = C.s2; e.currentTarget.style.color = C.crema }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = C.piedra }}>
+              <ChevronLSvg style={{ width: 16, height: 16 }} />
             </button>
           )}
-          {icons[mode]}
-          <h2 className="text-base font-semibold text-fg">{titles[mode]}</h2>
+          <ModeIcon mode={mode} style={{ width: 16, height: 16 }} />
+          <span style={{ fontSize: 15, fontWeight: 600, color: C.crema }}>{titles[mode]}</span>
         </div>
-        <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-raised text-fg-muted hover:text-fg transition-colors">
-          <XMarkIcon className="w-4 h-4" />
+        <button onClick={onClose}
+          style={{ padding: 6, borderRadius: '0 6px 6px 0', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra }}
+          onMouseEnter={e => e.currentTarget.style.color = C.crema}
+          onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+          <CloseSvg style={{ width: 18, height: 18 }} />
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto min-h-0">
-      {/* Producto */}
-      <div className="px-6 pt-4 pb-2">
-        <div className="flex items-center justify-between rounded-xl bg-raised border border-line px-4 py-3">
-          <div>
-            <div className="flex items-center gap-1.5">
-              <p className="text-xs text-fg-muted font-mono">{product.sku}</p>
-              {product.inventoryType && INVENTORY_TYPE_BADGES[product.inventoryType] && (
-                <span className={`text-xs px-1.5 py-0 rounded-full font-medium ${INVENTORY_TYPE_BADGES[product.inventoryType].cls}`}>
-                  {INVENTORY_TYPE_BADGES[product.inventoryType].label}
-                </span>
+      <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+        {/* Producto info */}
+        <div style={{ padding: '16px 20px 8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '0 12px 12px 0', background: C.s2, border: `1px solid ${C.linea}`, padding: '12px 16px' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <p style={{ fontSize: 12, color: C.piedra, fontFamily: 'monospace' }}>{product.sku}</p>
+                {badge && (
+                  <span style={{ fontSize: 11, padding: '1px 6px', borderRadius: 100, fontWeight: 500, background: badge.bg, color: badge.color }}>
+                    {badge.label}
+                  </span>
+                )}
+              </div>
+              <p style={{ fontSize: 14, fontWeight: 600, color: C.crema, marginTop: 2 }}>{product.name}</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ fontSize: 12, color: C.piedra }}>Stock actual</p>
+              <p style={{ fontSize: 18, fontWeight: 700, color: C.crema }}>
+                {Number(product.stock).toLocaleString('es-AR')}
+                <span style={{ fontSize: 12, color: C.piedra, fontWeight: 400, marginLeft: 4 }}>{product.unit}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} style={{ padding: '8px 20px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {mode !== 'adjustment' && (
+            <div>
+              <label style={labelStyle}>Tipo de movimiento *</label>
+              <select className="du-input" value={form.type} onChange={set('type')} required>
+                {(mode === 'in' ? IN_TYPES : OUT_TYPES).map(t => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {mode === 'adjustment' ? (
+            <div>
+              <label style={labelStyle}>Nuevo stock total *</label>
+              <input className="du-input"
+                type="number" min="0" step="0.01"
+                placeholder={`Stock actual: ${Number(product.stock)}`}
+                value={form.targetStock}
+                onChange={set('targetStock')}
+                required />
+              {form.targetStock !== '' && Number(form.targetStock) !== Number(product.stock) && (
+                <p style={{ fontSize: 12, color: C.piedra, marginTop: 4 }}>
+                  Diferencia:{' '}
+                  <span style={{ fontWeight: 500, color: Number(form.targetStock) > Number(product.stock) ? C.ok : C.err }}>
+                    {Number(form.targetStock) > Number(product.stock) ? '+' : ''}
+                    {(Number(form.targetStock) - Number(product.stock)).toFixed(2)} {product.unit}
+                  </span>
+                </p>
               )}
             </div>
-            <p className="text-sm font-semibold text-fg mt-0.5">{product.name}</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label style={labelStyle}>Cantidad *</label>
+                <input className="du-input"
+                  type="number" min="0.01" step="0.01"
+                  placeholder="0"
+                  value={form.quantity}
+                  onChange={set('quantity')}
+                  required />
+              </div>
+              <div>
+                <label style={labelStyle}>Costo unitario</label>
+                <input className="du-input"
+                  type="number" min="0" step="0.01"
+                  placeholder="0.00"
+                  value={form.unitCost}
+                  onChange={set('unitCost')} />
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label style={labelStyle}>Referencia (nro. factura, OC, etc.)</label>
+            <input className="du-input" placeholder="Opcional" value={form.reference} onChange={set('reference')} />
           </div>
-          <div className="text-right">
-            <p className="text-xs text-fg-muted">Stock actual</p>
-            <p className="text-lg font-bold text-fg">
-              {Number(product.stock).toLocaleString('es-AR')}
-              <span className="text-xs text-fg-muted font-normal ml-1">{product.unit}</span>
-            </p>
+
+          <div>
+            <label style={labelStyle}>Motivo / observaciones</label>
+            <textarea className="du-input" rows={2} placeholder="Opcional" value={form.reason} onChange={set('reason')} />
           </div>
-        </div>
+        </form>
       </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="px-6 py-4 flex flex-col gap-4">
-        {mode !== 'adjustment' && (
-          <div>
-            <label className={labelCls}>Tipo de movimiento *</label>
-            <select className={inputCls} value={form.type} onChange={set('type')} required>
-              {(mode === 'in' ? IN_TYPES : OUT_TYPES).map(t => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        {mode === 'adjustment' ? (
-          <div>
-            <label className={labelCls}>Nuevo stock total *</label>
-            <input
-              className={inputCls}
-              type="number" min="0" step="0.01"
-              placeholder={`Stock actual: ${Number(product.stock)}`}
-              value={form.targetStock}
-              onChange={set('targetStock')}
-              required
-            />
-            {form.targetStock !== '' && Number(form.targetStock) !== Number(product.stock) && (
-              <p className="text-xs text-fg-muted mt-1">
-                Diferencia:{' '}
-                <span className={Number(form.targetStock) > Number(product.stock) ? 'text-success font-medium' : 'text-danger font-medium'}>
-                  {Number(form.targetStock) > Number(product.stock) ? '+' : ''}
-                  {(Number(form.targetStock) - Number(product.stock)).toFixed(2)} {product.unit}
-                </span>
-              </p>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelCls}>Cantidad *</label>
-              <input
-                className={inputCls}
-                type="number" min="0.01" step="0.01"
-                placeholder="0"
-                value={form.quantity}
-                onChange={set('quantity')}
-                required
-              />
-            </div>
-            <div>
-              <label className={labelCls}>Costo unitario</label>
-              <input
-                className={inputCls}
-                type="number" min="0" step="0.01"
-                placeholder="0.00"
-                value={form.unitCost}
-                onChange={set('unitCost')}
-              />
-            </div>
-          </div>
-        )}
-
-        <div>
-          <label className={labelCls}>Referencia (nro. factura, OC, etc.)</label>
-          <input className={inputCls} placeholder="Opcional" value={form.reference} onChange={set('reference')} />
-        </div>
-
-        <div>
-          <label className={labelCls}>Motivo / observaciones</label>
-          <textarea className={inputCls} rows={2} placeholder="Opcional" value={form.reason} onChange={set('reason')} />
-        </div>
-      </form>
-
-      </div>
       {/* Footer */}
-      <div className="px-6 py-4 border-t border-line flex justify-end gap-2 shrink-0">
-        <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg border border-line text-sm text-fg-muted hover:text-fg hover:bg-raised transition-colors">
+      <div style={{ padding: '14px 20px', borderTop: `1px solid ${C.linea}`, display: 'flex', justifyContent: 'flex-end', gap: 10, flexShrink: 0 }}>
+        <button type="button" onClick={onClose}
+          style={{ padding: '10px 16px', borderRadius: '0 10px 10px 0', border: `1px solid ${C.linea}`, background: 'none', color: C.piedra, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+          onMouseEnter={e => { e.currentTarget.style.color = C.crema; e.currentTarget.style.borderColor = C.arena }}
+          onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}>
           Cancelar
         </button>
-        <button
-          onClick={handleSubmit}
-          disabled={mutation.isPending}
-          className={`px-4 py-2 rounded-lg text-white text-sm font-semibold transition-opacity disabled:opacity-60 ${
-            mode === 'out' ? 'bg-danger hover:opacity-90' : mode === 'adjustment' ? 'bg-warning hover:opacity-90' : 'bg-success hover:opacity-90'
-          }`}
-        >
+        <button onClick={handleSubmit} disabled={mutation.isPending}
+          style={{ padding: '10px 16px', borderRadius: '0 10px 10px 0', border: 'none', background: submitBg, color: C.bg, fontSize: 13, fontWeight: 600, cursor: mutation.isPending ? 'not-allowed' : 'pointer', opacity: mutation.isPending ? 0.5 : 1 }}>
           {mutation.isPending ? 'Procesando…' : titles[mode]}
         </button>
       </div>
@@ -337,12 +360,12 @@ function MovementForm({ product, mode, onBack, onClose }) {
 }
 
 // ── Modal principal ───────────────────────────────────────────────────────────
-// product: si se pasa, saltea el selector y va directo al formulario
 export default function StockMovementModal({ product: initialProduct = null, mode = 'in', onClose }) {
   const [product, setProduct] = useState(initialProduct)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
+      className="sm:items-center">
       {!product
         ? <ProductPicker mode={mode} onSelect={setProduct} onClose={onClose} />
         : <MovementForm
