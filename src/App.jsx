@@ -9,6 +9,7 @@ import SplashScreen from './components/SplashScreen'
 
 import AuthLayout from './layouts/AuthLayout'
 import AppLayout from './layouts/AppLayout'
+import FinancesLayout from './layouts/FinancesLayout'
 
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
@@ -109,10 +110,12 @@ export default function App() {
               <Route path="/quotes" element={<AdminRoute><QuotesPage /></AdminRoute>} />
               <Route path="/quotes/:id" element={<AdminRoute><QuoteDetailPage /></AdminRoute>} />
               <Route path="/expenses" element={<AdminRoute><ExpensesPage /></AdminRoute>} />
-              <Route path="/finances" element={<AdminRoute><FinancesDashboard /></AdminRoute>} />
-              <Route path="/finances/movements" element={<AdminRoute><MovementsPage /></AdminRoute>} />
-              <Route path="/finances/accounts" element={<AdminRoute><AccountsPage /></AdminRoute>} />
-              <Route path="/finances/categories" element={<AdminRoute><CategoriesPage /></AdminRoute>} />
+              <Route path="/finances" element={<AdminRoute><FinancesLayout /></AdminRoute>}>
+                <Route index element={<FinancesDashboard />} />
+                <Route path="movements" element={<MovementsPage />} />
+                <Route path="accounts" element={<AccountsPage />} />
+                <Route path="categories" element={<CategoriesPage />} />
+              </Route>
               <Route path="/tasks" element={<TasksPage />} />
               <Route path="/stock" element={<StockDashboard />} />
               <Route path="/stock/products" element={<ProductsPage />} />

@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   getFinancialCategories, createFinancialCategory,
@@ -212,25 +211,11 @@ export default function CategoriesPage() {
   const expense = categories.filter(c => c.type === 'expense')
 
   return (
-    <div style={{ padding: '28px 24px 40px', fontFamily: 'Geist, system-ui, sans-serif', display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div style={{ padding: '20px 24px 40px', fontFamily: 'Geist, system-ui, sans-serif', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-          <Link to="/finances"
-            style={{ color: C.piedra, display: 'flex', alignItems: 'center', flexShrink: 0 }}
-            onMouseEnter={e => e.currentTarget.style.color = C.crema}
-            onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
-            <ChevronLSvg style={{ width: 18, height: 18 }} />
-          </Link>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <TagSvg style={{ width: 18, height: 18, color: C.arena }} />
-              <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Categorías</h2>
-            </div>
-            <p style={{ fontSize: 12, color: C.piedra, marginTop: 3 }}>{categories.length} categoría{categories.length !== 1 ? 's' : ''}</p>
-          </div>
-        </div>
+      {/* Toolbar */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+        <p style={{ fontSize: 12, color: C.piedra }}>{categories.length} categoría{categories.length !== 1 ? 's' : ''}</p>
         <button onClick={() => setModal({ create: true })}
           style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
           <PlusSvg style={{ width: 13, height: 13 }} />

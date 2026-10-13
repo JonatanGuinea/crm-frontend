@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getCashAccounts, createCashAccount, updateCashAccount, deleteCashAccount, setDefaultCashAccount } from '../../api/finances'
 import TransferModal from './TransferModal'
@@ -223,25 +222,11 @@ export default function AccountsPage() {
   }
 
   return (
-    <div style={{ padding: '28px 24px 40px', fontFamily: 'Geist, system-ui, sans-serif', display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div style={{ padding: '20px 24px 40px', fontFamily: 'Geist, system-ui, sans-serif', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-          <Link to="/finances"
-            style={{ color: C.piedra, display: 'flex', alignItems: 'center', flexShrink: 0 }}
-            onMouseEnter={e => e.currentTarget.style.color = C.crema}
-            onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
-            <ChevronLSvg style={{ width: 18, height: 18 }} />
-          </Link>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <WalletSvg style={{ width: 18, height: 18, color: C.arena }} />
-              <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Cuentas</h2>
-            </div>
-            <p style={{ fontSize: 12, color: C.piedra, marginTop: 3 }}>{accounts.length} cuenta{accounts.length !== 1 ? 's' : ''} configurada{accounts.length !== 1 ? 's' : ''}</p>
-          </div>
-        </div>
+      {/* Toolbar */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+        <p style={{ fontSize: 12, color: C.piedra }}>{accounts.length} cuenta{accounts.length !== 1 ? 's' : ''} configurada{accounts.length !== 1 ? 's' : ''}</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           <button onClick={() => setTransferModal(true)} disabled={accounts.length < 2}
             style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 12px', border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', background: 'none', color: C.piedra, fontSize: 13, fontWeight: 500, cursor: accounts.length < 2 ? 'not-allowed' : 'pointer', opacity: accounts.length < 2 ? 0.4 : 1 }}

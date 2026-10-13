@@ -193,27 +193,10 @@ export default function MovementsPage() {
   }
 
   return (
-    <div style={{ padding: '28px 24px 40px', fontFamily: 'Geist, system-ui, sans-serif', display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ padding: '20px 24px 40px', fontFamily: 'Geist, system-ui, sans-serif', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-          <Link to="/finances"
-            style={{ color: C.piedra, display: 'flex', alignItems: 'center', flexShrink: 0 }}
-            onMouseEnter={e => e.currentTarget.style.color = C.crema}
-            onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
-            <ChevronLSvg style={{ width: 18, height: 18 }} />
-          </Link>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <BankSvg style={{ width: 18, height: 18, color: C.arena }} />
-              <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Movimientos</h2>
-            </div>
-            <p style={{ fontSize: 12, color: C.piedra, marginTop: 3 }}>{movements.length} registros</p>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+      {/* Toolbar */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
           {/* Tab switcher */}
           <div style={{ display: 'flex', gap: 3, padding: 4, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0' }}>
             {[
@@ -286,12 +269,11 @@ export default function MovementsPage() {
               </Link>
             </div>
           )}
-        </div>
       </div>
 
       {/* ── Historial ── */}
       {tab === 'history' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 680 }}>
+        <div style={{ maxWidth: 680 }}>
           {historyData.length === 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: '60px 0', color: C.piedra }}>
               <ClockSvg style={{ width: 36, height: 36, opacity: 0.3 }} />
@@ -299,57 +281,49 @@ export default function MovementsPage() {
             </div>
           ) : (
             <>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {historyData.slice(0, historyVisible).map((entry, i) => {
-                  const initials   = entry.createdBy?.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() ?? '?'
-                  const date       = new Date(entry.createdAt)
-                  const dateStr    = date.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
-                  const timeStr    = date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                {historyData.slice(0, historyVisible).map(entry => {
                   const isIncome   = entry.type === 'income' || entry.type === 'transfer_in'
                   const amtColor   = isIncome ? C.ok : C.err
-                  const shown      = historyData.slice(0, historyVisible)
                   const actionText = {
-                    income: 'registró un ingreso', expense: 'registró un egreso',
+                    income:       'registró un ingreso',
+                    expense:      'registró un egreso',
                     transfer_out: 'registró una transferencia saliente',
-                    transfer_in: 'registró una transferencia entrante',
-                    adjustment: 'realizó un ajuste',
+                    transfer_in:  'registró una transferencia entrante',
+                    adjustment:   'realizó un ajuste',
                   }[entry.type] ?? 'registró un movimiento'
-
+                  const d = new Date(entry.createdAt)
+                  const dateTime = d.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' +
+                                   d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
                   return (
-                    <div key={entry.id} style={{ display: 'flex', gap: 12 }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(242,237,227,0.08)', color: C.crema, fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          {initials}
-                        </div>
-                        {i < shown.length - 1 && <div style={{ width: 1, flex: 1, background: C.linea, marginTop: 3, marginBottom: 3, minHeight: 14 }} />}
-                      </div>
-                      <div style={{ paddingBottom: 14, flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '0 6px', rowGap: 2, fontSize: 13 }}>
+                    <li key={entry.id} style={{ display: 'flex', gap: 12, padding: '12px 0', borderBottom: `1px solid ${C.linea}`, fontSize: 13 }}>
+                      <div style={{ width: 10, height: 16, flexShrink: 0, marginTop: 2, borderLeft: `2.5px solid ${C.piedra}`, borderBottom: `2.5px solid ${C.piedra}` }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '0 6px', rowGap: 2 }}>
                           <span style={{ fontWeight: 600, color: C.crema }}>{entry.createdBy?.name ?? 'Sistema'}</span>
-                          <span style={{ color: C.piedra }}>{actionText} de</span>
-                          <span style={{ fontWeight: 500, color: amtColor }}>
+                          <span style={{ color: C.arena }}>{actionText} de</span>
+                          <span style={{ fontWeight: 600, color: amtColor }}>
                             {isIncome ? '+' : '−'}${fmt(entry.amount)}
                           </span>
                           {entry.status === 'annulled' && (
                             <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', background: C.s3, color: C.piedra, padding: '1px 6px', borderRadius: '0 4px 4px 0' }}>Anulado</span>
                           )}
                         </div>
-                        <p style={{ fontSize: 11, color: C.piedra, marginTop: 2 }}>
-                          {entry.account?.name}
-                          {entry.client && ` · ${entry.client.name}`}
-                          {entry.description && ` · ${entry.description}`}
+                        <p style={{ fontSize: 11.5, color: C.piedra, marginTop: 2 }}>
+                          {[entry.account?.name, entry.client?.name, entry.description].filter(Boolean).join(' · ')}
                         </p>
-                        <p style={{ fontSize: 11, color: C.piedra, opacity: 0.7, marginTop: 2 }}>{dateStr} · {timeStr}</p>
+                        <p style={{ fontSize: 11, color: C.piedra, opacity: 0.7, marginTop: 3 }}>{dateTime}</p>
                       </div>
-                    </div>
+                    </li>
                   )
                 })}
-              </div>
+              </ul>
               {historyData.length > historyVisible && (
                 <button onClick={() => setHistoryVisible(v => v + 25)}
-                  style={{ fontSize: 12, color: C.piedra, textAlign: 'center', padding: '8px 0', border: `1px dashed ${C.linea}`, borderRadius: '0 10px 10px 0', background: 'none', cursor: 'pointer' }}
+                  style={{ marginTop: 4, width: '100%', padding: '10px 0', background: 'none', border: `1px dashed ${C.linea}`, borderRadius: '0 12px 12px 0', color: C.piedra, fontSize: 12.5, cursor: 'pointer' }}
                   onMouseEnter={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.arena }}
-                  onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}>
+                  onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}
+                >
                   Mostrar más ({historyData.length - historyVisible} restante{historyData.length - historyVisible !== 1 ? 's' : ''})
                 </button>
               )}
