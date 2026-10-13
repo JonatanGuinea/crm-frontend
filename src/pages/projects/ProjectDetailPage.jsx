@@ -34,20 +34,18 @@ const ALLOWED_TRANSITIONS = {
   finished:    [],
   cancelled:   [],
 }
-
 const DOC_STATUS = {
-  draft:     { label: 'Borrador',  bg: 'rgba(140,135,126,0.12)', color: '#8C877E' },
-  sent:      { label: 'Enviado',   bg: 'rgba(142,177,222,0.12)', color: '#8EB1DE' },
-  approved:  { label: 'Aprobado', bg: 'rgba(242,237,227,0.08)', color: '#F2EDE3' },
-  rejected:  { label: 'Rechazado',bg: 'rgba(229,131,115,0.12)', color: '#E58373' },
-  expired:   { label: 'Vencido',  bg: 'rgba(226,182,99,0.12)',  color: '#E2B663' },
-  pending:   { label: 'Pendiente',bg: 'rgba(226,182,99,0.12)',  color: '#E2B663' },
-  paid:      { label: 'Pagado',   bg: 'rgba(125,190,147,0.12)', color: '#7DBE93' },
-  overdue:   { label: 'Vencido',  bg: 'rgba(229,131,115,0.12)', color: '#E58373' },
-  partial:   { label: 'Parcial',  bg: 'rgba(226,182,99,0.12)',  color: '#E2B663' },
-  cancelled: { label: 'Cancelado',bg: 'rgba(140,135,126,0.12)', color: '#8C877E' },
+  draft:     { label: 'Borrador',   color: '#8C877E' },
+  sent:      { label: 'Enviado',    color: '#8EB1DE' },
+  approved:  { label: 'Aprobado',   color: '#F2EDE3' },
+  rejected:  { label: 'Rechazado', color: '#E58373' },
+  expired:   { label: 'Vencido',   color: '#E2B663' },
+  pending:   { label: 'Pendiente', color: '#E2B663' },
+  paid:      { label: 'Pagado',    color: '#7DBE93' },
+  overdue:   { label: 'Vencido',   color: '#E58373' },
+  partial:   { label: 'Parcial',   color: '#E2B663' },
+  cancelled: { label: 'Cancelado', color: '#8C877E' },
 }
-
 const TASK_COLS = [
   { id: 'todo',        label: 'Pendiente',   color: C.piedra },
   { id: 'in_progress', label: 'En progreso', color: '#E2B663' },
@@ -64,6 +62,19 @@ const PREV_STATUS = { todo: null, in_progress: 'todo', done: 'in_progress', canc
 function isOverdue(iso) {
   if (!iso) return false
   return new Date(iso) < new Date(new Date().toDateString())
+}
+
+function fmtDate(iso) {
+  if (!iso) return ''
+  return new Date(iso.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+function fmtMoney(amount, currency) {
+  const isARS = !currency || currency === 'ARS'
+  return Number(amount).toLocaleString('es-AR', {
+    minimumFractionDigits: isARS ? 0 : 2,
+    maximumFractionDigits: isARS ? 0 : 2,
+  })
 }
 
 function PencilSvg() {
@@ -95,116 +106,25 @@ function ChevronSvg({ style }) {
     </svg>
   )
 }
-function ChevronRightSvg() {
+function PaperclipSvg() {
   return (
-    <svg style={{ display: 'block', width: 10, height: 10 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="9 18 15 12 9 6" />
+    <svg style={{ display: 'block', width: 13, height: 13 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
     </svg>
   )
 }
-function XCircleSvg() {
+function CheckSvg() {
   return (
-    <svg style={{ display: 'block', width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" />
+    <svg style={{ display: 'block', width: 11, height: 11, flexShrink: 0 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
     </svg>
   )
 }
-function CalSvg() {
+function CloseSvg() {
   return (
-    <svg style={{ display: 'block', width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+    <svg style={{ display: 'block', width: 16, height: 16 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
     </svg>
-  )
-}
-
-function TaskAvatar({ user }) {
-  if (!user) return null
-  const initials = user.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
-  return (
-    <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'rgba(242,237,227,0.1)', color: C.crema, fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} title={user.name}>
-      {initials}
-    </div>
-  )
-}
-
-function MiniTaskCard({ task, canWrite, onEdit, onDelete, onMove }) {
-  const [hovered, setHovered] = useState(false)
-  const overdue     = isOverdue(task.dueDate)
-  const prio        = TASK_PRIORITY[task.priority] || TASK_PRIORITY.low
-  const isCancelled = task.status === 'cancelled'
-  const isDone      = task.status === 'done'
-  const canNext     = Boolean(NEXT_STATUS[task.status])
-  const canPrev     = Boolean(PREV_STATUS[task.status])
-
-  return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0', padding: 12, display: 'flex', flexDirection: 'column', gap: 8, opacity: isCancelled || isDone ? 0.65 : 1 }}
-    >
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-        <p style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.35, flex: 1, color: isCancelled || isDone ? C.piedra : C.crema, textDecoration: isCancelled || isDone ? 'line-through' : 'none' }}>
-          {task.title}
-        </p>
-        {canWrite && !isCancelled && hovered && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
-            <button onClick={() => onEdit(task)} style={{ padding: 4, borderRadius: '0 4px 4px 0', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra }}
-              onMouseEnter={e => e.currentTarget.style.color = C.arena}
-              onMouseLeave={e => e.currentTarget.style.color = C.piedra}
-            >
-              <PencilSvg />
-            </button>
-            <button onClick={() => onDelete(task)} style={{ padding: 4, borderRadius: '0 4px 4px 0', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra }}
-              onMouseEnter={e => e.currentTarget.style.color = C.err}
-              onMouseLeave={e => e.currentTarget.style.color = C.piedra}
-            >
-              <TrashSvg />
-            </button>
-          </div>
-        )}
-      </div>
-
-      {isCancelled && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: C.err }}>
-          <XCircleSvg />
-          <span style={{ fontSize: 10, fontWeight: 600 }}>Proyecto cancelado</span>
-        </div>
-      )}
-
-      {!isCancelled && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: '0 4px 4px 0', background: prio.bg, color: prio.color }}>{prio.label}</span>
-          {task.dueDate && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: overdue && !isDone ? C.err : C.piedra }}>
-              <CalSvg />
-              {new Date(task.dueDate.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
-            </span>
-          )}
-          {task.assignedTo && (
-            <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <TaskAvatar user={task.assignedTo} />
-              <span style={{ fontSize: 11, color: C.piedra }}>{task.assignedTo.name.split(' ')[0]}</span>
-            </span>
-          )}
-        </div>
-      )}
-
-      {canWrite && !isCancelled && hovered && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, paddingTop: 6, borderTop: `1px solid ${C.linea}` }}>
-          <button disabled={!canPrev} onClick={() => canPrev && onMove(task, PREV_STATUS[task.status])}
-            style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, color: canPrev ? C.piedra : 'transparent', background: 'none', border: 'none', cursor: canPrev ? 'pointer' : 'default', padding: '2px 4px', borderRadius: '0 4px 4px 0' }}
-          >
-            <ChevronRightSvg style={{ transform: 'rotate(180deg)' }} /> Atrás
-          </button>
-          <div style={{ flex: 1 }} />
-          <button disabled={!canNext} onClick={() => canNext && onMove(task, NEXT_STATUS[task.status])}
-            style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, color: canNext ? C.piedra : 'transparent', background: 'none', border: 'none', cursor: canNext ? 'pointer' : 'default', padding: '2px 4px', borderRadius: '0 4px 4px 0' }}
-          >
-            Siguiente <ChevronRightSvg />
-          </button>
-        </div>
-      )}
-    </div>
   )
 }
 
@@ -265,68 +185,163 @@ function StatusDropdown({ project, onUpdate }) {
   )
 }
 
-function ProjectTasksPanel({ tasks, canWrite, onAdd, onEdit, onDelete, onMove }) {
-  const total = tasks.length
-  const done  = tasks.filter(t => t.status === 'done').length
+function MiniTaskCard({ task, canWrite, onEdit, onDelete, onMove }) {
+  const [hovered, setHovered] = useState(false)
+  const overdue     = isOverdue(task.dueDate)
+  const prio        = TASK_PRIORITY[task.priority] || TASK_PRIORITY.low
+  const isCancelled = task.status === 'cancelled'
+  const isDone      = task.status === 'done'
+  const canNext     = Boolean(NEXT_STATUS[task.status])
+  const canPrev     = Boolean(PREV_STATUS[task.status])
 
-  return (
-    <div style={{ ...card, overflow: 'hidden' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: `1px solid ${C.linea}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: C.arena }}>
-            Tareas <span style={{ color: C.piedra, fontWeight: 400 }}>({total})</span>
-          </span>
-          {total > 0 && (
-            <span style={{ fontSize: 11, color: C.piedra }}>{done}/{total} completadas</span>
+  const fmtShort = iso => new Date(iso.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: '2-digit' })
+
+  // Completed / cancelled — lista compacta
+  if (isDone || isCancelled) {
+    return (
+      <div
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 16px', borderBottom: `1px solid ${C.linea}`, opacity: isCancelled ? 0.5 : 1 }}
+      >
+        <span style={{ color: isCancelled ? C.piedra : C.ok, flexShrink: 0 }}><CheckSvg /></span>
+        <p style={{ flex: 1, fontSize: 12.5, color: C.piedra, textDecoration: isCancelled ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>
+          {task.title}
+        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          {hovered && canWrite && !isCancelled ? (
+            <div style={{ display: 'flex', gap: 2 }}>
+              <button onClick={() => onEdit(task)} style={{ padding: 3, background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, borderRadius: '0 3px 3px 0' }}
+                onMouseEnter={e => e.currentTarget.style.color = C.arena}
+                onMouseLeave={e => e.currentTarget.style.color = C.piedra}
+              ><PencilSvg /></button>
+              <button onClick={() => onDelete(task)} style={{ padding: 3, background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, borderRadius: '0 3px 3px 0' }}
+                onMouseEnter={e => e.currentTarget.style.color = C.err}
+                onMouseLeave={e => e.currentTarget.style.color = C.piedra}
+              ><TrashSvg /></button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: C.piedra }}>
+              {task.assignedTo && <span>{task.assignedTo.name.split(' ')[0]}</span>}
+              {task.dueDate && <span>{fmtShort(task.dueDate)}</span>}
+            </div>
           )}
         </div>
-        {canWrite && (
-          <button onClick={onAdd}
-            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer' }}
-          >
-            <PlusSvg /> Nueva tarea
-          </button>
+      </div>
+    )
+  }
+
+  // Pendiente / En progreso — card
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}
+    >
+      <p style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.35, color: C.crema, margin: 0 }}>{task.title}</p>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+        <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: '0 4px 4px 0', background: prio.bg, color: prio.color, whiteSpace: 'nowrap' }}>
+          {prio.label}
+        </span>
+        {task.assignedTo && (
+          <span style={{ fontSize: 11, color: C.arena }}>{task.assignedTo.name.split(' ')[0]}</span>
+        )}
+        {task.dueDate && (
+          <span style={{ fontSize: 11, color: overdue ? C.err : C.piedra }}>
+            {task.assignedTo && <span style={{ color: C.linea, marginRight: 4 }}>·</span>}
+            {fmtShort(task.dueDate)}
+          </span>
+        )}
+        {canWrite && hovered && (
+          <div style={{ display: 'flex', gap: 2, marginLeft: 'auto' }}>
+            <button onClick={() => onEdit(task)} style={{ padding: 4, background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, borderRadius: '0 4px 4px 0' }}
+              onMouseEnter={e => e.currentTarget.style.color = C.arena}
+              onMouseLeave={e => e.currentTarget.style.color = C.piedra}
+            ><PencilSvg /></button>
+            <button onClick={() => onDelete(task)} style={{ padding: 4, background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, borderRadius: '0 4px 4px 0' }}
+              onMouseEnter={e => e.currentTarget.style.color = C.err}
+              onMouseLeave={e => e.currentTarget.style.color = C.piedra}
+            ><TrashSvg /></button>
+          </div>
         )}
       </div>
 
-      {total === 0 ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', gap: 12 }}>
-          <p style={{ fontSize: 13, color: C.piedra }}>Sin tareas en este proyecto</p>
-          {canWrite && (
-            <button onClick={onAdd}
-              style={{ padding: '8px 18px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}
-            >
-              Agregar tarea
-            </button>
-          )}
-        </div>
-      ) : (
-        <div style={{ padding: 16 }} className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {TASK_COLS.map(col => {
-            const colTasks = tasks.filter(t => col.id === 'done'
-              ? t.status === 'done' || t.status === 'cancelled'
-              : t.status === col.id)
-            return (
-              <div key={col.id} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 2px' }}>
-                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: col.color, flexShrink: 0 }} />
-                  <span style={{ fontSize: 11, fontWeight: 600, color: col.color }}>{col.label}</span>
-                  <span style={{ fontSize: 11, color: C.piedra, marginLeft: 'auto' }}>{colTasks.length}</span>
-                </div>
-                {colTasks.length === 0 ? (
-                  <div style={{ border: `1px dashed ${C.linea}`, borderRadius: '0 10px 10px 0', padding: 12, textAlign: 'center', fontSize: 12, color: C.piedra }}>
-                    Sin tareas
-                  </div>
-                ) : (
-                  colTasks.map(t => (
-                    <MiniTaskCard key={t.id} task={t} canWrite={canWrite} onEdit={onEdit} onDelete={onDelete} onMove={onMove} />
-                  ))
-                )}
-              </div>
-            )
-          })}
+      {canWrite && hovered && (
+        <div style={{ display: 'flex', alignItems: 'center', paddingTop: 8, borderTop: `1px solid ${C.linea}` }}>
+          <button disabled={!canPrev} onClick={() => canPrev && onMove(task, PREV_STATUS[task.status])}
+            style={{ fontSize: 10, color: canPrev ? C.piedra : 'transparent', background: 'none', border: 'none', cursor: canPrev ? 'pointer' : 'default', padding: '0 4px', borderRadius: '0 4px 4px 0' }}
+            onMouseEnter={e => { if (canPrev) e.currentTarget.style.color = C.arena }}
+            onMouseLeave={e => { if (canPrev) e.currentTarget.style.color = C.piedra }}
+          >← Atrás</button>
+          <div style={{ flex: 1 }} />
+          <button disabled={!canNext} onClick={() => canNext && onMove(task, NEXT_STATUS[task.status])}
+            style={{ fontSize: 10, color: canNext ? C.piedra : 'transparent', background: 'none', border: 'none', cursor: canNext ? 'pointer' : 'default', padding: '0 4px', borderRadius: '0 4px 4px 0' }}
+            onMouseEnter={e => { if (canNext) e.currentTarget.style.color = C.arena }}
+            onMouseLeave={e => { if (canNext) e.currentTarget.style.color = C.piedra }}
+          >Siguiente →</button>
         </div>
       )}
+    </div>
+  )
+}
+
+function ProjectTasksPanel({ tasks, canWrite, onAdd, onEdit, onDelete, onMove }) {
+  return (
+    <div style={{ ...card, overflow: 'hidden' }}>
+      <div className="grid grid-cols-1 md:grid-cols-3">
+        {TASK_COLS.map((col, colIdx) => {
+          const isLast = colIdx === TASK_COLS.length - 1
+          const colTasks = col.id === 'done'
+            ? tasks.filter(t => t.status === 'done' || t.status === 'cancelled')
+            : tasks.filter(t => t.status === col.id)
+
+          return (
+            <div key={col.id} style={{ borderRight: isLast ? 'none' : `1px solid ${C.linea}`, display: 'flex', flexDirection: 'column', borderBottom: isLast ? 'none' : undefined }}>
+              {/* Column header */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', height: 44, borderBottom: `1px solid ${C.linea}`, background: C.s2 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: col.color, flexShrink: 0 }} />
+                  <span style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: col.color }}>{col.label}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 11, color: C.piedra, fontWeight: 600 }}>{colTasks.length}</span>
+                  {col.id === 'todo' && canWrite && (
+                    <button onClick={onAdd}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, background: C.crema, color: C.bg, borderRadius: '0 5px 5px 0', border: 'none', cursor: 'pointer' }}
+                    ><PlusSvg /></button>
+                  )}
+                </div>
+              </div>
+
+              {/* Tasks */}
+              {col.id === 'done' ? (
+                <div style={{ flex: 1 }}>
+                  {colTasks.length === 0 ? (
+                    <p style={{ padding: '24px 16px', textAlign: 'center', fontSize: 12, color: C.piedra, margin: 0 }}>Sin tareas</p>
+                  ) : (
+                    colTasks.map(t => (
+                      <MiniTaskCard key={t.id} task={t} canWrite={canWrite} onEdit={onEdit} onDelete={onDelete} onMove={onMove} />
+                    ))
+                  )}
+                </div>
+              ) : (
+                <div style={{ flex: 1, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {colTasks.length === 0 ? (
+                    <div style={{ border: `1px dashed ${C.linea}`, borderRadius: '0 10px 10px 0', padding: 16, textAlign: 'center', fontSize: 12, color: C.piedra }}>
+                      Sin tareas
+                    </div>
+                  ) : (
+                    colTasks.map(t => (
+                      <MiniTaskCard key={t.id} task={t} canWrite={canWrite} onEdit={onEdit} onDelete={onDelete} onMove={onMove} />
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -340,9 +355,11 @@ export default function ProjectDetailPage() {
   const qc = useQueryClient()
   const toast = useToast()
   const confirm = useConfirm()
-  const [editOpen, setEditOpen]         = useState(false)
+
+  const [editOpen, setEditOpen]       = useState(false)
   const [newQuoteOpen, setNewQuoteOpen] = useState(false)
-  const [taskModal, setTaskModal]       = useState(null)
+  const [taskModal, setTaskModal]     = useState(null)
+  const [attachOpen, setAttachOpen]   = useState(false)
 
   const del = useMutation({
     mutationFn: () => deleteProject(id),
@@ -355,42 +372,6 @@ export default function ProjectDetailPage() {
     onSuccess: () => { qc.invalidateQueries(['project', id]); qc.invalidateQueries(['projects']) },
     onError: (err) => toast(err.response?.data?.error || err.message || 'Error al cambiar estado', 'error')
   })
-
-  async function handleStatusChange(status) {
-    if (status !== 'finished' && status !== 'cancelled') { changeStatus.mutate(status); return }
-
-    const isCancelling = status === 'cancelled'
-    const pending = isCancelling
-      ? projectTasks.filter(t => t.status !== 'done' && t.status !== 'cancelled')
-      : projectTasks.filter(t => t.status !== 'done')
-
-    if (pending.length === 0) { changeStatus.mutate(status); return }
-
-    const body = (
-      <div style={{ fontSize: 13 }}>
-        <p style={{ fontSize: 11, color: C.piedra, marginBottom: 6 }}>
-          {pending.length} tarea{pending.length !== 1 ? 's' : ''} {isCancelling ? 'en curso o pendiente:' : 'sin completar:'}
-        </p>
-        {pending.map(t => (
-          <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 8, color: C.arena, marginBottom: 4 }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: C.piedra, flexShrink: 0 }} />
-            {t.title}
-          </div>
-        ))}
-      </div>
-    )
-
-    const ok = await confirm(
-      isCancelling ? '¿Cancelar el proyecto? Las tareas pendientes también serán canceladas.'
-                   : '¿Finalizar el proyecto? Las tareas pendientes se marcarán como completadas.',
-      { confirmLabel: isCancelling ? 'Cancelar proyecto' : 'Finalizar y completar', danger: isCancelling, body }
-    )
-    if (!ok) return
-    const newTaskStatus = isCancelling ? 'cancelled' : 'done'
-    for (const t of pending) { try { await updateTask(t.id, { status: newTaskStatus }) } catch {} }
-    changeStatus.mutate(status)
-    qc.invalidateQueries(['tasks', { projectId: id }])
-  }
 
   const { data: project, isLoading } = useQuery({
     queryKey: ['project', id],
@@ -421,190 +402,223 @@ export default function ProjectDetailPage() {
     onError: (err) => toast(err.response?.data?.error || err.message || 'Error al eliminar', 'error')
   })
 
+  async function handleStatusChange(status) {
+    if (status !== 'finished' && status !== 'cancelled') { changeStatus.mutate(status); return }
+    const isCancelling = status === 'cancelled'
+    const pending = isCancelling
+      ? projectTasks.filter(t => t.status !== 'done' && t.status !== 'cancelled')
+      : projectTasks.filter(t => t.status !== 'done')
+    if (pending.length === 0) { changeStatus.mutate(status); return }
+    const body = (
+      <div style={{ fontSize: 13 }}>
+        <p style={{ fontSize: 11, color: C.piedra, marginBottom: 6 }}>
+          {pending.length} tarea{pending.length !== 1 ? 's' : ''} {isCancelling ? 'en curso o pendiente:' : 'sin completar:'}
+        </p>
+        {pending.map(t => (
+          <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 8, color: C.arena, marginBottom: 4 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: C.piedra, flexShrink: 0 }} />
+            {t.title}
+          </div>
+        ))}
+      </div>
+    )
+    const ok = await confirm(
+      isCancelling ? '¿Cancelar el proyecto? Las tareas pendientes también serán canceladas.'
+                   : '¿Finalizar el proyecto? Las tareas pendientes se marcarán como completadas.',
+      { confirmLabel: isCancelling ? 'Cancelar proyecto' : 'Finalizar y completar', danger: isCancelling, body }
+    )
+    if (!ok) return
+    const newTaskStatus = isCancelling ? 'cancelled' : 'done'
+    for (const t of pending) { try { await updateTask(t.id, { status: newTaskStatus }) } catch {} }
+    changeStatus.mutate(status)
+    qc.invalidateQueries(['tasks', { projectId: id }])
+  }
+
   if (isLoading) return <div style={{ padding: 32, fontSize: 13, color: C.piedra }}>Cargando...</div>
-  if (!project) return <div style={{ padding: 32, fontSize: 13, color: C.piedra }}>Proyecto no encontrado</div>
+  if (!project)  return <div style={{ padding: 32, fontSize: 13, color: C.piedra }}>Proyecto no encontrado</div>
 
-  const quotes = quotesRes?.data || []
-
-  const thStyle = { background: C.linea, color: C.crema, fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '12px 20px', textAlign: 'left', whiteSpace: 'nowrap' }
-  const tdStyle = { padding: '12px 20px', borderBottom: `1px solid ${C.linea}`, color: C.arena, fontSize: 13 }
+  const quotes     = quotesRes?.data || []
+  const firstQuote = quotes[0]
+  const totalTasks = projectTasks.length
+  const doneTasks  = projectTasks.filter(t => t.status === 'done').length
+  const daysLeft   = project.endDate
+    ? Math.ceil((new Date(project.endDate.slice(0, 10) + 'T12:00:00') - new Date(new Date().toDateString())) / 86400000)
+    : null
 
   return (
     <div style={{ padding: '24px', fontFamily: 'Geist, system-ui, sans-serif' }}>
-      {/* Back */}
-      <button onClick={() => navigate('/projects')}
-        style={{ fontSize: 13, color: C.piedra, background: 'none', border: 'none', cursor: 'pointer', marginBottom: 20, padding: 0 }}
-        onMouseEnter={e => e.currentTarget.style.color = C.arena}
-        onMouseLeave={e => e.currentTarget.style.color = C.piedra}
-      >
-        ← Proyectos
-      </button>
 
-      {/* Header */}
-      <div style={{ marginBottom: 32 }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
-          <div style={{ minWidth: 0 }}>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: C.crema, lineHeight: 1.2, margin: '0 0 8px' }}>{project.title}</h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <StatusDropdown project={project} onUpdate={handleStatusChange} />
-              {project.client && (
-                <Link to={`/clients/${project.client.id}`}
-                  style={{ fontSize: 13, color: C.info, textDecoration: 'none' }}
-                  onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
-                  onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
-                >
-                  {project.client.name}
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {canWrite && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <button onClick={() => setEditOpen(true)}
-              style={{ padding: '6px 14px', border: `1px solid ${C.linea}`, borderRadius: '0 8px 8px 0', fontSize: 12, fontWeight: 500, color: C.arena, background: 'none', cursor: 'pointer' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = C.arena; e.currentTarget.style.color = C.crema }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = C.linea; e.currentTarget.style.color = C.arena }}
-            >
-              Editar
-            </button>
-            <button
-              onClick={async () => { if (await confirm('¿Eliminar este proyecto? Esta acción no se puede deshacer.', { confirmLabel: 'Eliminar', danger: true })) del.mutate() }}
-              disabled={del.isPending}
-              style={{ padding: '6px 14px', borderRadius: '0 8px 8px 0', fontSize: 12, fontWeight: 500, background: 'rgba(229,131,115,0.1)', color: C.err, border: '1px solid rgba(229,131,115,0.25)', cursor: 'pointer' }}
-            >
-              Eliminar
-            </button>
-          </div>
+      {/* Breadcrumb */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16, fontSize: 13, color: C.piedra }}>
+        <Link to="/projects"
+          style={{ color: C.piedra, textDecoration: 'none' }}
+          onMouseEnter={e => e.currentTarget.style.color = C.arena}
+          onMouseLeave={e => e.currentTarget.style.color = C.piedra}
+        >Proyectos</Link>
+        {project.client && (
+          <>
+            <span style={{ opacity: 0.4 }}>/</span>
+            <Link to={`/clients/${project.client.id}`}
+              style={{ color: C.piedra, textDecoration: 'none' }}
+              onMouseEnter={e => e.currentTarget.style.color = C.arena}
+              onMouseLeave={e => e.currentTarget.style.color = C.piedra}
+            >{project.client.name}</Link>
+          </>
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Sidebar */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          <div style={{ ...card, padding: 20 }}>
-            <p style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: C.arena, marginBottom: 16 }}>Información</p>
-            <dl style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {project.budget != null && (
-                <div>
-                  <dt style={{ fontSize: 10, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>Presupuesto</dt>
-                  <dd style={{ fontSize: 14, fontWeight: 600, color: C.crema, fontFamily: CIFRAS }}>${Number(project.budget).toLocaleString('es-AR')}</dd>
-                </div>
-              )}
-              {project.startDate && (
-                <div>
-                  <dt style={{ fontSize: 10, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>Fecha inicio</dt>
-                  <dd style={{ fontSize: 13, color: C.arena }}>{new Date(project.startDate.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR')}</dd>
-                </div>
-              )}
-              {project.endDate && (
-                <div>
-                  <dt style={{ fontSize: 10, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>Fecha fin</dt>
-                  <dd style={{ fontSize: 13, color: C.arena }}>{new Date(project.endDate.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR')}</dd>
-                </div>
-              )}
-              {project.description && (
-                <div>
-                  <dt style={{ fontSize: 10, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>Descripción</dt>
-                  <dd style={{ fontSize: 13, color: C.arena, whiteSpace: 'pre-line', overflowWrap: 'anywhere' }}>{project.description}</dd>
-                </div>
-              )}
-            </dl>
-          </div>
-
-          <div style={{ ...card, padding: 20 }}>
-            <AttachmentsPanel entityType="project" entityId={id} />
-          </div>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <h1 style={{ fontSize: 26, fontWeight: 700, color: C.crema, letterSpacing: '-0.02em', margin: 0, lineHeight: 1.1 }}>{project.title}</h1>
+          <StatusDropdown project={project} onUpdate={handleStatusChange} />
         </div>
-
-        {/* Main content */}
-        <div className="lg:col-span-2" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          <ProjectTasksPanel
-            tasks={projectTasks}
-            projectId={id}
-            canWrite={canWrite}
-            onAdd={() => setTaskModal({ defaultStatus: 'todo' })}
-            onEdit={(t) => setTaskModal({ task: t })}
-            onDelete={async (t) => {
-              if (await confirm(`¿Eliminar "${t.title}"?`, { confirmLabel: 'Eliminar', danger: true }))
-                deleteTaskMutation.mutate(t.id)
-            }}
-            onMove={(t, status) => moveTaskMutation.mutate({ taskId: t.id, status })}
-          />
-
-          {!isMember && (
-            <div style={{ ...card, overflow: 'hidden' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: `1px solid ${C.linea}` }}>
-                <span style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: C.arena }}>
-                  Presupuesto <span style={{ color: C.piedra, fontWeight: 400 }}>({quotes.length})</span>
-                </span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  {canWrite && (
-                    <button onClick={() => setNewQuoteOpen(true)}
-                      style={{ padding: '6px 12px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer' }}
-                    >
-                      Asignar
-                    </button>
-                  )}
-                  {quotes.length > 0 && (
-                    <Link to="/quotes" style={{ fontSize: 12, color: C.info, textDecoration: 'none' }}
-                      onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
-                      onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
-                    >
-                      Ver todos
-                    </Link>
-                  )}
-                </div>
-              </div>
-              {quotes.length === 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', gap: 12 }}>
-                  <p style={{ fontSize: 13, color: C.piedra }}>Sin presupuesto asignado</p>
-                  {canWrite && (
-                    <button onClick={() => setNewQuoteOpen(true)}
-                      style={{ padding: '8px 18px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}
-                    >
-                      Asignar presupuesto
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-                  <thead>
-                    <tr>
-                      {['N°', 'Estado', 'Total'].map(h => (
-                        <th key={h} style={thStyle}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {quotes.map(q => {
-                      const ds = DOC_STATUS[q.status] || { label: q.status, bg: 'transparent', color: C.piedra }
-                      return (
-                        <tr key={q.id}
-                          onMouseEnter={e => Array.from(e.currentTarget.cells).forEach(td => td.style.background = C.s2)}
-                          onMouseLeave={e => Array.from(e.currentTarget.cells).forEach(td => td.style.background = 'transparent')}
-                        >
-                          <td style={{ ...tdStyle, fontFamily: "'Geist Mono', monospace", fontWeight: 500, color: C.crema }}>{q.number}</td>
-                          <td style={tdStyle}>
-                            <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: '0 6px 6px 0', fontSize: 10.5, fontWeight: 600, background: ds.bg, color: ds.color }}>
-                              {ds.label}
-                            </span>
-                          </td>
-                          <td style={{ ...tdStyle, fontFamily: CIFRAS, fontWeight: 600, color: C.crema }}>
-                            {q.total != null ? `$${Number(q.total).toLocaleString('es-AR')}` : '—'}
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              )}
-            </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
+          <button onClick={() => setAttachOpen(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 12px', border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', fontSize: 12, color: C.piedra, background: 'none', cursor: 'pointer' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = C.arena; e.currentTarget.style.color = C.arena }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.linea; e.currentTarget.style.color = C.piedra }}
+          >
+            <PaperclipSvg /> Archivos
+          </button>
+          {canWrite && (
+            <>
+              <button onClick={() => setEditOpen(true)}
+                style={{ padding: '7px 16px', border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 500, color: C.arena, background: 'none', cursor: 'pointer' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = C.arena; e.currentTarget.style.color = C.crema }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.linea; e.currentTarget.style.color = C.arena }}
+              >Editar</button>
+              <button onClick={() => setTaskModal({ defaultStatus: 'todo' })}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 16px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}
+              >
+                <PlusSvg /> Nueva tarea
+              </button>
+            </>
           )}
         </div>
       </div>
 
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4" style={{ gap: 12, marginBottom: 24 }}>
+
+        {/* Tareas completadas */}
+        <div style={{ ...card, padding: '20px 24px' }}>
+          <p style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: C.arena, marginBottom: 14 }}>Tareas completadas</p>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
+            <span style={{ fontFamily: CIFRAS, fontSize: 34, fontWeight: 700, color: C.crema, lineHeight: 1 }}>{doneTasks}</span>
+            <span style={{ fontSize: 14, color: C.piedra }}>de {totalTasks}</span>
+          </div>
+          {totalTasks > 0 && (
+            <div style={{ height: 4, borderRadius: 999, background: C.s3, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${Math.round((doneTasks / totalTasks) * 100)}%`, background: doneTasks === totalTasks ? C.ok : C.crema, borderRadius: 999, transition: 'width 0.5s' }} />
+            </div>
+          )}
+        </div>
+
+        {/* Presupuesto */}
+        {!isMember && (
+          <div style={{ ...card, padding: '20px 24px' }}>
+            <p style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: C.arena, marginBottom: 14 }}>
+              {firstQuote ? `Presupuesto P-${String(firstQuote.number).padStart(4, '0')}` : 'Presupuesto'}
+            </p>
+            {firstQuote ? (
+              <>
+                <p style={{ fontFamily: CIFRAS, fontSize: 28, fontWeight: 700, color: C.crema, lineHeight: 1, marginBottom: 8 }}>
+                  ${fmtMoney(firstQuote.total, firstQuote.currency)}
+                </p>
+                {DOC_STATUS[firstQuote.status] && (
+                  <span style={{ fontSize: 11.5, color: DOC_STATUS[firstQuote.status].color }}>
+                    {DOC_STATUS[firstQuote.status].label}
+                  </span>
+                )}
+              </>
+            ) : (
+              <>
+                <p style={{ fontSize: 13, color: C.piedra, marginBottom: 12 }}>Sin presupuesto</p>
+                {canWrite && (
+                  <button onClick={() => setNewQuoteOpen(true)}
+                    style={{ padding: '6px 14px', background: C.crema, color: C.bg, borderRadius: '0 8px 8px 0', fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer' }}
+                  >Asignar</button>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Responsables */}
+        <div style={{ ...card, padding: '20px 24px' }}>
+          <p style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: C.arena, marginBottom: 14 }}>Responsables</p>
+          {project.members?.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {project.members.slice(0, 3).map(m => {
+                const u = m.user || m
+                const initials = u.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
+                return (
+                  <div key={m.userId || u.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(242,237,227,0.08)', border: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: C.crema, flexShrink: 0 }}>
+                      {initials}
+                    </div>
+                    <span style={{ fontSize: 13, color: C.arena }}>{u.name}</span>
+                  </div>
+                )
+              })}
+              {project.members.length > 3 && (
+                <span style={{ fontSize: 11, color: C.piedra }}>+{project.members.length - 3} más</span>
+              )}
+            </div>
+          ) : (
+            <p style={{ fontSize: 13, color: C.piedra }}>Sin responsables</p>
+          )}
+        </div>
+
+        {/* Días para la entrega */}
+        <div style={{ ...card, padding: '20px 24px' }}>
+          <p style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: C.arena, marginBottom: 14 }}>Días para la entrega</p>
+          {daysLeft !== null ? (
+            <>
+              <p style={{ fontFamily: CIFRAS, fontSize: 34, fontWeight: 700, lineHeight: 1, marginBottom: 8, color: daysLeft < 0 ? C.err : daysLeft <= 7 ? C.warn : C.crema }}>
+                {Math.abs(daysLeft)}
+              </p>
+              <p style={{ fontSize: 11.5, color: daysLeft < 0 ? C.err : C.piedra }}>
+                {daysLeft < 0 ? `Vencido · ${fmtDate(project.endDate)}` : fmtDate(project.endDate)}
+              </p>
+            </>
+          ) : (
+            <p style={{ fontSize: 13, color: C.piedra }}>Sin fecha definida</p>
+          )}
+        </div>
+      </div>
+
+      {/* Kanban */}
+      <ProjectTasksPanel
+        tasks={projectTasks}
+        canWrite={canWrite}
+        onAdd={() => setTaskModal({ defaultStatus: 'todo' })}
+        onEdit={(t) => setTaskModal({ task: t })}
+        onDelete={async (t) => {
+          if (await confirm(`¿Eliminar "${t.title}"?`, { confirmLabel: 'Eliminar', danger: true }))
+            deleteTaskMutation.mutate(t.id)
+        }}
+        onMove={(t, status) => moveTaskMutation.mutate({ taskId: t.id, status })}
+      />
+
+      {/* Eliminar */}
+      {canWrite && (
+        <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            onClick={async () => {
+              if (await confirm('¿Eliminar este proyecto? Esta acción no se puede deshacer.', { confirmLabel: 'Eliminar', danger: true }))
+                del.mutate()
+            }}
+            disabled={del.isPending}
+            style={{ padding: '6px 14px', borderRadius: '0 8px 8px 0', fontSize: 12, background: 'rgba(229,131,115,0.08)', color: C.err, border: '1px solid rgba(229,131,115,0.2)', cursor: 'pointer', opacity: del.isPending ? 0.5 : 1 }}
+          >
+            Eliminar proyecto
+          </button>
+        </div>
+      )}
+
+      {/* Modals */}
       {editOpen && (
         <ProjectModal
           project={project}
@@ -612,7 +626,6 @@ export default function ProjectDetailPage() {
           onSaved={() => { setEditOpen(false); qc.invalidateQueries(['project', id]); qc.invalidateQueries(['projects']) }}
         />
       )}
-
       {newQuoteOpen && (
         <QuoteModal
           initialClientId={project.client?.id}
@@ -621,7 +634,6 @@ export default function ProjectDetailPage() {
           onSaved={() => { setNewQuoteOpen(false); qc.invalidateQueries(['quotes', { projectId: id }]); qc.invalidateQueries(['quotes']) }}
         />
       )}
-
       {taskModal && (
         <TaskModal
           task={taskModal.task}
@@ -629,6 +641,24 @@ export default function ProjectDetailPage() {
           defaultProjectId={id}
           onClose={() => setTaskModal(null)}
         />
+      )}
+
+      {/* Archivos overlay */}
+      {attachOpen && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.65)' }}>
+          <div style={{ width: '100%', maxWidth: 440, background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden', boxShadow: '0 24px 48px rgba(0,0,0,0.6)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: `1px solid ${C.linea}` }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: C.crema, margin: 0 }}>Archivos adjuntos</p>
+              <button onClick={() => setAttachOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, padding: 4 }}
+                onMouseEnter={e => e.currentTarget.style.color = C.arena}
+                onMouseLeave={e => e.currentTarget.style.color = C.piedra}
+              ><CloseSvg /></button>
+            </div>
+            <div style={{ padding: 20 }}>
+              <AttachmentsPanel entityType="project" entityId={id} />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

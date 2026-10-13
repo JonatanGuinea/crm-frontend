@@ -332,7 +332,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
 
           <div className="grid grid-cols-[100px_1fr] gap-3">
             <div>
-              <label className={labelCls}>Nº</label>
+              <label className={labelCls}>N°</label>
               <input type="number" min="1" step="1" required value={form.number}
                 onChange={e => setForm(f => ({ ...f, number: e.target.value }))}
                 className={inputCls} />
@@ -345,7 +345,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
             </div>
           </div>
 
-          <div className={`grid gap-3 ${isEditing ? 'grid-cols-1 sm:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3'}`}>
+        <div className={`grid gap-3 ${isEditing ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2'}`}>
             <div>
               <label className={labelCls}>Válido hasta</label>
               <DatePicker value={form.validUntil}
@@ -358,6 +358,8 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
                 onChange={e => setForm(f => ({ ...f, deliveryDate: e.target.value }))}
                 className={inputCls} />
             </div>
+            </div>
+        <div className={`grid gap-3 ${isEditing ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-3'}`}>
             {isEditing && (
               <div>
                 <label className={labelCls}>Fecha de pago</label>
