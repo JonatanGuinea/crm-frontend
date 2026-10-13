@@ -117,8 +117,7 @@ export default function StockDashboard() {
               Inventario
             </button>
             <button onClick={() => setTab('history')}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: '0 8px 8px 0', background: tab === 'history' ? C.s3 : 'transparent', color: tab === 'history' ? C.crema : C.piedra, fontSize: 13, fontWeight: 500, border: 'none', cursor: 'pointer' }}>
-              <ClockSvg style={{ width: 14, height: 14 }} />
+              style={{ padding: '6px 12px', borderRadius: '0 8px 8px 0', background: tab === 'history' ? C.s3 : 'transparent', color: tab === 'history' ? C.crema : C.piedra, fontSize: 13, fontWeight: 500, border: 'none', cursor: 'pointer' }}>
               Historial
             </button>
           </div>

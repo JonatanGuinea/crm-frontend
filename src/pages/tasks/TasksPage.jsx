@@ -238,11 +238,9 @@ function HistoryView() {
       {/* Filtros fecha */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <label style={{ fontSize: 11, color: C.piedra, whiteSpace: 'nowrap' }}>Desde</label>
           <DatePicker value={fromDate} onChange={e => { setFromDate(e.target.value); setVisible(25) }} placeholder="Desde" className={dpClass} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <label style={{ fontSize: 11, color: C.piedra, whiteSpace: 'nowrap' }}>Hasta</label>
           <DatePicker value={toDate} onChange={e => { setToDate(e.target.value); setVisible(25) }} placeholder="Hasta" className={dpClass} />
         </div>
         {(fromDate || toDate) && (
@@ -678,11 +676,10 @@ export default function TasksPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, flexWrap: 'wrap' }}>
             {/* Tab switcher */}
             <div style={{ display: 'flex', gap: 3, padding: 4, height: 34, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0' }}>
-              {[{ id: 'board', label: 'Tablero', Icon: TableSvg }, { id: 'history', label: 'Historial', Icon: ClockSvg }].map(({ id, label, Icon }) => (
+              {[{ id: 'board', label: 'Tablero' }, { id: 'history', label: 'Historial' }].map(({ id, label }) => (
                 <button key={id} onClick={() => setTab(id)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '0 10px', borderRadius: '0 7px 7px 0', fontSize: 12, fontWeight: 500, border: 'none', cursor: 'pointer', background: tab === id ? C.s3 : 'transparent', color: tab === id ? C.crema : C.piedra }}
+                  style={{ padding: '0 10px', borderRadius: '0 7px 7px 0', fontSize: 12, fontWeight: 500, border: 'none', cursor: 'pointer', background: tab === id ? C.s3 : 'transparent', color: tab === id ? C.crema : C.piedra }}
                 >
-                  <Icon style={{ width: 13, height: 13 }} />
                   {label}
                 </button>
               ))}

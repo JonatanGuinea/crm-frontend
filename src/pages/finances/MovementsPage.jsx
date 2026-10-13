@@ -218,11 +218,10 @@ export default function MovementsPage() {
           <div style={{ display: 'flex', gap: 3, padding: 4, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0' }}>
             {[
               { id: 'movements', label: 'Movimientos' },
-              { id: 'history',   label: 'Historial',  icon: ClockSvg },
-            ].map(({ id, label, icon: Icon }) => (
+              { id: 'history',   label: 'Historial' },
+            ].map(({ id, label }) => (
               <button key={id} onClick={() => setTab(id)}
-                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '0 10px', height: 28, borderRadius: '0 7px 7px 0', fontSize: 12, fontWeight: 500, border: 'none', cursor: 'pointer', background: tab === id ? C.s3 : 'transparent', color: tab === id ? C.crema : C.piedra }}>
-                {Icon && <Icon style={{ width: 13, height: 13 }} />}
+                style={{ padding: '0 10px', height: 28, borderRadius: '0 7px 7px 0', fontSize: 12, fontWeight: 500, border: 'none', cursor: 'pointer', background: tab === id ? C.s3 : 'transparent', color: tab === id ? C.crema : C.piedra }}>
                 {label}
               </button>
             ))}

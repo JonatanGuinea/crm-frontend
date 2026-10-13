@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { getProjects, updateProject, getAllProjectsHistory } from '../../api/projects'
 import { getTasks, updateTask } from '../../api/tasks'
 import ProjectModal from './ProjectModal'
@@ -9,7 +9,7 @@ import QuoteModal from '../quotes/QuoteModal'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
-import { ProyectoIcon } from '../../components/DuIcons'
+import { ProyectoIcon, CarpetaIcon } from '../../components/DuIcons'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 
 const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
@@ -59,13 +59,7 @@ function EyeSvg({ style }) {
     </svg>
   )
 }
-function TableSvg({ style }) {
-  return (
-    <svg style={{ display: 'block', width: 14, height: 14, ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="3" y1="15" x2="21" y2="15" /><line x1="9" y1="3" x2="9" y2="21" /><line x1="15" y1="3" x2="15" y2="21" />
-    </svg>
-  )
-}
+
 function ClockSvg({ style }) {
   return (
     <svg style={{ display: 'block', width: 14, height: 14, ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -158,6 +152,19 @@ function StatusDropdown({ project, onUpdate }) {
   )
 }
 
+function timeAgo(iso) {
+  if (!iso) return ''
+  const diff = Math.floor((Date.now() - new Date(iso)) / 86400000)
+  if (diff === 0) return 'hoy'
+  if (diff === 1) return 'hace 1 día'
+  if (diff < 30) return `hace ${diff} días`
+  const months = Math.floor(diff / 30)
+  if (months === 1) return 'hace 1 mes'
+  if (months < 12) return `hace ${months} meses`
+  const years = Math.floor(months / 12)
+  return years === 1 ? 'hace 1 año' : `hace ${years} años`
+}
+
 function fmtDateTime(iso) {
   if (!iso) return ''
   const d = new Date(iso)
@@ -166,6 +173,7 @@ function fmtDateTime(iso) {
 }
 
 export default function ProjectsPage() {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const toast = useToast()
   const confirm = useConfirm()
@@ -254,9 +262,6 @@ export default function ProjectsPage() {
     qc.invalidateQueries(['tasks'])
   }
 
-  const thStyle = { background: C.linea, color: C.crema, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '12px 14px', textAlign: 'left', whiteSpace: 'nowrap' }
-  const tdStyle = { padding: '12px 14px', borderBottom: `1px solid ${C.linea}`, color: C.arena, fontSize: 13 }
-
   return (
     <div style={{ padding: '28px 24px 40px', fontFamily: 'Geist, system-ui, sans-serif' }}>
       {/* Título + controles */}
@@ -268,11 +273,10 @@ export default function ProjectsPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {/* Tab switcher */}
           <div style={{ display: 'flex', gap: 3, padding: 4, height: 34, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0' }}>
-            {[{ id: 'table', label: 'Tabla', Icon: TableSvg }, { id: 'history', label: 'Historial', Icon: ClockSvg }].map(({ id, label, Icon }) => (
+            {[{ id: 'table', label: 'Cards' }, { id: 'history', label: 'Historial' }].map(({ id, label }) => (
               <button key={id} onClick={() => setTab(id)}
-                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '0 10px', borderRadius: '0 7px 7px 0', fontSize: 12, fontWeight: 500, border: 'none', cursor: 'pointer', background: tab === id ? C.s3 : 'transparent', color: tab === id ? C.crema : C.piedra, transition: 'background 0.15s, color 0.15s' }}
+                style={{ padding: '0 10px', borderRadius: '0 7px 7px 0', fontSize: 12, fontWeight: 500, border: 'none', cursor: 'pointer', background: tab === id ? C.s3 : 'transparent', color: tab === id ? C.crema : C.piedra, transition: 'background 0.15s, color 0.15s' }}
               >
-                <Icon style={{ color: 'currentColor' }} />
                 {label}
               </button>
             ))}
@@ -349,135 +353,62 @@ export default function ProjectsPage() {
 
           {isLoading ? (
             <p style={{ fontSize: 13, color: C.piedra }}>Cargando...</p>
+          ) : allProjects.length === 0 ? (
+            <p style={{ textAlign: 'center', padding: '40px 0', fontSize: 13, color: C.piedra }}>Sin proyectos</p>
           ) : (
-            <>
-              {/* Mobile: cards */}
-              <div className="md:hidden flex flex-col" style={{ gap: 10 }}>
-                {shownProjects.map(p => (
-                  <div key={p.id} style={{ ...card, padding: '16px 18px' }}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style={{ gap: 12 }}>
+              {shownProjects.map(p => (
+                <div key={p.id}
+                  onClick={() => navigate(`/projects/${p.id}`)}
+                  style={{ ...card, padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 12, cursor: 'pointer' }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = C.arena}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = C.linea}
+                >
+                  {/* Folder icon + status */}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                    <CarpetaIcon style={{ width: 30, height: 30, color: C.arena }} />
+                    <div onClick={e => e.stopPropagation()}>
                       <StatusDropdown project={p} onUpdate={(status) => handleStatusChange(p.id, status)} />
                     </div>
-                    <Link to={`/projects/${p.id}`} style={{ display: 'block', fontWeight: 600, color: C.crema, textDecoration: 'none', lineHeight: 1.3, marginBottom: 10 }}
-                      onMouseEnter={e => e.currentTarget.style.color = C.arena}
-                      onMouseLeave={e => e.currentTarget.style.color = C.crema}
-                    >
-                      {p.title}
-                    </Link>
-                    {p.client?.name && (
-                      <p style={{ fontSize: 12, color: C.piedra, marginBottom: 6 }}>{p.client.name}</p>
-                    )}
-                    <TaskProgress total={p.taskCount} done={p.doneTaskCount} />
-                    <div style={{ display: 'flex', gap: 8, paddingTop: 12, borderTop: `1px solid ${C.linea}`, marginTop: 12 }}>
-                      {canWrite && !p.startDate && (
-                        <button onClick={() => { setEditing(p); setModalOpen(true) }}
-                          style={{ flex: 1, padding: '6px 0', fontSize: 12, fontWeight: 500, background: 'rgba(226,182,99,0.1)', color: C.warn, border: '1px solid rgba(226,182,99,0.25)', borderRadius: '0 7px 7px 0', cursor: 'pointer' }}
-                        >
-                          Completar datos
-                        </button>
-                      )}
-                      <Link to={`/projects/${p.id}`}
-                        style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '6px 0', fontSize: 12, fontWeight: 500, background: C.crema, color: C.bg, borderRadius: '0 7px 7px 0', textDecoration: 'none' }}
-                      >
-                        <EyeSvg /> Ver
-                      </Link>
-                      <button onClick={() => setAttachingProject(p)}
-                        style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', fontSize: 12, background: 'none', border: `1px solid ${C.linea}`, borderRadius: '0 7px 7px 0', color: C.piedra, cursor: 'pointer' }}
-                      >
-                        <PaperclipSvg />
-                        {p.attachmentCount > 0 ? p.attachmentCount : '+'}
-                      </button>
-                    </div>
                   </div>
-                ))}
-                {!allProjects.length && (
-                  <p style={{ textAlign: 'center', padding: '40px 0', fontSize: 13, color: C.piedra }}>Sin proyectos</p>
-                )}
-              </div>
 
-              {/* Desktop: tabla */}
-              <div className="hidden md:block" style={{ ...card, overflow: 'hidden' }}>
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-                    <thead>
-                      <tr>
-                        <th style={thStyle}>Título</th>
-                        <th style={thStyle}>Cliente</th>
-                        <th style={thStyle}>Estado</th>
-                        <th style={thStyle}>Tareas</th>
-                        {!isMember && <th style={thStyle}>Presupuesto</th>}
-                        <th style={thStyle}>Archivos</th>
-                        <th style={{ ...thStyle, textAlign: 'right' }}></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {shownProjects.map(p => (
-                        <tr key={p.id}
-                          onMouseEnter={e => Array.from(e.currentTarget.cells).forEach(td => td.style.background = C.s2)}
-                          onMouseLeave={e => Array.from(e.currentTarget.cells).forEach(td => td.style.background = 'transparent')}
-                        >
-                          <td style={{ ...tdStyle, fontWeight: 500, color: C.crema }}>{p.title}</td>
-                          <td style={tdStyle}>{p.client?.name || '—'}</td>
-                          <td style={tdStyle}>
-                            <StatusDropdown project={p} onUpdate={(status) => handleStatusChange(p.id, status)} />
-                          </td>
-                          <td style={tdStyle}>
-                            <TaskProgress total={p.taskCount} done={p.doneTaskCount} />
-                          </td>
-                          {!isMember && (
-                            <td style={tdStyle}>
-                              {p.quotes?.length > 0
-                                ? <span style={{ fontFamily: CIFRAS, fontWeight: 600, color: C.crema }}>
-                                    ${Number(p.quotes.reduce((s, q) => s + (Number(q.total) || 0), 0)).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                  </span>
-                                : canWrite && (
-                                    <button onClick={() => setQuotingProject(p)}
-                                      style={{ padding: '4px 10px', background: C.crema, color: C.bg, borderRadius: '0 7px 7px 0', fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer' }}
-                                    >
-                                      Asignar
-                                    </button>
-                                  )
-                              }
-                            </td>
-                          )}
-                          <td style={tdStyle}>
-                            <button onClick={() => setAttachingProject(p)}
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: '0 7px 7px 0', fontSize: 11, fontWeight: 500, border: `1px ${p.attachmentCount > 0 ? 'solid' : 'dashed'} ${C.linea}`, background: p.attachmentCount > 0 ? C.s2 : 'none', color: C.piedra, cursor: 'pointer' }}
-                              onMouseEnter={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.arena }}
-                              onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}
-                            >
-                              <PaperclipSvg />
-                              {p.attachmentCount > 0 ? p.attachmentCount : '+'}
-                            </button>
-                          </td>
-                          <td style={{ ...tdStyle, textAlign: 'right', whiteSpace: 'nowrap' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}>
-                              {canWrite && !p.startDate && (
-                                <button onClick={() => { setEditing(p); setModalOpen(true) }}
-                                  style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: '0 7px 7px 0', fontSize: 11, fontWeight: 500, background: 'rgba(226,182,99,0.1)', color: C.warn, border: '1px solid rgba(226,182,99,0.25)', cursor: 'pointer' }}
-                                >
-                                  Completar datos
-                                </button>
-                              )}
-                              <Link to={`/projects/${p.id}`}
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: '0 7px 7px 0', background: C.linea, color: C.crema, fontSize: 11, textDecoration: 'none' }}
-                                onMouseEnter={e => e.currentTarget.style.background = C.s3}
-                                onMouseLeave={e => e.currentTarget.style.background = C.linea}
-                              >
-                                Ver →
-                              </Link>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                      {!allProjects.length && (
-                        <tr><td colSpan={7} style={{ ...tdStyle, textAlign: 'center', color: C.piedra }}>Sin proyectos</td></tr>
-                      )}
-                    </tbody>
-                  </table>
+                  {/* Title + client */}
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontWeight: 600, fontSize: 14, color: C.crema, lineHeight: 1.35, margin: '0 0 4px' }}>{p.title}</p>
+                    {p.client?.name && (
+                      <p style={{ fontSize: 12, color: C.piedra, margin: 0 }}>{p.client.name}</p>
+                    )}
+                  </div>
+
+                  {/* Task progress */}
+                  <TaskProgress total={p.taskCount} done={p.doneTaskCount} />
+
+                  {/* Footer actions */}
+                  <div onClick={e => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: 6, paddingTop: 10, borderTop: `1px solid ${C.linea}`, marginTop: 'auto' }}>
+                    {canWrite && !p.startDate && (
+                      <button onClick={() => { setEditing(p); setModalOpen(true) }}
+                        style={{ padding: '5px 10px', fontSize: 11, fontWeight: 500, background: 'rgba(226,182,99,0.1)', color: C.warn, border: '1px solid rgba(226,182,99,0.25)', borderRadius: '0 7px 7px 0', cursor: 'pointer' }}
+                      >
+                        Completar
+                      </button>
+                    )}
+                    <button onClick={() => setAttachingProject(p)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', fontSize: 11, background: 'none', border: `1px ${p.attachmentCount > 0 ? 'solid' : 'dashed'} ${C.linea}`, borderRadius: '0 7px 7px 0', color: C.piedra, cursor: 'pointer' }}
+                      onMouseEnter={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.arena }}
+                      onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}
+                    >
+                      <PaperclipSvg />
+                      {p.attachmentCount > 0 ? p.attachmentCount : '+'}
+                    </button>
+                    {p.createdAt && (
+                      <span style={{ marginLeft: 'auto', fontSize: 10.5, color: C.piedra, whiteSpace: 'nowrap' }}>
+                        {timeAgo(p.createdAt)}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </>
+              ))}
+            </div>
           )}
 
           {hasMore && (
