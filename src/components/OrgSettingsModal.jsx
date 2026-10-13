@@ -4,41 +4,35 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from './Toast'
 import { getOrganizations, updateOrganization, uploadOrgLogo } from '../api/organizations'
-function PhotoSvg({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" />
-      <polyline points="21 15 16 10 5 21" />
-    </svg>
-  )
-}
-function CloseSvg({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-  )
-}
-function TrashSvg({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="3 6 5 6 21 6" />
-      <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-      <path d="M10 11v6M14 11v6M9 6V4h6v2" />
-    </svg>
-  )
-}
 import ProvinceSelect from './ProvinceSelect'
 
-const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
-const labelCls = "block text-xs text-fg-muted mb-1"
+const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
 const UPLOADS_BASE = import.meta.env.VITE_API_URL
+const labelStyle   = { fontSize: 11, fontWeight: 500, color: C.piedra, display: 'block', marginBottom: 4 }
+
+// ── SVGs ──────────────────────────────────────────────────────────────────────
+
+function PhotoSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
+}
+function CloseSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+}
+function TrashSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" /><path d="M10 11v6M14 11v6M9 6V4h6v2" /></svg>
+}
+function AjustesSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" /></svg>
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
 
 export default function OrgSettingsModal({ onClose }) {
-  const { user } = useAuth()
-  const toast = useToast()
-  const qc = useQueryClient()
-  const orgId = user?.org
+  const { user }  = useAuth()
+  const toast     = useToast()
+  const qc        = useQueryClient()
+  const orgId     = user?.org
+
   const logoInputRef  = useRef(null)
   const sigCanvasRef  = useRef(null)
   const sigDrawing    = useRef(false)
@@ -46,297 +40,261 @@ export default function OrgSettingsModal({ onClose }) {
 
   const [form, setForm] = useState({
     name: '', cuit: '', email: '', website: '', phone: '',
-    address: '', province: '', city: '', postalCode: '', signatureOwnerName: ''
+    address: '', province: '', city: '', postalCode: '', signatureOwnerName: '',
   })
-  const [logoPreview,   setLogoPreview]   = useState(null)
-  const [orgSignature,  setOrgSignature]  = useState(null) // null = no change, '' = delete, string = new
-  const [sigIsEmpty,    setSigIsEmpty]    = useState(true)
+  const [logoPreview,  setLogoPreview]  = useState(null)
+  const [orgSignature, setOrgSignature] = useState(null)
+  const [sigIsEmpty,   setSigIsEmpty]   = useState(true)
 
   const { data: orgData } = useQuery({
     queryKey: ['organization', orgId],
-    queryFn: () => getOrganizations().then(r => r.data.data?.find(o => o.id === orgId)),
-    enabled: Boolean(orgId)
+    queryFn:  () => getOrganizations().then(r => r.data.data?.find(o => o.id === orgId)),
+    enabled:  Boolean(orgId),
   })
 
   useEffect(() => {
-    if (orgData) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setForm({
-        name:               orgData.name               || '',
-        cuit:               orgData.cuit               || '',
-        email:              orgData.email              || '',
-        website:            orgData.website            || '',
-        phone:              orgData.phone              || '',
-        address:            orgData.address            || '',
-        province:           orgData.province           || '',
-        city:               orgData.city               || '',
-        postalCode:         orgData.postalCode         || '',
-        signatureOwnerName: orgData.signatureOwnerName || '',
-      })
-      setLogoPreview(orgData.logo ? `${UPLOADS_BASE}/uploads/${orgData.logo}` : null)
-    }
+    if (!orgData) return
+    setForm({
+      name:               orgData.name               || '',
+      cuit:               orgData.cuit               || '',
+      email:              orgData.email              || '',
+      website:            orgData.website            || '',
+      phone:              orgData.phone              || '',
+      address:            orgData.address            || '',
+      province:           orgData.province           || '',
+      city:               orgData.city               || '',
+      postalCode:         orgData.postalCode         || '',
+      signatureOwnerName: orgData.signatureOwnerName || '',
+    })
+    setLogoPreview(orgData.logo ? `${UPLOADS_BASE}/uploads/${orgData.logo}` : null)
   }, [orgData])
 
+  // ── canvas firma ──
   function getSigXY(e) {
     const canvas = sigCanvasRef.current
     const rect   = canvas.getBoundingClientRect()
     const scaleX = canvas.width  / rect.width
     const scaleY = canvas.height / rect.height
     const src    = e.touches ? e.touches[0] : e
-    return {
-      x: (src.clientX - rect.left) * scaleX,
-      y: (src.clientY - rect.top)  * scaleY,
-    }
+    return { x: (src.clientX - rect.left) * scaleX, y: (src.clientY - rect.top) * scaleY }
   }
-
   function onSigStart(e) {
     e.preventDefault()
     const ctx = sigCanvasRef.current.getContext('2d')
     const { x, y } = getSigXY(e)
-    ctx.beginPath()
-    ctx.moveTo(x, y)
-    sigDrawing.current    = true
-    sigHasDrawing.current = true
-    setSigIsEmpty(false)
+    ctx.beginPath(); ctx.moveTo(x, y)
+    sigDrawing.current = true; sigHasDrawing.current = true; setSigIsEmpty(false)
   }
-
   function onSigMove(e) {
     if (!sigDrawing.current) return
     e.preventDefault()
     const ctx = sigCanvasRef.current.getContext('2d')
     const { x, y } = getSigXY(e)
-    ctx.lineTo(x, y)
-    ctx.strokeStyle = '#0f172a'
-    ctx.lineWidth   = 2.5
-    ctx.lineCap     = 'round'
-    ctx.lineJoin    = 'round'
-    ctx.stroke()
+    ctx.lineTo(x, y); ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2.5
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke()
   }
-
   function onSigEnd(e) {
     if (!sigDrawing.current) return
-    e.preventDefault()
-    sigDrawing.current = false
-    if (sigHasDrawing.current) {
-      setOrgSignature(sigCanvasRef.current.toDataURL('image/png'))
-    }
+    e.preventDefault(); sigDrawing.current = false
+    if (sigHasDrawing.current) setOrgSignature(sigCanvasRef.current.toDataURL('image/png'))
   }
-
   function clearSigCanvas() {
-    const canvas = sigCanvasRef.current
-    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
-    sigHasDrawing.current = false
-    setSigIsEmpty(true)
-    setOrgSignature(null)
+    sigCanvasRef.current.getContext('2d').clearRect(0, 0, sigCanvasRef.current.width, sigCanvasRef.current.height)
+    sigHasDrawing.current = false; setSigIsEmpty(true); setOrgSignature(null)
   }
 
+  // ── mutations ──
   const saveOrg = useMutation({
     mutationFn: () => updateOrganization(orgId, {
       ...form,
       website: form.website && !/^https?:\/\//i.test(form.website) ? `https://${form.website}` : form.website,
       ...(orgSignature !== null && { signature: orgSignature }),
     }),
-    onSuccess: () => {
-      qc.invalidateQueries(['organization', orgId])
-      toast('Organización actualizada', 'success')
-      onClose()
-    },
-    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al guardar', 'error')
+    onSuccess: () => { qc.invalidateQueries(['organization', orgId]); toast('Organización actualizada', 'success'); onClose() },
+    onError:   (err) => toast(err.response?.data?.error || err.message || 'Error al guardar', 'error'),
   })
 
   const uploadLogo = useMutation({
     mutationFn: (file) => uploadOrgLogo(orgId, file),
     onSuccess: (res) => {
       qc.invalidateQueries(['organization', orgId])
-      const filename = res.data.data?.logo
-      if (filename) setLogoPreview(`${UPLOADS_BASE}/uploads/${filename}`)
+      const fn = res.data.data?.logo
+      if (fn) setLogoPreview(`${UPLOADS_BASE}/uploads/${fn}`)
       toast('Logo actualizado', 'success')
     },
-    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al subir logo', 'error')
+    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al subir logo', 'error'),
   })
 
+  function set(k, v) { setForm(f => ({ ...f, [k]: v })) }
+
   return createPortal(
-    <div className="fixed inset-0 bg-black/40 flex items-start justify-center z-[9999] px-4 py-6 overflow-y-auto">
-      <div className="bg-surface/60 backdrop-blur-xl rounded-xl shadow-lg w-full max-w-md p-6 my-auto">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }}
+      className="items-end sm:items-center">
+      <div style={{ position: 'relative', width: '100%', maxWidth: 500, background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 16px 0 0', boxShadow: '0 24px 64px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column', maxHeight: '90dvh' }}
+        className="sm:rounded-[0_16px_16px_0]">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-base font-semibold text-fg">Configuración de la organización</h3>
-          <button onClick={onClose} className="p-1.5 rounded-md text-fg-muted hover:bg-raised transition-colors">
-            <CloseSvg className="w-4 h-4" />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 14px', borderBottom: `1px solid ${C.linea}`, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(140,135,126,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <AjustesSvg style={{ width: 15, height: 15, color: C.arena }} />
+            </div>
+            <div>
+              <p style={{ fontSize: 15, fontWeight: 600, color: C.crema, margin: 0 }}>Configuración de la organización</p>
+              {orgData?.name && <p style={{ fontSize: 11, color: C.piedra, margin: 0, marginTop: 1 }}>{orgData.name}</p>}
+            </div>
+          </div>
+          <button onClick={onClose}
+            style={{ padding: 6, borderRadius: '0 6px 6px 0', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra }}
+            onMouseEnter={e => e.currentTarget.style.color = C.crema}
+            onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+            <CloseSvg style={{ width: 18, height: 18 }} />
           </button>
         </div>
 
-        {/* Logo */}
-        <div className="flex items-center gap-4 mb-5">
-          <div
-            onClick={() => logoInputRef.current?.click()}
-            className="w-16 h-16 rounded-lg border-2 border-dashed border-line-soft flex items-center justify-center cursor-pointer hover:border-brand transition-colors overflow-hidden bg-raised shrink-0"
-          >
-            {logoPreview
-              ? <img src={logoPreview} alt="Logo" className="w-full h-full object-contain" />
-              : <PhotoSvg className="w-7 h-7 text-fg-muted" />
-            }
-          </div>
-          <div>
-            <p className="text-sm font-medium text-fg">Logo de la organización</p>
-            <button
-              type="button"
-              onClick={() => logoInputRef.current?.click()}
-              disabled={uploadLogo.isPending}
-              className="text-xs text-brand hover:underline mt-0.5 disabled:opacity-50"
-            >
-              {uploadLogo.isPending ? 'Subiendo...' : logoPreview ? 'Cambiar logo' : 'Subir logo'}
-            </button>
-            <input
-              ref={logoInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={e => { const f = e.target.files?.[0]; if (f) uploadLogo.mutate(f) }}
-            />
-          </div>
-        </div>
+        {/* Body */}
+        <form onSubmit={e => { e.preventDefault(); saveOrg.mutate() }}
+          style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
 
-        {/* Form */}
-        <form onSubmit={e => { e.preventDefault(); saveOrg.mutate() }} className="space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="sm:col-span-2">
-              <label className={labelCls}>Nombre *</label>
-              <input type="text" required value={form.name}
-                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>CUIT</label>
-              <input type="text" value={form.cuit} placeholder="20-12345678-9"
-                onChange={e => setForm(f => ({ ...f, cuit: e.target.value }))}
-                className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Teléfono</label>
-              <input type="text" value={form.phone} placeholder="+54 11 1234-5678"
-                onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Email de contacto</label>
-              <input type="email" value={form.email} placeholder="info@empresa.com"
-                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Sitio web</label>
-              <input type="text" value={form.website} placeholder="empresa.com"
-                onChange={e => setForm(f => ({ ...f, website: e.target.value }))}
-                className={inputCls} />
-            </div>
-            <div className="sm:col-span-2">
-              <label className={labelCls}>Dirección</label>
-              <input type="text" value={form.address} placeholder="Av. Corrientes 1234"
-                onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
-                className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Provincia</label>
-              <ProvinceSelect
-                value={form.province}
-                onChange={v => setForm(f => ({ ...f, province: v }))}
-                className={inputCls}
-              />
-            </div>
-            <div>
-              <label className={labelCls}>Ciudad</label>
-              <input type="text" value={form.city} placeholder="Rosario"
-                onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
-                className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Código postal</label>
-              <input type="text" value={form.postalCode} placeholder="2000"
-                onChange={e => setForm(f => ({ ...f, postalCode: e.target.value }))}
-                className={inputCls} />
-            </div>
-            <div className="sm:col-span-2 flex items-center justify-between px-3 py-2.5 bg-raised rounded-md border border-line-soft">
-              <span className="text-xs text-fg-muted">Moneda de trabajo</span>
-              <span className="text-xs font-semibold text-fg">
-                {orgData?.defaultCurrency === 'ARS' ? 'ARS — Peso argentino' : 'USD — Dólar'}
-              </span>
-            </div>
+          <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-            {/* ── Firma ─────────────────────────────────────────── */}
-            <div className="sm:col-span-2 pt-2 border-t border-line-soft">
-              <p className="text-xs font-semibold text-fg mb-3">Firma de la organización</p>
-            </div>
-            <div className="sm:col-span-2">
-              <label className={labelCls}>Nombre del firmante</label>
-              <input type="text" value={form.signatureOwnerName} placeholder="Ej: Juan García"
-                onChange={e => setForm(f => ({ ...f, signatureOwnerName: e.target.value }))}
-                className={inputCls} />
-            </div>
-            <div className="sm:col-span-2">
-              <label className={labelCls}>Firma</label>
-              {/* Firma guardada actualmente */}
-              {orgData?.signature && orgSignature !== '' && (
-                <div className="mb-2 flex items-center gap-3 p-2.5 bg-raised rounded-lg border border-line-soft">
-                  <img src={orgData.signature} alt="Firma guardada" className="max-h-10 object-contain flex-1 min-w-0" />
-                  <button
-                    type="button"
-                    onClick={() => setOrgSignature('')}
-                    className="shrink-0 text-xs text-danger hover:underline"
-                  >
-                    Eliminar
-                  </button>
-                </div>
-              )}
-              {orgSignature === '' && (
-                <p className="text-xs text-danger mb-2">La firma se eliminará al guardar.</p>
-              )}
-              {/* Canvas para nueva firma */}
-              <div className="relative rounded-lg overflow-hidden border border-line-soft bg-white">
-                <canvas
-                  ref={sigCanvasRef}
-                  width={560}
-                  height={130}
-                  className="w-full touch-none cursor-crosshair block"
-                  onMouseDown={onSigStart}
-                  onMouseMove={onSigMove}
-                  onMouseUp={onSigEnd}
-                  onMouseLeave={onSigEnd}
-                  onTouchStart={onSigStart}
-                  onTouchMove={onSigMove}
-                  onTouchEnd={onSigEnd}
-                />
-                <div className="absolute bottom-6 left-5 right-5 h-px bg-zinc-200 pointer-events-none" />
-                {sigIsEmpty && (
-                  <p className="absolute inset-0 flex items-center justify-center text-xs text-zinc-300 pointer-events-none select-none">
-                    {orgData?.signature ? 'Dibujá aquí para reemplazar la firma' : 'Dibujá tu firma aquí'}
-                  </p>
-                )}
+            {/* Logo */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div onClick={() => logoInputRef.current?.click()}
+                style={{ width: 64, height: 64, borderRadius: '0 12px 12px 0', border: `1px dashed ${C.linea}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', overflow: 'hidden', flexShrink: 0, background: C.s2 }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = C.arena}
+                onMouseLeave={e => e.currentTarget.style.borderColor = C.linea}>
+                {logoPreview
+                  ? <img src={logoPreview} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  : <PhotoSvg style={{ width: 24, height: 24, color: C.piedra }} />}
               </div>
-              <button
-                type="button"
-                onClick={clearSigCanvas}
-                disabled={sigIsEmpty}
-                className="mt-1.5 flex items-center gap-1 text-xs text-fg-muted hover:text-fg disabled:opacity-40 transition-colors"
-              >
-                <TrashSvg className="w-3 h-3" />
-                Limpiar canvas
-              </button>
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 500, color: C.crema, marginBottom: 5 }}>Logo de la organización</p>
+                <button type="button" onClick={() => logoInputRef.current?.click()} disabled={uploadLogo.isPending}
+                  style={{ fontSize: 12, color: C.arena, background: 'none', border: 'none', cursor: uploadLogo.isPending ? 'not-allowed' : 'pointer', opacity: uploadLogo.isPending ? 0.5 : 1, padding: 0, fontFamily: 'inherit' }}
+                  onMouseEnter={e => { if (!uploadLogo.isPending) e.currentTarget.style.color = C.crema }}
+                  onMouseLeave={e => e.currentTarget.style.color = C.arena}>
+                  {uploadLogo.isPending ? 'Subiendo…' : logoPreview ? 'Cambiar logo' : 'Subir logo'}
+                </button>
+                <p style={{ fontSize: 11, color: C.piedra, marginTop: 3 }}>PNG, JPG o WEBP</p>
+                <input ref={logoInputRef} type="file" accept="image/*" style={{ display: 'none' }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) uploadLogo.mutate(f) }} />
+              </div>
             </div>
+
+            {/* Divider */}
+            <div style={{ borderTop: `1px solid ${C.linea}` }} />
+
+            {/* Campos */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="sm:col-span-2">
+                <label style={labelStyle}>Nombre *</label>
+                <input type="text" required value={form.name} onChange={e => set('name', e.target.value)} className="du-input" />
+              </div>
+              <div>
+                <label style={labelStyle}>CUIT</label>
+                <input type="text" value={form.cuit} placeholder="20-12345678-9" onChange={e => set('cuit', e.target.value)} className="du-input" />
+              </div>
+              <div>
+                <label style={labelStyle}>Teléfono</label>
+                <input type="text" value={form.phone} placeholder="+54 11 1234-5678" onChange={e => set('phone', e.target.value)} className="du-input" />
+              </div>
+              <div>
+                <label style={labelStyle}>Email de contacto</label>
+                <input type="email" value={form.email} placeholder="info@empresa.com" onChange={e => set('email', e.target.value)} className="du-input" />
+              </div>
+              <div>
+                <label style={labelStyle}>Sitio web</label>
+                <input type="text" value={form.website} placeholder="empresa.com" onChange={e => set('website', e.target.value)} className="du-input" />
+              </div>
+              <div className="sm:col-span-2">
+                <label style={labelStyle}>Dirección</label>
+                <input type="text" value={form.address} placeholder="Av. Corrientes 1234" onChange={e => set('address', e.target.value)} className="du-input" />
+              </div>
+              <div>
+                <label style={labelStyle}>Provincia</label>
+                <ProvinceSelect value={form.province} onChange={v => set('province', v)} className="du-input" />
+              </div>
+              <div>
+                <label style={labelStyle}>Ciudad</label>
+                <input type="text" value={form.city} placeholder="Rosario" onChange={e => set('city', e.target.value)} className="du-input" />
+              </div>
+              <div>
+                <label style={labelStyle}>Código postal</label>
+                <input type="text" value={form.postalCode} placeholder="2000" onChange={e => set('postalCode', e.target.value)} className="du-input" />
+              </div>
+              <div className="sm:col-span-2">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0' }}>
+                  <span style={{ fontSize: 12, color: C.piedra }}>Moneda de trabajo</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: C.crema }}>
+                    {orgData?.defaultCurrency === 'ARS' ? 'ARS — Peso argentino' : 'USD — Dólar'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Divider firma */}
+            <div style={{ borderTop: `1px solid ${C.linea}` }} />
+
+            {/* Firma */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <p style={{ fontSize: 11, fontWeight: 600, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.07em', margin: 0 }}>Firma de la organización</p>
+              <div>
+                <label style={labelStyle}>Nombre del firmante</label>
+                <input type="text" value={form.signatureOwnerName} placeholder="Ej: Juan García"
+                  onChange={e => set('signatureOwnerName', e.target.value)} className="du-input" />
+              </div>
+              <div>
+                <label style={labelStyle}>Firma</label>
+                {orgData?.signature && orgSignature !== '' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 10, background: '#fff', borderRadius: '0 10px 10px 0', border: `1px solid ${C.linea}`, marginBottom: 8 }}>
+                    <img src={orgData.signature} alt="Firma guardada" style={{ maxHeight: 40, objectFit: 'contain', flex: 1, minWidth: 0 }} />
+                    <button type="button" onClick={() => setOrgSignature('')}
+                      style={{ fontSize: 12, color: C.err, background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit' }}>
+                      Eliminar
+                    </button>
+                  </div>
+                )}
+                {orgSignature === '' && (
+                  <p style={{ fontSize: 12, color: C.err, marginBottom: 8 }}>La firma se eliminará al guardar.</p>
+                )}
+                <div style={{ position: 'relative', borderRadius: '0 10px 10px 0', overflow: 'hidden', border: `1px solid ${C.linea}`, background: '#fff' }}>
+                  <canvas ref={sigCanvasRef} width={560} height={120}
+                    style={{ width: '100%', touchAction: 'none', cursor: 'crosshair', display: 'block' }}
+                    onMouseDown={onSigStart} onMouseMove={onSigMove} onMouseUp={onSigEnd} onMouseLeave={onSigEnd}
+                    onTouchStart={onSigStart} onTouchMove={onSigMove} onTouchEnd={onSigEnd} />
+                  <div style={{ position: 'absolute', bottom: 24, left: 20, right: 20, height: 1, background: '#e4e4e7', pointerEvents: 'none' }} />
+                  {sigIsEmpty && (
+                    <p style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#d1d5db', pointerEvents: 'none', userSelect: 'none' }}>
+                      {orgData?.signature ? 'Dibujá aquí para reemplazar la firma' : 'Dibujá tu firma aquí'}
+                    </p>
+                  )}
+                </div>
+                <button type="button" onClick={clearSigCanvas} disabled={sigIsEmpty}
+                  style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: C.arena, background: 'none', border: 'none', cursor: sigIsEmpty ? 'not-allowed' : 'pointer', opacity: sigIsEmpty ? 0.4 : 1, padding: 0, fontFamily: 'inherit' }}>
+                  <TrashSvg style={{ width: 12, height: 12 }} />
+                  Limpiar canvas
+                </button>
+              </div>
+            </div>
+
           </div>
 
-          <div className="flex justify-end gap-2 pt-1">
+          {/* Footer */}
+          <div style={{ position: 'sticky', bottom: 0, padding: '12px 20px', borderTop: `1px solid ${C.linea}`, background: C.s1, display: 'flex', gap: 10 }}>
             <button type="button" onClick={onClose}
-              className="px-4 py-2 text-sm text-fg-soft hover:text-fg transition-colors">
+              style={{ flex: 1, padding: '10px 0', borderRadius: '0 10px 10px 0', border: `1px solid ${C.linea}`, background: 'none', color: C.piedra, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+              onMouseEnter={e => { e.currentTarget.style.color = C.crema; e.currentTarget.style.borderColor = C.arena }}
+              onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}>
               Cancelar
             </button>
             <button type="submit" disabled={saveOrg.isPending}
-              className="px-4 py-2 bg-brand text-base rounded-md text-sm font-medium hover:bg-brand-hover disabled:opacity-50 transition-colors">
-              {saveOrg.isPending ? 'Guardando...' : 'Guardar cambios'}
+              style={{ flex: 1, padding: '10px 0', borderRadius: '0 10px 10px 0', border: 'none', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, cursor: saveOrg.isPending ? 'not-allowed' : 'pointer', opacity: saveOrg.isPending ? 0.5 : 1, fontFamily: 'inherit' }}>
+              {saveOrg.isPending ? 'Guardando…' : 'Guardar cambios'}
             </button>
           </div>
         </form>
+
       </div>
     </div>,
     document.body

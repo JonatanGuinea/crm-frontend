@@ -3,45 +3,34 @@ import { createPortal } from 'react-dom'
 import { useAuth } from '../context/AuthContext'
 import { createOrganization } from '../api/auth'
 import { isValidPhoneNumber } from 'libphonenumber-js'
-function BuildingSvg({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 21h18M5 21V5a2 2 0 012-2h10a2 2 0 012 2v16" />
-      <path d="M9 21V13h6v8M9 7h1M14 7h1M9 11h1M14 11h1" />
-    </svg>
-  )
-}
-function ChevronDownSvg({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
-  )
-}
-function ExclamationCircleSvg({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
-    </svg>
-  )
-}
-function CloseSvg({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-  )
-}
-function LogoutSvg({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
-      <polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
-    </svg>
-  )
-}
 import ProvinceSelect from './ProvinceSelect'
+
+const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
+
+const labelStyle = { fontSize: 11, fontWeight: 500, color: C.piedra, display: 'block', marginBottom: 4 }
+
+// ── SVGs ──────────────────────────────────────────────────────────────────────
+
+function BuildingSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21h18M5 21V5a2 2 0 012-2h10a2 2 0 012 2v16" /><path d="M9 21V13h6v8M9 7h1M14 7h1M9 11h1M14 11h1" /></svg>
+}
+function ChevronDownSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+}
+function CloseSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+}
+function LogoutSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+}
+function WarnCircleSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+}
+function CheckSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 12.75l6 6 9-13.5" /></svg>
+}
+
+// ── Phone input ───────────────────────────────────────────────────────────────
 
 const COUNTRIES = [
   { code: 'AR', name: 'Argentina',      dial: '+54',  flag: '🇦🇷' },
@@ -79,20 +68,18 @@ function checkPhone(digits, countryCode) {
 }
 
 function OrgPhoneInput({ countryCode, phoneNumber, onChangeCountry, onChangeNumber }) {
-  const [open, setOpen] = useState(false)
-  const [search, setSearch] = useState('')
+  const [open,    setOpen]   = useState(false)
+  const [search,  setSearch] = useState('')
   const [touched, setTouched] = useState(false)
-  const btnRef = useRef()
+  const btnRef   = useRef()
   const [dropPos, setDropPos] = useState({ top: 0, left: 0 })
 
-  const selected = COUNTRIES.find(c => c.code === countryCode) || COUNTRIES[0]
-  const filtered = COUNTRIES.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase()) || c.dial.includes(search)
-  )
-  const digits = phoneNumber.replace(/\D/g, '')
-  const isValid = checkPhone(digits, countryCode)
-  const hasError = touched && (digits.length === 0 || !isValid)
-  const errorMsg = digits.length === 0 ? 'El teléfono es obligatorio' : `Número inválido para ${selected.name}`
+  const selected  = COUNTRIES.find(c => c.code === countryCode) || COUNTRIES[0]
+  const filtered  = COUNTRIES.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.dial.includes(search))
+  const digits    = phoneNumber.replace(/\D/g, '')
+  const isValid   = checkPhone(digits, countryCode)
+  const hasError  = touched && (digits.length === 0 || !isValid)
+  const errorMsg  = digits.length === 0 ? 'El teléfono es obligatorio' : `Número inválido para ${selected.name}`
 
   function handleOpen() {
     if (!open && btnRef.current) {
@@ -103,81 +90,59 @@ function OrgPhoneInput({ countryCode, phoneNumber, onChangeCountry, onChangeNumb
     setSearch('')
   }
 
+  const borderColor = hasError ? C.err : (touched && digits.length > 0 && isValid) ? C.ok : C.linea
+
   return (
     <div>
-      <div className="flex">
-        <button
-          ref={btnRef}
-          type="button"
-          onClick={handleOpen}
-          className="flex items-center gap-1.5 px-3 py-2.5 bg-surface border border-r-0 border-line rounded-l-lg hover:bg-raised transition-colors shrink-0"
-        >
-          <span className="text-base leading-none">{selected.flag}</span>
-          <span className="text-fg text-xs font-mono">{selected.dial}</span>
-          <ChevronDownSvg className={`w-3 h-3 text-fg-muted transition-transform ${open ? 'rotate-180' : ''}`} />
+      <div style={{ display: 'flex' }}>
+        <button ref={btnRef} type="button" onClick={handleOpen}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 12px', background: C.s2, border: `1px solid ${borderColor}`, borderRight: 'none', borderRadius: '0 0 0 0', cursor: 'pointer', flexShrink: 0, height: 38 }}
+          className="rounded-l-lg">
+          <span style={{ fontSize: 16, lineHeight: 1 }}>{selected.flag}</span>
+          <span style={{ fontSize: 12, fontFamily: 'monospace', color: C.arena }}>{selected.dial}</span>
+          <ChevronDownSvg style={{ width: 12, height: 12, color: C.piedra, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
         </button>
-        <input
-          type="tel"
-          value={phoneNumber}
+        <input type="tel" value={phoneNumber}
           onChange={e => onChangeNumber(formatPhone(e.target.value))}
           onBlur={() => setTouched(true)}
           placeholder="11 1234-5678"
-          className={`flex-1 px-3 py-2.5 bg-surface border rounded-r-lg text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:ring-2 transition-all ${
-            hasError
-              ? 'border-danger focus:ring-danger/20'
-              : digits.length > 0 && touched && isValid
-                ? 'border-brand focus:ring-brand/20'
-                : 'border-line focus:ring-brand'
-          }`}
-        />
+          style={{ flex: 1, height: 38, padding: '0 12px', background: C.s2, border: `1px solid ${borderColor}`, outline: 'none', fontSize: 13, color: C.crema, fontFamily: 'inherit' }}
+          className="rounded-r-lg" />
       </div>
       {hasError && (
-        <p className="mt-1.5 text-[11px] text-danger flex items-center gap-1">
-          <ExclamationCircleSvg className="w-3.5 h-3.5 shrink-0" />
+        <p style={{ marginTop: 5, fontSize: 11, color: C.err, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <WarnCircleSvg style={{ width: 13, height: 13, flexShrink: 0 }} />
           {errorMsg}
         </p>
       )}
       {touched && digits.length > 0 && isValid && (
-        <p className="mt-1.5 text-[11px] text-brand flex items-center gap-1">
-          <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-          </svg>
+        <p style={{ marginTop: 5, fontSize: 11, color: C.ok, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <CheckSvg style={{ width: 13, height: 13, flexShrink: 0 }} />
           Número válido
         </p>
       )}
       {open && createPortal(
         <>
-          <div className="fixed inset-0 z-[10000]" onClick={() => setOpen(false)} />
-          <div
-            style={{ top: dropPos.top, left: dropPos.left, width: '220px' }}
-            className="fixed z-[10001] bg-overlay border border-line rounded-xl shadow-2xl overflow-hidden"
-          >
-            <div className="p-2 border-b border-line">
-              <input
-                autoFocus
-                type="text"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
+          <div style={{ position: 'fixed', inset: 0, zIndex: 10000 }} onClick={() => setOpen(false)} />
+          <div style={{ position: 'fixed', top: dropPos.top, left: dropPos.left, width: 220, zIndex: 10001, background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0', boxShadow: '0 12px 32px rgba(0,0,0,0.5)', overflow: 'hidden' }}>
+            <div style={{ padding: 8, borderBottom: `1px solid ${C.linea}` }}>
+              <input autoFocus type="text" value={search} onChange={e => setSearch(e.target.value)}
                 placeholder="Buscar país..."
-                className="w-full px-2.5 py-1.5 bg-surface border border-line rounded-lg text-xs text-fg placeholder:text-fg-muted focus:outline-none focus:ring-1 focus:ring-brand transition-all"
-              />
+                style={{ width: '100%', padding: '6px 10px', background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 6px 6px 0', fontSize: 12, color: C.crema, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
             </div>
-            <div className="max-h-52 overflow-y-auto">
+            <div style={{ maxHeight: 200, overflowY: 'auto' }}>
               {filtered.map(c => (
-                <button
-                  key={c.code}
-                  type="button"
+                <button key={c.code} type="button"
                   onClick={() => { onChangeCountry(c.code); setOpen(false) }}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs transition-colors ${
-                    c.code === countryCode ? 'bg-brand-subtle text-brand' : 'text-fg hover:bg-raised'
-                  }`}
-                >
-                  <span className="text-base leading-none">{c.flag}</span>
-                  <span className="flex-1 text-left">{c.name}</span>
-                  <span className="font-mono text-fg-muted">{c.dial}</span>
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: c.code === countryCode ? 'rgba(242,237,227,0.07)' : 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }}
+                  onMouseEnter={e => { if (c.code !== countryCode) e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
+                  onMouseLeave={e => { if (c.code !== countryCode) e.currentTarget.style.background = 'none' }}>
+                  <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{c.flag}</span>
+                  <span style={{ flex: 1, fontSize: 12, color: c.code === countryCode ? C.crema : C.arena, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>
+                  <span style={{ fontSize: 11, fontFamily: 'monospace', color: C.piedra }}>{c.dial}</span>
                 </button>
               ))}
-              {!filtered.length && <p className="px-3 py-4 text-xs text-fg-muted text-center">Sin resultados</p>}
+              {!filtered.length && <p style={{ padding: '16px 12px', fontSize: 12, color: C.piedra, textAlign: 'center' }}>Sin resultados</p>}
             </div>
           </div>
         </>,
@@ -187,20 +152,22 @@ function OrgPhoneInput({ countryCode, phoneNumber, onChangeCountry, onChangeNumb
   )
 }
 
-const inputCls = "w-full px-3 py-2.5 bg-surface border border-line rounded-lg text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:ring-2 focus:ring-brand transition-all"
-const labelCls = "block text-xs text-fg-muted mb-1.5"
+// ── SetupOrgModal ─────────────────────────────────────────────────────────────
 
 export function SetupOrgModal({ onCreated, onClose }) {
   const { logout } = useAuth()
-  const [form, setForm] = useState({ name: '', cuit: '', email: '', address: '', province: 'Santa Fe', city: '', postalCode: '', defaultCurrency: 'ARS' })
-  const [orgCountry, setOrgCountry] = useState('AR')
+  const [form, setForm] = useState({
+    name: '', cuit: '', email: '', address: '', province: 'Santa Fe',
+    city: '', postalCode: '', defaultCurrency: 'ARS',
+  })
+  const [orgCountry,  setOrgCountry]  = useState('AR')
   const [phoneNumber, setPhoneNumber] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [error,       setError]       = useState('')
+  const [loading,     setLoading]     = useState(false)
 
   const phoneDigits = phoneNumber.replace(/\D/g, '')
-  const phoneValid = checkPhone(phoneDigits, orgCountry)
-  const allFilled = form.name.trim() && form.cuit.trim() && phoneDigits && phoneValid && form.email.trim() && form.address.trim() && form.province
+  const phoneValid  = checkPhone(phoneDigits, orgCountry)
+  const allFilled   = form.name.trim() && form.cuit.trim() && phoneDigits && phoneValid && form.email.trim() && form.address.trim() && form.province
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -223,174 +190,140 @@ export function SetupOrgModal({ onCreated, onClose }) {
     }
   }
 
+  function set(k, v) { setForm(f => ({ ...f, [k]: v })) }
+
   return createPortal(
-    <div className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
-      <div className="w-full sm:max-w-lg bg-surface border-t sm:border border-line rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[90dvh] sm:max-h-[calc(100vh-2rem)]">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }}
+      className="items-end sm:items-center">
+      <div style={{ position: 'relative', width: '100%', maxWidth: 480, background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 16px 0 0', boxShadow: '0 24px 64px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column', maxHeight: '90dvh' }}
+        className="sm:rounded-[0_16px_16px_0]">
 
         {/* Header */}
-        <div className="px-4 pt-5 pb-3 sm:px-6 sm:pt-6 sm:pb-4 border-b border-line shrink-0">
-          <div className="flex items-center justify-between mb-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-subtle text-brand text-xs font-medium">
-              <BuildingSvg className="w-3.5 h-3.5" />
-              {onClose ? 'Nueva organización' : 'Configuración inicial'}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 14px', borderBottom: `1px solid ${C.linea}`, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(185,180,170,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <BuildingSvg style={{ width: 15, height: 15, color: C.arena }} />
             </div>
-            {onClose ? (
-              <button
-                type="button"
-                onClick={onClose}
-                className="p-1.5 rounded-md text-fg-muted hover:bg-raised hover:text-fg transition-colors"
-              >
-                <CloseSvg className="w-4 h-4" />
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={logout}
-                className="flex items-center gap-1.5 text-xs text-fg-muted hover:text-danger transition-colors"
-              >
-                <LogoutSvg className="w-3.5 h-3.5" />
-                Cerrar sesión
-              </button>
-            )}
+            <div>
+              <p style={{ fontSize: 15, fontWeight: 600, color: C.crema, margin: 0 }}>
+                {onClose ? 'Nueva organización' : 'Agregá tu empresa'}
+              </p>
+              <p style={{ fontSize: 11, color: C.piedra, margin: 0, marginTop: 1 }}>
+                {onClose ? 'Completá los datos de la nueva organización.' : 'Para usar el CRM necesitás al menos una organización.'}
+              </p>
+            </div>
           </div>
-          <h2 className="text-xl font-bold text-fg">Agregá tu empresa</h2>
-          <p className="text-sm text-fg-muted mt-1">
-            {onClose
-              ? 'Completá los datos de la nueva organización.'
-              : 'Para usar el CRM necesitás al menos una organización.'}
-          </p>
+          {onClose ? (
+            <button type="button" onClick={onClose}
+              style={{ padding: 6, borderRadius: '0 6px 6px 0', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra }}
+              onMouseEnter={e => e.currentTarget.style.color = C.crema}
+              onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+              <CloseSvg style={{ width: 18, height: 18 }} />
+            </button>
+          ) : (
+            <button type="button" onClick={logout}
+              style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: C.piedra, fontFamily: 'inherit' }}
+              onMouseEnter={e => e.currentTarget.style.color = C.err}
+              onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+              <LogoutSvg style={{ width: 14, height: 14 }} />
+              Cerrar sesión
+            </button>
+          )}
         </div>
 
         {/* Body */}
-        <form id="setup-org-form" onSubmit={handleSubmit} className="overflow-y-auto flex-1 min-h-0 px-4 py-3 sm:px-6 sm:py-4">
+        <form id="setup-org-form" onSubmit={handleSubmit}
+          style={{ overflowY: 'auto', flex: 1, minHeight: 0, padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
             <div className="sm:col-span-2">
-              <label className={labelCls}>Nombre de la empresa *</label>
-              <input
-                autoFocus
-                type="text"
-                required
-                value={form.name}
-                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                className={inputCls}
-                placeholder="Mi empresa S.A."
-              />
+              <label style={labelStyle}>Nombre de la empresa *</label>
+              <input autoFocus type="text" required value={form.name} onChange={e => set('name', e.target.value)}
+                placeholder="Mi empresa S.A." className="du-input" />
             </div>
+
             <div className="sm:col-span-2">
-              <label className={labelCls}>CUIT *</label>
-              <input
-                type="text"
-                required
-                value={form.cuit}
-                onChange={e => setForm(f => ({ ...f, cuit: e.target.value }))}
-                className={inputCls}
-                placeholder="30-12345678-9"
-              />
+              <label style={labelStyle}>CUIT *</label>
+              <input type="text" required value={form.cuit} onChange={e => set('cuit', e.target.value)}
+                placeholder="30-12345678-9" className="du-input" />
             </div>
+
             <div className="sm:col-span-2">
-              <label className={labelCls}>Teléfono *</label>
+              <label style={labelStyle}>Teléfono *</label>
               <OrgPhoneInput
-                countryCode={orgCountry}
-                phoneNumber={phoneNumber}
-                onChangeCountry={setOrgCountry}
-                onChangeNumber={setPhoneNumber}
-              />
+                countryCode={orgCountry} phoneNumber={phoneNumber}
+                onChangeCountry={setOrgCountry} onChangeNumber={setPhoneNumber} />
             </div>
+
             <div className="sm:col-span-2">
-              <label className={labelCls}>Email de contacto *</label>
-              <input
-                type="email"
-                required
-                value={form.email}
-                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                className={inputCls}
-                placeholder="info@empresa.com"
-              />
+              <label style={labelStyle}>Email de contacto *</label>
+              <input type="email" required value={form.email} onChange={e => set('email', e.target.value)}
+                placeholder="info@empresa.com" className="du-input" />
             </div>
+
             <div className="sm:col-span-2">
-              <label className={labelCls}>Dirección *</label>
-              <input
-                type="text"
-                required
-                value={form.address}
-                onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
-                className={inputCls}
-                placeholder="Av. Corrientes 1234"
-              />
+              <label style={labelStyle}>Dirección *</label>
+              <input type="text" required value={form.address} onChange={e => set('address', e.target.value)}
+                placeholder="Av. Corrientes 1234" className="du-input" />
             </div>
+
             <div>
-              <label className={labelCls}>Provincia</label>
-              <ProvinceSelect
-                value={form.province}
-                onChange={v => setForm(f => ({ ...f, province: v }))}
-                className={inputCls}
-                placeholder="Seleccionar provincia"
-              />
+              <label style={labelStyle}>Provincia</label>
+              <ProvinceSelect value={form.province} onChange={v => set('province', v)} className="du-input" />
             </div>
+
             <div>
-              <label className={labelCls}>Ciudad</label>
-              <input
-                type="text"
-                value={form.city}
-                onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
-                className={inputCls}
-                placeholder="Rosario"
-              />
+              <label style={labelStyle}>Ciudad</label>
+              <input type="text" value={form.city} onChange={e => set('city', e.target.value)}
+                placeholder="Rosario" className="du-input" />
             </div>
+
             <div>
-              <label className={labelCls}>Código postal</label>
-              <input
-                type="text"
-                value={form.postalCode}
-                onChange={e => setForm(f => ({ ...f, postalCode: e.target.value }))}
-                className={inputCls}
-                placeholder="2000"
-              />
+              <label style={labelStyle}>Código postal</label>
+              <input type="text" value={form.postalCode} onChange={e => set('postalCode', e.target.value)}
+                placeholder="2000" className="du-input" />
             </div>
+
             <div className="sm:col-span-2">
-              <label className={labelCls}>Moneda de trabajo *</label>
-              <div className="grid grid-cols-2 gap-3">
-                {['ARS', 'USD'].map(c => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setForm(f => ({ ...f, defaultCurrency: c }))}
-                    className={`py-2.5 px-4 rounded-lg text-sm font-semibold border transition-all ${
-                      form.defaultCurrency === c
-                        ? 'bg-brand-subtle border-brand text-brand shadow-sm'
-                        : 'bg-surface border-line text-fg-soft hover:border-line-soft hover:text-fg'
-                    }`}
-                  >
-                    {c === 'ARS' ? 'ARS — Peso' : 'USD — Dólar'}
-                  </button>
-                ))}
+              <label style={labelStyle}>Moneda de trabajo *</label>
+              <div style={{ display: 'flex', gap: 10 }}>
+                {['ARS', 'USD'].map(c => {
+                  const active = form.defaultCurrency === c
+                  return (
+                    <button key={c} type="button" onClick={() => set('defaultCurrency', c)}
+                      style={{ flex: 1, padding: '10px 0', borderRadius: '0 9px 9px 0', border: `1px solid ${active ? C.crema : C.linea}`, background: active ? 'rgba(242,237,227,0.08)' : 'none', color: active ? C.crema : C.piedra, fontSize: 13, fontWeight: active ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s' }}>
+                      {c === 'ARS' ? 'ARS — Peso' : 'USD — Dólar'}
+                    </button>
+                  )
+                })}
               </div>
-              <p className="mt-1.5 text-[11px] text-fg-muted">Esta elección no podrá modificarse después.</p>
+              <p style={{ marginTop: 5, fontSize: 11, color: C.piedra }}>Esta elección no podrá modificarse después.</p>
             </div>
+
           </div>
 
           {error && (
-            <p className="mt-3 text-sm text-danger bg-danger-subtle px-3 py-2 rounded-lg">{error}</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'rgba(229,131,115,0.08)', border: `1px solid rgba(229,131,115,0.25)`, borderRadius: '0 8px 8px 0' }}>
+              <WarnCircleSvg style={{ width: 14, height: 14, color: C.err, flexShrink: 0 }} />
+              <p style={{ fontSize: 13, color: C.err, margin: 0 }}>{error}</p>
+            </div>
           )}
         </form>
 
         {/* Footer */}
-        <div className="px-4 py-3 sm:px-6 sm:py-4 border-t border-line shrink-0">
-          <button
-            type="submit"
-            form="setup-org-form"
-            disabled={loading || !allFilled}
-            className="w-full py-2.5 bg-brand hover:bg-brand-hover text-base rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
+        <div style={{ padding: '12px 20px', borderTop: `1px solid ${C.linea}`, flexShrink: 0 }}>
+          <button type="submit" form="setup-org-form" disabled={loading || !allFilled}
+            style={{ width: '100%', height: 38, borderRadius: '0 10px 10px 0', border: 'none', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, cursor: loading || !allFilled ? 'not-allowed' : 'pointer', opacity: loading || !allFilled ? 0.5 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'inherit' }}>
             {loading && (
-              <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              <svg style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} fill="none" viewBox="0 0 24 24">
+                <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
               </svg>
             )}
-            {loading ? 'Creando empresa...' : 'Continuar →'}
+            {loading ? 'Creando empresa…' : 'Continuar →'}
           </button>
         </div>
+
       </div>
     </div>,
     document.body
