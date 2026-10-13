@@ -611,7 +611,7 @@ export default function AppLayout() {
   }
 
   const sidebarShared = {
-    display: 'flex', flexDirection: 'column',
+    flexDirection: 'column',
     background: C.bg,
     borderRight: `1px solid ${C.linea}`,
     height: '100dvh',
@@ -632,7 +632,7 @@ export default function AppLayout() {
 
       {/* Mobile sidebar (drawer) */}
       <aside
-        className="md:hidden"
+        className="flex md:hidden"
         style={{
           ...sidebarShared,
           position: 'fixed', top: 0, left: 0, bottom: 0,
