@@ -6,132 +6,121 @@ import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 
 const UPLOADS_BASE = import.meta.env.VITE_API_URL
+const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
+
+const labelStyle = { fontSize: 11, fontWeight: 500, color: C.piedra }
+
+// ── SVGs ──────────────────────────────────────────────────────────────────────
+
+function UserSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+}
+function CloseSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+}
+function CameraSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
+}
+function MailSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
+}
+function LogOutSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+}
+
+// ── Avatar ────────────────────────────────────────────────────────────────────
+
+function initials(name = '') {
+  return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
+}
+
+function AvatarCircle({ avatar, name, size = 80, onClick }) {
+  const [err, setErr] = useState(false)
+  if (avatar && !err) {
+    return (
+      <img src={`${UPLOADS_BASE}/uploads/${avatar}`} alt={name}
+        onClick={onClick}
+        onError={() => setErr(true)}
+        style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${C.linea}`, cursor: onClick ? 'pointer' : 'default', flexShrink: 0 }} />
+    )
+  }
+  return (
+    <div onClick={onClick}
+      style={{ width: size, height: size, borderRadius: '50%', background: 'rgba(142,177,222,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.3, fontWeight: 700, color: C.info, border: `2px solid ${C.linea}`, cursor: onClick ? 'pointer' : 'default', flexShrink: 0 }}>
+      {initials(name)}
+    </div>
+  )
+}
 
 function AvatarModal({ src, name, onClose }) {
   useEffect(() => {
-    function onKey(e) { if (e.key === 'Escape') onClose() }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
+    const fn = e => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', fn)
+    return () => document.removeEventListener('keydown', fn)
   }, [onClose])
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
-      onClick={onClose}
-    >
-      <div
-        className="relative max-w-sm w-full mx-4"
-        onClick={e => e.stopPropagation()}
-      >
-        <img
-          src={src}
-          alt={name}
-          className="w-full rounded-2xl object-cover shadow-2xl"
-        />
-        <button
-          onClick={onClose}
-          className="absolute -top-3 -right-3 w-8 h-8 bg-surface border border-line rounded-full flex items-center justify-center text-fg-muted hover:text-fg transition-colors shadow"
-        >
-          ✕
+    <div onClick={onClose}
+      style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}>
+      <div onClick={e => e.stopPropagation()} style={{ position: 'relative', maxWidth: 360, width: '100%', margin: '0 16px' }}>
+        <img src={src} alt={name} style={{ width: '100%', borderRadius: '0 24px 24px 0', objectFit: 'cover', boxShadow: '0 32px 80px rgba(0,0,0,0.6)' }} />
+        <button onClick={onClose}
+          style={{ position: 'absolute', top: -12, right: -12, width: 32, height: 32, borderRadius: '50%', background: C.s2, border: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: C.piedra }}
+          onMouseEnter={e => e.currentTarget.style.color = C.crema}
+          onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+          <CloseSvg style={{ width: 14, height: 14 }} />
         </button>
       </div>
     </div>
   )
 }
 
-function AvatarCircle({ avatar, name, size = 'lg', onClick }) {
-  const [imgError, setImgError] = useState(false)
-  const dim = size === 'lg' ? 'w-24 h-24 text-3xl' : 'w-8 h-8 text-sm'
-  const initials = name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
-  if (avatar && !imgError) {
-    return (
-      <img
-        src={`${UPLOADS_BASE}/uploads/${avatar}`}
-        alt={name}
-        onClick={onClick}
-        onError={() => setImgError(true)}
-        className={`${dim} rounded-full object-cover ${onClick ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
-      />
-    )
-  }
+// ── Section header ─────────────────────────────────────────────────────────────
+
+function SectionHead({ children }) {
   return (
-    <div
-      className={`${dim} rounded-full bg-brand-subtle text-brand font-semibold flex items-center justify-center ${onClick ? 'cursor-pointer' : ''}`}
-      onClick={onClick}
-    >
-      {initials}
-    </div>
+    <p style={{ fontSize: 11, fontWeight: 600, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.07em', borderBottom: `1px solid ${C.linea}`, paddingBottom: 8, marginBottom: 16, marginTop: 0 }}>
+      {children}
+    </p>
   )
 }
 
-export default function ProfilePage() {
-  const qc = useQueryClient()
-  const toast = useToast()
-  const fileInputRef = useRef(null)
-  const { logout } = useAuth()
-  const navigate = useNavigate()
+// ── Page ──────────────────────────────────────────────────────────────────────
 
-  function handleLogout() {
-    logout()
-    navigate('/login')
-  }
+export default function ProfilePage() {
+  const qc           = useQueryClient()
+  const toast        = useToast()
+  const fileInputRef = useRef(null)
+  const { logout }   = useAuth()
+  const navigate     = useNavigate()
+
+  const [nameForm,        setNameForm]        = useState({ name: '', phone: '' })
+  const [pwForm,          setPwForm]          = useState({ currentPassword: '', newPassword: '', confirm: '' })
+  const [pwEmailSent,     setPwEmailSent]     = useState(false)
+  const [avatarModalOpen, setAvatarModalOpen] = useState(false)
 
   const { data, isLoading } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => getProfile().then(r => r.data.data)
+    queryFn:  () => getProfile().then(r => r.data.data),
   })
-
-  const [nameForm, setNameForm] = useState({ name: '', phone: '' })
-  const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirm: '' })
-  const [pwEmailSent, setPwEmailSent] = useState(false)
-  const [avatarModalOpen, setAvatarModalOpen] = useState(false)
 
   const nameMut = useMutation({
     mutationFn: updateProfile,
-    onSuccess: () => {
-      qc.invalidateQueries(['profile'])
-      toast('Nombre actualizado correctamente.', 'success')
-    },
-    onError: (err) => {
-      toast(err.response?.data?.error || 'Error al actualizar.', 'error')
-    }
+    onSuccess:  () => { qc.invalidateQueries(['profile']); toast('Perfil actualizado.', 'success') },
+    onError:    (err) => toast(err.response?.data?.error || 'Error al actualizar.', 'error'),
   })
 
   const pwMut = useMutation({
     mutationFn: changePassword,
-    onSuccess: () => {
-      setPwForm({ currentPassword: '', newPassword: '', confirm: '' })
-      setPwEmailSent(true)
-    },
-    onError: (err) => {
-      toast(err.response?.data?.error || 'Error al cambiar contraseña.', 'error')
-    }
+    onSuccess:  () => { setPwForm({ currentPassword: '', newPassword: '', confirm: '' }); setPwEmailSent(true) },
+    onError:    (err) => toast(err.response?.data?.error || 'Error al cambiar contraseña.', 'error'),
   })
 
   const avatarMut = useMutation({
     mutationFn: uploadAvatar,
-    onSuccess: () => {
-      qc.invalidateQueries(['profile'])
-      toast('Foto actualizada.', 'success')
-    },
-    onError: (err) => {
-      toast(err.response?.data?.error || 'Error al subir la imagen.', 'error')
-    }
+    onSuccess:  () => { qc.invalidateQueries(['profile']); toast('Foto actualizada.', 'success') },
+    onError:    (err) => toast(err.response?.data?.error || 'Error al subir la imagen.', 'error'),
   })
-
-  function handleNameSubmit(e) {
-    e.preventDefault()
-    nameMut.mutate({ name: nameForm.name, phone: nameForm.phone })
-  }
-
-  function handlePwSubmit(e) {
-    e.preventDefault()
-    if (pwForm.newPassword !== pwForm.confirm) {
-      toast('Las contraseñas nuevas no coinciden.', 'error')
-      return
-    }
-    pwMut.mutate({ currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword })
-  }
 
   function handleFileChange(e) {
     const file = e.target.files[0]
@@ -140,21 +129,21 @@ export default function ProfilePage() {
     e.target.value = ''
   }
 
-  if (isLoading) {
-    return (
-      <div className="p-8 flex justify-center">
-        <div className="w-8 h-8 border-4 border-brand border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
-  }
-
-  const inputCls = "w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/40 bg-raised text-fg"
-  const labelCls = "block text-sm font-medium text-fg-soft mb-1"
-
   return (
-    <div className="p-4 md:p-8 max-w-lg">
-      <h1 className="text-2xl font-semibold text-fg mb-8">Mi perfil</h1>
+    <div style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
 
+      {/* Header */}
+      <div style={{ padding: '20px 24px 16px', borderBottom: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <UserSvg style={{ width: 18, height: 18, color: C.crema }} />
+        <div>
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: C.crema, margin: 0, lineHeight: 1.2 }}>Mi perfil</h1>
+          {!isLoading && data?.email && (
+            <p style={{ fontSize: 12, color: C.piedra, margin: 0, marginTop: 2 }}>{data.email}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Avatar modal */}
       {avatarModalOpen && data?.avatar && (
         <AvatarModal
           src={`${UPLOADS_BASE}/uploads/${data.avatar}`}
@@ -163,157 +152,138 @@ export default function ProfilePage() {
         />
       )}
 
-      {/* Avatar */}
-      <div className="mb-8 flex items-center gap-5">
-        <AvatarCircle
-          avatar={data?.avatar}
-          name={data?.name}
-          size="lg"
-          onClick={data?.avatar ? () => setAvatarModalOpen(true) : undefined}
-        />
-        <div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/gif,image/webp"
-            className="hidden"
-            onChange={handleFileChange}
-          />
-          <button
-            onClick={() => fileInputRef.current.click()}
-            disabled={avatarMut.isPending}
-            className="px-3 py-1.5 border border-line rounded-md text-sm text-fg-soft hover:bg-raised disabled:opacity-50 transition-colors"
-          >
-            {avatarMut.isPending ? 'Subiendo...' : 'Cambiar foto'}
+      {isLoading ? (
+        <div style={{ padding: '60px 0', textAlign: 'center', fontSize: 13, color: C.piedra }}>Cargando…</div>
+      ) : (
+        <div style={{ padding: '24px 24px 40px', maxWidth: 520 }}>
+
+          {/* Avatar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 28 }}>
+            <AvatarCircle
+              avatar={data?.avatar}
+              name={data?.name}
+              size={72}
+              onClick={data?.avatar ? () => setAvatarModalOpen(true) : undefined}
+            />
+            <div>
+              <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp"
+                style={{ display: 'none' }} onChange={handleFileChange} />
+              <button onClick={() => fileInputRef.current.click()} disabled={avatarMut.isPending}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, height: 32, padding: '0 14px', background: 'none', border: `1px solid ${C.linea}`, borderRadius: '0 8px 8px 0', fontSize: 12, fontWeight: 500, color: avatarMut.isPending ? C.piedra : C.arena, cursor: avatarMut.isPending ? 'not-allowed' : 'pointer', opacity: avatarMut.isPending ? 0.6 : 1 }}
+                onMouseEnter={e => { if (!avatarMut.isPending) e.currentTarget.style.borderColor = C.arena }}
+                onMouseLeave={e => e.currentTarget.style.borderColor = C.linea}>
+                <CameraSvg style={{ width: 13, height: 13 }} />
+                {avatarMut.isPending ? 'Subiendo…' : 'Cambiar foto'}
+              </button>
+              <p style={{ fontSize: 11, color: C.piedra, marginTop: 5 }}>JPG, PNG, GIF o WEBP · máx. 5 MB</p>
+            </div>
+          </div>
+
+          {/* Info card */}
+          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', padding: '14px 18px', marginBottom: 28, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[
+              { label: 'Email',    value: data?.email },
+              { label: 'Nombre',   value: data?.name },
+              data?.phone && { label: 'Teléfono', value: data.phone },
+            ].filter(Boolean).map(({ label, value }) => (
+              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: C.piedra, width: 70, flexShrink: 0 }}>{label}</p>
+                <p style={{ fontSize: 13, color: C.crema }}>{value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Información personal */}
+          <section style={{ marginBottom: 28 }}>
+            <SectionHead>Información personal</SectionHead>
+            <form onSubmit={e => { e.preventDefault(); nameMut.mutate({ name: nameForm.name, phone: nameForm.phone }) }}
+              style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <label style={labelStyle}>Nombre</label>
+                <input type="text" required placeholder={data?.name}
+                  value={nameForm.name}
+                  onChange={e => setNameForm(f => ({ ...f, name: e.target.value }))}
+                  className="du-input" />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <label style={labelStyle}>Teléfono <span style={{ fontWeight: 400 }}>opcional</span></label>
+                <input type="text" placeholder={data?.phone || '+54 11 1234-5678'}
+                  value={nameForm.phone}
+                  onChange={e => setNameForm(f => ({ ...f, phone: e.target.value }))}
+                  className="du-input" />
+              </div>
+              <div>
+                <button type="submit" disabled={nameMut.isPending}
+                  style={{ height: 34, padding: '0 18px', borderRadius: '0 9px 9px 0', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, border: 'none', cursor: nameMut.isPending ? 'not-allowed' : 'pointer', opacity: nameMut.isPending ? 0.5 : 1 }}>
+                  {nameMut.isPending ? 'Guardando…' : 'Guardar cambios'}
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <div style={{ borderTop: `1px solid ${C.linea}`, marginBottom: 28 }} />
+
+          {/* Cambiar contraseña */}
+          <section style={{ marginBottom: 28 }}>
+            <SectionHead>Cambiar contraseña</SectionHead>
+
+            {pwEmailSent ? (
+              <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', padding: '24px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
+                <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(125,190,147,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <MailSvg style={{ width: 20, height: 20, color: C.ok }} />
+                </div>
+                <div>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: C.crema, margin: 0 }}>Revisá tu email</p>
+                  <p style={{ fontSize: 12, color: C.piedra, marginTop: 4 }}>Te enviamos un enlace para confirmar el cambio. Expira en 30 minutos.</p>
+                </div>
+                <button onClick={() => setPwEmailSent(false)}
+                  style={{ fontSize: 12, color: C.piedra, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                  onMouseEnter={e => e.currentTarget.style.color = C.arena}
+                  onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+                  Volver a intentar
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={e => {
+                e.preventDefault()
+                if (pwForm.newPassword !== pwForm.confirm) return toast('Las contraseñas nuevas no coinciden.', 'error')
+                pwMut.mutate({ currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword })
+              }} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {[
+                  { key: 'currentPassword', label: 'Contraseña actual' },
+                  { key: 'newPassword',     label: 'Nueva contraseña' },
+                  { key: 'confirm',         label: 'Confirmar nueva contraseña' },
+                ].map(({ key, label }) => (
+                  <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    <label style={labelStyle}>{label}</label>
+                    <input type="password" required
+                      value={pwForm[key]}
+                      onChange={e => setPwForm(f => ({ ...f, [key]: e.target.value }))}
+                      className="du-input" />
+                  </div>
+                ))}
+                <div>
+                  <button type="submit" disabled={pwMut.isPending}
+                    style={{ height: 34, padding: '0 18px', borderRadius: '0 9px 9px 0', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, border: 'none', cursor: pwMut.isPending ? 'not-allowed' : 'pointer', opacity: pwMut.isPending ? 0.5 : 1 }}>
+                    {pwMut.isPending ? 'Enviando…' : 'Cambiar contraseña'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </section>
+
+          <div style={{ borderTop: `1px solid ${C.linea}`, marginBottom: 24 }} />
+
+          {/* Logout */}
+          <button onClick={() => { logout(); navigate('/login') }}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, height: 36, padding: '0 16px', borderRadius: '0 9px 9px 0', background: 'none', border: `1px solid ${C.err}44`, color: C.err, fontSize: 13, fontWeight: 500, cursor: 'pointer', opacity: 0.8 }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.borderColor = C.err }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = '0.8'; e.currentTarget.style.borderColor = `${C.err}44` }}>
+            <LogOutSvg style={{ width: 14, height: 14 }} />
+            Cerrar sesión
           </button>
-          <p className="mt-1 text-xs text-fg-muted">JPG, PNG, GIF o WEBP · máx. 5 MB</p>
         </div>
-      </div>
-
-      {/* Info actual */}
-      <div className="mb-8 p-4 bg-raised rounded-lg border border-line text-sm text-fg-soft space-y-1">
-        <p><span className="font-medium text-fg">Email:</span> {data?.email}</p>
-        <p><span className="font-medium text-fg">Nombre:</span> {data?.name}</p>
-        {data?.phone && <p><span className="font-medium text-fg">Teléfono:</span> {data.phone}</p>}
-      </div>
-
-      {/* Información personal */}
-      <section className="mb-8">
-        <h2 className="text-base font-semibold text-fg mb-4">Información personal</h2>
-        <form onSubmit={handleNameSubmit} className="space-y-4">
-          <div>
-            <label className={labelCls}>Nombre</label>
-            <input
-              type="text"
-              required
-              value={nameForm.name}
-              onChange={e => setNameForm(f => ({ ...f, name: e.target.value }))}
-              placeholder={data?.name}
-              className={inputCls}
-            />
-          </div>
-          <div>
-            <label className={labelCls}>Teléfono</label>
-            <input
-              type="text"
-              value={nameForm.phone}
-              onChange={e => setNameForm(f => ({ ...f, phone: e.target.value }))}
-              placeholder={data?.phone || '+54 11 1234-5678'}
-              className={inputCls}
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={nameMut.isPending}
-            className="px-4 py-2 bg-brand text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity disabled:opacity-50"
-          >
-            {nameMut.isPending ? 'Guardando...' : 'Guardar cambios'}
-          </button>
-        </form>
-      </section>
-
-      <hr className="border-line mb-8" />
-
-      {/* Cambiar contraseña */}
-      <section>
-        <h2 className="text-base font-semibold text-fg mb-4">Cambiar contraseña</h2>
-
-        {pwEmailSent ? (
-          <div className="flex flex-col items-center gap-3 py-6 px-4 bg-raised rounded-xl border border-line text-center">
-            <div className="w-12 h-12 rounded-full bg-brand-subtle flex items-center justify-center">
-              <svg className="w-6 h-6 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-fg">Revisá tu email</p>
-              <p className="text-xs text-fg-muted mt-0.5">Te enviamos un enlace para confirmar el cambio de contraseña. Expira en 30 minutos.</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setPwEmailSent(false)}
-              className="text-xs text-fg-muted underline hover:text-fg transition-colors"
-            >
-              Volver a intentar
-            </button>
-          </div>
-        ) : (
-          <form onSubmit={handlePwSubmit} className="space-y-4">
-            <div>
-              <label className={labelCls}>Contraseña actual</label>
-              <input
-                type="password"
-                required
-                value={pwForm.currentPassword}
-                onChange={e => setPwForm(f => ({ ...f, currentPassword: e.target.value }))}
-                className={inputCls}
-              />
-            </div>
-            <div>
-              <label className={labelCls}>Nueva contraseña</label>
-              <input
-                type="password"
-                required
-                value={pwForm.newPassword}
-                onChange={e => setPwForm(f => ({ ...f, newPassword: e.target.value }))}
-                className={inputCls}
-              />
-            </div>
-            <div>
-              <label className={labelCls}>Confirmar nueva contraseña</label>
-              <input
-                type="password"
-                required
-                value={pwForm.confirm}
-                onChange={e => setPwForm(f => ({ ...f, confirm: e.target.value }))}
-                className={inputCls}
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={pwMut.isPending}
-              className="px-4 py-2 bg-brand text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
-            >
-              {pwMut.isPending && (
-                <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"/>
-                </svg>
-              )}
-              {pwMut.isPending ? 'Enviando...' : 'Cambiar contraseña'}
-            </button>
-          </form>
-        )}
-      </section>
-
-      <hr className="border-line mt-8 mb-6" />
-
-      <button
-        onClick={handleLogout}
-        className="w-full py-2 px-4 border border-danger/40 text-danger text-sm font-medium rounded-md hover:bg-danger/5 transition-colors"
-      >
-        Cerrar sesión
-      </button>
+      )}
     </div>
   )
 }
