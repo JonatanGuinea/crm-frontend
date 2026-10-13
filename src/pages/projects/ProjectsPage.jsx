@@ -281,7 +281,7 @@ export default function ProjectsPage() {
               </button>
             ))}
           </div>
-          {tab === 'table' && canWrite && (
+          {canWrite && (
             <button onClick={() => { setEditing(null); setModalOpen(true) }}
               style={{ height: 34, padding: '0 14px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}
             >

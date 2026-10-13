@@ -5,6 +5,7 @@ import { getStockDashboard, getStockHistory } from '../../api/stock'
 import StockMovementModal from './StockMovementModal'
 
 const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
+const CIFRAS = "'DanteUP Cifras', Geist, sans-serif"
 
 function CubeSvg({ style }) {
   return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" /></svg>
@@ -67,21 +68,22 @@ function fmtDateTime(iso) {
     ' ' + d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
 }
 
-function StatCard({ Icon, label, value, sub, accentColor = C.crema, cardBg = C.s1, borderColor = C.linea, to }) {
-  const content = (
-    <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: '0 16px 16px 0', padding: 20, display: 'flex', flexDirection: 'column', gap: 12, height: '100%' }}
-      className={to ? 'cursor-pointer transition-shadow hover:shadow-md' : ''}>
+function StatCard({ Icon, label, value, sub, accentColor = C.crema, to }) {
+  const inner = (
+    <div
+      style={{ background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 10, height: '100%' }}
+      onMouseEnter={to ? (e => e.currentTarget.style.borderColor = C.arena) : undefined}
+      onMouseLeave={to ? (e => e.currentTarget.style.borderColor = C.linea) : undefined}
+    >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <p style={{ fontSize: 12, fontWeight: 500, color: C.piedra }}>{label}</p>
-        <Icon style={{ width: 16, height: 16, color: accentColor, opacity: 0.7 }} />
+        <p style={{ fontSize: 10.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: C.piedra }}>{label}</p>
+        <Icon style={{ width: 15, height: 15, color: accentColor, opacity: 0.55 }} />
       </div>
-      <div>
-        <p style={{ fontSize: 28, fontWeight: 700, color: accentColor }}>{value}</p>
-        {sub && <p style={{ fontSize: 12, color: C.piedra, marginTop: 4 }}>{sub}</p>}
-      </div>
+      <p style={{ fontFamily: CIFRAS, fontSize: 32, fontWeight: 700, color: accentColor, lineHeight: 1 }}>{value}</p>
+      {sub && <p style={{ fontSize: 11.5, color: C.piedra }}>{sub}</p>}
     </div>
   )
-  return to ? <Link to={to} style={{ display: 'block', height: '100%' }}>{content}</Link> : content
+  return to ? <Link to={to} style={{ display: 'block', height: '100%' }}>{inner}</Link> : inner
 }
 
 export default function StockDashboard() {
@@ -136,60 +138,58 @@ export default function StockDashboard() {
 
       {/* ── Historial ── */}
       {tab === 'history' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 672 }}>
+        <div style={{ maxWidth: 680 }}>
           {historyData.length === 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', gap: 12 }}>
-              <ClockSvg style={{ width: 40, height: 40, color: C.piedra, opacity: 0.3 }} />
-              <p style={{ fontSize: 14, color: C.piedra }}>Sin movimientos registrados.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 0', gap: 10, color: C.piedra }}>
+              <ClockSvg style={{ width: 36, height: 36, opacity: 0.3 }} />
+              <p style={{ fontSize: 13 }}>Sin movimientos registrados.</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {historyData.slice(0, historyVisible).map((entry, i) => {
-                const initials = entry.createdBy?.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() ?? '?'
-                const date = new Date(entry.createdAt)
-                const dateStr = date.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
-                const timeStr = date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
-                const shown = historyData.slice(0, historyVisible)
-                const qty = Number(entry.quantity).toLocaleString('es-AR')
-                const unit = entry.product?.unit ?? ''
-                return (
-                  <div key={entry.id} style={{ display: 'flex', gap: 16 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(242,237,227,0.08)', color: C.arena, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        {initials}
+            <>
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                {historyData.slice(0, historyVisible).map(entry => {
+                  const qty = Number(entry.quantity).toLocaleString('es-AR')
+                  const unit = entry.product?.unit ?? ''
+                  return (
+                    <li key={entry.id} style={{ display: 'flex', gap: 12, padding: '12px 0', borderBottom: `1px solid ${C.linea}`, fontSize: 13 }}>
+                      <div style={{ width: 10, height: 16, flexShrink: 0, marginTop: 2, borderLeft: `2.5px solid ${C.piedra}`, borderBottom: `2.5px solid ${C.piedra}` }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '0 6px', rowGap: 2 }}>
+                          <span style={{ fontWeight: 600, color: C.crema }}>{entry.createdBy?.name ?? 'Sistema'}</span>
+                          <span style={{ color: C.arena }}>{STOCK_ACTION_LABEL[entry.type] ?? 'registró un movimiento de'}</span>
+                          <span style={{ fontWeight: 600, color: entry.direction === 'IN' ? C.ok : C.err }}>
+                            {entry.direction === 'IN' ? '+' : '−'}{qty} {unit}
+                          </span>
+                        </div>
+                        {entry.product && (
+                          <Link to={`/stock/products/${entry.product.id}`} style={{ fontSize: 12, color: C.info, textDecoration: 'none' }}
+                            onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
+                            onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
+                          >
+                            {entry.product.name}
+                          </Link>
+                        )}
+                        {(entry.reason || entry.client?.name) && (
+                          <p style={{ fontSize: 11.5, color: C.piedra, marginTop: 2 }}>
+                            {[entry.reason, entry.client?.name].filter(Boolean).join(' · ')}
+                          </p>
+                        )}
+                        <p style={{ fontSize: 11, color: C.piedra, opacity: 0.7, marginTop: 3 }}>{fmtDateTime(entry.createdAt)}</p>
                       </div>
-                      {i < shown.length - 1 && <div style={{ width: 1, flex: 1, background: C.linea, marginTop: 3, marginBottom: 3, minHeight: 14 }} />}
-                    </div>
-                    <div style={{ paddingBottom: 16, flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '2px 6px' }}>
-                        <span style={{ fontSize: 14, fontWeight: 600, color: C.crema }}>{entry.createdBy?.name ?? 'Sistema'}</span>
-                        <span style={{ fontSize: 14, color: C.piedra }}>{STOCK_ACTION_LABEL[entry.type] ?? 'registró un movimiento de'}</span>
-                        <span style={{ fontSize: 14, fontWeight: 500, color: entry.direction === 'IN' ? C.ok : C.err }}>
-                          {entry.direction === 'IN' ? '+' : '−'}{qty} {unit}
-                        </span>
-                      </div>
-                      <Link to={`/stock/products/${entry.product?.id}`} style={{ fontSize: 12, color: C.arena }} className="hover:underline">
-                        {entry.product?.name}
-                      </Link>
-                      {(entry.reason || entry.client?.name) && (
-                        <p style={{ fontSize: 12, color: C.piedra, marginTop: 2, opacity: 0.8 }}>
-                          {[entry.reason, entry.client?.name].filter(Boolean).join(' · ')}
-                        </p>
-                      )}
-                      <p style={{ fontSize: 11, color: C.piedra, marginTop: 2, opacity: 0.7 }}>{dateStr} · {timeStr}</p>
-                    </div>
-                  </div>
-                )
-              })}
+                    </li>
+                  )
+                })}
+              </ul>
               {historyData.length > historyVisible && (
                 <button onClick={() => setHistoryVisible(v => v + 25)}
-                  style={{ marginTop: 8, fontSize: 12, color: C.piedra, padding: '8px 0', border: `1px dashed ${C.linea}`, borderRadius: '0 12px 12px 0', background: 'none', cursor: 'pointer' }}
-                  onMouseEnter={e => e.currentTarget.style.color = C.crema}
-                  onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+                  style={{ marginTop: 4, width: '100%', padding: '10px 0', background: 'none', border: `1px dashed ${C.linea}`, borderRadius: '0 12px 12px 0', color: C.piedra, fontSize: 12.5, cursor: 'pointer' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.arena }}
+                  onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}
+                >
                   Mostrar más ({historyData.length - historyVisible} restante{historyData.length - historyVisible !== 1 ? 's' : ''})
                 </button>
               )}
-            </div>
+            </>
           )}
         </div>
       )}
@@ -201,28 +201,21 @@ export default function StockDashboard() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 0', color: C.piedra, fontSize: 14 }}>Cargando…</div>
           ) : !data ? null : (
             <>
-              {/* Stats fila 1: totales y alertas */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <StatCard Icon={CubeSvg} label="Total productos" value={data.totalProducts}
+              {/* Stats: grid unificado 2×3 */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <StatCard Icon={CubeSvg} label="Total productos"
+                  value={data.totalProducts}
                   sub={`${data.activeProducts} activos`}
                   accentColor={C.crema} to="/stock/products" />
                 <StatCard Icon={XCircleSvg} label="Sin stock"
                   value={data.outOfStock}
                   accentColor={data.outOfStock > 0 ? C.err : C.crema}
-                  cardBg={data.outOfStock > 0 ? 'rgba(229,131,115,0.06)' : C.s1}
-                  borderColor={data.outOfStock > 0 ? 'rgba(229,131,115,0.3)' : C.linea}
                   to={data.outOfStock > 0 ? '/stock/products?outOfStock=true' : undefined} />
                 <StatCard Icon={WarnSvg} label="Stock bajo"
                   value={data.lowStock}
                   accentColor={data.lowStock > 0 ? C.warn : C.crema}
-                  cardBg={data.lowStock > 0 ? 'rgba(226,182,99,0.06)' : C.s1}
-                  borderColor={data.lowStock > 0 ? 'rgba(226,182,99,0.3)' : C.linea}
                   to={data.lowStock > 0 ? '/stock/products?lowStock=true' : undefined} />
-              </div>
-
-              {/* Stats fila 2: por tipo de inventario */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <StatCard Icon={CartSvg} label="Productos para venta"
+                <StatCard Icon={CartSvg} label="Para venta"
                   value={data.productsByType?.sale ?? 0}
                   sub={data.valueByType?.sale ? `$${Number(data.valueByType.sale).toLocaleString('es-AR', { maximumFractionDigits: 0 })} en stock` : 'Sin valorización'}
                   accentColor={C.info} to="/stock/products?inventoryType=sale" />

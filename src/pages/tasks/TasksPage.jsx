@@ -685,28 +685,25 @@ export default function TasksPage() {
               ))}
             </div>
             {tab === 'board' && (
-              <>
-                {/* Mobile: botón filtros */}
-                <button onClick={() => setFiltersOpen(v => !v)}
-                  className="md:hidden"
-                  style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 12px', borderRadius: '0 9px 9px 0', border: `1px solid ${activeFilterCount > 0 ? C.arena : C.linea}`, background: activeFilterCount > 0 ? 'rgba(242,237,227,0.06)' : 'none', color: activeFilterCount > 0 ? C.crema : C.piedra, fontSize: 12, cursor: 'pointer' }}
-                >
-                  Filtros
-                  {activeFilterCount > 0 && (
-                    <span style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: C.crema, color: C.bg, fontSize: 10, fontWeight: 700 }}>
-                      {activeFilterCount}
-                    </span>
-                  )}
-                  <ChevronDownSvg style={{ width: 12, height: 12, transform: filtersOpen ? 'rotate(180deg)' : 'none' }} />
-                </button>
-                <button onClick={() => setModal({ defaultStatus: 'todo' })}
-                  style={{ display: 'flex', alignItems: 'center', gap: 5, height: 34, padding: '0 14px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}
-                >
-                  <PlusSvg style={{ width: 13, height: 13 }} />
-                  Nueva tarea
-                </button>
-              </>
+              <button onClick={() => setFiltersOpen(v => !v)}
+                className="md:hidden flex items-center"
+                style={{ gap: 6, height: 34, padding: '0 12px', borderRadius: '0 9px 9px 0', border: `1px solid ${activeFilterCount > 0 ? C.arena : C.linea}`, background: activeFilterCount > 0 ? 'rgba(242,237,227,0.06)' : 'none', color: activeFilterCount > 0 ? C.crema : C.piedra, fontSize: 12, cursor: 'pointer' }}
+              >
+                Filtros
+                {activeFilterCount > 0 && (
+                  <span style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: C.crema, color: C.bg, fontSize: 10, fontWeight: 700 }}>
+                    {activeFilterCount}
+                  </span>
+                )}
+                <ChevronDownSvg style={{ width: 12, height: 12, transform: filtersOpen ? 'rotate(180deg)' : 'none' }} />
+              </button>
             )}
+            <button onClick={() => setModal({ defaultStatus: 'todo' })}
+              style={{ display: 'flex', alignItems: 'center', gap: 5, height: 34, padding: '0 14px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}
+            >
+              <PlusSvg style={{ width: 13, height: 13 }} />
+              Nueva tarea
+            </button>
           </div>
         </div>
       </div>

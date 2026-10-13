@@ -85,7 +85,7 @@ function stockState(product) {
   return 'ok'
 }
 
-const selStyle = { padding: '6px 12px', background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', fontSize: 13, color: C.piedra, outline: 'none' }
+const filterSelectStyle = { height: 34, padding: '0 12px', background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', color: C.crema, fontSize: 13, outline: 'none', appearance: 'none', cursor: 'pointer' }
 
 export default function ProductsPage() {
   const qc      = useQueryClient()
@@ -177,52 +177,57 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      {/* Tabs de tipo de inventario */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, borderBottom: `1px solid ${C.linea}`, marginBottom: -8, overflowX: 'auto' }}>
-        {INVENTORY_TABS.map(tab => (
-          <button key={tab.value} onClick={() => setFilterType(tab.value)}
-            style={{ padding: '8px 16px', fontSize: 14, fontWeight: 500, whiteSpace: 'nowrap', borderBottom: `2px solid ${filterType === tab.value ? C.crema : 'transparent'}`, color: filterType === tab.value ? C.crema : C.piedra, background: 'none', border: 'none', borderBottom: `2px solid ${filterType === tab.value ? C.crema : 'transparent'}`, cursor: 'pointer' }}>
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
       {/* Filtros */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }} className="sm:flex-row sm:items-center">
-        <div style={{ position: 'relative' }}>
-          <SearchSvg style={{ width: 16, height: 16, color: C.piedra, position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-          <input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Buscar por nombre o SKU…"
-            style={{ paddingLeft: 36, paddingRight: 12, paddingTop: 6, paddingBottom: 6, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', fontSize: 13, color: C.crema, outline: 'none', width: '100%' }}
-            className="sm:w-56" />
-        </div>
-        <div style={{ display: 'grid', gap: 8 }} className="grid-cols-2 sm:flex sm:items-center">
-          <select value={filterStatus} onChange={e => setFilter(e.target.value)} style={selStyle}>
-            <option value="">Estado</option>
-            <option value="active">Activo</option>
-            <option value="inactive">Inactivo</option>
-            <option value="discontinued">Descontinuado</option>
-          </select>
-          {categories.length > 0 && (
-            <select value={filterCategory} onChange={e => setFilterCat(e.target.value)} style={selStyle}>
-              <option value="">Categoría</option>
-              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          )}
-          <select value={filterStock} onChange={e => setFilterStock(e.target.value)} style={selStyle}>
-            <option value="">Stock</option>
-            <option value="out">Sin stock</option>
-            <option value="low">Stock bajo</option>
-          </select>
-          {hasFilters && (
-            <button onClick={() => { setSearch(''); setFilter(''); setFilterCat(''); setFilterStock(''); setFilterType('') }}
-              style={{ fontSize: 12, color: C.piedra, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-              onMouseEnter={e => e.currentTarget.style.color = C.crema}
-              onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
-              Limpiar
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        {/* Tab switcher tipo de inventario */}
+        <div style={{ display: 'flex', gap: 3, padding: 4, height: 34, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0' }}>
+          {INVENTORY_TABS.map(t => (
+            <button key={t.value} onClick={() => setFilterType(t.value)}
+              style={{ padding: '0 10px', borderRadius: '0 7px 7px 0', fontSize: 12, fontWeight: 500, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', background: filterType === t.value ? C.s3 : 'transparent', color: filterType === t.value ? C.crema : C.piedra }}
+            >
+              {t.label}
             </button>
-          )}
+          ))}
         </div>
+
+        {/* Buscador */}
+        <div style={{ position: 'relative' }}>
+          <SearchSvg style={{ width: 14, height: 14, color: C.piedra, position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+          <input value={search} onChange={e => setSearch(e.target.value)}
+            placeholder="Buscar…"
+            style={{ height: 34, paddingLeft: 32, paddingRight: 12, background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', fontSize: 13, color: C.crema, outline: 'none', width: 180 }}
+          />
+        </div>
+
+        <select value={filterStatus} onChange={e => setFilter(e.target.value)} style={filterSelectStyle}>
+          <option value="">Todos los estados</option>
+          <option value="active">Activo</option>
+          <option value="inactive">Inactivo</option>
+          <option value="discontinued">Descontinuado</option>
+        </select>
+
+        {categories.length > 0 && (
+          <select value={filterCategory} onChange={e => setFilterCat(e.target.value)} style={filterSelectStyle}>
+            <option value="">Todas las categorías</option>
+            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        )}
+
+        <select value={filterStock} onChange={e => setFilterStock(e.target.value)} style={filterSelectStyle}>
+          <option value="">Todo el stock</option>
+          <option value="out">Sin stock</option>
+          <option value="low">Stock bajo</option>
+        </select>
+
+        {hasFilters && (
+          <button onClick={() => { setSearch(''); setFilter(''); setFilterCat(''); setFilterStock(''); setFilterType('') }}
+            style={{ fontSize: 12, color: C.piedra, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+            onMouseEnter={e => e.currentTarget.style.color = C.arena}
+            onMouseLeave={e => e.currentTarget.style.color = C.piedra}
+          >
+            Limpiar filtros
+          </button>
+        )}
       </div>
 
       {/* Tabla */}
