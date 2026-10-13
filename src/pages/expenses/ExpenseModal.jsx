@@ -5,8 +5,9 @@ import { getOrganizations } from '../../api/organizations'
 import { useAuth } from '../../context/AuthContext'
 import DatePicker from '../../components/DatePicker'
 
-const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
-const labelCls = "block text-sm font-medium text-fg-soft mb-1"
+const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
+
+const labelStyle = { fontSize: 11, fontWeight: 500, color: C.piedra, display: 'block', marginBottom: 4 }
 
 export default function ExpenseModal({ expense, onClose, onSaved }) {
   const isEditing = Boolean(expense)
@@ -99,44 +100,51 @@ export default function ExpenseModal({ expense, onClose, onSaved }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-surface/60 backdrop-blur-xl rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col border border-line">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
+      className="sm:items-center">
+      <div style={{ width: '100%', maxWidth: 448, background: C.s1, borderRadius: '0 16px 0 0', border: `1px solid ${C.linea}`, boxShadow: '0 24px 64px rgba(0,0,0,0.5)', maxHeight: '92dvh', display: 'flex', flexDirection: 'column' }}
+        className="sm:rounded-[0_16px_16px_0] sm:max-h-[85vh]">
 
         {/* Header */}
-        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-line">
-          <h2 className="text-base font-semibold text-fg">{isEditing ? 'Editar egreso' : 'Nuevo egreso'}</h2>
-          <button onClick={onClose} className="text-fg-muted hover:text-fg text-lg leading-none">×</button>
+        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 14px', borderBottom: `1px solid ${C.linea}` }}>
+          <h2 style={{ fontSize: 15, fontWeight: 600, color: C.crema, margin: 0 }}>{isEditing ? 'Editar egreso' : 'Nuevo egreso'}</h2>
+          <button onClick={onClose}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, lineHeight: 1, color: C.piedra, padding: 4 }}
+            onMouseEnter={e => e.currentTarget.style.color = C.crema}
+            onMouseLeave={e => e.currentTarget.style.color = C.piedra}>×</button>
         </div>
 
         {/* Scrollable body */}
-        <form id="expense-form" onSubmit={handleSave} className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+        <form id="expense-form" onSubmit={handleSave} style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <label className={labelCls}>Título</label>
+            <label style={labelStyle}>Título</label>
             <input type="text" value={form.title}
               onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-              className={inputCls} placeholder="Ej: Pago alquiler mayo" />
+              className="du-input" placeholder="Ej: Pago alquiler mayo" />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelCls}>Monto</label>
+              <label style={labelStyle}>Monto</label>
               <input type="number" min="0" step="1" value={form.amount}
                 onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
-                className={inputCls} placeholder="0" />
+                className="du-input" placeholder="0" />
             </div>
             <div>
-              <label className={labelCls}>Fecha</label>
+              <label style={labelStyle}>Fecha</label>
               <DatePicker value={form.date}
                 onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
-                className={inputCls} />
+                className="du-input" />
             </div>
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className={labelCls.replace('mb-1', '')}>Categoría</label>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+              <label style={{ ...labelStyle, marginBottom: 0 }}>Categoría</label>
               <button type="button" onClick={() => setShowNewCat(v => !v)}
-                className="text-xs text-brand hover:underline">
+                style={{ fontSize: 12, color: C.crema, background: 'none', border: 'none', cursor: 'pointer' }}
+                onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
+                onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}>
                 {showNewCat ? 'Cancelar' : '+ Nueva categoría'}
               </button>
             </div>
@@ -144,16 +152,16 @@ export default function ExpenseModal({ expense, onClose, onSaved }) {
               <div className="flex gap-2">
                 <input type="text" value={newCatName}
                   onChange={e => setNewCatName(e.target.value)}
-                  className={inputCls} placeholder="Nombre de la categoría" />
+                  className="du-input" placeholder="Nombre de la categoría" />
                 <button type="button" onClick={handleCreateCat} disabled={savingCat}
-                  className="px-3 py-2 bg-brand text-white rounded-md text-sm hover:bg-brand-hover disabled:opacity-50 shrink-0">
+                  style={{ padding: '8px 12px', borderRadius: '0 8px 8px 0', border: 'none', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 500, cursor: savingCat ? 'not-allowed' : 'pointer', opacity: savingCat ? 0.5 : 1, flexShrink: 0 }}>
                   Crear
                 </button>
               </div>
             ) : (
               <select value={form.categoryId}
                 onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))}
-                className={inputCls}>
+                className="du-input">
                 <option value="">Seleccionar categoría</option>
                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
@@ -161,22 +169,25 @@ export default function ExpenseModal({ expense, onClose, onSaved }) {
           </div>
 
           <div>
-            <label className={labelCls}>Notas</label>
+            <label style={labelStyle}>Notas</label>
             <textarea value={form.notes}
               onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-              className={inputCls + ' resize-none'} rows={2} placeholder="Opcional" />
+              className="du-input resize-none" rows={2} placeholder="Opcional" />
           </div>
 
-          {error && <p className="text-sm text-danger">{error}</p>}
+          {error && <p style={{ fontSize: 13, color: C.err }}>{error}</p>}
         </form>
 
         {/* Footer */}
-        <div className="shrink-0 flex justify-end gap-3 px-6 py-4 border-t border-line">
-          <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-fg-soft hover:text-fg">
+        <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '14px 20px', borderTop: `1px solid ${C.linea}` }}>
+          <button type="button" onClick={onClose}
+            style={{ padding: '8px 16px', fontSize: 13, color: C.piedra, background: 'none', border: 'none', cursor: 'pointer' }}
+            onMouseEnter={e => e.currentTarget.style.color = C.crema}
+            onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
             Cancelar
           </button>
           <button type="submit" form="expense-form" disabled={saving}
-            className="px-5 py-2 bg-brand text-white rounded-lg text-sm font-medium hover:bg-brand-hover disabled:opacity-50">
+            style={{ padding: '10px 20px', borderRadius: '0 10px 10px 0', border: 'none', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.5 : 1 }}>
             {saving ? 'Guardando...' : isEditing ? 'Guardar cambios' : 'Crear egreso'}
           </button>
         </div>

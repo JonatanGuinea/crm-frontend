@@ -1,10 +1,20 @@
 import { useState, useEffect } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { createCashMovement, updateCashMovement, getFinancialCategories } from '../../api/finances'
 import { getClients } from '../../api/clients'
 import { useToast } from '../../components/Toast'
 import DatePicker from '../../components/DatePicker'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+
+const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
+const dpClass = "h-[34px] px-3 bg-[#141415] border border-[#2C2C2F] rounded-[0_9px_9px_0] text-[13px] outline-none w-full"
+
+function CloseSvg({ style }) {
+  return (
+    <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  )
+}
 
 const today = () => {
   const d = new Date()
@@ -16,12 +26,8 @@ const isFuture = (dateStr) => {
   return new Date(dateStr + 'T00:00:00') > todayMid
 }
 
-const inputCls = 'w-full rounded-lg border border-line bg-raised text-fg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40'
-const labelCls = 'text-xs font-medium text-fg-muted'
-
 export default function MovementModal({ defaultType = 'expense', movement, accounts, onClose, onSaved }) {
   const toast = useToast()
-  const qc    = useQueryClient()
   const isEdit = !!movement
 
   const [form, setForm] = useState({
@@ -35,7 +41,7 @@ export default function MovementModal({ defaultType = 'expense', movement, accou
     reference:   movement?.reference ?? '',
     pending:     movement?.status === 'pending' ? true : false,
   })
-  const [saving,  setSaving]  = useState(false)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     setForm(p => ({ ...p, categoryId: '', clientId: '' }))
@@ -85,95 +91,75 @@ export default function MovementModal({ defaultType = 'expense', movement, accou
 
   const isIncome  = form.type === 'income'
   const typeLabel = isIncome ? 'Ingreso' : 'Egreso'
-  const accentVar = isIncome ? '--brand-green' : '--brand-red'
-  const btnClass  = isIncome ? 'bg-success text-white hover:opacity-90' : 'bg-danger text-white hover:opacity-90'
+  const accentColor = isIncome ? C.ok : C.err
+
+  const labelStyle = { fontSize: 11, fontWeight: 500, color: C.piedra }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="w-full sm:max-w-md bg-surface rounded-t-2xl sm:rounded-2xl border border-line shadow-xl max-h-[92dvh] flex flex-col">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
+      className="sm:items-center">
+      <div style={{ width: '100%', maxWidth: 448, background: C.s1, borderRadius: '0 16px 0 0', border: `1px solid ${C.linea}`, boxShadow: '0 24px 64px rgba(0,0,0,0.5)', maxHeight: '92dvh', display: 'flex', flexDirection: 'column' }}
+        className="sm:rounded-[0_16px_16px_0]">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-line shrink-0">
-          <div className="flex items-center gap-3">
-            <h2 className="text-base font-semibold text-fg">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 14px', borderBottom: `1px solid ${C.linea}`, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 15, fontWeight: 600, color: C.crema }}>
               {isEdit ? `Editar ${typeLabel}` : `Nuevo ${typeLabel}`}
-            </h2>
+            </span>
             {!isEdit && (
-              <div className="flex rounded-lg overflow-hidden border border-line text-xs font-medium">
-                <button
-                  type="button"
-                  onClick={() => set('type', 'income')}
-                  className={`px-3 py-1.5 transition-colors ${isIncome ? 'bg-success text-white' : 'text-fg-muted hover:text-fg'}`}
-                >
+              <div style={{ display: 'flex', overflow: 'hidden', border: `1px solid ${C.linea}`, borderRadius: '0 8px 8px 0', fontSize: 12, fontWeight: 500 }}>
+                <button type="button" onClick={() => set('type', 'income')}
+                  style={{ padding: '5px 10px', background: isIncome ? C.ok : 'transparent', color: isIncome ? C.bg : C.piedra, border: 'none', cursor: 'pointer' }}>
                   Ingreso
                 </button>
-                <button
-                  type="button"
-                  onClick={() => set('type', 'expense')}
-                  className={`px-3 py-1.5 transition-colors ${!isIncome ? 'bg-danger text-white' : 'text-fg-muted hover:text-fg'}`}
-                >
+                <button type="button" onClick={() => set('type', 'expense')}
+                  style={{ padding: '5px 10px', background: !isIncome ? C.err : 'transparent', color: !isIncome ? C.bg : C.piedra, border: 'none', cursor: 'pointer' }}>
                   Egreso
                 </button>
               </div>
             )}
           </div>
-          <button type="button" onClick={onClose} className="text-fg-muted hover:text-fg transition-colors p-1">
-            <XMarkIcon className="w-5 h-5" />
+          <button type="button" onClick={onClose}
+            style={{ padding: 6, borderRadius: '0 6px 6px 0', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra }}
+            onMouseEnter={e => e.currentTarget.style.color = C.crema}
+            onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+            <CloseSvg style={{ width: 18, height: 18 }} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-5 py-4 flex flex-col gap-4 overflow-y-auto">
+        <form onSubmit={handleSubmit} style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
 
           {/* Cuenta */}
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>Cuenta</label>
-            <select value={form.accountId} onChange={e => set('accountId', e.target.value)} className={inputCls}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <label style={labelStyle}>Cuenta</label>
+            <select value={form.accountId} onChange={e => set('accountId', e.target.value)} className="du-input">
               {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
           </div>
 
           {/* Monto */}
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>Monto</label>
-            <div className="flex rounded-lg border border-line overflow-hidden focus-within:ring-2 focus-within:ring-brand/40">
-              <span
-                className="flex items-center px-3 border-r border-line bg-raised text-sm font-semibold shrink-0"
-                style={{ color: `var(${accentVar})` }}
-              >
-                $
-              </span>
-              <input
-                type="number"
-                min="0.01"
-                step="0.01"
-                placeholder="0.00"
-                value={form.amount}
-                onChange={e => set('amount', e.target.value)}
-                className="flex-1 min-w-0 bg-raised text-fg text-sm px-3 py-2.5 focus:outline-none"
-                required
-              />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <label style={labelStyle}>Monto</label>
+            <div style={{ display: 'flex', overflow: 'hidden', border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0' }}>
+              <span style={{ display: 'flex', alignItems: 'center', padding: '0 12px', borderRight: `1px solid ${C.linea}`, background: C.s2, fontSize: 13, fontWeight: 600, color: accentColor, flexShrink: 0 }}>$</span>
+              <input type="number" min="0.01" step="0.01" placeholder="0.00"
+                value={form.amount} onChange={e => set('amount', e.target.value)}
+                style={{ flex: 1, minWidth: 0, background: C.s2, color: C.crema, fontSize: 13, padding: '0 12px', height: 36, outline: 'none', border: 'none' }}
+                required />
             </div>
           </div>
 
           {/* Fecha */}
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>Fecha</label>
-            <DatePicker
-              value={form.date}
-              onChange={e => set('date', e.target.value)}
-              className={inputCls}
-            />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <label style={labelStyle}>Fecha</label>
+            <DatePicker value={form.date} onChange={e => set('date', e.target.value)} className={dpClass} />
           </div>
 
           {/* Categoría */}
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>Categoría</label>
-            <select
-              value={form.categoryId}
-              onChange={e => set('categoryId', e.target.value)}
-              className={inputCls}
-              disabled={catsLoading}
-            >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <label style={labelStyle}>Categoría</label>
+            <select value={form.categoryId} onChange={e => set('categoryId', e.target.value)} className="du-input" disabled={catsLoading}>
               <option value="">{catsLoading ? 'Cargando…' : 'Sin categoría'}</option>
               {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
@@ -181,9 +167,9 @@ export default function MovementModal({ defaultType = 'expense', movement, accou
 
           {/* Cliente (solo ingresos) */}
           {form.type === 'income' && (
-            <div className="flex flex-col gap-1.5">
-              <label className={labelCls}>Cliente <span className="font-normal text-fg-muted/70">(opcional)</span></label>
-              <select value={form.clientId} onChange={e => set('clientId', e.target.value)} className={inputCls}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              <label style={labelStyle}>Cliente <span style={{ fontWeight: 400, color: C.piedra }}>opcional</span></label>
+              <select value={form.clientId} onChange={e => set('clientId', e.target.value)} className="du-input">
                 <option value="">Sin cliente</option>
                 {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
@@ -191,78 +177,51 @@ export default function MovementModal({ defaultType = 'expense', movement, accou
           )}
 
           {/* Descripción */}
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>Descripción</label>
-            <input
-              type="text"
-              placeholder={isIncome ? 'Ej: Cobro cliente, venta…' : 'Ej: Compra de materiales…'}
-              value={form.description}
-              onChange={e => set('description', e.target.value)}
-              className={inputCls}
-            />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <label style={labelStyle}>Descripción</label>
+            <input type="text" placeholder={isIncome ? 'Ej: Cobro cliente, venta…' : 'Ej: Compra de materiales…'}
+              value={form.description} onChange={e => set('description', e.target.value)} className="du-input" />
           </div>
 
           {/* Referencia */}
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>
-              Referencia <span className="font-normal text-fg-muted/70">(opcional)</span>
-            </label>
-            <input
-              type="text"
-              placeholder="N° de factura, recibo…"
-              value={form.reference}
-              onChange={e => set('reference', e.target.value)}
-              className={inputCls}
-            />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <label style={labelStyle}>Referencia <span style={{ fontWeight: 400, color: C.piedra }}>opcional</span></label>
+            <input type="text" placeholder="N° de factura, recibo…"
+              value={form.reference} onChange={e => set('reference', e.target.value)} className="du-input" />
           </div>
 
-          {/* Pendiente */}
-          <button
-            type="button"
-            onClick={() => set('pending', !form.pending)}
-            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-colors ${
-              form.pending
-                ? 'border-warning bg-warning/5'
-                : 'border-line text-fg-muted hover:bg-raised'
-            }`}
-          >
-            <div className="text-left">
-              <div className="flex items-center gap-2">
-                <p className={`text-sm font-medium ${form.pending ? 'text-warning' : 'text-fg'}`}>
+          {/* Pendiente toggle */}
+          <button type="button" onClick={() => set('pending', !form.pending)}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '0 10px 10px 0', border: `1px solid ${form.pending ? C.warn : C.linea}`, background: form.pending ? 'rgba(226,182,99,0.06)' : 'none', cursor: 'pointer' }}>
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 13, fontWeight: 500, color: form.pending ? C.warn : C.crema }}>
                   {isIncome ? 'Ingreso pendiente' : 'Egreso pendiente'}
-                </p>
+                </span>
                 {form.pending && isFuture(form.date) && (
-                  <span className="text-[10px] font-semibold uppercase tracking-wide bg-warning/15 text-warning px-1.5 py-0.5 rounded-full">
-                    Fecha futura
-                  </span>
+                  <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', background: 'rgba(226,182,99,0.15)', color: C.warn, padding: '1px 6px', borderRadius: '0 4px 4px 0' }}>Fecha futura</span>
                 )}
               </div>
-              <p className="text-xs text-fg-muted mt-0.5">
-                {form.pending
-                  ? 'No afecta el saldo hasta confirmar'
-                  : 'Afecta el saldo al registrar'}
+              <p style={{ fontSize: 11, color: C.piedra, marginTop: 2 }}>
+                {form.pending ? 'No afecta el saldo hasta confirmar' : 'Afecta el saldo al registrar'}
               </p>
             </div>
-            <div className={`w-10 h-5.5 rounded-full transition-colors relative shrink-0 ${form.pending ? 'bg-warning' : 'bg-line'}`}>
-              <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${form.pending ? 'translate-x-5' : 'translate-x-0.5'}`} />
+            <div style={{ width: 36, height: 20, borderRadius: 10, background: form.pending ? C.warn : C.linea, position: 'relative', flexShrink: 0, transition: 'background 0.2s' }}>
+              <div style={{ position: 'absolute', top: 2, left: form.pending ? 'calc(100% - 18px)' : 2, width: 16, height: 16, borderRadius: '50%', background: C.crema, transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }} />
             </div>
           </button>
 
           {/* Acciones */}
-          <div className="flex gap-3 pt-1 pb-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl border border-line text-sm font-medium text-fg-muted hover:text-fg hover:bg-raised transition-colors"
-            >
+          <div style={{ display: 'flex', gap: 10, paddingTop: 4, paddingBottom: 8 }}>
+            <button type="button" onClick={onClose}
+              style={{ flex: 1, padding: '10px 0', borderRadius: '0 10px 10px 0', border: `1px solid ${C.linea}`, background: 'none', color: C.piedra, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+              onMouseEnter={e => { e.currentTarget.style.color = C.crema; e.currentTarget.style.borderColor = C.arena }}
+              onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}>
               Cancelar
             </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-opacity disabled:opacity-50 ${btnClass}`}
-            >
-              {saving ? 'Guardando…' : isEdit ? 'Guardar cambios' : form.pending ? 'Registrar como pendiente' : `Registrar ${typeLabel}`}
+            <button type="submit" disabled={saving}
+              style={{ flex: 1, padding: '10px 0', borderRadius: '0 10px 10px 0', border: 'none', background: accentColor, color: C.bg, fontSize: 13, fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.5 : 1 }}>
+              {saving ? 'Guardando…' : isEdit ? 'Guardar cambios' : form.pending ? 'Registrar pendiente' : `Registrar ${typeLabel}`}
             </button>
           </div>
         </form>

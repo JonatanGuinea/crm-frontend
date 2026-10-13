@@ -3,13 +3,26 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import { getOrganizations, updateOrganization, uploadOrgLogo, deleteOrganization } from '../../api/organizations'
-import { PhotoIcon, TrashIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import ProvinceSelect from '../../components/ProvinceSelect'
 import DefaultTasksSection from './DefaultTasksSection'
 
-const inputCls = "w-full px-3 py-2 border border-line-soft rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand bg-surface text-fg"
-const labelCls = "block text-sm font-medium text-fg-soft mb-1"
+const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
+
+function GearSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+}
+function PhotoSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
+}
+function TrashSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" /></svg>
+}
+function WarnSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+}
+
 const UPLOADS_BASE = import.meta.env.VITE_API_URL
+const labelStyle = { fontSize: 11, fontWeight: 500, color: C.piedra, display: 'block', marginBottom: 4 }
 
 export default function OrgSettingsPage() {
   const { user, logout } = useAuth()
@@ -43,7 +56,6 @@ export default function OrgSettingsPage() {
 
   useEffect(() => {
     if (orgData) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setForm({
         name:               orgData.name               || '',
         cuit:               orgData.cuit               || '',
@@ -152,17 +164,22 @@ export default function OrgSettingsPage() {
 
   return (
     <div className="p-4 md:p-8 max-w-2xl">
-      <h1 className="text-2xl font-semibold text-fg mb-8">Configuración de la organización</h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 32 }}>
+        <GearSvg style={{ width: 18, height: 18, color: C.arena }} />
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: C.crema, letterSpacing: '-0.02em', margin: 0 }}>Configuración de la organización</h2>
+      </div>
 
       {/* Logo */}
       <div className="mb-8 flex items-center gap-5">
         <div
           onClick={() => logoInputRef.current?.click()}
-          className="w-20 h-20 rounded-xl border-2 border-dashed border-line-soft flex items-center justify-center cursor-pointer hover:border-brand transition-colors overflow-hidden bg-raised shrink-0"
+          style={{ width: 80, height: 80, borderRadius: 12, border: `2px dashed ${C.linea}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', overflow: 'hidden', flexShrink: 0, background: C.s2 }}
+          onMouseEnter={e => e.currentTarget.style.borderColor = C.arena}
+          onMouseLeave={e => e.currentTarget.style.borderColor = C.linea}
         >
           {logoPreview
             ? <img src={logoPreview} alt="Logo" className="w-full h-full object-contain" />
-            : <PhotoIcon className="w-8 h-8 text-fg-muted" />
+            : <PhotoSvg style={{ width: 32, height: 32, color: C.piedra }} />
           }
         </div>
         <div>
@@ -193,34 +210,34 @@ export default function OrgSettingsPage() {
           <h2 className="text-base font-semibold text-fg mb-4">Información general</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
-              <label className={labelCls}>Nombre *</label>
+              <label style={labelStyle}>Nombre *</label>
               <input type="text" required value={form.name}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                className={inputCls} />
+                className="du-input" />
             </div>
             <div>
-              <label className={labelCls}>CUIT</label>
+              <label style={labelStyle}>CUIT</label>
               <input type="text" value={form.cuit} placeholder="20-12345678-9"
                 onChange={e => setForm(f => ({ ...f, cuit: e.target.value }))}
-                className={inputCls} />
+                className="du-input" />
             </div>
             <div>
-              <label className={labelCls}>Teléfono</label>
+              <label style={labelStyle}>Teléfono</label>
               <input type="text" value={form.phone} placeholder="+54 11 1234-5678"
                 onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                className={inputCls} />
+                className="du-input" />
             </div>
             <div>
-              <label className={labelCls}>Email de contacto</label>
+              <label style={labelStyle}>Email de contacto</label>
               <input type="email" value={form.email} placeholder="info@empresa.com"
                 onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                className={inputCls} />
+                className="du-input" />
             </div>
             <div>
-              <label className={labelCls}>Sitio web</label>
+              <label style={labelStyle}>Sitio web</label>
               <input type="text" value={form.website} placeholder="empresa.com"
                 onChange={e => setForm(f => ({ ...f, website: e.target.value }))}
-                className={inputCls} />
+                className="du-input" />
             </div>
             <div className="sm:col-span-2 flex items-center justify-between px-3 py-2.5 bg-raised rounded-md border border-line-soft">
               <span className="text-sm text-fg-muted">Moneda de trabajo</span>
@@ -238,30 +255,30 @@ export default function OrgSettingsPage() {
           <h2 className="text-base font-semibold text-fg mb-4">Dirección</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
-              <label className={labelCls}>Dirección</label>
+              <label style={labelStyle}>Dirección</label>
               <input type="text" value={form.address} placeholder="Av. Corrientes 1234"
                 onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
-                className={inputCls} />
+                className="du-input" />
             </div>
             <div>
-              <label className={labelCls}>Provincia</label>
+              <label style={labelStyle}>Provincia</label>
               <ProvinceSelect
                 value={form.province}
                 onChange={v => setForm(f => ({ ...f, province: v }))}
-                className={inputCls}
+                className="du-input"
               />
             </div>
             <div>
-              <label className={labelCls}>Ciudad</label>
+              <label style={labelStyle}>Ciudad</label>
               <input type="text" value={form.city} placeholder="Rosario"
                 onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
-                className={inputCls} />
+                className="du-input" />
             </div>
             <div>
-              <label className={labelCls}>Código postal</label>
+              <label style={labelStyle}>Código postal</label>
               <input type="text" value={form.postalCode} placeholder="2000"
                 onChange={e => setForm(f => ({ ...f, postalCode: e.target.value }))}
-                className={inputCls} />
+                className="du-input" />
             </div>
           </div>
         </section>
@@ -273,27 +290,27 @@ export default function OrgSettingsPage() {
           <h2 className="text-base font-semibold text-fg mb-4">Firma de la organización</h2>
           <div className="space-y-4">
             <div>
-              <label className={labelCls}>Nombre del firmante</label>
+              <label style={labelStyle}>Nombre del firmante</label>
               <input type="text" value={form.signatureOwnerName} placeholder="Ej: Juan García"
                 onChange={e => setForm(f => ({ ...f, signatureOwnerName: e.target.value }))}
-                className={inputCls} />
+                className="du-input" />
             </div>
             <div>
-              <label className={labelCls}>Firma</label>
+              <label style={labelStyle}>Firma</label>
               {orgData?.signature && orgSignature !== '' && (
                 <div className="mb-3 flex items-center gap-3 p-3 bg-white rounded-lg border border-line-soft">
                   <img src={orgData.signature} alt="Firma guardada" className="max-h-12 object-contain flex-1 min-w-0" />
                   <button
                     type="button"
                     onClick={() => setOrgSignature('')}
-                    className="shrink-0 text-sm text-danger hover:underline"
+                    style={{ fontSize: 13, color: C.err, background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}
                   >
                     Eliminar
                   </button>
                 </div>
               )}
               {orgSignature === '' && (
-                <p className="text-sm text-danger mb-3">La firma se eliminará al guardar.</p>
+                <p style={{ fontSize: 13, color: C.err, marginBottom: 12 }}>La firma se eliminará al guardar.</p>
               )}
               <div className="relative rounded-lg overflow-hidden border border-line-soft bg-white">
                 <canvas
@@ -320,9 +337,9 @@ export default function OrgSettingsPage() {
                 type="button"
                 onClick={clearSigCanvas}
                 disabled={sigIsEmpty}
-                className="mt-2 flex items-center gap-1 text-sm text-fg-muted hover:text-fg disabled:opacity-40 transition-colors"
+                style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: C.arena, background: 'none', border: 'none', cursor: sigIsEmpty ? 'not-allowed' : 'pointer', opacity: sigIsEmpty ? 0.4 : 1, padding: 0 }}
               >
-                <TrashIcon className="w-4 h-4" />
+                <TrashSvg style={{ width: 14, height: 14 }} />
                 Limpiar canvas
               </button>
             </div>
@@ -337,7 +354,7 @@ export default function OrgSettingsPage() {
           <p className="text-sm text-fg-muted mb-5">Se aplican al header y banda de total de los presupuestos.</p>
           <div className="flex flex-wrap gap-6 mb-5">
             <div>
-              <label className={labelCls}>Color primario</label>
+              <label style={labelStyle}>Color primario</label>
               <div className="flex items-center gap-3 mt-1">
                 <input
                   type="color"
@@ -351,7 +368,7 @@ export default function OrgSettingsPage() {
               </div>
             </div>
             <div>
-              <label className={labelCls}>Color secundario</label>
+              <label style={labelStyle}>Color secundario</label>
               <div className="flex items-center gap-3 mt-1">
                 <input
                   type="color"
@@ -387,7 +404,7 @@ export default function OrgSettingsPage() {
         <button
           type="submit"
           disabled={saveOrg.isPending}
-          className="px-5 py-2 bg-brand text-white text-sm font-medium rounded-md hover:bg-brand-hover disabled:opacity-50 transition-colors"
+          style={{ padding: '10px 20px', borderRadius: '0 10px 10px 0', border: 'none', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, cursor: saveOrg.isPending ? 'not-allowed' : 'pointer', opacity: saveOrg.isPending ? 0.5 : 1 }}
         >
           {saveOrg.isPending ? 'Guardando...' : 'Guardar cambios'}
         </button>
@@ -396,10 +413,10 @@ export default function OrgSettingsPage() {
       <DefaultTasksSection />
 
       {/* Zona de peligro */}
-      <div className="mt-12 border border-danger/30 rounded-xl overflow-hidden">
-        <div className="px-5 py-4 bg-danger/5 flex items-center gap-3 border-b border-danger/20">
-          <ExclamationTriangleIcon className="w-5 h-5 text-danger shrink-0" />
-          <h2 className="text-sm font-semibold text-danger">Zona de peligro</h2>
+      <div style={{ marginTop: 48, border: `1px solid rgba(229,131,115,0.3)`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
+        <div style={{ padding: '16px 20px', background: 'rgba(229,131,115,0.05)', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid rgba(229,131,115,0.2)` }}>
+          <WarnSvg style={{ width: 18, height: 18, color: C.err, flexShrink: 0 }} />
+          <h2 style={{ fontSize: 13, fontWeight: 600, color: C.err, margin: 0 }}>Zona de peligro</h2>
         </div>
         <div className="px-5 py-4 flex items-center justify-between gap-4">
           <div>
@@ -409,7 +426,9 @@ export default function OrgSettingsPage() {
           <button
             type="button"
             onClick={() => { setDeleteConfirm(''); setDeleteModal(true) }}
-            className="shrink-0 px-4 py-2 text-sm font-medium text-danger border border-danger/40 rounded-md hover:bg-danger/8 transition-colors"
+            style={{ flexShrink: 0, padding: '8px 16px', fontSize: 13, fontWeight: 500, color: C.err, border: `1px solid rgba(229,131,115,0.4)`, borderRadius: '0 10px 10px 0', background: 'none', cursor: 'pointer' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(229,131,115,0.08)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'none'}
           >
             Eliminar
           </button>
@@ -418,16 +437,16 @@ export default function OrgSettingsPage() {
 
       {/* Modal de confirmación */}
       {deleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setDeleteModal(false)} />
-          <div className="relative bg-surface border border-line rounded-xl shadow-2xl w-full max-w-md p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-danger/10 flex items-center justify-center shrink-0">
-                <ExclamationTriangleIcon className="w-5 h-5 text-danger" />
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }} onClick={() => setDeleteModal(false)} />
+          <div style={{ position: 'relative', background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', boxShadow: '0 24px 64px rgba(0,0,0,0.5)', width: '100%', maxWidth: 448, padding: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(229,131,115,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <WarnSvg style={{ width: 18, height: 18, color: C.err }} />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-fg">Eliminar organización</h3>
-                <p className="text-xs text-fg-muted">Esta acción es permanente e irreversible</p>
+                <h3 style={{ fontSize: 15, fontWeight: 600, color: C.crema, margin: 0 }}>Eliminar organización</h3>
+                <p style={{ fontSize: 12, color: C.piedra, marginTop: 2 }}>Esta acción es permanente e irreversible</p>
               </div>
             </div>
 
@@ -436,15 +455,15 @@ export default function OrgSettingsPage() {
             </p>
 
             <div className="mb-5">
-              <label className="block text-xs text-fg-muted mb-1.5">
-                Escribí <span className="font-semibold text-fg">{orgData?.name}</span> para confirmar
+              <label style={{ display: 'block', fontSize: 12, color: C.piedra, marginBottom: 6 }}>
+                Escribí <span style={{ fontWeight: 600, color: C.crema }}>{orgData?.name}</span> para confirmar
               </label>
               <input
                 type="text"
                 value={deleteConfirm}
                 onChange={e => setDeleteConfirm(e.target.value)}
                 placeholder={orgData?.name}
-                className="w-full px-3 py-2 border border-line rounded-md text-sm bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-danger/40 focus:border-danger/60 transition-colors"
+                className="du-input w-full"
               />
             </div>
 
@@ -460,7 +479,7 @@ export default function OrgSettingsPage() {
                 type="button"
                 disabled={deleteConfirm !== orgData?.name || deleteOrg.isPending}
                 onClick={() => deleteOrg.mutate()}
-                className="px-4 py-2 text-sm font-medium text-white bg-danger rounded-md hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity flex items-center gap-2"
+                style={{ padding: '8px 16px', fontSize: 13, fontWeight: 500, color: C.bg, background: C.err, border: 'none', borderRadius: '0 10px 10px 0', cursor: deleteConfirm !== orgData?.name || deleteOrg.isPending ? 'not-allowed' : 'pointer', opacity: deleteConfirm !== orgData?.name || deleteOrg.isPending ? 0.4 : 1, display: 'flex', alignItems: 'center', gap: 8 }}
               >
                 {deleteOrg.isPending && (
                   <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
