@@ -2,6 +2,8 @@ import { useState, useRef } from 'react'
 
 const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
 
+// ── SVGs ──────────────────────────────────────────────────────────────────────
+
 function LightBulbSvg({ style }) {
   return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="9" y1="18" x2="15" y2="18" /><line x1="10" y1="22" x2="14" y2="22" /><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" /></svg>
 }
@@ -72,7 +74,7 @@ const SECTIONS = [
       },
       {
         q: '¿Cómo invitar miembros al equipo?',
-        a: 'Ir a Equipo → "Invitar miembro". Ingresás el email y el rol (Administradoro Miembro). La persona recibe un email con un link para aceptar la invitación y crear su cuenta.',
+        a: 'Ir a Equipo → "Invitar miembro". Ingresás el email y el rol (Administrador o Miembro). La persona recibe un email con un link para aceptar la invitación y crear su cuenta.',
       },
       {
         q: '¿Qué diferencia hay entre los roles?',
@@ -382,7 +384,7 @@ const SECTIONS = [
         a: 'Desde la pantalla de Equipo, usá el menú de acciones del miembro → "Eliminar". El miembro pierde acceso inmediatamente pero sus datos históricos (tareas, movimientos, etc.) se conservan.',
       },
       {
-        q: '¿Qué puede hacer un Miembro vs un Administradrovs un Dueño?',
+        q: '¿Qué puede hacer un Miembro vs un Administrador vs un Dueño?',
         a: 'Miembro: Dashboard limitado, Clientes, Proyectos (ver y cambiar estado), Tareas, Stock.\n\nAdministrador: todo lo anterior + Presupuestos, Finanzas, Reportes, Equipo.\n\nDueño: todo lo anterior + Configuración de la empresa (único rol con acceso).',
       },
     ],
@@ -412,26 +414,27 @@ const SECTIONS = [
   },
 ]
 
+const TOTAL_QUESTIONS = SECTIONS.reduce((a, s) => a + s.items.length, 0)
+
 // ── Componentes ───────────────────────────────────────────────────────────────
 
-function AccordionItem({ q, a }) {
+function AccordionItem({ q, a, isLast }) {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="border-b border-line last:border-0">
-      <button
-        onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left hover:bg-raised/50 transition-colors"
-      >
-        <span className="text-sm font-medium text-fg">{q}</span>
+    <div style={{ borderBottom: isLast ? 'none' : `1px solid ${C.linea}` }}>
+      <button onClick={() => setOpen(v => !v)}
+        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 18px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+        <span style={{ fontSize: 13, fontWeight: 500, color: open ? C.crema : C.arena, lineHeight: 1.4 }}>{q}</span>
         {open
-          ? <ChevronUpSvg style={{ width: 16, height: 16, color: C.piedra, flexShrink: 0 }} />
-          : <ChevronDownSvg style={{ width: 16, height: 16, color: C.piedra, flexShrink: 0 }} />
-        }
+          ? <ChevronUpSvg style={{ width: 15, height: 15, color: C.piedra, flexShrink: 0 }} />
+          : <ChevronDownSvg style={{ width: 15, height: 15, color: C.piedra, flexShrink: 0 }} />}
       </button>
       {open && (
-        <div className="px-5 pb-4">
-          <p className="text-sm text-fg-muted leading-relaxed whitespace-pre-line [overflow-wrap:anywhere]">{a}</p>
+        <div style={{ padding: '0 18px 16px' }}>
+          <p style={{ fontSize: 13, color: C.piedra, lineHeight: 1.7, whiteSpace: 'pre-line', overflowWrap: 'anywhere', margin: 0 }}>{a}</p>
         </div>
       )}
     </div>
@@ -441,28 +444,28 @@ function AccordionItem({ q, a }) {
 function Section({ section, innerRef }) {
   const Icon = section.icon
   return (
-    <div ref={innerRef} id={section.id} className="scroll-mt-6 flex flex-col gap-3">
+    <div ref={innerRef} id={section.id} style={{ scrollMarginTop: 24, display: 'flex', flexDirection: 'column', gap: 10 }}>
       {/* Header de sección */}
-      <div className="flex items-center gap-3">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div style={{ width: 36, height: 36, borderRadius: '0 12px 12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: section.bg }}>
-          <Icon style={{ width: 20, height: 20, color: section.color }} />
+          <Icon style={{ width: 18, height: 18, color: section.color }} />
         </div>
-        <div>
-          <h2 className="text-base font-semibold text-fg">{section.label}</h2>
-          <p className="text-xs text-fg-muted mt-0.5">{section.description}</p>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: C.crema, margin: 0 }}>{section.label}</p>
+          <p style={{ fontSize: 11, color: C.piedra, margin: 0, marginTop: 2 }}>{section.description}</p>
         </div>
         {section.memberHidden && (
-          <span className="ml-auto shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-raised text-fg-muted border border-line">
-            <ShieldSvg style={{ width: 12, height: 12 }} />
-            Admin
-          </span>
+          <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: '0 6px 6px 0', background: C.s2, border: `1px solid ${C.linea}` }}>
+            <ShieldSvg style={{ width: 11, height: 11, color: C.piedra }} />
+            <span style={{ fontSize: 11, fontWeight: 500, color: C.piedra }}>Admin</span>
+          </div>
         )}
       </div>
 
       {/* Acordeón */}
-      <div className="bg-surface border border-line rounded-xl overflow-hidden">
+      <div style={{ background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
         {section.items.map((item, i) => (
-          <AccordionItem key={i} q={item.q} a={item.a} />
+          <AccordionItem key={i} q={item.q} a={item.a} isLast={i === section.items.length - 1} />
         ))}
       </div>
     </div>
@@ -474,46 +477,47 @@ function Section({ section, innerRef }) {
 export default function HelpPage() {
   const [activeId, setActiveId] = useState('inicio')
   const sectionRefs = useRef({})
-  const mainRef = useRef(null)
+  const mainRef     = useRef(null)
 
   function scrollTo(id) {
     setActiveId(id)
-    const el = sectionRefs.current[id]
+    const el        = sectionRefs.current[id]
     const container = mainRef.current
     if (!el || !container) return
     const containerTop = container.getBoundingClientRect().top
-    const elTop = el.getBoundingClientRect().top
-    const offset = elTop - containerTop + container.scrollTop - 24
+    const elTop        = el.getBoundingClientRect().top
+    const offset       = elTop - containerTop + container.scrollTop - 24
     container.scrollTo({ top: offset, behavior: 'smooth' })
   }
 
   return (
-    <div className="flex h-full min-h-0">
+    <div style={{ display: 'flex', height: '100%', minHeight: 0, fontFamily: 'Geist, system-ui, sans-serif' }}>
 
-      {/* Sidebar de navegación — solo desktop */}
-      <aside className="hidden lg:flex flex-col w-56 shrink-0 border-r border-line bg-surface overflow-y-auto">
-        <div className="px-4 pt-6 pb-3">
-          <div className="flex items-center gap-2">
-            <QuestionSvg style={{ width: 20, height: 20, color: C.crema }} />
-            <h1 className="text-sm font-semibold text-fg">Manual de uso</h1>
+      {/* Sidebar desktop */}
+      <aside className="hidden lg:flex" style={{ flexDirection: 'column', width: 200, flexShrink: 0, borderRight: `1px solid ${C.linea}`, overflowY: 'auto' }}>
+        {/* Sidebar header */}
+        <div style={{ padding: '20px 16px 12px', borderBottom: `1px solid ${C.linea}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <QuestionSvg style={{ width: 16, height: 16, color: C.crema }} />
+            <p style={{ fontSize: 13, fontWeight: 600, color: C.crema, margin: 0 }}>Manual de uso</p>
           </div>
-          <p className="text-xs text-fg-muted mt-1">Documentación del CRM</p>
+          <p style={{ fontSize: 11, color: C.piedra, margin: 0, marginTop: 3 }}>{SECTIONS.length} secciones · {TOTAL_QUESTIONS} preguntas</p>
         </div>
-        <nav className="flex flex-col px-2 pb-6 gap-0.5">
+
+        {/* Nav items */}
+        <nav style={{ padding: '8px 8px 24px', display: 'flex', flexDirection: 'column', gap: 1 }}>
           {SECTIONS.map(s => {
-            const Icon = s.icon
+            const Icon     = s.icon
             const isActive = activeId === s.id
             return (
-              <button
-                key={s.id}
-                onClick={() => scrollTo(s.id)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left text-sm transition-colors ${isActive ? '' : 'text-fg-muted hover:text-fg hover:bg-raised'}`}
-                style={isActive ? { background: 'rgba(242,237,227,0.08)', color: C.crema, fontWeight: 500 } : undefined}
-              >
-                <Icon style={{ width: 16, height: 16, flexShrink: 0, color: isActive ? C.crema : C.piedra }} />
-                <span className="truncate">{s.label}</span>
+              <button key={s.id} onClick={() => scrollTo(s.id)}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: '0 8px 8px 0', border: 'none', cursor: 'pointer', textAlign: 'left', background: isActive ? 'rgba(242,237,227,0.07)' : 'none', transition: 'background 0.12s' }}
+                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
+                onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'none' }}>
+                <Icon style={{ width: 14, height: 14, flexShrink: 0, color: isActive ? C.crema : C.piedra }} />
+                <span style={{ fontSize: 12, fontWeight: isActive ? 500 : 400, color: isActive ? C.crema : C.piedra, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{s.label}</span>
                 {s.memberHidden && (
-                  <ShieldSvg style={{ width: 12, height: 12, flexShrink: 0, marginLeft: 'auto', opacity: 0.5, color: 'currentColor' }} />
+                  <ShieldSvg style={{ width: 11, height: 11, flexShrink: 0, color: C.piedra, opacity: 0.5 }} />
                 )}
               </button>
             )
@@ -522,48 +526,42 @@ export default function HelpPage() {
       </aside>
 
       {/* Contenido principal */}
-      <main ref={mainRef} className="flex-1 overflow-y-auto min-w-0">
-        <div className="max-w-2xl mx-auto px-4 md:px-8 py-6 flex flex-col gap-8">
+      <main ref={mainRef} style={{ flex: 1, overflowY: 'auto', minWidth: 0 }}>
 
-          {/* Header */}
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div>
-              <h1 className="text-2xl font-bold text-fg">Manual de uso</h1>
-              <p className="text-sm text-fg-muted mt-1">
-                {SECTIONS.length} secciones · {SECTIONS.reduce((a, s) => a + s.items.length, 0)} preguntas
-              </p>
-            </div>
+        {/* Header */}
+        <div style={{ padding: '20px 24px 16px', borderBottom: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <QuestionSvg style={{ width: 18, height: 18, color: C.crema }} />
+          <div>
+            <h1 style={{ fontSize: 18, fontWeight: 700, color: C.crema, margin: 0, lineHeight: 1.2 }}>Manual de uso</h1>
+            <p style={{ fontSize: 12, color: C.piedra, margin: 0, marginTop: 2 }}>Documentación del CRM · {TOTAL_QUESTIONS} preguntas frecuentes</p>
           </div>
+        </div>
 
-          {/* Navegación mobile (chips) */}
-          <div className="flex gap-2 flex-wrap lg:hidden">
-            {SECTIONS.map(s => (
-              <button
-                key={s.id}
-                onClick={() => scrollTo(s.id)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${activeId !== s.id ? 'bg-surface text-fg-muted border-line hover:text-fg hover:bg-raised' : ''}`}
-                style={activeId === s.id ? { background: C.crema, color: C.bg, borderColor: C.crema } : undefined}
-              >
-                {s.label}
-              </button>
-            ))}
+        <div style={{ maxWidth: 680, margin: '0 auto', padding: '24px 24px 48px', display: 'flex', flexDirection: 'column', gap: 32 }}>
+
+          {/* Chips mobile */}
+          <div className="flex flex-wrap lg:hidden" style={{ gap: 6 }}>
+            {SECTIONS.map(s => {
+              const isActive = activeId === s.id
+              return (
+                <button key={s.id} onClick={() => scrollTo(s.id)}
+                  style={{ padding: '5px 12px', borderRadius: '0 8px 8px 0', border: `1px solid ${isActive ? C.crema : C.linea}`, background: isActive ? C.crema : 'none', color: isActive ? C.bg : C.piedra, fontSize: 12, fontWeight: isActive ? 600 : 400, cursor: 'pointer' }}>
+                  {s.label}
+                </button>
+              )
+            })}
           </div>
 
           {/* Secciones */}
           {SECTIONS.map(s => (
-            <Section
-              key={s.id}
-              section={s}
-              innerRef={el => { sectionRefs.current[s.id] = el }}
-            />
+            <Section key={s.id} section={s} innerRef={el => { sectionRefs.current[s.id] = el }} />
           ))}
 
           {/* Footer */}
-          <div className="border-t border-line pt-6 text-center">
-            <p className="text-xs text-fg-muted">
-              ¿Necesitás ayuda adicional? Contactá al administrador de tu organización.
-            </p>
+          <div style={{ borderTop: `1px solid ${C.linea}`, paddingTop: 20, textAlign: 'center' }}>
+            <p style={{ fontSize: 12, color: C.piedra }}>¿Necesitás ayuda adicional? Contactá al administrador de tu organización.</p>
           </div>
+
         </div>
       </main>
     </div>
