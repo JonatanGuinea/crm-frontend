@@ -11,38 +11,15 @@ import QuoteModalPotential from './QuoteModalPotential'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import InstallmentsPanel from '../../components/InstallmentsPanel'
 import QuoteImagesPanel from '../../components/QuoteImagesPanel'
-import { PresupuestoIcon } from '../../components/DuIcons'
-
-// ── tokens ────────────────────────────────────────────────────────────────────
+import { PresupuestoIcon, ClienteIcon, CarpetaIcon } from '../../components/DuIcons'
 
 const C = {
-  bg:    '#0B0B0C',
-  s1:    '#141415',
-  s2:    '#1E1E20',
-  s3:    '#26262A',
-  linea: '#2C2C2F',
-  crema: '#F2EDE3',
-  arena: '#B9B4AA',
-  piedra:'#8C877E',
-  ok:    '#7DBE93',
-  warn:  '#E2B663',
-  err:   '#E58373',
-  info:  '#8EB1DE',
+  bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F',
+  crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E',
+  ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE',
 }
-
 const CIFRAS = "'DanteUP Cifras', Geist, sans-serif"
-
-const SECTION_TITLE = {
-  fontSize: 10.5, fontWeight: 600,
-  textTransform: 'uppercase', letterSpacing: '0.1em',
-  color: C.arena, margin: 0,
-}
-
-const card = {
-  background: C.s1,
-  border: `1px solid ${C.linea}`,
-  borderRadius: '0 16px 16px 0',
-}
+const card = { background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0' }
 
 const QUOTE_STATUS = {
   draft:     { label: 'Borrador',   bg: 'rgba(242,237,227,0.07)', color: C.piedra },
@@ -54,32 +31,22 @@ const QUOTE_STATUS = {
   expired:   { label: 'Vencido',   bg: 'rgba(242,237,227,0.05)', color: C.piedra },
 }
 
-// ── subcomponents ─────────────────────────────────────────────────────────────
-
-function InfoRow({ label, children }) {
-  return (
-    <div>
-      <p style={{ fontSize: 10.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: C.piedra, marginBottom: 3 }}>{label}</p>
-      <div style={{ fontSize: 13, color: C.crema }}>{children}</div>
-    </div>
-  )
+/* ── SVGs ─────────────────────────────────────────────────────────────────── */
+function DownloadSvg() {
+  return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+}
+function ShareSvg() {
+  return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+}
+function EditSvg() {
+  return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
 }
 
+/* ── GhostBtn ─────────────────────────────────────────────────────────────── */
 function GhostBtn({ onClick, disabled, children }) {
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 6,
-        height: 32, padding: '0 12px',
-        background: 'none', border: `1px solid ${C.linea}`,
-        borderRadius: '0 8px 8px 0',
-        color: C.piedra, fontSize: 12, fontWeight: 500,
-        cursor: 'pointer', fontFamily: 'inherit',
-        transition: 'border-color 0.12s, color 0.12s',
-        opacity: disabled ? 0.5 : 1,
-      }}
+    <button onClick={onClick} disabled={disabled}
+      style={{ display: 'flex', alignItems: 'center', gap: 6, height: 32, padding: '0 12px', background: 'none', border: `1px solid ${C.linea}`, borderRadius: '0 8px 8px 0', color: C.piedra, fontSize: 12, fontWeight: 500, cursor: disabled ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: disabled ? 0.5 : 1 }}
       onMouseEnter={e => { if (!disabled) { e.currentTarget.style.borderColor = C.arena; e.currentTarget.style.color = C.arena } }}
       onMouseLeave={e => { e.currentTarget.style.borderColor = C.linea; e.currentTarget.style.color = C.piedra }}
     >
@@ -88,32 +55,26 @@ function GhostBtn({ onClick, disabled, children }) {
   )
 }
 
-function DownloadSvg() {
+/* ── SectionHead ──────────────────────────────────────────────────────────── */
+function SectionHead({ children }) {
   return (
-    <svg viewBox="0 0 20 20" fill="currentColor" style={{ width: 13, height: 13 }}>
-      <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-    </svg>
+    <p style={{ fontSize: 10.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: C.arena, margin: '0 0 14px' }}>
+      {children}
+    </p>
   )
 }
 
-function ShareSvg() {
+/* ── InfoRow ──────────────────────────────────────────────────────────────── */
+function InfoRow({ label, children }) {
   return (
-    <svg viewBox="0 0 20 20" fill="currentColor" style={{ width: 13, height: 13 }}>
-      <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
-    </svg>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <p style={{ fontSize: 10.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: C.piedra, margin: 0 }}>{label}</p>
+      <div style={{ fontSize: 13, color: C.crema }}>{children}</div>
+    </div>
   )
 }
 
-function EditSvg() {
-  return (
-    <svg viewBox="0 0 20 20" fill="currentColor" style={{ width: 13, height: 13 }}>
-      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-    </svg>
-  )
-}
-
-// ── page ──────────────────────────────────────────────────────────────────────
-
+/* ── página ───────────────────────────────────────────────────────────────── */
 export default function QuoteDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -125,24 +86,9 @@ export default function QuoteDetailPage() {
   const [editOpen, setEditOpen] = useState(false)
   const [downloading, setDownloading] = useState(false)
 
-  async function handleDownloadPdf() {
-    setDownloading(true)
-    try {
-      const res = await downloadQuotePdf(id)
-      const url = URL.createObjectURL(res.data)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `presupuesto-${quote?.number}.pdf`
-      a.click()
-      URL.revokeObjectURL(url)
-    } finally {
-      setDownloading(false)
-    }
-  }
-
   const { data: quote, isLoading } = useQuery({
     queryKey: ['quote', id],
-    queryFn: () => getQuoteById(id).then(r => r.data.data)
+    queryFn: () => getQuoteById(id).then(r => r.data.data),
   })
 
   const del = useMutation({
@@ -152,8 +98,18 @@ export default function QuoteDetailPage() {
       toast('Presupuesto eliminado', 'success')
       navigate('/quotes')
     },
-    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al eliminar', 'error')
+    onError: (err) => toast(err.response?.data?.error || err.message || 'Error al eliminar', 'error'),
   })
+
+  async function handleDownloadPdf() {
+    setDownloading(true)
+    try {
+      const res = await downloadQuotePdf(id)
+      const url = URL.createObjectURL(res.data)
+      const a = document.createElement('a'); a.href = url; a.download = `presupuesto-${quote?.number}.pdf`; a.click()
+      URL.revokeObjectURL(url)
+    } finally { setDownloading(false) }
+  }
 
   if (isLoading) return (
     <div style={{ padding: '40px 24px', fontFamily: 'Geist, system-ui, sans-serif', fontSize: 13, color: C.piedra }}>
@@ -166,57 +122,57 @@ export default function QuoteDetailPage() {
     </div>
   )
 
-  const isSigned = quote.status === 'signed'
-  const status   = QUOTE_STATUS[quote.status]
-
+  const isSigned    = quote.status === 'signed'
+  const status      = QUOTE_STATUS[quote.status]
   const subtotal    = Number(quote.subtotal)
   const total       = Number(quote.total)
   const discountAmt = quote.discountType === 'percent'
     ? subtotal * (Number(quote.discountValue) / 100)
     : Number(quote.discountValue) || 0
-  const taxAmount = (subtotal - discountAmt) * (Number(quote.taxRate) / 100)
+  const taxAmount   = (subtotal - discountAmt) * (Number(quote.taxRate) / 100)
+  const numStr      = `#${String(quote.number).padStart(3, '0')}`
+  const isPotential = !quote.client && !!quote.potentialClientName
 
   return (
-    <div style={{ padding: '28px 24px 40px', maxWidth: 1080, fontFamily: 'Geist, system-ui, sans-serif' }}>
+    <div style={{ padding: '28px 24px 40px', maxWidth: 1200, fontFamily: 'Geist, system-ui, sans-serif' }}>
 
-      {/* Back */}
-      <button
-        onClick={() => navigate('/quotes')}
-        style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6,
-          fontSize: 12, color: C.piedra, background: 'none',
-          border: 'none', cursor: 'pointer', padding: '0 0 18px',
-          fontFamily: 'inherit', transition: 'color 0.12s',
-        }}
-        onMouseEnter={e => e.currentTarget.style.color = C.arena}
-        onMouseLeave={e => e.currentTarget.style.color = C.piedra}
-      >
-        ← Presupuestos
-      </button>
+      {/* Breadcrumb */}
+      <nav style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 20, fontSize: 12.5, color: C.piedra }}>
+        <Link to="/quotes"
+          style={{ color: C.piedra, textDecoration: 'none' }}
+          onMouseEnter={e => e.currentTarget.style.color = C.arena}
+          onMouseLeave={e => e.currentTarget.style.color = C.piedra}
+        >
+          Presupuestos
+        </Link>
+        <span style={{ color: C.linea }}>/</span>
+        <span style={{ color: C.arena, fontFamily: "'Geist Mono', monospace" }}>{numStr}</span>
+        <span style={{ color: C.linea }}>/</span>
+        <span style={{ color: C.piedra, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 220 }}>{quote.title}</span>
+      </nav>
 
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3" style={{ marginBottom: 28 }}>
         <div style={{ minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-            <PresupuestoIcon style={{ width: 18, height: 18, color: C.arena, flexShrink: 0 }} />
-            <h1 style={{ fontSize: 20, fontWeight: 600, color: C.crema, margin: 0, lineHeight: 1.3 }}>{quote.title}</h1>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 11, color: C.piedra, fontFamily: CIFRAS }}>#{quote.number}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
             {status && (
-              <span style={{
-                display: 'inline-flex', alignItems: 'center',
-                padding: '2px 8px', borderRadius: '0 6px 6px 0',
-                fontSize: 10.5, fontWeight: 600,
-                background: status.bg, color: status.color,
-              }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: '0 7px 7px 0', fontSize: 11, fontWeight: 600, background: status.bg, color: status.color }}>
+                <span style={{ width: 5, height: 5, borderRadius: '50%', background: status.color, flexShrink: 0 }} />
                 {status.label}
               </span>
             )}
+            {isSigned && quote.clientSignedAt && (
+              <span style={{ fontSize: 11, color: C.piedra }}>
+                Firmado el {new Date(quote.clientSignedAt).toLocaleDateString('es-AR')}
+              </span>
+            )}
           </div>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: C.crema, margin: 0, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
+            {quote.title}
+          </h1>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', flexShrink: 0 }}>
           <GhostBtn onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/p/presupuesto/${id}`); toast('Enlace copiado', 'success') }}>
             <ShareSvg /> Compartir
           </GhostBtn>
@@ -232,17 +188,9 @@ export default function QuoteDetailPage() {
             <button
               onClick={async () => { if (await confirm('¿Eliminar este presupuesto? Esta acción no se puede deshacer.', { confirmLabel: 'Eliminar', danger: true })) del.mutate() }}
               disabled={del.isPending}
-              style={{
-                display: 'flex', alignItems: 'center',
-                height: 32, padding: '0 12px',
-                background: 'rgba(229,131,115,0.12)', color: C.err,
-                border: 'none', borderRadius: '0 8px 8px 0',
-                fontSize: 12, fontWeight: 500, cursor: 'pointer',
-                fontFamily: 'inherit', transition: 'background 0.12s',
-                opacity: del.isPending ? 0.5 : 1,
-              }}
+              style={{ display: 'flex', alignItems: 'center', height: 32, padding: '0 12px', background: 'rgba(229,131,115,0.10)', color: C.err, border: 'none', borderRadius: '0 8px 8px 0', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', opacity: del.isPending ? 0.5 : 1 }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(229,131,115,0.2)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'rgba(229,131,115,0.12)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(229,131,115,0.10)'}
             >
               Eliminar
             </button>
@@ -250,35 +198,43 @@ export default function QuoteDetailPage() {
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Rechazo banner */}
+      {quote.status === 'rejected' && quote.rejectionReason && (
+        <div style={{ marginBottom: 20, padding: '12px 16px', background: 'rgba(229,131,115,0.08)', border: `1px solid rgba(229,131,115,0.2)`, borderRadius: '0 12px 12px 0', display: 'flex', gap: 10 }}>
+          <span style={{ color: C.err, fontSize: 16, flexShrink: 0 }}>✕</span>
+          <div>
+            <p style={{ fontSize: 12, fontWeight: 600, color: C.err, margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Motivo de rechazo</p>
+            <p style={{ fontSize: 13, color: C.arena, margin: 0, lineHeight: 1.5 }}>{quote.rejectionReason}</p>
+          </div>
+        </div>
+      )}
 
-        {/* ── Sidebar ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Grid principal */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-          {/* Info */}
+        {/* ── Columna principal ─────────────────────────────────────────────── */}
+        <div className="lg:col-span-2" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+          {/* Cliente */}
           <div style={{ ...card, padding: '20px' }}>
-            <p style={SECTION_TITLE}>Información</p>
-            <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <SectionHead>Cliente</SectionHead>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px 24px' }}>
 
-              <InfoRow label="Cliente">
+              <InfoRow label="Nombre">
                 {quote.client ? (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                    <Link
-                      to={`/clients/${quote.client.id}`}
-                      style={{ color: C.info, textDecoration: 'none' }}
-                      onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
-                      onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
-                    >
-                      {quote.client.name}
-                    </Link>
-                    {quote.client.company && <span style={{ color: C.piedra }}> · {quote.client.company}</span>}
-                  </span>
+                  <Link to={`/clients/${quote.client.id}`}
+                    style={{ color: C.crema, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 5 }}
+                    onMouseEnter={e => e.currentTarget.style.color = C.arena}
+                    onMouseLeave={e => e.currentTarget.style.color = C.crema}
+                  >
+                    <ClienteIcon style={{ width: 12, height: 12, flexShrink: 0 }} />
+                    {quote.client.name}
+                  </Link>
                 ) : (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                     {quote.potentialClientName ?? '—'}
-                    {!quote.client && quote.potentialClientName && (
-                      <span style={{ display: 'inline-flex', alignItems: 'center', padding: '1px 6px', borderRadius: '0 4px 4px 0', fontSize: 10, fontWeight: 600, background: 'rgba(226,182,99,0.12)', color: C.warn }}>
+                    {isPotential && (
+                      <span style={{ display: 'inline-flex', padding: '1px 6px', borderRadius: '0 4px 4px 0', fontSize: 10, fontWeight: 600, background: 'rgba(226,182,99,0.12)', color: C.warn }}>
                         Potencial
                       </span>
                     )}
@@ -286,34 +242,36 @@ export default function QuoteDetailPage() {
                 )}
               </InfoRow>
 
-              {!quote.client && quote.potentialClientCompany && (
-                <InfoRow label="Empresa">{quote.potentialClientCompany}</InfoRow>
+              {(quote.client?.company || quote.potentialClientCompany) && (
+                <InfoRow label="Empresa">{quote.client?.company ?? quote.potentialClientCompany}</InfoRow>
               )}
-              {!quote.client && quote.potentialClientEmail && (
+              {(quote.client?.email || quote.potentialClientEmail) && (
                 <InfoRow label="Email">
-                  <span style={{ color: C.info }}>{quote.potentialClientEmail}</span>
+                  <span style={{ color: C.arena }}>{quote.client?.email ?? quote.potentialClientEmail}</span>
                 </InfoRow>
               )}
-
-              {(quote.project || (!quote.client && quote.potentialProjectTitle)) && (
-                <InfoRow label="Proyecto">
-                  {quote.project ? (
-                    <Link
-                      to={`/projects/${quote.project.id}`}
-                      style={{ color: C.info, textDecoration: 'none' }}
-                      onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
-                      onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
-                    >
-                      {quote.project.title}
-                    </Link>
-                  ) : (
-                    quote.potentialProjectTitle
-                  )}
+              {(quote.client?.phone || quote.potentialClientPhone) && (
+                <InfoRow label="Teléfono">
+                  <span style={{ color: C.arena }}>{quote.client?.phone ?? quote.potentialClientPhone}</span>
                 </InfoRow>
               )}
+              {quote.potentialClientAddress && (
+                <InfoRow label="Dirección"><span style={{ color: C.arena }}>{quote.potentialClientAddress}</span></InfoRow>
+              )}
+              {(quote.potentialClientProvince || quote.potentialClientCity) && (
+                <InfoRow label="Localidad">
+                  <span style={{ color: C.arena }}>
+                    {[quote.potentialClientCity, quote.potentialClientProvince].filter(Boolean).join(', ')}
+                  </span>
+                </InfoRow>
+              )}
+              {quote.potentialClientCuit && (
+                <InfoRow label="CUIT/CUIL"><span style={{ color: C.arena }}>{quote.potentialClientCuit}</span></InfoRow>
+              )}
 
-              <InfoRow label="Moneda">{quote.currency}</InfoRow>
-
+              <InfoRow label="Moneda">
+                <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: 12 }}>{quote.currency}</span>
+              </InfoRow>
               {quote.validUntil && (
                 <InfoRow label="Válido hasta">
                   {new Date(quote.validUntil).toLocaleDateString('es-AR')}
@@ -327,49 +285,109 @@ export default function QuoteDetailPage() {
               <InfoRow label="Creado">
                 {new Date(quote.createdAt).toLocaleDateString('es-AR')}
               </InfoRow>
-              {isSigned && quote.clientSignedAt && (
-                <InfoRow label="Firmado el">
-                  {new Date(quote.clientSignedAt).toLocaleDateString('es-AR')}
-                </InfoRow>
-              )}
-
-              {quote.status === 'rejected' && quote.rejectionReason && (
-                <InfoRow label="Motivo de rechazo">
-                  <div style={{
-                    marginTop: 4, padding: '10px 12px',
-                    background: 'rgba(229,131,115,0.08)',
-                    border: `1px solid rgba(229,131,115,0.2)`,
-                    borderRadius: '0 10px 10px 0',
-                    fontSize: 12, color: C.err, lineHeight: 1.5,
-                  }}>
-                    {quote.rejectionReason}
-                  </div>
-                </InfoRow>
-              )}
-
-              {quote.quoteNotes?.length > 0 && (
-                <InfoRow label="Notas">
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 4 }}>
-                    {quote.quoteNotes.map(note => (
-                      <div key={note.id}>
-                        {note.title && (
-                          <p style={{ fontSize: 13, fontWeight: 600, color: C.crema, marginBottom: 2, overflowWrap: 'anywhere' }}>
-                            {note.title}
-                          </p>
-                        )}
-                        <p style={{ fontSize: 13, color: C.arena, whiteSpace: 'pre-line', overflowWrap: 'anywhere' }}>
-                          {note.description}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </InfoRow>
-              )}
 
             </div>
           </div>
 
-          {/* Installments */}
+          {/* Ítems */}
+          <div style={{ ...card, overflow: 'hidden' }}>
+            <div style={{ padding: '14px 20px', borderBottom: `1px solid ${C.linea}` }}>
+              <SectionHead>Ítems</SectionHead>
+            </div>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 480 }}>
+                <thead>
+                  <tr>
+                    {['Descripción', 'Cant.', 'Precio unit.', 'Total'].map((h, i) => (
+                      <th key={h} style={{ background: C.linea, color: C.arena, fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', padding: '10px 14px', textAlign: i > 0 ? 'right' : 'left', whiteSpace: 'nowrap' }}>
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {quote.items?.map((item, i) => (
+                    <tr key={i}
+                      onMouseEnter={e => Array.from(e.currentTarget.cells).forEach(td => td.style.background = C.s2)}
+                      onMouseLeave={e => Array.from(e.currentTarget.cells).forEach(td => td.style.background = '')}
+                    >
+                      <td style={{ padding: '11px 14px', color: C.crema, fontSize: 13, borderBottom: `1px solid ${C.linea}` }}>{item.description}</td>
+                      <td style={{ padding: '11px 14px', color: C.arena, fontSize: 13, textAlign: 'right', borderBottom: `1px solid ${C.linea}` }}>{item.quantity}</td>
+                      <td style={{ padding: '11px 14px', color: C.arena, fontSize: 13, fontFamily: CIFRAS, textAlign: 'right', borderBottom: `1px solid ${C.linea}` }}>{fmt(item.unitPrice, quote.currency)}</td>
+                      <td style={{ padding: '11px 14px', color: C.crema, fontSize: 13, fontWeight: 600, fontFamily: CIFRAS, textAlign: 'right', borderBottom: `1px solid ${C.linea}` }}>{fmt(item.amount, quote.currency)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Notas */}
+          {quote.quoteNotes?.length > 0 && (
+            <div style={{ ...card, padding: '20px' }}>
+              <SectionHead>Notas</SectionHead>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {quote.quoteNotes.map(note => (
+                  <div key={note.id} style={{ paddingLeft: 12, borderLeft: `2px solid ${C.linea}` }}>
+                    {note.title && (
+                      <p style={{ fontSize: 13, fontWeight: 600, color: C.crema, margin: '0 0 4px', overflowWrap: 'anywhere' }}>{note.title}</p>
+                    )}
+                    <p style={{ fontSize: 13, color: C.arena, margin: 0, whiteSpace: 'pre-line', overflowWrap: 'anywhere', lineHeight: 1.5 }}>{note.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Imágenes + Adjuntos */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div style={{ ...card, padding: '20px' }}>
+              <QuoteImagesPanel quoteId={id} images={quote.images ?? []} canWrite={canWrite} />
+            </div>
+            <div style={{ ...card, padding: '20px' }}>
+              <AttachmentsPanel entityType="quote" entityId={id} />
+            </div>
+          </div>
+
+        </div>
+
+        {/* ── Sidebar derecha ───────────────────────────────────────────────── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+          {/* Resumen financiero */}
+          <div style={{ ...card, padding: '20px' }}>
+            <SectionHead>Resumen</SectionHead>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 12.5, color: C.piedra }}>Subtotal</span>
+                <span style={{ fontSize: 13, color: C.arena, fontFamily: CIFRAS }}>{fmt(subtotal, quote.currency)}</span>
+              </div>
+              {discountAmt > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 12.5, color: C.piedra }}>
+                    Descuento{quote.discountType === 'percent' ? ` (${quote.discountValue}%)` : ''}
+                  </span>
+                  <span style={{ fontSize: 13, color: C.ok, fontFamily: CIFRAS }}>−{fmt(discountAmt, quote.currency)}</span>
+                </div>
+              )}
+              {quote.taxRate > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 12.5, color: C.piedra }}>IVA ({quote.taxRate}%)</span>
+                  <span style={{ fontSize: 13, color: C.arena, fontFamily: CIFRAS }}>{fmt(taxAmount, quote.currency)}</span>
+                </div>
+              )}
+            </div>
+
+            <div style={{ borderTop: `1px solid ${C.linea}`, paddingTop: 14 }}>
+              <p style={{ fontSize: 10.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: C.piedra, margin: '0 0 6px' }}>Total</p>
+              <p style={{ fontFamily: CIFRAS, fontSize: 32, fontWeight: 700, color: C.crema, margin: 0, lineHeight: 1 }}>
+                {fmt(total, quote.currency)}
+              </p>
+            </div>
+          </div>
+
+          {/* Cuotas */}
           <div style={{ ...card, padding: '20px' }}>
             <InstallmentsPanel
               entityType="quote"
@@ -381,107 +399,62 @@ export default function QuoteDetailPage() {
             />
           </div>
 
-        </div>
-
-        {/* ── Contenido principal ── */}
-        <div className="lg:col-span-2" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-
-          {/* Tabla ítems */}
-          <div style={{ ...card, overflow: 'hidden' }}>
-            <div style={{ padding: '14px 20px', borderBottom: `1px solid ${C.linea}` }}>
-              <p style={SECTION_TITLE}>Ítems</p>
-            </div>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 480 }}>
-                <thead>
-                  <tr>
-                    {['Descripción', 'Cant.', 'Precio unit.', 'Total'].map(h => (
-                      <th key={h} style={{
-                        background: C.linea, color: C.crema,
-                        fontSize: 11, fontWeight: 700,
-                        textTransform: 'uppercase', letterSpacing: '0.06em',
-                        padding: '8px 14px', textAlign: 'left',
-                      }}>
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {quote.items?.map((item, i) => (
-                    <tr
-                      key={i}
-                      onMouseEnter={e => Array.from(e.currentTarget.cells).forEach(td => td.style.background = C.s2)}
-                      onMouseLeave={e => Array.from(e.currentTarget.cells).forEach(td => td.style.background = '')}
-                    >
-                      <td style={{ padding: '10px 14px', color: C.crema, fontSize: 13, borderBottom: `1px solid ${C.linea}` }}>{item.description}</td>
-                      <td style={{ padding: '10px 14px', color: C.arena, fontSize: 13, borderBottom: `1px solid ${C.linea}` }}>{item.quantity}</td>
-                      <td style={{ padding: '10px 14px', color: C.arena, fontSize: 13, fontFamily: CIFRAS, borderBottom: `1px solid ${C.linea}` }}>{fmt(item.unitPrice, quote.currency)}</td>
-                      <td style={{ padding: '10px 14px', color: C.crema, fontSize: 13, fontWeight: 600, fontFamily: CIFRAS, borderBottom: `1px solid ${C.linea}` }}>{fmt(item.amount, quote.currency)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {/* Totales */}
-            <div style={{ borderTop: `1px solid ${C.linea}`, padding: '14px 20px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
-              <span style={{ fontSize: 12, color: C.piedra }}>
-                Subtotal: <span style={{ color: C.crema, fontFamily: CIFRAS }}>{fmt(subtotal, quote.currency)}</span>
-              </span>
-              {discountAmt > 0 && (
-                <span style={{ fontSize: 12, color: C.piedra }}>
-                  Descuento{quote.discountType === 'percent' ? ` (${quote.discountValue}%)` : ''}: <span style={{ color: C.ok, fontFamily: CIFRAS }}>-{fmt(discountAmt, quote.currency)}</span>
-                </span>
-              )}
-              {quote.taxRate > 0 && (
-                <span style={{ fontSize: 12, color: C.piedra }}>
-                  IVA ({quote.taxRate}%): <span style={{ color: C.crema, fontFamily: CIFRAS }}>{fmt(taxAmount, quote.currency)}</span>
-                </span>
-              )}
-              <span style={{ fontSize: 20, fontWeight: 700, color: C.crema, fontFamily: CIFRAS, marginTop: 4 }}>
-                Total {quote.currency}: {fmt(total, quote.currency)}
-              </span>
-            </div>
-          </div>
-
-          {/* Imágenes + Adjuntos */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {/* Proyecto */}
+          {(quote.project || quote.potentialProjectTitle) && (
             <div style={{ ...card, padding: '20px' }}>
-              <QuoteImagesPanel
-                quoteId={id}
-                images={quote.images ?? []}
-                canWrite={canWrite}
-              />
+              <SectionHead>Proyecto</SectionHead>
+              {quote.project ? (
+                <Link to={`/projects/${quote.project.id}`}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: C.crema }}
+                  onMouseEnter={e => e.currentTarget.style.color = C.arena}
+                  onMouseLeave={e => e.currentTarget.style.color = C.crema}
+                >
+                  <CarpetaIcon style={{ width: 14, height: 14, flexShrink: 0, color: C.arena }} />
+                  <span style={{ fontSize: 13, fontWeight: 500 }}>{quote.project.title}</span>
+                  <span style={{ marginLeft: 'auto', fontSize: 12, color: C.piedra, flexShrink: 0 }}>Ver →</span>
+                </Link>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <CarpetaIcon style={{ width: 14, height: 14, flexShrink: 0, color: C.arena }} />
+                  <span style={{ fontSize: 13, color: C.arena }}>{quote.potentialProjectTitle}</span>
+                </div>
+              )}
             </div>
-            <div style={{ ...card, padding: '20px' }}>
-              <AttachmentsPanel entityType="quote" entityId={id} />
+          )}
+
+          {/* Info de envío */}
+          {(quote.sentByEmail || quote.sentByWhatsapp) && (
+            <div style={{ ...card, padding: '16px 20px' }}>
+              <SectionHead>Enviado</SectionHead>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {quote.sentByEmail && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: C.arena }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: C.ok, flexShrink: 0 }} />
+                    Por email
+                  </div>
+                )}
+                {quote.sentByWhatsapp && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: C.arena }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: C.ok, flexShrink: 0 }} />
+                    Por WhatsApp
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
         </div>
       </div>
 
       {/* Modales de edición */}
       {editOpen && (
-        quote.potentialClientName && !quote.client ? (
-          <QuoteModalPotential
-            quoteId={id}
-            onClose={() => setEditOpen(false)}
-            onSaved={() => {
-              setEditOpen(false)
-              qc.invalidateQueries(['quote', id])
-              qc.invalidateQueries(['quotes'])
-            }}
+        isPotential ? (
+          <QuoteModalPotential quoteId={id} onClose={() => setEditOpen(false)}
+            onSaved={() => { setEditOpen(false); qc.invalidateQueries(['quote', id]); qc.invalidateQueries(['quotes']) }}
           />
         ) : (
-          <QuoteModal
-            quoteId={id}
-            onClose={() => setEditOpen(false)}
-            onSaved={() => {
-              setEditOpen(false)
-              qc.invalidateQueries(['quote', id])
-              qc.invalidateQueries(['quotes'])
-            }}
+          <QuoteModal quoteId={id} onClose={() => setEditOpen(false)}
+            onSaved={() => { setEditOpen(false); qc.invalidateQueries(['quote', id]); qc.invalidateQueries(['quotes']) }}
           />
         )
       )}

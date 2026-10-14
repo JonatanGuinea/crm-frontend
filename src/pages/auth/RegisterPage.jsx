@@ -3,7 +3,9 @@ import { createPortal } from 'react-dom'
 import { useSearchParams, Link } from 'react-router-dom'
 import { register as registerApi } from '../../api/auth'
 import { isValidPhoneNumber } from 'libphonenumber-js'
-import { ChevronDownIcon } from '@heroicons/react/24/outline'
+function ChevronSvg({ open }) {
+  return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} style={{ color: '#8C877E', transition: 'transform 0.15s', transform: open ? 'rotate(180deg)' : 'none' }}><path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6"/></svg>
+}
 
 const COUNTRIES = [
   { code: 'AR', name: 'Argentina',      dial: '+54',  flag: '🇦🇷' },
@@ -89,7 +91,7 @@ function PhoneInputField({ countryCode, phoneNumber, onChangeCountry, onChangeNu
         >
           <span style={{ fontSize: 16, lineHeight: 1 }}>{selected.flag}</span>
           <span style={{ color: '#B9B4AA', fontSize: 13, fontFamily: 'Geist Mono, monospace' }}>{selected.dial}</span>
-          <ChevronDownIcon style={{ width: 12, height: 12, color: '#8C877E', transition: 'transform 0.15s', transform: open ? 'rotate(180deg)' : 'none' }} />
+          <ChevronSvg open={open} />
         </button>
         <input
           type="tel"
