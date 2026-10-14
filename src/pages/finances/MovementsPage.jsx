@@ -197,18 +197,14 @@ export default function MovementsPage() {
 
       {/* Toolbar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
-          {/* Tab switcher */}
-          <div style={{ display: 'flex', gap: 3, padding: 4, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0' }}>
-            {[
-              { id: 'movements', label: 'Movimientos' },
-              { id: 'history',   label: 'Historial' },
-            ].map(({ id, label }) => (
-              <button key={id} onClick={() => setTab(id)}
-                style={{ padding: '0 10px', height: 28, borderRadius: '0 7px 7px 0', fontSize: 12, fontWeight: 500, border: 'none', cursor: 'pointer', background: tab === id ? C.s3 : 'transparent', color: tab === id ? C.crema : C.piedra }}>
-                {label}
-              </button>
-            ))}
-          </div>
+          <button
+            onClick={() => setTab(tab === 'history' ? 'movements' : 'history')}
+            style={{ height: 34, padding: '0 14px', background: tab === 'history' ? C.s2 : 'none', border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', color: C.piedra, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'color 0.12s, border-color 0.12s' }}
+            onMouseEnter={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.arena }}
+            onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}
+          >
+            {tab === 'history' ? 'Ver movimientos' : 'Historial'}
+          </button>
 
           {/* Navegador de mes */}
           {tab !== 'history' && (

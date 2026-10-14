@@ -209,18 +209,14 @@ export default function ClientDetailPage() {
               Editar
             </button>
           )}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 3,
-            padding: 4, background: C.s2, border: `1px solid ${C.linea}`,
-            borderRadius: '0 10px 10px 0',
-          }}>
-            <button onClick={() => setTab('info')} style={tabBtn(tab === 'info')}>
-              Info
-            </button>
-            <button onClick={() => setTab('history')} style={tabBtn(tab === 'history')}>
-              Historial
-            </button>
-          </div>
+          <button
+            onClick={() => setTab(tab === 'history' ? 'info' : 'history')}
+            style={{ height: 34, padding: '0 14px', background: tab === 'history' ? C.s2 : 'none', border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', color: C.piedra, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'color 0.12s, border-color 0.12s' }}
+            onMouseEnter={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.arena }}
+            onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}
+          >
+            {tab === 'history' ? 'Ver info' : 'Historial'}
+          </button>
         </div>
       </div>
 

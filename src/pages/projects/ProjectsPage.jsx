@@ -271,16 +271,14 @@ export default function ProjectsPage() {
           <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Proyectos</h2>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          {/* Tab switcher */}
-          <div style={{ display: 'flex', gap: 3, padding: 4, height: 34, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0' }}>
-            {[{ id: 'table', label: 'Cards' }, { id: 'history', label: 'Historial' }].map(({ id, label }) => (
-              <button key={id} onClick={() => setTab(id)}
-                style={{ padding: '0 10px', borderRadius: '0 7px 7px 0', fontSize: 12, fontWeight: 500, border: 'none', cursor: 'pointer', background: tab === id ? C.s3 : 'transparent', color: tab === id ? C.crema : C.piedra, transition: 'background 0.15s, color 0.15s' }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          <button
+            onClick={() => setTab(tab === 'history' ? 'table' : 'history')}
+            style={{ height: 34, padding: '0 14px', background: tab === 'history' ? C.s2 : 'none', border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', color: C.piedra, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'color 0.12s, border-color 0.12s' }}
+            onMouseEnter={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.arena }}
+            onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}
+          >
+            {tab === 'history' ? 'Ver proyectos' : 'Historial'}
+          </button>
           {canWrite && (
             <button onClick={() => { setEditing(null); setModalOpen(true) }}
               style={{ height: 34, padding: '0 14px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}

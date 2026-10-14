@@ -110,14 +110,14 @@ export default function ClientsPage() {
         {/* Tablet/Desktop sm+ */}
         <div className="hidden sm:block">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 3, padding: 4, height: CTRL_H, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0' }}>
-              <button onClick={() => setTab('table')} style={tabBtn(tab === 'table')}>
-                Tabla
-              </button>
-              <button onClick={() => setTab('history')} style={tabBtn(tab === 'history')}>
-                Historial
-              </button>
-            </div>
+            <button
+              onClick={() => setTab(tab === 'history' ? 'table' : 'history')}
+              style={{ height: CTRL_H, padding: '0 14px', background: tab === 'history' ? C.s2 : 'none', border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', color: C.piedra, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'color 0.12s, border-color 0.12s' }}
+              onMouseEnter={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.arena }}
+              onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}
+            >
+              {tab === 'history' ? 'Ver tabla' : 'Historial'}
+            </button>
             {canWrite && (
               <button
                 onClick={() => setModalOpen(true)}
@@ -150,17 +150,15 @@ export default function ClientsPage() {
 
       {/* Fila 2 mobile: TabSwitcher a la derecha */}
       <div className="sm:hidden" style={{ marginBottom: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div style={{ marginLeft: 'auto' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 3, padding: 4, height: CTRL_H, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0' }}>
-              <button onClick={() => setTab('table')} style={tabBtn(tab === 'table')}>
-                Tabla
-              </button>
-              <button onClick={() => setTab('history')} style={tabBtn(tab === 'history')}>
-                Historial
-              </button>
-            </div>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+          <button
+            onClick={() => setTab(tab === 'history' ? 'table' : 'history')}
+            style={{ height: CTRL_H, padding: '0 14px', background: tab === 'history' ? C.s2 : 'none', border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', color: C.piedra, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'color 0.12s, border-color 0.12s' }}
+            onMouseEnter={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.arena }}
+            onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}
+          >
+            {tab === 'history' ? 'Ver tabla' : 'Historial'}
+          </button>
         </div>
       </div>
 
