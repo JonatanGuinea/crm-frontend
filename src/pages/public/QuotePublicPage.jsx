@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getPublicQuote, getPublicQuotePdfUrl, confirmQuote, rejectQuote } from '../../api/public'
 import ProvinceSelect from '../../components/ProvinceSelect'
 import PhoneInput, { PHONE_COUNTRIES } from '../../components/PhoneInput'
+import danteupLogo from '../../assets/danteup/logotipo-horizontal-negro.png'
 
 const UPLOADS_BASE = import.meta.env.VITE_API_URL
 const CIFRAS = "'DanteUP Cifras', Geist, sans-serif"
@@ -125,6 +126,10 @@ export default function QuotePublicPage() {
   const clientCompany = quote.client?.company || quote.potentialClientCompany
   const clientEmail   = quote.client?.email   || quote.potentialClientEmail
 
+  const bp     = org.brandPrimary   || null
+  const bs     = org.brandSecondary || null
+  const pageBg = (bp && bs) ? `linear-gradient(145deg, ${bp} 0%, ${bs} 100%)` : bp || BG
+
   const isPotential   = !quote.client && !!quote.potentialClientName
   const isConfirmable = quote.status === 'draft' || quote.status === 'sent'
   const isExpired     = quote.status === 'expired'
@@ -212,7 +217,7 @@ export default function QuotePublicPage() {
   // ── Pantalla de éxito ───────────────────────────────────────────────────────
   if (submitted) {
     return (
-      <div style={{ minHeight: '100vh', background: BG, fontFamily: 'Geist, system-ui, sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 16px' }}>
+      <div style={{ minHeight: '100vh', background: pageBg, fontFamily: 'Geist, system-ui, sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 16px' }}>
         <div style={{ maxWidth: 480, width: '100%', background: CARD, borderRadius: 8, boxShadow: '0 4px 24px rgba(0,0,0,0.10)', overflow: 'hidden' }}>
           <div style={{ background: INK, padding: '32px 24px', textAlign: 'center' }}>
             <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
@@ -260,28 +265,7 @@ export default function QuotePublicPage() {
 
   // ── Vista principal ─────────────────────────────────────────────────────────
   return (
-    <div style={{ minHeight: '100vh', background: BG, fontFamily: 'Geist, system-ui, sans-serif', color: INK }}>
-
-      {/* Navbar */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 10, background: BG, borderBottom: `1px solid rgba(0,0,0,0.07)`, padding: `0 ${SP}`, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-          {orgLogoUrl
-            ? <img src={orgLogoUrl} alt={org.name} style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 4, flexShrink: 0 }} />
-            : <div style={{ width: 32, height: 32, background: INK, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4, fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{orgInitials}</div>
-          }
-          <div style={{ minWidth: 0 }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: INK, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{org.name}</p>
-            <p style={{ fontSize: 11, color: INK3, lineHeight: 1.2 }}>Presupuesto #{numStr}</p>
-          </div>
-        </div>
-        <a
-          href={getPublicQuotePdfUrl(id)} target="_blank" rel="noopener noreferrer"
-          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', border: `1.5px solid ${INK}`, borderRadius: 6, color: INK, fontSize: 12, fontWeight: 600, textDecoration: 'none', flexShrink: 0 }}
-        >
-          <DownloadSvg />
-          {!isMobile && 'Descargar PDF'}
-        </a>
-      </nav>
+    <div style={{ minHeight: '100vh', background: pageBg, fontFamily: 'Geist, system-ui, sans-serif', color: INK }}>
 
       <div style={{ maxWidth: 700, margin: '0 auto', padding: `20px ${isMobile ? '12px' : '16px'} 60px` }}>
 
@@ -606,17 +590,24 @@ export default function QuotePublicPage() {
 
             {/* Botones */}
             <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'flex-end', gap: 10 }}>
+              <a
+                href={getPublicQuotePdfUrl(id)} target="_blank" rel="noopener noreferrer"
+                style={{ padding: '11px 20px', fontSize: 13, fontWeight: 500, color: INK, background: 'none', border: `1.5px solid ${INK}`, borderRadius: '0 7px 7px 0', cursor: 'pointer', order: isMobile ? 3 : 0, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Descargar PDF
+              </a>
               <button
                 type="button"
                 onClick={() => { setShowReject(true); setRejectOption(''); setRejectOther(''); setRejectError('') }}
-                style={{ padding: '11px 20px', fontSize: 13, fontWeight: 500, color: INK, background: 'none', border: `1.5px solid ${INK}`, borderRadius: 6, cursor: 'pointer', order: isMobile ? 2 : 0 }}
+                style={{ padding: '11px 20px', fontSize: 13, fontWeight: 500, color: INK, background: 'none', border: `1.5px solid ${INK}`, borderRadius: '0 7px 7px 0', cursor: 'pointer', order: isMobile ? 2 : 0 }}
               >
                 Rechazar
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                style={{ padding: '11px 24px', fontSize: 13, fontWeight: 700, color: '#fff', background: INK, border: 'none', borderRadius: 6, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.6 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, order: isMobile ? 1 : 0 }}
+                style={{ padding: '11px 24px', fontSize: 13, fontWeight: 700, color: '#fff', background: INK, border: 'none', borderRadius: '0 7px 7px 0', cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.6 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, order: isMobile ? 1 : 0 }}
               >
                 {submitting && <div style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', animation: 'spin 1s linear infinite' }} />}
                 {submitting ? 'Confirmando...' : 'Confirmar presupuesto'}
@@ -626,9 +617,12 @@ export default function QuotePublicPage() {
         )}
 
         {/* Footer */}
-        <p style={{ textAlign: 'center', fontSize: 12, color: INK3, marginTop: 28 }}>
-          Enviado con <strong style={{ color: INK2, letterSpacing: '0.05em' }}>DANTEUP</strong>
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 28 }}>
+          <span style={{ fontSize: 12, color: INK3 }}>Presupuesto generado con</span>
+          <a href="https://danteup.com" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center' }}>
+            <img src={danteupLogo} alt="DanteUP" style={{ height: 14, display: 'block' }} />
+          </a>
+        </div>
       </div>
 
       {/* Modal rechazo */}
@@ -665,11 +659,11 @@ export default function QuotePublicPage() {
               {rejectError && <p style={{ fontSize: 12, color: '#DC2626' }}>{rejectError}</p>}
               <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
                 <button type="button" onClick={() => setShowReject(false)} disabled={rejectLoading}
-                  style={{ flex: 1, padding: '10px 0', fontSize: 13, color: INK2, background: 'none', border: `1px solid ${LINE}`, borderRadius: 6, cursor: 'pointer' }}>
+                  style={{ flex: 1, padding: '10px 0', fontSize: 13, color: INK2, background: 'none', border: `1px solid ${LINE}`, borderRadius: '0 7px 7px 0', cursor: 'pointer' }}>
                   Cancelar
                 </button>
                 <button type="submit" disabled={rejectLoading}
-                  style={{ flex: 1, padding: '10px 0', fontSize: 13, fontWeight: 600, color: '#fff', background: '#DC2626', border: 'none', borderRadius: 6, cursor: rejectLoading ? 'not-allowed' : 'pointer', opacity: rejectLoading ? 0.6 : 1 }}>
+                  style={{ flex: 1, padding: '10px 0', fontSize: 13, fontWeight: 600, color: '#fff', background: '#DC2626', border: 'none', borderRadius: '0 7px 7px 0', cursor: rejectLoading ? 'not-allowed' : 'pointer', opacity: rejectLoading ? 0.6 : 1 }}>
                   {rejectLoading ? 'Enviando...' : 'Enviar respuesta'}
                 </button>
               </div>
