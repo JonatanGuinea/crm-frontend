@@ -123,7 +123,7 @@ export default function NotificationsPage() {
   })
 
   return (
-    <div style={{ padding: '28px 24px 40px', maxWidth: 640, fontFamily: 'Geist, system-ui, sans-serif' }}>
+    <div className="px-4 pt-5 pb-10 md:px-6 md:pt-7" style={{ maxWidth: 640, fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>

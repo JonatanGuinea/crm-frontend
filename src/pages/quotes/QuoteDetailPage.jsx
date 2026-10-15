@@ -134,7 +134,7 @@ export default function QuoteDetailPage() {
   const isPotential = !quote.client && !!quote.potentialClientName
 
   return (
-    <div style={{ padding: '28px 24px 40px', maxWidth: 1200, fontFamily: 'Geist, system-ui, sans-serif' }}>
+    <div className="px-4 pt-5 pb-10 md:px-6 md:pt-7" style={{ maxWidth: 1200, fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* Breadcrumb */}
       <nav style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 20, fontSize: 12.5, color: C.piedra }}>

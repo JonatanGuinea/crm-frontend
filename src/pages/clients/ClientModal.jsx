@@ -198,7 +198,7 @@ export default function ClientModal({ client, onClose, onSaved }) {
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label style={labelStyle}>CUIL / CUIT</label>
               <input
@@ -235,7 +235,7 @@ export default function ClientModal({ client, onClose, onSaved }) {
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label style={labelStyle}>Ciudad</label>
               <input

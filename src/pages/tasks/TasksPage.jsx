@@ -654,7 +654,7 @@ export default function TasksPage() {
   }
 
   return (
-    <div style={{ padding: '28px 24px 40px', fontFamily: 'Geist, system-ui, sans-serif', display: 'flex', flexDirection: 'column', gap: 20, minHeight: '100%' }}>
+    <div className="px-4 pt-5 pb-10 md:px-6 md:pt-7" style={{ fontFamily: 'Geist, system-ui, sans-serif', display: 'flex', flexDirection: 'column', gap: 20, minHeight: '100%' }}>
       <style>{`
         @media (prefers-reduced-motion: reduce) {
           *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }

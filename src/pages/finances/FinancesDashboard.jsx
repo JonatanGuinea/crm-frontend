@@ -126,7 +126,7 @@ export default function FinancesDashboard() {
   })
 
   return (
-    <div style={{ padding: '20px 24px 40px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div className="px-4 pt-4 pb-10 md:px-6 md:pt-5" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
       {/* ── KPI cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">

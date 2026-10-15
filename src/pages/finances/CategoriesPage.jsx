@@ -211,7 +211,7 @@ export default function CategoriesPage() {
   const expense = categories.filter(c => c.type === 'expense')
 
   return (
-    <div style={{ padding: '20px 24px 40px', fontFamily: 'Geist, system-ui, sans-serif', display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div className="px-4 pt-4 pb-10 md:px-6 md:pt-5" style={{ fontFamily: 'Geist, system-ui, sans-serif', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
       {/* Toolbar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>

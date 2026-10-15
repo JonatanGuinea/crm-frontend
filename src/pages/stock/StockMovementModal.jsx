@@ -309,7 +309,7 @@ function MovementForm({ product, mode, onBack, onClose }) {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label style={labelStyle}>Cantidad *</label>
                 <input className="du-input"

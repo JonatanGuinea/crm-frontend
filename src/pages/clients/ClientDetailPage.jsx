@@ -158,7 +158,7 @@ export default function ClientDetailPage() {
   })
 
   return (
-    <div style={{ padding: '28px 24px 40px', maxWidth: 1080, fontFamily: 'Geist, system-ui, sans-serif' }}>
+    <div className="px-4 pt-5 pb-10 md:px-6 md:pt-7" style={{ maxWidth: 1080, fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* Back */}
       <button

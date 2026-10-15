@@ -64,7 +64,7 @@ export default function FinancesLayout() {
     <div style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* ── Header ── */}
-      <div style={{ padding: '28px 24px 0', display: 'flex', flexDirection: 'column', gap: 16, borderBottom: `1px solid ${C.linea}`, paddingBottom: 16 }}>
+      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ display: 'flex', flexDirection: 'column', gap: 16, borderBottom: `1px solid ${C.linea}` }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -82,7 +82,7 @@ export default function FinancesLayout() {
                   onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
                   <ChevronLSvg style={{ width: 14, height: 14 }} />
                 </button>
-                <span style={{ fontSize: 13, fontWeight: 500, color: C.crema, textTransform: 'capitalize', padding: '0 8px', minWidth: 130, textAlign: 'center' }}>
+                <span style={{ fontSize: 13, fontWeight: 500, color: C.crema, textTransform: 'capitalize', padding: '0 8px', minWidth: 112, textAlign: 'center' }}>
                   {monthLabel}
                 </span>
                 <button onClick={nextMonth} disabled={isCurrentMonth}

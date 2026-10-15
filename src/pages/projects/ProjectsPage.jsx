@@ -263,7 +263,7 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div style={{ padding: '28px 24px 40px', fontFamily: 'Geist, system-ui, sans-serif' }}>
+    <div className="px-4 pt-5 pb-10 md:px-6 md:pt-7" style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
       {/* Título + controles */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

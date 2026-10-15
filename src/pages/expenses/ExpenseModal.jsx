@@ -123,7 +123,7 @@ export default function ExpenseModal({ expense, onClose, onSaved }) {
               className="du-input" placeholder="Ej: Pago alquiler mayo" />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label style={labelStyle}>Monto</label>
               <input type="number" min="0" step="1" value={form.amount}

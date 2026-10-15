@@ -192,7 +192,7 @@ export default function MembersPage() {
       )}
 
       {/* Content */}
-      <div style={{ padding: '20px 24px 40px' }}>
+      <div className="px-4 pt-4 pb-10 md:px-6 md:pt-5">
         {isLoading ? (
           <div style={{ padding: '60px 0', textAlign: 'center', fontSize: 13, color: C.piedra }}>Cargando…</div>
         ) : members.length === 0 ? (

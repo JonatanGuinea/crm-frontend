@@ -412,7 +412,7 @@ export default function QuotesPage() {
 
   // ── render ─────────────────────────────────────────────────────────────────
   return (
-    <div style={{ padding: '28px 24px 40px', fontFamily: 'Geist, system-ui, sans-serif' }}>
+    <div className="px-4 pt-5 pb-10 md:px-6 md:pt-7" style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
@@ -420,7 +420,7 @@ export default function QuotesPage() {
           <h2 style={{ fontSize: 22, fontWeight: 700, color: C.crema, margin: '0 0 4px', letterSpacing: '-0.02em' }}>Presupuestos</h2>
           <p style={{ fontSize: 12.5, color: C.piedra, margin: 0 }}>Del borrador a la firma del cliente. Al aprobarse, el proyecto se crea solo.</p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
           <button
             onClick={() => setShowHistory(v => !v)}
             style={{

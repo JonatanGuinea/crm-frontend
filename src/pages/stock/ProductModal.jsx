@@ -114,7 +114,7 @@ export default function ProductModal({ product, onClose }) {
         <form onSubmit={handleSubmit} style={{ overflowY: 'auto', flex: 1 }}>
           <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label style={labelStyle}>SKU *</label>
                 <input className="du-input" placeholder="Ej: PROD-001" value={form.sku} onChange={set('sku')} required />
@@ -146,7 +146,7 @@ export default function ProductModal({ product, onClose }) {
               <textarea className="du-input" rows={2} placeholder="Descripción opcional" value={form.description} onChange={set('description')} />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label style={labelStyle}>Categoría</label>
                 <select className="du-input" value={form.categoryId} onChange={set('categoryId')}>
@@ -172,7 +172,7 @@ export default function ProductModal({ product, onClose }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label style={labelStyle}>Precio de costo</label>
                 <input className="du-input" type="number" min="0" step="0.01" placeholder="0.00" value={form.costPrice} onChange={set('costPrice')} />
@@ -183,7 +183,7 @@ export default function ProductModal({ product, onClose }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label style={labelStyle}>Stock mínimo (alerta)</label>
                 <input className="du-input" type="number" min="0" step="0.01" placeholder="0" value={form.minStock} onChange={set('minStock')} />
@@ -208,7 +208,7 @@ export default function ProductModal({ product, onClose }) {
             {!isEdit && (
               <div style={{ borderTop: `1px solid ${C.linea}`, paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <p style={{ fontSize: 11, fontWeight: 600, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Stock inicial</p>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label style={labelStyle}>Cantidad</label>
                     <input className="du-input" type="number" min="0" step="0.01" placeholder="0" value={form.initialStock} onChange={set('initialStock')} />
