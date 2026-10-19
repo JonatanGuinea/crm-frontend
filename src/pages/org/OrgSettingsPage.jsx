@@ -354,7 +354,7 @@ export default function OrgSettingsPage() {
           <section>
             <SectionHead>Identidad de marca</SectionHead>
             <p style={{ fontSize: 12, color: C.piedra, marginBottom: 16, marginTop: -8 }}>
-              Se aplican al header y banda de total de los presupuestos.
+              Se usan como fondo de la página del presupuesto.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, marginBottom: 20 }}>
               {[
@@ -377,17 +377,27 @@ export default function OrgSettingsPage() {
                 </div>
               ))}
             </div>
-            <div style={{ borderRadius: '0 16px 16px 0', overflow: 'hidden', background: `linear-gradient(135deg, ${form.brandPrimary}, ${form.brandSecondary})` }}>
-              <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
-                  <p style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.55)', marginBottom: 3 }}>Presupuesto</p>
-                  <p style={{ color: '#fff', fontWeight: 700, fontSize: 15, margin: 0 }}>{form.name || 'Nombre de empresa'}</p>
+            {/* Preview — fondo de página con gradiente + card blanca interna */}
+            <div style={{ borderRadius: '0 12px 12px 0', overflow: 'hidden', background: `linear-gradient(145deg, ${form.brandPrimary} 0%, ${form.brandSecondary} 100%)`, padding: '14px 12px' }}>
+              <div style={{ background: '#ffffff', borderRadius: 5, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.12)' }}>
+                {/* Datos empresa */}
+                <div style={{ padding: '10px 12px', borderBottom: '1px solid #E5E7EB', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: '#1A1A1A', margin: 0 }}>{form.name || 'Nombre de empresa'}</p>
+                  <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6B6B6B', margin: 0, whiteSpace: 'nowrap' }}>Presupuesto #001</p>
                 </div>
-                <p style={{ color: '#fff', fontWeight: 700, fontSize: 22, opacity: 0.9, margin: 0 }}>#001</p>
-              </div>
-              <div style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.25)' }}>
-                <span style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, color: 'rgba(255,255,255,0.55)' }}>Total</span>
-                <span style={{ color: '#fff', fontWeight: 700, fontSize: 16 }}>$10.000,00</span>
+                {/* Título */}
+                <div style={{ padding: '8px 12px', borderBottom: '1px solid #E5E7EB' }}>
+                  <p style={{ fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', color: '#1A1A1A', margin: 0 }}>Nombre del proyecto</p>
+                </div>
+                {/* Total */}
+                <div style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: '#1A1A1A' }}>Total</span>
+                  <div style={{ background: '#1A1A1A', borderRadius: 4, padding: '4px 9px', display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: 200, lineHeight: 1 }}>[</span>
+                    <span style={{ color: '#ffffff', fontFamily: "'DanteUP Cifras', Geist, sans-serif", fontSize: 13, fontWeight: 700, lineHeight: 1 }}>$10.000,00</span>
+                    <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: 200, lineHeight: 1 }}>]</span>
+                  </div>
+                </div>
               </div>
             </div>
             <SaveRow label="Guardar colores" isPending={saveBrand.isPending} />
