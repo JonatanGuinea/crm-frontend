@@ -2,14 +2,18 @@ import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { fmt } from './fmt'
 
-// ── palette ───────────────────────────────────────────────────────────────────
+// ── Paleta DanteUP monocroma — modo claro ─────────────────────────────────────
 const C = {
-  brand: [79, 70, 229],
-  dark:  [20, 20, 30],
-  muted: [115, 115, 130],
-  line:  [218, 218, 228],
-  bg:    [247, 247, 252],
-  white: [255, 255, 255],
+  bg:    [255, 255, 255],    // página blanca
+  s1:    [247, 245, 241],    // gris cálido muy claro (cajas KPI, filas alt)
+  s2:    [236, 232, 225],    // gris cálido claro (bandas sección, cabezal tabla)
+  linea: [208, 203, 195],    // divisores cálidos
+  crema: [11,  11,  12],     // texto principal (near-black)
+  arena: [60,  55,  48],     // texto secundario oscuro
+  piedra:[125, 119, 111],    // texto tenue / labels
+  ok:    [40,  110,  65],
+  warn:  [145,  95,  18],
+  err:   [175,  55,  42],
 }
 
 // ── constants ─────────────────────────────────────────────────────────────────
@@ -21,6 +25,18 @@ const QUOTE_STATUS_LABELS = {
 const PROJECT_STATUS_LABELS = {
   pending: 'Pendiente', approved: 'Aprobado', in_progress: 'En curso',
   finished: 'Finalizado', cancelled: 'Cancelado',
+}
+
+// ── helpers de página ─────────────────────────────────────────────────────────
+function fillPage(doc) {
+  doc.setFillColor(...C.bg)
+  doc.rect(0, 0, 210, 297, 'F')
+}
+
+function newPage(doc) {
+  doc.addPage()
+  fillPage(doc)
+  return 24
 }
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -40,50 +56,57 @@ function fmtMonth(key) {
 }
 
 function addHeader(doc, orgName, title, subtitle) {
-  doc.setFillColor(...C.brand)
+  fillPage(doc)
+
+  // Banda superior + acento oscuro izquierdo
+  doc.setFillColor(...C.s2)
   doc.rect(0, 0, 210, 22, 'F')
+  doc.setFillColor(...C.crema)
+  doc.rect(0, 0, 3, 22, 'F')
 
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(11)
-  doc.setTextColor(...C.white)
-  doc.text(orgName, 14, 14)
+  doc.setFontSize(10)
+  doc.setTextColor(...C.crema)
+  doc.text(orgName, 10, 14)
 
   doc.setFont('helvetica', 'normal')
-  doc.setFontSize(8)
+  doc.setFontSize(7.5)
+  doc.setTextColor(...C.piedra)
   doc.text(nowLabel(), 196, 14, { align: 'right' })
 
-  doc.setTextColor(...C.dark)
+  doc.setTextColor(...C.crema)
   doc.setFontSize(17)
   doc.setFont('helvetica', 'bold')
-  doc.text(title, 14, 36)
+  doc.text(title, 14, 35)
 
-  doc.setTextColor(...C.muted)
+  doc.setTextColor(...C.arena)
   doc.setFontSize(9)
   doc.setFont('helvetica', 'normal')
-  doc.text(subtitle, 14, 43)
+  doc.text(subtitle, 14, 42)
 
-  doc.setDrawColor(...C.line)
+  doc.setDrawColor(...C.linea)
   doc.setLineWidth(0.3)
-  doc.line(14, 47, 196, 47)
+  doc.line(14, 46, 196, 46)
 
-  return 55
+  return 54
 }
 
 function addSection(doc, title, y) {
-  doc.setTextColor(...C.muted)
-  doc.setFontSize(7.5)
+  doc.setFillColor(...C.arena)
+  doc.rect(14, y - 1, 3, 14, 'F')
+  doc.setFillColor(...C.s2)
+  doc.rect(17, y - 1, 179, 14, 'F')
+  doc.setTextColor(...C.arena)
+  doc.setFontSize(7)
   doc.setFont('helvetica', 'bold')
-  doc.text(title.toUpperCase(), 14, y)
-  doc.setDrawColor(...C.line)
-  doc.setLineWidth(0.2)
-  doc.line(14, y + 2, 196, y + 2)
-  return y + 8
+  doc.text(title.toUpperCase(), 22, y + 8)
+  return y + 20
 }
 
 function addKpis(doc, kpis, y) {
   const cols = 3
   const boxW = 56
-  const boxH = 18
+  const boxH = 20
   const gapX = 5
   const gapY = 4
 
@@ -93,20 +116,20 @@ function addKpis(doc, kpis, y) {
     const x   = 14 + col * (boxW + gapX)
     const top = y + row * (boxH + gapY)
 
-    doc.setFillColor(...C.bg)
-    doc.setDrawColor(...C.line)
+    doc.setFillColor(...C.s1)
+    doc.setDrawColor(...C.linea)
     doc.setLineWidth(0.2)
-    doc.roundedRect(x, top, boxW, boxH, 2, 2, 'FD')
+    doc.rect(x, top, boxW, boxH, 'FD')
 
-    doc.setTextColor(...C.muted)
-    doc.setFontSize(6.5)
+    doc.setTextColor(...C.piedra)
+    doc.setFontSize(6)
     doc.setFont('helvetica', 'normal')
-    doc.text(kpi.label.toUpperCase(), x + 4, top + 6)
+    doc.text(kpi.label.toUpperCase(), x + 4, top + 7)
 
-    doc.setTextColor(...C.dark)
+    doc.setTextColor(...C.crema)
     doc.setFontSize(10)
     doc.setFont('helvetica', 'bold')
-    doc.text(String(kpi.value ?? '—'), x + 4, top + 14)
+    doc.text(String(kpi.value ?? '—'), x + 4, top + 16)
   })
 
   const rows = Math.ceil(kpis.length / cols)
@@ -115,63 +138,64 @@ function addKpis(doc, kpis, y) {
 
 function tableStyle() {
   return {
-    styles:             { fontSize: 8, cellPadding: 3, textColor: C.dark, lineColor: C.line, lineWidth: 0.1 },
-    headStyles:         { fillColor: C.brand, textColor: C.white, fontStyle: 'bold', fontSize: 7 },
-    alternateRowStyles: { fillColor: C.bg },
+    styles:             { fontSize: 8, cellPadding: 3, textColor: C.arena, lineColor: C.linea, lineWidth: 0.1, fillColor: C.bg },
+    headStyles:         { fillColor: C.s2, textColor: C.crema, fontStyle: 'bold', fontSize: 7 },
+    alternateRowStyles: { fillColor: C.s1 },
     margin:             { left: 14, right: 14 },
+    didAddPage:         (data) => { fillPage(data.doc) },
   }
 }
 
 function addCoverPage(doc, orgName, userName, year, month, fullReport = false) {
   const W = 210
 
-  doc.setFillColor(...C.brand)
-  doc.rect(0, 0, W, 80, 'F')
+  fillPage(doc)
 
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(18)
-  doc.setTextColor(...C.white)
-  doc.text(orgName, W / 2, 38, { align: 'center' })
+  // Línea de acento superior
+  doc.setFillColor(...C.crema)
+  doc.rect(0, 0, W, 2, 'F')
 
+  // Nombre org
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(8)
-  doc.setTextColor(190, 190, 220)
-  doc.text('SISTEMA DE GESTIÓN EMPRESARIAL', W / 2, 52, { align: 'center' })
+  doc.setTextColor(...C.piedra)
+  doc.text(orgName.toUpperCase(), W / 2, 100, { align: 'center', charSpace: 1.5 })
 
-  doc.setTextColor(...C.dark)
-  doc.setFontSize(24)
+  // Título principal
   doc.setFont('helvetica', 'bold')
+  doc.setFontSize(28)
+  doc.setTextColor(...C.crema)
   if (fullReport) {
-    doc.text('Informe Mensual', W / 2, 118, { align: 'center' })
-    doc.text('Completo', W / 2, 134, { align: 'center' })
+    doc.text('Informe', W / 2, 118, { align: 'center' })
+    doc.text('Mensual', W / 2, 136, { align: 'center' })
   } else {
-    doc.text('Reporte Financiero', W / 2, 118, { align: 'center' })
-    doc.text('Mensual', W / 2, 134, { align: 'center' })
+    doc.text('Reporte', W / 2, 118, { align: 'center' })
+    doc.text('Financiero', W / 2, 136, { align: 'center' })
   }
 
+  // Divisor
+  doc.setDrawColor(...C.linea)
+  doc.setLineWidth(0.3)
+  doc.line(55, 148, 155, 148)
+
+  // Mes
   const pLabel = new Date(year, month - 1, 1)
     .toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
+  doc.setFont('helvetica', 'normal')
   doc.setFontSize(13)
-  doc.setFont('helvetica', 'normal')
-  doc.setTextColor(...C.brand)
-  doc.text(pLabel.charAt(0).toUpperCase() + pLabel.slice(1), W / 2, 152, { align: 'center' })
+  doc.setTextColor(...C.arena)
+  doc.text(pLabel.charAt(0).toUpperCase() + pLabel.slice(1), W / 2, 162, { align: 'center' })
 
-  doc.setDrawColor(...C.line)
-  doc.setLineWidth(0.5)
-  doc.line(55, 162, 155, 162)
-
-  doc.setTextColor(...C.muted)
+  // Meta
   doc.setFontSize(8.5)
-  doc.setFont('helvetica', 'normal')
-  doc.text(`Generado el: ${nowLabel()}`, W / 2, 176, { align: 'center' })
-  doc.text(`Por: ${userName}`, W / 2, 186, { align: 'center' })
+  doc.setTextColor(...C.piedra)
+  doc.text(`Generado el ${nowLabel()}`, W / 2, 178, { align: 'center' })
+  doc.text(`Por: ${userName}`, W / 2, 187, { align: 'center' })
 
-  doc.setFillColor(...C.brand)
-  doc.rect(0, 265, W, 32, 'F')
-  doc.setFont('helvetica', 'normal')
+  // Footer
   doc.setFontSize(7.5)
-  doc.setTextColor(...C.white)
-  doc.text('Reporte generado automáticamente por SOFIAPP CRM', W / 2, 282, { align: 'center' })
+  doc.setTextColor(...C.piedra)
+  doc.text('Reporte generado con DANTEUP', W / 2, 287, { align: 'center' })
 }
 
 function addFooter(doc, orgName, { hasCover = false } = {}) {
@@ -179,12 +203,12 @@ function addFooter(doc, orgName, { hasCover = false } = {}) {
   for (let i = 1; i <= total; i++) {
     if (hasCover && i === 1) continue
     doc.setPage(i)
-    doc.setTextColor(...C.muted)
+    doc.setTextColor(...C.piedra)
     doc.setFontSize(7)
     doc.setFont('helvetica', 'normal')
     const pageNum  = hasCover ? i - 1 : i
     const totalNum = hasCover ? total - 1 : total
-    doc.text(`${orgName} — SOFIAPP CRM`, 14, 290)
+    doc.text(`${orgName} — DANTEUP`, 14, 290)
     doc.text(`${pageNum} / ${totalNum}`, 196, 290, { align: 'right' })
   }
 }
@@ -250,7 +274,7 @@ function drawFinancesContent(doc, y, { data, year, month, currency }) {
   ], y)
 
   // 2. Liquidez y proyecciones
-  if (y > 200) { doc.addPage(); y = 24 }
+  if (y > 200) { y = newPage(doc) }
   y = addSection(doc, 'Liquidez y proyecciones', y + 4)
   y = addKpis(doc, [
     { label: 'A cobrar (pendiente)', value: fmt(pendingIn,            currency) },
@@ -262,7 +286,7 @@ function drawFinancesContent(doc, y, { data, year, month, currency }) {
   ], y)
 
   // 3. Indicadores del mes
-  if (y > 200) { doc.addPage(); y = 24 }
+  if (y > 200) { y = newPage(doc) }
   y = addSection(doc, 'Indicadores del mes', y + 4)
   y = addKpis(doc, [
     { label: 'Ingresos — cantidad',     value: `${incomeCount} movimientos` },
@@ -275,7 +299,7 @@ function drawFinancesContent(doc, y, { data, year, month, currency }) {
 
   // 4. Evolución mensual
   if (monthly.length > 0) {
-    if (y > 200) { doc.addPage(); y = 24 }
+    if (y > 200) { y = newPage(doc) }
     y = addSection(doc, 'Evolucion mensual — ultimos 6 meses', y + 4)
     autoTable(doc, {
       startY: y,
@@ -301,7 +325,7 @@ function drawFinancesContent(doc, y, { data, year, month, currency }) {
 
   // 5. Análisis de tendencia
   if (monthly.length > 0) {
-    if (y > 210) { doc.addPage(); y = 24 }
+    if (y > 210) { y = newPage(doc) }
     y = addSection(doc, 'Analisis de tendencia (6 meses)', y + 2)
     y = addKpis(doc, [
       { label: 'Ingreso promedio mensual', value: fmt(avgIncome,  currency) },
@@ -315,7 +339,7 @@ function drawFinancesContent(doc, y, { data, year, month, currency }) {
 
   // 6. Egresos por categoría
   if (categories.length > 0) {
-    if (y > 200) { doc.addPage(); y = 24 }
+    if (y > 200) { y = newPage(doc) }
     y = addSection(doc, 'Egresos por categoria', y + 4)
     autoTable(doc, {
       startY: y,
@@ -333,7 +357,7 @@ function drawFinancesContent(doc, y, { data, year, month, currency }) {
 
   // 7. Flujo de caja
   if (cashFlow.length > 0) {
-    if (y > 200) { doc.addPage(); y = 24 }
+    if (y > 200) { y = newPage(doc) }
     y = addSection(doc, 'Flujo de caja del mes', y + 2)
     let running = saldoInit
     autoTable(doc, {
@@ -361,7 +385,7 @@ function drawFinancesContent(doc, y, { data, year, month, currency }) {
   // 8. Cuentas por cobrar
   const cobrar = pending.filter(m => m.type === 'income')
   if (cobrar.length > 0) {
-    if (y > 210) { doc.addPage(); y = 24 }
+    if (y > 210) { y = newPage(doc) }
     y = addSection(doc, `Cuentas por cobrar (${cobrar.length})`, y + 2)
     autoTable(doc, {
       startY: y,
@@ -384,7 +408,7 @@ function drawFinancesContent(doc, y, { data, year, month, currency }) {
   // 9. Cuentas por pagar
   const pagar = pending.filter(m => m.type === 'expense')
   if (pagar.length > 0) {
-    if (y > 210) { doc.addPage(); y = 24 }
+    if (y > 210) { y = newPage(doc) }
     y = addSection(doc, `Cuentas por pagar (${pagar.length})`, y + 2)
     autoTable(doc, {
       startY: y,
@@ -406,7 +430,7 @@ function drawFinancesContent(doc, y, { data, year, month, currency }) {
 
   // 10. Mayores movimientos del mes
   if (topMovs.length > 0) {
-    if (y > 210) { doc.addPage(); y = 24 }
+    if (y > 210) { y = newPage(doc) }
     y = addSection(doc, 'Mayores movimientos del mes (top 10)', y + 2)
     const TYPE = { income: 'Ingreso', expense: 'Egreso' }
     autoTable(doc, {
@@ -474,7 +498,7 @@ function drawQuotesContent(doc, y, { data, topClients, currency }) {
   }
 
   if (reasons.length > 0) {
-    if (y > 210) { doc.addPage(); y = 24 }
+    if (y > 210) { y = newPage(doc) }
     y = addSection(doc, `Causas de rechazo (${rejectedCount} rechazados)`, y + 2)
     autoTable(doc, {
       startY: y,
@@ -492,7 +516,7 @@ function drawQuotesContent(doc, y, { data, topClients, currency }) {
 
   const monthlyWithData = monthly.filter(m => m.issuedCount > 0)
   if (monthlyWithData.length > 0) {
-    if (y > 200) { doc.addPage(); y = 24 }
+    if (y > 200) { y = newPage(doc) }
     y = addSection(doc, 'Evolucion mensual — ultimos 12 meses', y + 2)
     autoTable(doc, {
       startY: y,
@@ -511,7 +535,7 @@ function drawQuotesContent(doc, y, { data, topClients, currency }) {
   }
 
   if (data?.expiringSoon?.length > 0) {
-    if (y > 210) { doc.addPage(); y = 24 }
+    if (y > 210) { y = newPage(doc) }
     y = addSection(doc, 'Proximos a vencer (7 dias)', y + 2)
     autoTable(doc, {
       startY: y,
@@ -530,7 +554,7 @@ function drawQuotesContent(doc, y, { data, topClients, currency }) {
   }
 
   if (topClients?.length > 0) {
-    if (y > 210) { doc.addPage(); y = 24 }
+    if (y > 210) { y = newPage(doc) }
     y = addSection(doc, 'Top clientes por volumen aprobado', y + 2)
     autoTable(doc, {
       startY: y,
@@ -584,7 +608,7 @@ function drawProjectsContent(doc, y, { data }) {
   }
 
   if (data?.upcomingProjects?.length > 0) {
-    if (y > 220) { doc.addPage(); y = 24 }
+    if (y > 220) { y = newPage(doc) }
     y = addSection(doc, 'Proyectos proximos a vencer', y + 2)
     autoTable(doc, {
       startY: y,
@@ -643,7 +667,7 @@ function drawStockContent(doc, y, { summary, outOfStock, lowStock }) {
   }
 
   if (lowStock?.length > 0) {
-    if (y > 220) { doc.addPage(); y = 24 }
+    if (y > 220) { y = newPage(doc) }
     y = addSection(doc, 'Productos con stock bajo', y + 2)
     autoTable(doc, {
       startY: y,
