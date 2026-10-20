@@ -10,8 +10,7 @@ import PhoneInput, { PHONE_COUNTRIES, formatPhoneNumber } from '../../components
 import { useToast } from '../../components/Toast'
 import { useAuth } from '../../context/AuthContext'
 import { MasIcon } from '../../components/DuIcons'
-
-const UPLOADS_BASE = import.meta.env.VITE_API_URL
+import { imgUrl } from '../../utils/imgUrl.js'
 const EMPTY_ITEM = { description: '', quantity: 1, unitPrice: 0, amount: 0 }
 const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', err: '#E58373' }
 
@@ -658,7 +657,7 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
                     {existingImages.filter(img => !img._deleted).map(img => (
                       <div key={img.id} className="rounded-lg border border-line overflow-hidden">
                         <img
-                          src={`${UPLOADS_BASE}/uploads/${img.storedName}`}
+                          src={imgUrl(img.url)}
                           alt={img.title || ''}
                           className="w-full h-auto block"
                         />

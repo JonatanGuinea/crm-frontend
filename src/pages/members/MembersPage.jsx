@@ -5,8 +5,8 @@ import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
 import { getMembers, inviteMember, updateMemberRole, removeMember } from '../../api/members'
 import { EquipoIcon } from '../../components/DuIcons'
+import { imgUrl } from '../../utils/imgUrl.js'
 
-const UPLOADS_BASE = import.meta.env.VITE_API_URL
 const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
 
 const ROLE_LABELS = { owner: 'Dueño', admin: 'Administrador', member: 'Miembro' }
@@ -216,7 +216,7 @@ export default function MembersPage() {
                   {/* Avatar */}
                   <div style={{ position: 'relative', flexShrink: 0 }}>
                     {m.avatar ? (
-                      <img src={`${UPLOADS_BASE}/uploads/${m.avatar}`} alt={m.name}
+                      <img src={imgUrl(m.avatar)} alt={m.name}
                         style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${C.linea}` }} />
                     ) : (
                       <div style={{ width: 72, height: 72, borderRadius: '50%', background: av.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 700, color: av.color, border: `2px solid ${C.linea}` }}>

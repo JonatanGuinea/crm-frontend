@@ -5,8 +5,7 @@ import { getPublicQuote, getPublicQuotePdfUrl, confirmQuote, rejectQuote } from 
 import ProvinceSelect from '../../components/ProvinceSelect'
 import PhoneInput, { PHONE_COUNTRIES } from '../../components/PhoneInput'
 import danteupLogo from '../../assets/danteup/logotipo-horizontal-negro.png'
-
-const UPLOADS_BASE = import.meta.env.VITE_API_URL
+import { imgUrl } from '../../utils/imgUrl.js'
 const CIFRAS = "'DanteUP Cifras', Geist, sans-serif"
 const MONO  = "'Geist Mono', monospace"
 
@@ -119,7 +118,7 @@ export default function QuotePublicPage() {
   const sym         = quote.currency === 'USD' ? 'US$' : '$'
   const org         = quote.organization || {}
   const numStr      = String(quote.number).padStart(3, '0')
-  const orgLogoUrl  = org.logo ? `${UPLOADS_BASE}/uploads/${org.logo}` : null
+  const orgLogoUrl  = imgUrl(org.logo)
   const orgInitials = org.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
 
   const clientName    = quote.client?.name    || quote.potentialClientName
@@ -432,7 +431,7 @@ export default function QuotePublicPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {quote.images.map(img => (
                   <div key={img.id} style={{ borderRadius: 6, overflow: 'hidden', border: `1px solid ${LINE}` }}>
-                    <img src={`${UPLOADS_BASE}/uploads/${img.storedName}`} alt={img.title || 'Imagen'} style={{ width: '100%', height: 'auto', display: 'block' }} />
+                    <img src={imgUrl(img.url)} alt={img.title || 'Imagen'} style={{ width: '100%', height: 'auto', display: 'block' }} />
                     {(img.title || img.description) && (
                       <div style={{ padding: '10px 14px', background: BG }}>
                         {img.title && <p style={{ fontSize: 13, fontWeight: 600, color: INK, marginBottom: 2 }}>{img.title}</p>}

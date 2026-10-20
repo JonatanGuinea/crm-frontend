@@ -3,8 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { uploadQuoteImage, updateQuoteImage, deleteQuoteImage } from '../api/quotes'
 import { useToast } from './Toast'
 import { MasIcon } from './DuIcons'
-
-const UPLOADS_BASE = import.meta.env.VITE_API_URL
+import { imgUrl } from '../utils/imgUrl.js'
 
 // ── tokens ────────────────────────────────────────────────────────────────────
 
@@ -300,7 +299,7 @@ export default function QuoteImagesPanel({ quoteId, images = [], canWrite }) {
               borderRadius: '0 10px 10px 0', overflow: 'hidden',
             }}>
               <img
-                src={`${UPLOADS_BASE}/uploads/${img.storedName}`}
+                src={imgUrl(img.url)}
                 alt={img.title || 'Imagen'}
                 style={{ width: '100%', height: 'auto', display: 'block' }}
               />
@@ -309,7 +308,7 @@ export default function QuoteImagesPanel({ quoteId, images = [], canWrite }) {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     <div style={{ position: 'relative' }}>
                       <img
-                        src={editFile ? editFile.previewUrl : `${UPLOADS_BASE}/uploads/${img.storedName}`}
+                        src={editFile ? editFile.previewUrl : imgUrl(img.url)}
                         alt=""
                         style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '0 6px 6px 0' }}
                       />

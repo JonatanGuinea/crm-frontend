@@ -4,8 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getProfile, updateProfile, changePassword, uploadAvatar } from '../../api/profile'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
+import { imgUrl } from '../../utils/imgUrl.js'
 
-const UPLOADS_BASE = import.meta.env.VITE_API_URL
 const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
 
 const labelStyle = { fontSize: 11, fontWeight: 500, color: C.piedra }
@@ -38,7 +38,7 @@ function AvatarCircle({ avatar, name, size = 80, onClick }) {
   const [err, setErr] = useState(false)
   if (avatar && !err) {
     return (
-      <img src={`${UPLOADS_BASE}/uploads/${avatar}`} alt={name}
+      <img src={imgUrl(avatar)} alt={name}
         onClick={onClick}
         onError={() => setErr(true)}
         style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${C.linea}`, cursor: onClick ? 'pointer' : 'default', flexShrink: 0 }} />
@@ -146,7 +146,7 @@ export default function ProfilePage() {
       {/* Avatar modal */}
       {avatarModalOpen && data?.avatar && (
         <AvatarModal
-          src={`${UPLOADS_BASE}/uploads/${data.avatar}`}
+          src={imgUrl(data.avatar)}
           name={data.name}
           onClose={() => setAvatarModalOpen(false)}
         />

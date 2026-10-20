@@ -5,9 +5,9 @@ import { useAuth } from '../context/AuthContext'
 import { useToast } from './Toast'
 import { getOrganizations, updateOrganization, uploadOrgLogo } from '../api/organizations'
 import ProvinceSelect from './ProvinceSelect'
+import { imgUrl } from '../utils/imgUrl.js'
 
 const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
-const UPLOADS_BASE = import.meta.env.VITE_API_URL
 const labelStyle   = { fontSize: 11, fontWeight: 500, color: C.piedra, display: 'block', marginBottom: 4 }
 
 // ── SVGs ──────────────────────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ export default function OrgSettingsModal({ onClose }) {
       postalCode:         orgData.postalCode         || '',
       signatureOwnerName: orgData.signatureOwnerName || '',
     })
-    setLogoPreview(orgData.logo ? `${UPLOADS_BASE}/uploads/${orgData.logo}` : null)
+    setLogoPreview(orgData.logo ? imgUrl(orgData.logo) : null)
   }, [orgData])
 
   // ── canvas firma ──
@@ -119,7 +119,7 @@ export default function OrgSettingsModal({ onClose }) {
     onSuccess: (res) => {
       qc.invalidateQueries(['organization', orgId])
       const fn = res.data.data?.logo
-      if (fn) setLogoPreview(`${UPLOADS_BASE}/uploads/${fn}`)
+      if (fn) setLogoPreview(imgUrl(fn))
       toast('Logo actualizado', 'success')
     },
     onError: (err) => toast(err.response?.data?.error || err.message || 'Error al subir logo', 'error'),

@@ -23,8 +23,7 @@ import {
   CobroIcon, ReporteIcon, EquipoIcon, StockIcon,
   CampanaIcon, AjustesIcon,CarpetaIcon,ModulosIcon
 } from '../components/DuIcons'
-
-const UPLOADS_BASE = import.meta.env.VITE_API_URL
+import { imgUrl } from '../utils/imgUrl.js'
 
 const C = {
   bg:    '#0B0B0C',
@@ -194,7 +193,7 @@ function SidebarAvatar({ avatar, name }) {
   if (avatar && !imgError) {
     return (
       <img
-        src={`${UPLOADS_BASE}/uploads/${avatar}`}
+        src={imgUrl(avatar)}
         alt={name}
         onError={() => setImgError(true)}
         style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
