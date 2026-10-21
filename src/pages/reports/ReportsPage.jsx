@@ -362,7 +362,7 @@ function FinancesTab({ data, year, month, currency }) {
         <SectionTitle>Evolución últimos 6 meses</SectionTitle>
 
         {/* Chart card */}
-        <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', padding: '20px 24px', marginBottom: 8 }}>
+        <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', padding: 16, marginBottom: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, fontSize: 11, color: C.piedra }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.crema }} />Ingresos
@@ -389,8 +389,8 @@ function FinancesTab({ data, year, month, currency }) {
         </div>
 
         {/* Detail table */}
-        <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+        <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden', overflowX: 'auto' }}>
+          <table style={{ width: '100%', minWidth: 520, borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
                 {['Mes', 'Ingresos', 'Egresos', 'Neto', 'Var. MoM'].map((h, i) => (
@@ -442,7 +442,7 @@ function FinancesTab({ data, year, month, currency }) {
       {data?.categoryBreakdown?.length > 0 && (
         <div>
           <SectionTitle>Egresos por categoría — {periodLabel(year, month)}</SectionTitle>
-          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
+          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden', overflowX: 'auto' }}>
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
@@ -531,7 +531,7 @@ function QuotesTab({ data, topClients, currency }) {
       {byStatus.length > 0 && (
         <div>
           <SectionTitle>Distribución por estado</SectionTitle>
-          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
+          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'clip' }}>
             <div style={{ padding: 20, borderBottom: `1px solid ${C.linea}` }}>
               <StatusBar total={totalAmt} items={[
                 { label: 'Aprobados',  color: C.crema,  value: approvedValue, formatted: fmt(approvedValue, currency) },
@@ -540,7 +540,8 @@ function QuotesTab({ data, topClients, currency }) {
                 { label: 'Rechazados', color: C.err,    value: rejectedAmt,   formatted: fmt(rejectedAmt,   currency) },
               ]} />
             </div>
-            <table className="w-full text-sm">
+            <div style={{ overflowX: 'auto' }}>
+            <table className="w-full text-sm" style={{ minWidth: 400 }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Estado</th>
@@ -563,6 +564,7 @@ function QuotesTab({ data, topClients, currency }) {
                 })}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
       )}
@@ -571,7 +573,7 @@ function QuotesTab({ data, topClients, currency }) {
       {reasons.length > 0 && (
         <div>
           <SectionTitle>Causas de rechazo ({rejectedCount} rechazados)</SectionTitle>
-          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
+          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden', overflowX: 'auto' }}>
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
@@ -601,8 +603,8 @@ function QuotesTab({ data, topClients, currency }) {
       {monthlyWithData.length > 0 && (
         <div>
           <SectionTitle>Evolución mensual — últimos 12 meses</SectionTitle>
-          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
-            <div style={{ padding: 20, borderBottom: `1px solid ${C.linea}` }}>
+          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'clip' }}>
+            <div style={{ padding: 16, borderBottom: `1px solid ${C.linea}` }}>
               <div className="flex items-center gap-4 text-xs text-fg-muted mb-4">
                 <span className="flex items-center gap-1">
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: C.crema, display: 'inline-block' }} />Aprobados
@@ -617,7 +619,8 @@ function QuotesTab({ data, topClients, currency }) {
                 colorA="rgba(242,237,227,0.7)" colorB="rgba(140,135,126,0.3)"
               />
             </div>
-            <table className="w-full text-sm">
+            <div style={{ overflowX: 'auto' }}>
+            <table className="w-full text-sm" style={{ minWidth: 480 }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">Mes</th>
@@ -648,6 +651,7 @@ function QuotesTab({ data, topClients, currency }) {
                 })}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
       )}
@@ -656,8 +660,8 @@ function QuotesTab({ data, topClients, currency }) {
       {data?.expiringSoon?.length > 0 && (
         <div>
           <SectionTitle>Próximos a vencer (7 días)</SectionTitle>
-          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
-            <table className="w-full text-sm">
+          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden', overflowX: 'auto' }}>
+            <table className="w-full text-sm" style={{ minWidth: 480 }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">#</th>
@@ -689,7 +693,7 @@ function QuotesTab({ data, topClients, currency }) {
       {topClients?.length > 0 && (
         <div>
           <SectionTitle>Top clientes por volumen aprobado</SectionTitle>
-          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
+          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden', overflowX: 'auto' }}>
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
@@ -767,7 +771,7 @@ function ProjectsTab({ data }) {
 
       <div>
         <SectionTitle>Detalle por estado</SectionTitle>
-        <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
+        <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden', overflowX: 'auto' }}>
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
@@ -801,7 +805,7 @@ function ProjectsTab({ data }) {
       {data?.upcomingProjects?.length > 0 && (
         <div>
           <SectionTitle>Proyectos próximos a vencer</SectionTitle>
-          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
+          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden', overflowX: 'auto' }}>
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
@@ -856,7 +860,7 @@ function StockTab({ summary, outOfStock, lowStock }) {
       {(summary?.productsByType || summary?.valueByType) && (
         <div>
           <SectionTitle>Por tipo de inventario</SectionTitle>
-          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
+          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden', overflowX: 'auto' }}>
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
@@ -892,8 +896,8 @@ function StockTab({ summary, outOfStock, lowStock }) {
       {outOfStock?.length > 0 && (
         <div>
           <SectionTitle>Productos sin stock</SectionTitle>
-          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
-            <table className="w-full text-sm">
+          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden', overflowX: 'auto' }}>
+            <table className="w-full text-sm" style={{ minWidth: 440 }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">SKU</th>
@@ -922,8 +926,8 @@ function StockTab({ summary, outOfStock, lowStock }) {
       {lowStock?.length > 0 && (
         <div>
           <SectionTitle>Productos con stock bajo</SectionTitle>
-          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
-            <table className="w-full text-sm">
+          <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden', overflowX: 'auto' }}>
+            <table className="w-full text-sm" style={{ minWidth: 440 }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${C.linea}`, background: C.s3 }}>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wide">SKU</th>
@@ -1052,18 +1056,13 @@ export default function ReportsPage() {
     <div style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* Header */}
-      <div style={{ padding: '20px 24px 16px', borderBottom: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ borderBottom: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <ReporteIcon style={{ width: 18, height: 18, color: C.arena }} />
-          <div>
-            <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0, lineHeight: 1.2 }}>Reportes</h2>
-            <p style={{ fontSize: 12, color: C.piedra, margin: 0, marginTop: 2, textTransform: 'capitalize' }}>
-              {activeTab?.label} · {periodLabel(period.year, period.month)}
-            </p>
-          </div>
+          <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Reportes</h2>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           {/* Selector de período */}
           <div style={{ display: 'flex', alignItems: 'center', height: 34, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', padding: '0 4px' }}>
             <button onClick={prevMonth}
@@ -1072,7 +1071,7 @@ export default function ReportsPage() {
               onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
               <ChevronLeftSvg style={{ width: 14, height: 14 }} />
             </button>
-            <span style={{ fontSize: 13, fontWeight: 500, color: C.crema, textTransform: 'capitalize', padding: '0 8px', minWidth: 130, textAlign: 'center' }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: C.crema, textTransform: 'capitalize', padding: '0 6px', minWidth: 115, textAlign: 'center' }}>
               {periodLabel(period.year, period.month)}
             </span>
             <button onClick={nextMonth} disabled={isCurrentMonth}
@@ -1084,7 +1083,7 @@ export default function ReportsPage() {
           </div>
 
           <button onClick={handleDownload} disabled={isLoadingAll}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 16px', borderRadius: '0 9px 9px 0', border: 'none', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, cursor: isLoadingAll ? 'not-allowed' : 'pointer', opacity: isLoadingAll ? 0.5 : 1 }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', borderRadius: '0 9px 9px 0', border: 'none', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, cursor: isLoadingAll ? 'not-allowed' : 'pointer', opacity: isLoadingAll ? 0.5 : 1 }}>
             <DownloadSvg style={{ width: 14, height: 14 }} />
             {isLoadingAll ? 'Preparando…' : 'Reporte Completo'}
           </button>
@@ -1092,12 +1091,12 @@ export default function ReportsPage() {
       </div>
 
       {/* Tabs */}
-      <div style={{ padding: '14px 24px 0', display: 'flex', gap: 4, borderBottom: `1px solid ${C.linea}` }}>
+      <div className="px-4 md:px-6" style={{ paddingTop: 14, display: 'flex', gap: 4, borderBottom: `1px solid ${C.linea}`, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         {TABS.map(t => {
           const isActive = tab === t.key
           return (
             <button key={t.key} onClick={() => setTab(t.key)}
-              style={{ padding: '7px 16px', borderRadius: '0 8px 0 0', fontSize: 13, fontWeight: 500, background: isActive ? C.s2 : 'transparent', color: isActive ? C.crema : C.piedra, borderTop: isActive ? `1px solid ${C.linea}` : '1px solid transparent', borderLeft: isActive ? `1px solid ${C.linea}` : '1px solid transparent', borderRight: isActive ? `1px solid ${C.linea}` : '1px solid transparent', borderBottom: 'none', cursor: 'pointer', transition: 'color 0.15s' }}
+              style={{ padding: '7px 16px', flexShrink: 0, borderRadius: '0 8px 0 0', fontSize: 13, fontWeight: 500, background: isActive ? C.s2 : 'transparent', color: isActive ? C.crema : C.piedra, borderTop: isActive ? `1px solid ${C.linea}` : '1px solid transparent', borderLeft: isActive ? `1px solid ${C.linea}` : '1px solid transparent', borderRight: isActive ? `1px solid ${C.linea}` : '1px solid transparent', borderBottom: 'none', cursor: 'pointer', transition: 'color 0.15s', whiteSpace: 'nowrap' }}
               onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = C.crema }}
               onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = C.piedra }}>
               {t.label}
@@ -1107,7 +1106,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Contenido */}
-      <div style={{ padding: '24px 24px 40px' }}>
+      <div className="px-4 pt-6 pb-10 md:px-6">
         {tab === 'finances' && <FinancesTab data={finData}     year={period.year} month={period.month} currency={currency} />}
         {tab === 'quotes'   && <QuotesTab   data={quotesData}  topClients={topClients} currency={currency} />}
         {tab === 'projects' && <ProjectsTab data={projectsData} />}
