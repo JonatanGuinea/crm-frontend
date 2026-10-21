@@ -61,54 +61,52 @@ export default function FinancesLayout() {
     <div style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* ── Header ── */}
-      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ display: 'flex', flexDirection: 'column', gap: 16, borderBottom: `1px solid ${C.linea}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <CobroIcon style={{ width: 18, height: 18, color: C.arena }} />
-            <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Finanzas</h2>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            {isResumen && (
-              <div style={{ display: 'flex', alignItems: 'center', height: 34, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0', padding: '0 4px' }}>
-                <button onClick={prevMonth}
-                  style={{ padding: 5, borderRadius: '0 6px 6px 0', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, display: 'flex' }}
-                  onMouseEnter={e => e.currentTarget.style.color = C.crema}
-                  onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
-                  <ChevronLSvg style={{ width: 14, height: 14 }} />
-                </button>
-                <span style={{ fontSize: 13, fontWeight: 500, color: C.crema, textTransform: 'capitalize', padding: '0 8px', minWidth: 112, textAlign: 'center' }}>
-                  {monthLabel}
-                </span>
-                <button onClick={nextMonth} disabled={isCurrentMonth}
-                  style={{ padding: 5, borderRadius: '0 6px 6px 0', background: 'none', border: 'none', cursor: isCurrentMonth ? 'not-allowed' : 'pointer', color: isCurrentMonth ? C.linea : C.piedra, display: 'flex' }}
-                  onMouseEnter={e => { if (!isCurrentMonth) e.currentTarget.style.color = C.crema }}
-                  onMouseLeave={e => { if (!isCurrentMonth) e.currentTarget.style.color = C.piedra }}>
-                  <ChevronRSvg style={{ width: 14, height: 14 }} />
-                </button>
-              </div>
-            )}
-            <button onClick={() => setMovementModal('income')} disabled={accounts.length === 0}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: accounts.length === 0 ? 'not-allowed' : 'pointer', opacity: accounts.length === 0 ? 0.4 : 1 }}>
-              <MasIcon style={{ width: 12, height: 12 }} />
-              Nuevo movimiento
-            </button>
-          </div>
+      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', borderBottom: `1px solid ${C.linea}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <CobroIcon style={{ width: 18, height: 18, color: C.arena }} />
+          <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Finanzas</h2>
         </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          {isResumen && (
+            <div style={{ display: 'flex', alignItems: 'center', height: 34, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0', padding: '0 4px' }}>
+              <button onClick={prevMonth}
+                style={{ padding: 5, borderRadius: '0 6px 6px 0', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, display: 'flex' }}
+                onMouseEnter={e => e.currentTarget.style.color = C.crema}
+                onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
+                <ChevronLSvg style={{ width: 14, height: 14 }} />
+              </button>
+              <span style={{ fontSize: 13, fontWeight: 500, color: C.crema, textTransform: 'capitalize', padding: '0 8px', minWidth: 112, textAlign: 'center' }}>
+                {monthLabel}
+              </span>
+              <button onClick={nextMonth} disabled={isCurrentMonth}
+                style={{ padding: 5, borderRadius: '0 6px 6px 0', background: 'none', border: 'none', cursor: isCurrentMonth ? 'not-allowed' : 'pointer', color: isCurrentMonth ? C.linea : C.piedra, display: 'flex' }}
+                onMouseEnter={e => { if (!isCurrentMonth) e.currentTarget.style.color = C.crema }}
+                onMouseLeave={e => { if (!isCurrentMonth) e.currentTarget.style.color = C.piedra }}>
+                <ChevronRSvg style={{ width: 14, height: 14 }} />
+              </button>
+            </div>
+          )}
+          <button onClick={() => setMovementModal('income')} disabled={accounts.length === 0}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: accounts.length === 0 ? 'not-allowed' : 'pointer', opacity: accounts.length === 0 ? 0.4 : 1 }}>
+            <MasIcon style={{ width: 12, height: 12 }} />
+            Nuevo movimiento
+          </button>
+        </div>
+      </div>
 
-        {/* ── Tabs ── */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-          {NAV_TABS.map(tab => {
-            const active = isActive(tab)
-            return (
-              <Link key={tab.to} to={tab.to}
-                style={{ padding: '6px 14px', borderRadius: '0 8px 8px 0', border: `1px solid ${active ? C.linea : C.linea}`, background: active ? C.crema : 'transparent', color: active ? C.bg : C.piedra, fontSize: 13, fontWeight: active ? 600 : 500, textDecoration: 'none', whiteSpace: 'nowrap' }}
-                onMouseEnter={e => { if (!active) { e.currentTarget.style.color = C.crema; e.currentTarget.style.borderColor = C.arena } }}
-                onMouseLeave={e => { if (!active) { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea } }}>
-                {tab.label}
-              </Link>
-            )
-          })}
-        </div>
+      {/* ── Tabs ── */}
+      <div className="px-4 md:px-6" style={{ paddingTop: 14, display: 'flex', gap: 4, borderBottom: `1px solid ${C.linea}`, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        {NAV_TABS.map(tab => {
+          const active = isActive(tab)
+          return (
+            <Link key={tab.to} to={tab.to}
+              style={{ padding: '7px 16px', flexShrink: 0, borderRadius: '0 8px 0 0', fontSize: 13, fontWeight: 500, background: active ? C.s2 : 'transparent', color: active ? C.crema : C.piedra, borderTop: active ? `1px solid ${C.linea}` : '1px solid transparent', borderLeft: active ? `1px solid ${C.linea}` : '1px solid transparent', borderRight: active ? `1px solid ${C.linea}` : '1px solid transparent', borderBottom: 'none', textDecoration: 'none', whiteSpace: 'nowrap', transition: 'color 0.15s' }}
+              onMouseEnter={e => { if (!active) e.currentTarget.style.color = C.crema }}
+              onMouseLeave={e => { if (!active) e.currentTarget.style.color = C.piedra }}>
+              {tab.label}
+            </Link>
+          )
+        })}
       </div>
 
       {/* ── Section title ── */}
