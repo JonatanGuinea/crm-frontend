@@ -13,12 +13,6 @@ const STATUS_LABELS = {
   cancelled:   'Cancelado',
 }
 
-const STATUS_BADGE = {
-  pending:     { bg: 'rgba(226,182,99,0.12)',  color: C.warn },
-  approved:    { bg: 'rgba(142,177,222,0.12)', color: C.info },
-  in_progress: { bg: 'rgba(242,237,227,0.08)', color: C.crema },
-  cancelled:   { bg: 'rgba(140,135,126,0.12)', color: C.piedra },
-}
 
 const STATUS_BAR = {
   pending:     { bg: C.warn,    color: C.bg,    fw: 600 },
@@ -30,7 +24,6 @@ const STATUS_BAR = {
 const DAY_W = 44
 const ROW_H = 56
 const HEADER_H = 72
-const LEFT_W = 208
 
 function ChevronLSvg() {
   return (
@@ -43,20 +36,6 @@ function ChevronRSvg() {
   return (
     <svg style={{ display: 'block', width: 16, height: 16 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="9 18 15 12 9 6" />
-    </svg>
-  )
-}
-function CalSvg({ style }) {
-  return (
-    <svg style={{ display: 'block', width: 13, height: 13, ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-    </svg>
-  )
-}
-function WarnSvg({ style }) {
-  return (
-    <svg style={{ display: 'block', width: 11, height: 11, ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
     </svg>
   )
 }
@@ -83,6 +62,15 @@ export default function ProjectCalendarPage() {
   const [monthOffset, setMonthOffset] = useState(0)
   const [statusFilter, setStatusFilter] = useState('')
   const scrollRef = useRef(null)
+  const [windowW, setWindowW] = useState(() => typeof window !== 'undefined' ? window.innerWidth : 1024)
+
+  useEffect(() => {
+    const h = () => setWindowW(window.innerWidth)
+    window.addEventListener('resize', h)
+    return () => window.removeEventListener('resize', h)
+  }, [])
+
+  const LEFT_W = windowW < 768 ? 130 : 208
 
   const rangeStart = useMemo(
     () => new Date(today.getFullYear(), today.getMonth() + monthOffset, 1),
@@ -112,9 +100,9 @@ export default function ProjectCalendarPage() {
     const el = scrollRef.current
     if (!el || todayIdx < 0) return
     const containerW  = el.getBoundingClientRect().width
-    const todayCenter = todayIdx * DAY_W + DAY_W / 2
+    const todayCenter = LEFT_W + todayIdx * DAY_W + DAY_W / 2
     el.scrollLeft = Math.max(0, todayCenter - containerW / 2)
-  }, [todayIdx])
+  }, [todayIdx, LEFT_W])
 
   useEffect(() => {
     const raf = requestAnimationFrame(centerToday)
@@ -167,7 +155,7 @@ export default function ProjectCalendarPage() {
               <option key={v} value={v}>{l}</option>
             ))}
           </select>
-          <div className="hidden md:flex" style={{ alignItems: 'center', gap: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <button onClick={() => setMonthOffset(m => m - 1)}
               style={{ padding: 6, border: `1px solid ${C.linea}`, borderRadius: '0 8px 8px 0', background: 'none', color: C.piedra, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = C.arena; e.currentTarget.style.color = C.arena }}
@@ -212,108 +200,32 @@ export default function ProjectCalendarPage() {
         <p style={{ fontSize: 13, color: C.piedra }}>Cargando...</p>
       ) : (
         <>
-          {/* Mobile: lista */}
-          <div className="md:hidden flex flex-col" style={{ gap: 10 }}>
-            {projects.length === 0 ? (
-              <p style={{ fontSize: 13, color: C.piedra, textAlign: 'center', padding: '40px 0' }}>Sin proyectos para mostrar</p>
-            ) : (
-              [...projects]
-                .sort((a, b) => {
-                  const ea = parseDate(a.endDate), eb = parseDate(b.endDate)
-                  if (!ea && !eb) return 0
-                  if (!ea) return 1
-                  if (!eb) return -1
-                  return ea - eb
-                })
-                .map(p => {
-                  const start = parseDate(p.startDate)
-                  const end   = parseDate(p.endDate)
-                  const isOD  = end && end < today && p.status !== 'finished' && p.status !== 'cancelled'
-                  const daysLeft = end ? Math.ceil((end - today) / 86400000) : null
-                  let progress = null
-                  if (start && end && end > start) {
-                    const total = end - start
-                    const elapsed = Math.min(Math.max(today - start, 0), total)
-                    progress = Math.round((elapsed / total) * 100)
-                  }
-                  const fmtDate = d => d ? d.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'
-                  const badge = isOD
-                    ? { bg: 'rgba(229,131,115,0.12)', color: C.err }
-                    : STATUS_BADGE[p.status] || { bg: 'transparent', color: C.piedra }
-
-                  return (
-                    <Link key={p.id} to={`/projects/${p.id}`}
-                      style={{ display: 'block', background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', padding: 16, textDecoration: 'none' }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
-                        <div style={{ minWidth: 0 }}>
-                          <p style={{ fontWeight: 600, color: C.crema, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.3 }}>{p.title}</p>
-                          {p.client?.name && (
-                            <p style={{ fontSize: 11, color: C.piedra, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 2 }}>{p.client.name}</p>
-                          )}
-                        </div>
-                        <span style={{ flexShrink: 0, fontSize: 10.5, fontWeight: 600, padding: '2px 8px', borderRadius: '0 6px 6px 0', background: badge.bg, color: badge.color }}>
-                          {isOD ? 'Vencido' : STATUS_LABELS[p.status]}
-                        </span>
-                      </div>
-
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: C.piedra, marginBottom: 10 }}>
-                        <CalSvg />
-                        <span>{fmtDate(start)}</span>
-                        <span>→</span>
-                        <span style={{ color: isOD ? C.err : C.piedra, fontWeight: isOD ? 500 : 400 }}>{fmtDate(end)}</span>
-                      </div>
-
-                      {progress !== null && (
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                            <span style={{ fontSize: 11, color: C.piedra }}>Progreso del período</span>
-                            {daysLeft !== null && (
-                              <span style={{ fontSize: 11, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4, color: isOD ? C.err : daysLeft <= 7 ? C.warn : C.piedra }}>
-                                {isOD
-                                  ? <><WarnSvg />Vencido hace {Math.abs(daysLeft)}d</>
-                                  : daysLeft === 0 ? 'Vence hoy'
-                                  : `${daysLeft}d restantes`}
-                              </span>
-                            )}
-                          </div>
-                          <div style={{ height: 5, borderRadius: 999, background: C.s3, overflow: 'hidden' }}>
-                            <div style={{ height: '100%', borderRadius: 999, width: `${Math.min(progress, 100)}%`, background: isOD ? C.err : C.crema, transition: 'width 0.5s' }} />
-                          </div>
-                        </div>
-                      )}
-                    </Link>
-                  )
-                })
-            )}
-          </div>
-
-          {/* Desktop: Gantt */}
-          <div className="hidden md:block" style={{ background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
+          {/* Gantt */}
+          <div style={{ background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', overflow: 'hidden' }}>
             <div ref={scrollRef} style={{ overflowX: 'auto' }}>
               <div style={{ display: 'flex', minWidth: LEFT_W + totalW }}>
 
                 {/* Sticky left */}
                 <div style={{ position: 'sticky', left: 0, zIndex: 20, background: C.s1, borderRight: `1px solid ${C.linea}`, flexShrink: 0, width: LEFT_W }}>
-                  <div style={{ height: HEADER_H, background: C.s2, borderBottom: `1px solid ${C.linea}`, display: 'flex', alignItems: 'flex-end', padding: '0 16px 8px' }}>
+                  <div style={{ height: HEADER_H, background: C.s2, borderBottom: `1px solid ${C.linea}`, display: 'flex', alignItems: 'flex-end', padding: windowW < 768 ? '0 10px 8px' : '0 16px 8px' }}>
                     <span style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: C.arena }}>Proyecto</span>
                   </div>
                   {projects.length === 0 ? (
-                    <div style={{ height: ROW_H, display: 'flex', alignItems: 'center', padding: '0 16px', fontSize: 13, color: C.piedra }}>
+                    <div style={{ height: ROW_H, display: 'flex', alignItems: 'center', padding: windowW < 768 ? '0 10px' : '0 16px', fontSize: 13, color: C.piedra }}>
                       Sin proyectos
                     </div>
                   ) : (
                     projects.map(p => (
-                      <div key={p.id} style={{ height: ROW_H, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 16px', borderBottom: `1px solid ${C.linea}` }}>
+                      <div key={p.id} style={{ height: ROW_H, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: windowW < 768 ? '0 10px' : '0 16px', borderBottom: `1px solid ${C.linea}` }}>
                         <Link to={`/projects/${p.id}`}
-                          style={{ fontSize: 13, fontWeight: 500, color: C.crema, textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.3 }}
+                          style={{ fontSize: windowW < 768 ? 11 : 13, fontWeight: 500, color: C.crema, textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.3 }}
                           onMouseEnter={e => e.currentTarget.style.color = C.arena}
                           onMouseLeave={e => e.currentTarget.style.color = C.crema}
                         >
                           {p.title}
                         </Link>
                         {p.client?.name && (
-                          <p style={{ fontSize: 11, color: C.piedra, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>{p.client.name}</p>
+                          <p style={{ fontSize: 10, color: C.piedra, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>{p.client.name}</p>
                         )}
                       </div>
                     ))
