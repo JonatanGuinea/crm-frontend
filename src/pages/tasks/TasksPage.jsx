@@ -459,7 +459,7 @@ function DraggableCard({ task, justCompleted, ...props }) {
       animate={{ opacity: isDragging ? 0.2 : 1, scale: isDragging ? 0.98 : 1, y: 0 }}
       exit={reduced ? {} : { opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
       transition={{ layout: spring, opacity: { duration: 0.14 }, scale: { duration: 0.14 }, y: spring }}
-      style={{ cursor: isDragging ? 'grabbing' : 'grab', touchAction: 'none', willChange: 'transform, opacity' }}
+      style={{ cursor: isDragging ? 'grabbing' : 'grab', willChange: 'transform, opacity' }}
       {...attributes}
       {...listeners}
     >
