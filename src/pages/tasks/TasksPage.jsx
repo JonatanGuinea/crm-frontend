@@ -424,7 +424,7 @@ function TaskCard({ task, onEdit, onDelete, onMove, isOverlay = false, justCompl
 
       {/* Botón acción — solo mobile/tablet */}
       {!isOverlay && !isCancelled && canNext && (
-        <div className="md:hidden" style={{ borderTop: `1px solid ${C.linea}`, paddingTop: 10, marginTop: 2 }}>
+        <div className="lg:hidden" style={{ borderTop: `1px solid ${C.linea}`, paddingTop: 10, marginTop: 2 }}>
           <button
             onClick={() => onMove(task, NEXT_STATUS[task.status])}
             style={{
@@ -664,8 +664,11 @@ export default function TasksPage() {
           *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
         @media (max-width: 767px) {
-          .kanban-col { flex: 0 0 calc(85vw - 32px); scroll-snap-align: start; }
+          .kanban-col { flex: 0 0 calc(85vw - 32px); scroll-snap-align: start; max-height: calc(100dvh - 200px); overflow-y: auto; }
           .kanban-scroll { overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .kanban-col { max-height: calc(100dvh - 210px); overflow-y: auto; }
         }
       `}</style>
 
