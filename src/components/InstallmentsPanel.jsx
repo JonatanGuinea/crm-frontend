@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getInstallments, createInstallments, createCustomInstallments, payInstallment, deleteInstallments } from '../api/installments'
 import DatePicker from './DatePicker'
 import { useConfirm } from './ConfirmDialog'
+import { fmt } from '../utils/fmt'
 
 // ── tokens ────────────────────────────────────────────────────────────────────
 
@@ -42,7 +43,6 @@ const inputStyle = {
 
 // ── utils ─────────────────────────────────────────────────────────────────────
 
-const fmtNum  = (n) => Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const fmtDate = (d) => new Date(String(d).slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR')
 
 // ── icons ─────────────────────────────────────────────────────────────────────
@@ -379,7 +379,7 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
                     <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: C.piedra, pointerEvents: 'none' }}>%</span>
                   </div>
                   {parseFloat(dpPercent) > 0 && total > 0 && (
-                    <p style={{ fontSize: 11, color: C.piedra, marginTop: 4 }}>= {currency} {fmtNum(effectiveDp)}</p>
+                    <p style={{ fontSize: 11, color: C.piedra, marginTop: 4 }}>= {fmt(effectiveDp, currency)}</p>
                   )}
                 </div>
               )}
@@ -392,7 +392,7 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
 
           {effectiveDp > 0 && effectiveDp < total && (
             <p style={{ fontSize: 11, color: C.piedra }}>
-              Saldo restante: <span style={{ fontWeight: 600, color: C.crema, fontFamily: CIFRAS }}>{currency} {fmtNum(total - effectiveDp)}</span>
+              Saldo restante: <span style={{ fontWeight: 600, color: C.crema, fontFamily: CIFRAS }}>{fmt(total - effectiveDp, currency)}</span>
             </p>
           )}
 
@@ -503,7 +503,7 @@ export default function InstallmentsPanel({ entityType, entityId, entityStatus, 
                     <span style={{ fontSize: 13, fontWeight: 500, color: accent }}>Cuota {inst.number}</span>
                   </div>
                   <span style={{ fontSize: 13, fontWeight: 600, color: accent, fontFamily: CIFRAS, flexShrink: 0 }}>
-                    {currency} {fmtNum(inst.amount)}
+                    {fmt(inst.amount, currency)}
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 6, paddingLeft: 23 }}>

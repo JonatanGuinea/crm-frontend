@@ -6,8 +6,8 @@ import { useToast } from '../../components/Toast'
 
 const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
 const CIFRAS = "'DanteUP Cifras', Geist, sans-serif"
-const fmt    = (n) => Number(n ?? 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-const fmtKPI = (n) => Number(n ?? 0).toLocaleString('es-AR', { maximumFractionDigits: 0 })
+const fmt    = (n) => Number(n ?? 0).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+const fmtKPI = fmt
 
 // ── inline SVGs ────────────────────────────────────────────────────────────────
 

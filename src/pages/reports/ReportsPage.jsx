@@ -8,19 +8,12 @@ import { getTopClients } from '../../api/clients'
 import { getOrganizations } from '../../api/organizations'
 import { useAuth } from '../../context/AuthContext'
 import { ReporteIcon, CobroIcon, RecorridoIcon, RecorridoDownIcon, PresupuestoIcon, CarpetaIcon, StockIcon } from '../../components/DuIcons'
+import { fmt } from '../../utils/fmt'
 import { generateFullReportPDF } from '../../utils/generateReport'
 
 const C      = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
 const CIFRAS = "'DanteUP Cifras', Geist, sans-serif"
 
-const fmt = (n, currency = 'USD') => {
-  const num = Number(n ?? 0)
-  return `${currency} ${num.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
-const fmtK = (n, currency = 'USD') => {
-  const num = Number(n ?? 0)
-  return `${currency} ${num.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
-}
 
 function WarnSvg({ style }) {
   return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
@@ -281,17 +274,17 @@ function FinancesTab({ data, year, month, currency }) {
         <SectionTitle>Resumen ejecutivo — {periodLabel(year, month)}</SectionTitle>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <KpiCard Icon={CobroIcon} iconBg={C.s2} iconColor={C.piedra}
-            label="Saldo inicial (estimado)" value={fmtK(estimatedInitial, currency)} />
+            label="Saldo inicial (estimado)" value={fmt(estimatedInitial, currency)} />
           <KpiCard Icon={CobroIcon} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
-            label="Saldo final en caja" value={fmtK(totalBalance, currency)} />
+            label="Saldo final en caja" value={fmt(totalBalance, currency)} />
           <KpiCard Icon={CobroIcon}
             iconBg={netMonth >= 0 ? 'rgba(125,190,147,0.12)' : 'rgba(229,131,115,0.12)'}
             iconColor={netMonth >= 0 ? C.ok : C.err}
-            label="Resultado del mes" value={fmtK(netMonth, currency)} />
+            label="Resultado del mes" value={fmt(netMonth, currency)} />
           <KpiCard Icon={RecorridoIcon} iconBg="rgba(125,190,147,0.12)" iconColor={C.ok}
-            label="Ingresos confirmados" value={fmtK(incomeMonth, currency)} />
+            label="Ingresos confirmados" value={fmt(incomeMonth, currency)} />
           <KpiCard Icon={RecorridoDownIcon} iconBg="rgba(229,131,115,0.12)" iconColor={C.err}
-            label="Egresos confirmados" value={fmtK(expenseMonth, currency)} />
+            label="Egresos confirmados" value={fmt(expenseMonth, currency)} />
           <KpiCard Icon={RecorridoIcon} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
             label="Margen operativo" value={operatingMargin !== null ? `${operatingMargin}%` : '—'} />
           <KpiCard Icon={CobroIcon} iconBg="rgba(142,177,222,0.12)" iconColor={C.info}
@@ -308,15 +301,15 @@ function FinancesTab({ data, year, month, currency }) {
         <SectionTitle>Liquidez y proyecciones</SectionTitle>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <KpiCard Icon={RecorridoIcon} iconBg="rgba(125,190,147,0.12)" iconColor={C.ok}
-            label="A cobrar (pendiente)" value={fmtK(pendingIncome, currency)} />
+            label="A cobrar (pendiente)" value={fmt(pendingIncome, currency)} />
           <KpiCard Icon={RecorridoDownIcon} iconBg="rgba(229,131,115,0.12)" iconColor={C.err}
-            label="A pagar (pendiente)" value={fmtK(pendingExpense, currency)} />
+            label="A pagar (pendiente)" value={fmt(pendingExpense, currency)} />
           <KpiCard Icon={CobroIcon}
             iconBg={resultadoPendiente >= 0 ? 'rgba(125,190,147,0.12)' : 'rgba(229,131,115,0.12)'}
             iconColor={resultadoPendiente >= 0 ? C.ok : C.err}
-            label="Resultado pendiente" value={fmtK(resultadoPendiente, currency)} />
+            label="Resultado pendiente" value={fmt(resultadoPendiente, currency)} />
           <KpiCard Icon={CobroIcon} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
-            label="Saldo proyectado" value={fmtK(saldoProyectado, currency)} />
+            label="Saldo proyectado" value={fmt(saldoProyectado, currency)} />
           <KpiCard Icon={ClockSvg} iconBg="rgba(142,177,222,0.12)" iconColor={C.info}
             label="Cash runway" value={cashRunway !== null ? `${cashRunway} meses` : '∞'} />
           <KpiCard Icon={RecorridoIcon} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
@@ -333,13 +326,13 @@ function FinancesTab({ data, year, month, currency }) {
           <KpiCard Icon={RecorridoDownIcon} iconBg="rgba(229,131,115,0.12)" iconColor={C.err}
             label="Egresos — cantidad" value={`${expenseCount} movimientos`} />
           <KpiCard Icon={CobroIcon} iconBg={C.s2} iconColor={C.piedra}
-            label="Ticket promedio ingreso" value={fmtK(ticketIngreso, currency)} />
+            label="Ticket promedio ingreso" value={fmt(ticketIngreso, currency)} />
           <KpiCard Icon={CobroIcon} iconBg={C.s2} iconColor={C.piedra}
-            label="Ticket promedio egreso" value={fmtK(ticketEgreso, currency)} />
+            label="Ticket promedio egreso" value={fmt(ticketEgreso, currency)} />
           <KpiCard Icon={RecorridoIcon} iconBg="rgba(125,190,147,0.12)" iconColor={C.ok}
-            label="Mayor ingreso del mes" value={fmtK(mayorIngreso, currency)} />
+            label="Mayor ingreso del mes" value={fmt(mayorIngreso, currency)} />
           <KpiCard Icon={RecorridoDownIcon} iconBg="rgba(229,131,115,0.12)" iconColor={C.err}
-            label="Mayor egreso del mes" value={fmtK(mayorEgreso, currency)} />
+            label="Mayor egreso del mes" value={fmt(mayorEgreso, currency)} />
         </div>
       </div>
 
@@ -498,7 +491,7 @@ function QuotesTab({ data, topClients, currency }) {
           <KpiCard Icon={PresupuestoIcon} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
             label="Total emitidos" value={`${totalCount} presupuestos`} />
           <KpiCard Icon={CobroIcon} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
-            label="Monto total" value={fmtK(totalValue, currency)} />
+            label="Monto total" value={fmt(totalValue, currency)} />
           <KpiCard Icon={RecorridoIcon} iconBg="rgba(125,190,147,0.12)" iconColor={C.ok}
             label="Tasa de aprobación" value={approvalRate !== null ? `${approvalRate}%` : '—'}
             sub="enviados → aprobados" />

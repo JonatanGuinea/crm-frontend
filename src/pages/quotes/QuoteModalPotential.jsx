@@ -11,6 +11,7 @@ import { useToast } from '../../components/Toast'
 import { useAuth } from '../../context/AuthContext'
 import { MasIcon } from '../../components/DuIcons'
 import { imgUrl } from '../../utils/imgUrl.js'
+import { fmt } from '../../utils/fmt'
 const EMPTY_ITEM = { description: '', quantity: 1, unitPrice: 0, amount: 0 }
 const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', err: '#E58373' }
 
@@ -465,7 +466,7 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
               <div>
                 <label className={labelCls}>Ítems *</label>
                 <div className="border border-line rounded-lg p-3 bg-raised">
-                  <LineItemsEditor items={items} onChange={setItems} products={productsData ?? []} />
+                  <LineItemsEditor items={items} onChange={setItems} products={productsData ?? []} currency={quote.currency} />
                 </div>
               </div>
 
@@ -502,26 +503,26 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
               <div className="bg-raised rounded-lg p-3 text-sm space-y-1 text-right">
                 <div className="text-fg-soft">
                   Subtotal: <span className="text-fg font-medium">
-                    ${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {fmt(subtotal, quote.currency)}
                   </span>
                 </div>
                 {discountAmt > 0 && (
                   <div className="text-fg-soft">
                     Descuento{discountMode === 'percent' ? ` (${discountValue}%)` : ''}:
                     <span className="font-medium ml-1" style={{ color: C.ok }}>
-                      -${discountAmt.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      -{fmt(discountAmt, quote.currency)}
                     </span>
                   </div>
                 )}
                 {quote.taxRate > 0 && (
                   <div className="text-fg-soft">
                     IVA ({quote.taxRate}%): <span className="text-fg font-medium">
-                      ${taxAmount.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {fmt(taxAmount, quote.currency)}
                     </span>
                   </div>
                 )}
                 <div className="text-base font-semibold text-fg">
-                  Total {quote.currency}: ${total.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  Total: {fmt(total, quote.currency)}
                 </div>
               </div>
 
@@ -794,7 +795,7 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
                         </div>
                         {parseFloat(downPaymentPercent) > 0 && total > 0 && (
                           <p className="text-xs text-fg-muted mt-1">
-                            = {quote.currency} {effectiveDownPayment.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            = {fmt(effectiveDownPayment, quote.currency)}
                           </p>
                         )}
                       </div>
@@ -813,7 +814,7 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
                 {effectiveDownPayment > 0 && effectiveDownPayment < total && (
                   <p className="text-xs text-fg-muted">
                     Saldo restante: <span className="font-semibold text-fg">
-                      {quote.currency} {(total - effectiveDownPayment).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {fmt(total - effectiveDownPayment, quote.currency)}
                     </span>
                   </p>
                 )}

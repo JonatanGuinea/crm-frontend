@@ -47,7 +47,7 @@ function StarFillSvg({ style }) {
 
 const ACCOUNT_TYPE_ICONS  = { cash: WalletSvg, bank: BankSvg, virtual: PhoneSvg }
 const ACCOUNT_TYPE_LABELS = { cash: 'Efectivo', bank: 'Cuenta bancaria', virtual: 'Billetera virtual' }
-const fmt = (n) => Number(n ?? 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+const fmt = (n) => Number(n ?? 0).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
 
 function AccountModal({ account, currency, onClose, onSaved }) {
   const toast  = useToast()

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { fmt } from '../utils/fmt'
 
-export default function LineItemsEditor({ items, onChange, products = [] }) {
+export default function LineItemsEditor({ items, onChange, products = [], currency = 'ARS' }) {
   const [openInfo, setOpenInfo] = useState(null) // { idx, el }
   const [dropdownPos, setDropdownPos] = useState(null) // { top, left, width }
 
@@ -122,7 +123,7 @@ export default function LineItemsEditor({ items, onChange, products = [] }) {
             </div>
             <div className="flex items-center justify-between pt-0.5">
               <span className="text-xs font-semibold text-fg">
-                = ${(parseFloat(item.amount) || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                = {fmt(item.amount, currency)}
               </span>
               {items.length > 1 && (
                 <button type="button" onClick={() => remove(i)}
@@ -175,7 +176,7 @@ export default function LineItemsEditor({ items, onChange, products = [] }) {
                 />
               </td>
               <td className="py-1.5 text-right text-fg font-medium">
-                ${(parseFloat(item.amount) || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {fmt(item.amount, currency)}
               </td>
               <td className="py-1.5 pl-2">
                 {items.length > 1 && (
@@ -194,7 +195,7 @@ export default function LineItemsEditor({ items, onChange, products = [] }) {
 
       <div className="mt-3 text-right text-sm text-fg-soft">
         Subtotal: <span className="font-medium text-fg">
-          ${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          {fmt(subtotal, currency)}
         </span>
       </div>
 

@@ -16,7 +16,7 @@ const INK2  = '#3A3A3A'
 const INK3  = '#6B6B6B'
 const LINE  = '#E5E7EB'
 
-const fmt     = (n) => Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+const fmt     = (n, dec = 0) => Number(n).toLocaleString('es-AR', { minimumFractionDigits: dec, maximumFractionDigits: dec })
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('es-AR') : '—'
 
 const inputSt = {
@@ -116,6 +116,7 @@ export default function QuotePublicPage() {
     : Number(quote.discountValue) || 0
   const taxAmount   = (subtotal - discountAmt) * (Number(quote.taxRate) / 100)
   const sym         = quote.currency === 'USD' ? 'US$' : '$'
+  const dec         = quote.currency === 'USD' ? 2 : 0
   const org         = quote.organization || {}
   const numStr      = String(quote.number).padStart(3, '0')
   const orgLogoUrl  = imgUrl(org.logo)
@@ -229,7 +230,7 @@ export default function QuotePublicPage() {
             <div style={{ background: BG, borderRadius: 6, padding: '14px 16px', marginBottom: 12 }}>
               <p style={{ fontSize: 10, fontWeight: 700, color: INK3, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>Presupuesto</p>
               <p style={{ fontSize: 14, fontWeight: 600, color: INK, marginBottom: 2 }}>{quote.title}</p>
-              <p style={{ fontSize: 12, color: INK2 }}>#{numStr} · {sym}{fmt(total)}</p>
+              <p style={{ fontSize: 12, color: INK2 }}>#{numStr} · {sym}{fmt(total, dec)}</p>
             </div>
             {isPotential && clientForm.name && (
               <div style={{ background: BG, borderRadius: 6, padding: '14px 16px', marginBottom: 12 }}>
@@ -334,8 +335,8 @@ export default function QuotePublicPage() {
                       <p style={{ fontWeight: 500, color: INK }}>{item.description}</p>
                     </td>
                     <td style={{ padding: '13px 12px', textAlign: 'right', color: INK2, fontFamily: MONO, verticalAlign: 'top', whiteSpace: 'nowrap' }}>{Number(item.quantity)}</td>
-                    <td style={{ padding: '13px 12px', textAlign: 'right', color: INK2, fontFamily: MONO, verticalAlign: 'top', whiteSpace: 'nowrap' }}>{sym} {fmt(item.unitPrice)}</td>
-                    <td style={{ padding: '13px 0', textAlign: 'right', fontWeight: 600, color: INK, fontFamily: MONO, verticalAlign: 'top', whiteSpace: 'nowrap' }}>{sym} {fmt(item.amount)}</td>
+                    <td style={{ padding: '13px 12px', textAlign: 'right', color: INK2, fontFamily: MONO, verticalAlign: 'top', whiteSpace: 'nowrap' }}>{sym} {fmt(item.unitPrice, dec)}</td>
+                    <td style={{ padding: '13px 0', textAlign: 'right', fontWeight: 600, color: INK, fontFamily: MONO, verticalAlign: 'top', whiteSpace: 'nowrap' }}>{sym} {fmt(item.amount, dec)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -349,26 +350,26 @@ export default function QuotePublicPage() {
                 {subtotal !== total && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13, color: INK2 }}>
                     <span>Subtotal</span>
-                    <span style={{ fontFamily: MONO }}>{sym} {fmt(subtotal)}</span>
+                    <span style={{ fontFamily: MONO }}>{sym} {fmt(subtotal, dec)}</span>
                   </div>
                 )}
                 {discountAmt > 0 && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13, color: INK2 }}>
                     <span>Descuento{quote.discountType === 'percent' ? ` ${quote.discountValue}%` : ''}</span>
-                    <span style={{ fontFamily: MONO }}>– {sym} {fmt(discountAmt)}</span>
+                    <span style={{ fontFamily: MONO }}>– {sym} {fmt(discountAmt, dec)}</span>
                   </div>
                 )}
                 {quote.taxRate > 0 && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13, color: INK2 }}>
                     <span>IVA {quote.taxRate}%</span>
-                    <span style={{ fontFamily: MONO }}>{sym} {fmt(taxAmount)}</span>
+                    <span style={{ fontFamily: MONO }}>{sym} {fmt(taxAmount, dec)}</span>
                   </div>
                 )}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, gap: 16 }}>
                   <span style={{ fontSize: 13, fontWeight: 600, color: INK }}>Total</span>
                   <div style={{ background: INK, borderRadius: 4, padding: isMobile ? '9px 14px' : '10px 18px', display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: isMobile ? 18 : 22, fontWeight: 200, lineHeight: 1 }}>[</span>
-                    <span style={{ color: '#fff', fontFamily: CIFRAS, fontSize: isMobile ? 18 : 22, fontWeight: 700, lineHeight: 1 }}>{sym}{fmt(total)}</span>
+                    <span style={{ color: '#fff', fontFamily: CIFRAS, fontSize: isMobile ? 18 : 22, fontWeight: 700, lineHeight: 1 }}>{sym}{fmt(total, dec)}</span>
                     <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: isMobile ? 18 : 22, fontWeight: 200, lineHeight: 1 }}>]</span>
                   </div>
                 </div>
@@ -399,7 +400,7 @@ export default function QuotePublicPage() {
                           <td style={{ padding: '10px 12px 10px 0' }}>
                             <span style={{ padding: '2px 8px', borderRadius: 99, fontSize: 11, fontWeight: 600, background: st.bg, color: st.color, whiteSpace: 'nowrap' }}>{st.label}</span>
                           </td>
-                          <td style={{ padding: '10px 0', textAlign: 'right', fontWeight: 600, color: INK, fontFamily: MONO, whiteSpace: 'nowrap' }}>{sym} {fmt(inst.amount)}</td>
+                          <td style={{ padding: '10px 0', textAlign: 'right', fontWeight: 600, color: INK, fontFamily: MONO, whiteSpace: 'nowrap' }}>{sym} {fmt(inst.amount, dec)}</td>
                         </tr>
                       )
                     })}

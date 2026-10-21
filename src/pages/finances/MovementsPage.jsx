@@ -76,7 +76,7 @@ function amountColor(m) {
   return (m.type === 'income' || m.type === 'transfer_in') ? C.ok : C.err
 }
 
-const fmt = (n) => Number(n ?? 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+const fmt = (n) => Number(n ?? 0).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
 const isOverdue = (m) => m.status === 'pending' && m.date?.slice(0, 10) < new Date().toISOString().slice(0, 10)
 
 function periodLabel(year, month) {
