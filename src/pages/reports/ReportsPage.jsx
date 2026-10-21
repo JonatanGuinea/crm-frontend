@@ -1097,7 +1097,7 @@ export default function ReportsPage() {
           const isActive = tab === t.key
           return (
             <button key={t.key} onClick={() => setTab(t.key)}
-              style={{ padding: '7px 16px', borderRadius: '0 8px 0 0', fontSize: 13, fontWeight: 500, background: isActive ? C.s2 : 'transparent', color: isActive ? C.crema : C.piedra, border: isActive ? `1px solid ${C.linea}` : '1px solid transparent', borderBottom: 'none', cursor: 'pointer', transition: 'color 0.15s' }}
+              style={{ padding: '7px 16px', borderRadius: '0 8px 0 0', fontSize: 13, fontWeight: 500, background: isActive ? C.s2 : 'transparent', color: isActive ? C.crema : C.piedra, borderTop: isActive ? `1px solid ${C.linea}` : '1px solid transparent', borderLeft: isActive ? `1px solid ${C.linea}` : '1px solid transparent', borderRight: isActive ? `1px solid ${C.linea}` : '1px solid transparent', borderBottom: 'none', cursor: 'pointer', transition: 'color 0.15s' }}
               onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = C.crema }}
               onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = C.piedra }}>
               {t.label}
