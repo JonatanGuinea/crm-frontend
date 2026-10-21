@@ -663,7 +663,7 @@ export default function TasksPage() {
       `}</style>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <TasksSvg style={{ width: 18, height: 18, color: C.arena }} />
           <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Tareas</h2>
@@ -691,7 +691,7 @@ export default function TasksPage() {
       {tab === 'board' && (
         <>
           {/* Mobile: botón Filtros */}
-          <div className="md:hidden" style={{ marginBottom: 10 }}>
+          <div className="md:hidden">
             <button onClick={() => setFiltersOpen(v => !v)}
               style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 12px', borderRadius: '0 9px 9px 0', border: `1px solid ${activeFilterCount > 0 ? C.arena : C.linea}`, background: activeFilterCount > 0 ? 'rgba(242,237,227,0.06)' : 'none', color: activeFilterCount > 0 ? C.crema : C.piedra, fontSize: 12, cursor: 'pointer' }}
             >
