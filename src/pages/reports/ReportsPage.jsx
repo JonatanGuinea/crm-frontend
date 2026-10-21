@@ -178,13 +178,13 @@ function IncomeExpensesBars({ months, currency }) {
 
 function KpiCard({ Icon, iconBg, iconColor, label, value, sub }) {
   return (
-    <div style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', padding: '14px 16px', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-      <div style={{ padding: 8, borderRadius: '0 8px 8px 0', background: iconBg, flexShrink: 0 }}>
+    <div className="report-kpi" style={{ background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', padding: '14px 16px', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+      <div className="report-kpi-icon" style={{ padding: 8, borderRadius: '0 8px 8px 0', background: iconBg, flexShrink: 0 }}>
         <Icon style={{ width: 15, height: 15, color: iconColor, display: 'block' }} />
       </div>
       <div style={{ minWidth: 0 }}>
-        <p style={{ fontSize: 10, fontWeight: 500, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>{label}</p>
-        <p style={{ fontSize: 15, fontWeight: 700, color: C.crema, margin: '3px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={typeof value === 'string' ? value : undefined}>{value}</p>
+        <p style={{ fontSize: 10, fontWeight: 500, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0, lineHeight: 1.4 }}>{label}</p>
+        <p style={{ fontSize: 14, fontWeight: 700, color: C.crema, margin: '3px 0 0', lineHeight: 1.3, wordBreak: 'break-word' }} title={typeof value === 'string' ? value : undefined}>{value}</p>
         {sub && <p style={{ fontSize: 11, color: C.piedra, margin: '2px 0 0' }}>{sub}</p>}
       </div>
     </div>
@@ -1054,6 +1054,13 @@ export default function ReportsPage() {
 
   return (
     <div style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
+      <style>{`
+        @media (max-width: 767px) {
+          .report-kpi { padding: 10px !important; gap: 8px !important; }
+          .report-kpi-icon { padding: 6px !important; }
+          .report-kpi-icon svg { width: 13px !important; height: 13px !important; }
+        }
+      `}</style>
 
       {/* Header */}
       <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ borderBottom: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
