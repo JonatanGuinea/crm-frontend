@@ -468,12 +468,13 @@ function DraggableCard({ task, justCompleted, ...props }) {
 
 // ── DroppableColumn ───────────────────────────────────────────────────────────
 
-function DroppableColumn({ col, header, footer, children }) {
+function DroppableColumn({ col, header, footer, children, className }) {
   const { setNodeRef, isOver } = useDroppable({ id: col.id })
 
   return (
     <div
       ref={setNodeRef}
+      className={className}
       style={{
         display: 'flex', flexDirection: 'column', gap: 12,
         borderRadius: '0 16px 16px 0', padding: 12,
@@ -660,6 +661,10 @@ export default function TasksPage() {
         @media (prefers-reduced-motion: reduce) {
           *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
+        @media (max-width: 767px) {
+          .kanban-col { min-width: calc(85vw - 32px); flex-shrink: 0; scroll-snap-align: start; }
+          .kanban-scroll { overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
+        }
       `}</style>
 
       {/* Header */}
@@ -780,7 +785,7 @@ export default function TasksPage() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 0', fontSize: 13, color: C.piedra }}>Cargando...</div>
           ) : (
             <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+              <div className="kanban-scroll flex md:grid md:grid-cols-3 md:items-start" style={{ gap: 12 }}>
                 {COLUMNS.map(col => {
                   const colTasks  = byStatus(col.id)
                   const isDoneCol = col.id === 'done'
@@ -828,7 +833,7 @@ export default function TasksPage() {
                   ) : null
 
                   return (
-                    <DroppableColumn key={col.id} col={col} header={header} footer={footer}>
+                    <DroppableColumn key={col.id} col={col} header={header} footer={footer} className="kanban-col">
                       {(!isDoneCol || !doneCollapsed) && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minHeight: 60 }}>
                           {colTasks.length === 0 ? (
