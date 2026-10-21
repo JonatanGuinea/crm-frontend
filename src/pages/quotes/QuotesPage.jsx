@@ -9,7 +9,7 @@ import QuoteModalPotential from './QuoteModalPotential'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import DatePicker from '../../components/DatePicker'
-import { PresupuestoIcon, MasIcon } from '../../components/DuIcons'
+import { PresupuestoIcon, ClienteIcon, MasIcon } from '../../components/DuIcons'
 import { fmt } from '../../utils/fmt'
 
 const C = {
