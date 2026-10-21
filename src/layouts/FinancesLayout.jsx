@@ -61,12 +61,12 @@ export default function FinancesLayout() {
     <div style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* ── Header ── */}
-      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', borderBottom: `1px solid ${C.linea}` }}>
+      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: `1px solid ${C.linea}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <CobroIcon style={{ width: 18, height: 18, color: C.arena }} />
           <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Finanzas</h2>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {isResumen && (
             <div style={{ display: 'flex', alignItems: 'center', height: 34, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0', padding: '0 4px' }}>
               <button onClick={prevMonth}
@@ -75,7 +75,7 @@ export default function FinancesLayout() {
                 onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
                 <ChevronLSvg style={{ width: 14, height: 14 }} />
               </button>
-              <span style={{ fontSize: 13, fontWeight: 500, color: C.crema, textTransform: 'capitalize', padding: '0 8px', minWidth: 112, textAlign: 'center' }}>
+              <span className="hidden sm:inline" style={{ fontSize: 13, fontWeight: 500, color: C.crema, textTransform: 'capitalize', padding: '0 8px', minWidth: 112, textAlign: 'center' }}>
                 {monthLabel}
               </span>
               <button onClick={nextMonth} disabled={isCurrentMonth}
@@ -89,7 +89,7 @@ export default function FinancesLayout() {
           <button onClick={() => setMovementModal('income')} disabled={accounts.length === 0}
             style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: accounts.length === 0 ? 'not-allowed' : 'pointer', opacity: accounts.length === 0 ? 0.4 : 1 }}>
             <MasIcon style={{ width: 12, height: 12 }} />
-            Nuevo movimiento
+            <span className="hidden sm:inline">Nuevo movimiento</span>
           </button>
         </div>
       </div>
