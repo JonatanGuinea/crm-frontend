@@ -152,30 +152,32 @@ export default function ProductsPage() {
   const tdStyle = { padding: '12px 14px' }
 
   return (
-    <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 24 }} className="md:p-8">
+    <div style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: `1px solid ${C.linea}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <TagSvg style={{ width: 18, height: 18, color: C.arena }} />
           <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Productos</h2>
-          <span style={{ fontSize: 12, color: C.piedra }}>{products.length} producto{products.length !== 1 ? 's' : ''}{hasFilters ? ' (filtrados)' : ''}</span>
+          <span className="hidden sm:inline" style={{ fontSize: 12, color: C.piedra }}>{products.length} producto{products.length !== 1 ? 's' : ''}{hasFilters ? ' (filtrados)' : ''}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <button onClick={() => setShowCategories(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderRadius: '0 10px 10px 0', border: `1px solid ${C.linea}`, background: C.s2, color: C.arena, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', borderRadius: '0 9px 9px 0', border: `1px solid ${C.linea}`, background: C.s2, color: C.arena, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
             onMouseEnter={e => { e.currentTarget.style.color = C.crema; e.currentTarget.style.borderColor = C.arena }}
             onMouseLeave={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.linea }}>
-            <TagSvg style={{ width: 16, height: 16 }} />
-            Categorías
+            <TagSvg style={{ width: 14, height: 14 }} />
+            <span className="hidden sm:inline">Categorías</span>
           </button>
           <button onClick={() => setModal({ type: 'product' })}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: '0 10px 10px 0', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
-            <PlusSvg style={{ width: 16, height: 16 }} />
-            Nuevo
+            style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', borderRadius: '0 9px 9px 0', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+            <PlusSvg style={{ width: 14, height: 14 }} />
+            <span className="hidden sm:inline">Nuevo</span>
           </button>
         </div>
       </div>
+
+      <div className="px-4 pt-6 pb-10 md:px-6" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
       {/* Filtros */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -412,6 +414,8 @@ export default function ProductsPage() {
           </div>
         </>
       )}
+
+      </div>
 
       {/* Modals */}
       {modal?.type === 'product' && (

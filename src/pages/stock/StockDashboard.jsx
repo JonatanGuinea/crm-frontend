@@ -105,15 +105,15 @@ export default function StockDashboard() {
   })
 
   return (
-    <div className="px-4 pt-5 pb-10 md:px-6 md:pt-7" style={{ display: 'flex', flexDirection: 'column', gap: 24, fontFamily: 'Geist, system-ui, sans-serif' }}>
+    <div style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: `1px solid ${C.linea}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <StockIcon style={{ width: 18, height: 18, color: C.arena }} />
           <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Stock</h2>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <button onClick={() => setTab(tab === 'history' ? 'dashboard' : 'history')}
             style={{ height: 34, padding: '0 14px', background: tab === 'history' ? C.s2 : 'none', border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', color: C.piedra, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'color 0.12s, border-color 0.12s' }}
             onMouseEnter={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.arena }}
@@ -124,15 +124,17 @@ export default function StockDashboard() {
           <button onClick={() => setModal('in')}
             style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', borderRadius: '0 9px 9px 0', background: 'rgba(125,190,147,0.12)', color: C.ok, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
             <ArrowDownSvg style={{ width: 14, height: 14 }} />
-            Ingreso
+            <span className="hidden sm:inline">Ingreso</span>
           </button>
           <button onClick={() => setModal('out')}
             style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', borderRadius: '0 9px 9px 0', background: 'rgba(229,131,115,0.12)', color: C.err, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
             <ArrowUpSvg style={{ width: 14, height: 14 }} />
-            Egreso
+            <span className="hidden sm:inline">Egreso</span>
           </button>
         </div>
       </div>
+
+      <div className="px-4 pt-6 pb-10 md:px-6" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
       {/* ── Historial ── */}
       {tab === 'history' && (
@@ -302,6 +304,8 @@ export default function StockDashboard() {
           )}
         </>
       )}
+
+      </div>
 
       {modal && (
         <StockMovementModal mode={modal} onClose={() => setModal(null)} />

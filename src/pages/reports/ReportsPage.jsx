@@ -45,6 +45,10 @@ function periodLabel(year, month) {
   return new Date(year, month - 1, 1)
     .toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
 }
+function shortPeriodLabel(year, month) {
+  return new Date(year, month - 1, 1)
+    .toLocaleDateString('es-AR', { month: 'short', year: '2-digit' })
+}
 
 function monthKey(year, month) {
   return `${year}-${String(month).padStart(2, '0')}`
@@ -1034,13 +1038,13 @@ export default function ReportsPage() {
   return (
     <div style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
       {/* Header */}
-      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ borderBottom: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ borderBottom: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <ReporteIcon style={{ width: 18, height: 18, color: C.arena }} />
           <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Reportes</h2>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {/* Selector de período */}
           <div style={{ display: 'flex', alignItems: 'center', height: 34, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', padding: '0 4px' }}>
             <button onClick={prevMonth}
@@ -1049,7 +1053,10 @@ export default function ReportsPage() {
               onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
               <ChevronLeftSvg style={{ width: 14, height: 14 }} />
             </button>
-            <span style={{ fontSize: 13, fontWeight: 500, color: C.crema, textTransform: 'capitalize', padding: '0 6px', minWidth: 115, textAlign: 'center' }}>
+            <span className="sm:hidden" style={{ fontSize: 13, fontWeight: 500, color: C.crema, textTransform: 'capitalize', padding: '0 6px', minWidth: 56, textAlign: 'center' }}>
+              {shortPeriodLabel(period.year, period.month)}
+            </span>
+            <span className="hidden sm:inline" style={{ fontSize: 13, fontWeight: 500, color: C.crema, textTransform: 'capitalize', padding: '0 6px', minWidth: 115, textAlign: 'center' }}>
               {periodLabel(period.year, period.month)}
             </span>
             <button onClick={nextMonth} disabled={isCurrentMonth}
@@ -1063,7 +1070,7 @@ export default function ReportsPage() {
           <button onClick={handleDownload} disabled={isLoadingAll}
             style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', borderRadius: '0 9px 9px 0', border: 'none', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, cursor: isLoadingAll ? 'not-allowed' : 'pointer', opacity: isLoadingAll ? 0.5 : 1 }}>
             <DownloadSvg style={{ width: 14, height: 14 }} />
-            {isLoadingAll ? 'Preparando…' : 'Reporte Completo'}
+            <span className="hidden sm:inline">{isLoadingAll ? 'Preparando…' : 'Reporte Completo'}</span>
           </button>
         </div>
       </div>

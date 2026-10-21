@@ -40,6 +40,8 @@ export default function FinancesLayout() {
   const isCurrentMonth = selectedMonth.year === _now.getFullYear() && selectedMonth.month === _now.getMonth() + 1
   const monthLabel = new Date(selectedMonth.year, selectedMonth.month - 1, 1)
     .toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
+  const shortMonthLabel = new Date(selectedMonth.year, selectedMonth.month - 1, 1)
+    .toLocaleDateString('es-AR', { month: 'short', year: '2-digit' })
 
   const { data: accounts = [] } = useQuery({
     queryKey: ['cash-accounts'],
@@ -75,6 +77,9 @@ export default function FinancesLayout() {
                 onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
                 <ChevronLSvg style={{ width: 14, height: 14 }} />
               </button>
+              <span className="sm:hidden" style={{ fontSize: 13, fontWeight: 500, color: C.crema, textTransform: 'capitalize', padding: '0 6px', minWidth: 56, textAlign: 'center' }}>
+                {shortMonthLabel}
+              </span>
               <span className="hidden sm:inline" style={{ fontSize: 13, fontWeight: 500, color: C.crema, textTransform: 'capitalize', padding: '0 8px', minWidth: 112, textAlign: 'center' }}>
                 {monthLabel}
               </span>
