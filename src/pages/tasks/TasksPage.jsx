@@ -436,7 +436,7 @@ function TaskCard({ task, onEdit, onDelete, onMove, isOverlay = false, justCompl
             }}
           >
             <ChevronRSvg style={{ width: 11, height: 11 }} />
-            {task.status === 'todo' ? 'Pasar a En proceso' : 'Completar'}
+            {task.status === 'todo' ? 'Iniciar tarea' : 'Completar'}
           </button>
         </div>
       )}
@@ -664,7 +664,7 @@ export default function TasksPage() {
           *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
         @media (max-width: 767px) {
-          .kanban-col { min-width: calc(85vw - 32px); flex-shrink: 0; scroll-snap-align: start; }
+          .kanban-col { flex: 0 0 calc(85vw - 32px); scroll-snap-align: start; }
           .kanban-scroll { overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
         }
       `}</style>
