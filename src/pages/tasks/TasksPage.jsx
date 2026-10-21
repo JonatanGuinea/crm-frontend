@@ -430,8 +430,8 @@ function TaskCard({ task, onEdit, onDelete, onMove, isOverlay = false, justCompl
             style={{
               width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
               height: 32, borderRadius: '0 8px 8px 0', border: `1px solid ${C.linea}`,
-              background: task.status === 'in_progress' ? 'rgba(125,190,147,0.10)' : C.s3,
-              color: task.status === 'in_progress' ? C.ok : C.arena,
+              background: task.status === 'in_progress' ? 'rgba(226,182,99,0.10)' : C.s3,
+              color: task.status === 'in_progress' ? C.warn : C.arena,
               fontSize: 12, fontWeight: 600, cursor: 'pointer',
             }}
           >
