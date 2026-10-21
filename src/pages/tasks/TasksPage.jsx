@@ -664,14 +664,9 @@ export default function TasksPage() {
       {/* Header */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10, flexWrap: 'wrap' }}>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <TasksSvg style={{ width: 18, height: 18, color: C.arena }} />
-              <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Tareas</h2>
-            </div>
-            <p style={{ fontSize: 12, color: C.piedra, marginTop: 3 }}>
-              {filtered.length} tarea{filtered.length !== 1 ? 's' : ''}{hasFilters ? ' (filtradas)' : ' en total'}
-            </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <TasksSvg style={{ width: 18, height: 18, color: C.arena }} />
+            <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Tareas</h2>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, flexWrap: 'wrap' }}>
             <button

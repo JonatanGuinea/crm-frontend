@@ -100,57 +100,12 @@ export default function ClientsPage() {
     <div className="px-4 pt-5 pb-10 md:px-6 md:pt-7" style={{ width: '100%', fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* ── Header ──────────────────────────────────────────────── */}
-      {/* Fila 1 */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <ClienteIcon style={{ width: 18, height: 18, color: C.arena }} />
           <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Clientes</h2>
         </div>
-
-        {/* Tablet/Desktop sm+ */}
-        <div className="hidden sm:block">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button
-              onClick={() => setTab(tab === 'history' ? 'table' : 'history')}
-              style={{ height: CTRL_H, padding: '0 14px', background: tab === 'history' ? C.s2 : 'none', border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', color: C.piedra, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'color 0.12s, border-color 0.12s' }}
-              onMouseEnter={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.arena }}
-              onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}
-            >
-              {tab === 'history' ? 'Ver tabla' : 'Historial'}
-            </button>
-            {canWrite && (
-              <button
-                onClick={() => setModalOpen(true)}
-                style={{ display: 'flex', alignItems: 'center', gap: 7, height: CTRL_H, padding: '0 14px', background: C.crema, color: C.bg, border: 'none', borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.12s' }}
-                onMouseEnter={e => e.currentTarget.style.background = '#E8E3D9'}
-                onMouseLeave={e => e.currentTarget.style.background = C.crema}
-              >
-                <MasIcon style={{ width: 12, height: 12 }} />
-                Nuevo
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Mobile: solo + Nuevo */}
-        {canWrite && (
-          <div className="sm:hidden">
-            <button
-              onClick={() => setModalOpen(true)}
-              style={{ display: 'flex', alignItems: 'center', gap: 7, height: CTRL_H, padding: '0 14px', background: C.crema, color: C.bg, border: 'none', borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.12s' }}
-              onMouseEnter={e => e.currentTarget.style.background = '#E8E3D9'}
-              onMouseLeave={e => e.currentTarget.style.background = C.crema}
-            >
-              <MasIcon style={{ width: 12, height: 12 }} />
-              Nuevo
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Fila 2 mobile: TabSwitcher a la derecha */}
-      <div className="sm:hidden" style={{ marginBottom: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <button
             onClick={() => setTab(tab === 'history' ? 'table' : 'history')}
             style={{ height: CTRL_H, padding: '0 14px', background: tab === 'history' ? C.s2 : 'none', border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', color: C.piedra, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'color 0.12s, border-color 0.12s' }}
@@ -159,6 +114,17 @@ export default function ClientsPage() {
           >
             {tab === 'history' ? 'Ver tabla' : 'Historial'}
           </button>
+          {canWrite && (
+            <button
+              onClick={() => setModalOpen(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: 7, height: CTRL_H, padding: '0 14px', background: C.crema, color: C.bg, border: 'none', borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+              onMouseEnter={e => e.currentTarget.style.background = '#E8E3D9'}
+              onMouseLeave={e => e.currentTarget.style.background = C.crema}
+            >
+              <MasIcon style={{ width: 12, height: 12 }} />
+              Nuevo
+            </button>
+          )}
         </div>
       </div>
 

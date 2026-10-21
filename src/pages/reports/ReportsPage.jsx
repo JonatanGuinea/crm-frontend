@@ -1054,9 +1054,9 @@ export default function ReportsPage() {
       {/* Header */}
       <div style={{ padding: '20px 24px 16px', borderBottom: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <ReporteIcon style={{ width: 18, height: 18, color: C.crema }} />
+          <ReporteIcon style={{ width: 18, height: 18, color: C.arena }} />
           <div>
-            <h1 style={{ fontSize: 18, fontWeight: 700, color: C.crema, margin: 0, lineHeight: 1.2 }}>Reportes</h1>
+            <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0, lineHeight: 1.2 }}>Reportes</h2>
             <p style={{ fontSize: 12, color: C.piedra, margin: 0, marginTop: 2, textTransform: 'capitalize' }}>
               {activeTab?.label} · {periodLabel(period.year, period.month)}
             </p>

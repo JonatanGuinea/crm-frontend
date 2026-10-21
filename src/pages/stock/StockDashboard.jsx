@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getStockDashboard, getStockHistory } from '../../api/stock'
 import StockMovementModal from './StockMovementModal'
+import { StockIcon } from '../../components/DuIcons'
 
 const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
 const CIFRAS = "'DanteUP Cifras', Geist, sans-serif"
@@ -104,33 +105,30 @@ export default function StockDashboard() {
   })
 
   return (
-    <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 24 }} className="md:p-8">
+    <div className="px-4 pt-5 pb-10 md:px-6 md:pt-7" style={{ display: 'flex', flexDirection: 'column', gap: 24, fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <CubeSvg style={{ width: 18, height: 18, color: C.arena }} />
+          <StockIcon style={{ width: 18, height: 18, color: C.arena }} />
           <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Stock</h2>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', gap: 2, background: C.s2, borderRadius: '0 10px 10px 0', padding: 3 }}>
-            <button onClick={() => setTab('dashboard')}
-              style={{ padding: '6px 12px', borderRadius: '0 8px 8px 0', background: tab === 'dashboard' ? C.s3 : 'transparent', color: tab === 'dashboard' ? C.crema : C.piedra, fontSize: 13, fontWeight: 500, border: 'none', cursor: 'pointer' }}>
-              Inventario
-            </button>
-            <button onClick={() => setTab('history')}
-              style={{ padding: '6px 12px', borderRadius: '0 8px 8px 0', background: tab === 'history' ? C.s3 : 'transparent', color: tab === 'history' ? C.crema : C.piedra, fontSize: 13, fontWeight: 500, border: 'none', cursor: 'pointer' }}>
-              Historial
-            </button>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+          <button onClick={() => setTab(tab === 'history' ? 'dashboard' : 'history')}
+            style={{ height: 34, padding: '0 14px', background: tab === 'history' ? C.s2 : 'none', border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', color: C.piedra, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'color 0.12s, border-color 0.12s' }}
+            onMouseEnter={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.arena }}
+            onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}
+          >
+            {tab === 'history' ? 'Ver inventario' : 'Historial'}
+          </button>
           <button onClick={() => setModal('in')}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: '0 10px 10px 0', background: 'rgba(125,190,147,0.12)', color: C.ok, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
-            <ArrowDownSvg style={{ width: 16, height: 16 }} />
+            style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', borderRadius: '0 9px 9px 0', background: 'rgba(125,190,147,0.12)', color: C.ok, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+            <ArrowDownSvg style={{ width: 14, height: 14 }} />
             Ingreso
           </button>
           <button onClick={() => setModal('out')}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: '0 10px 10px 0', background: 'rgba(229,131,115,0.12)', color: C.err, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
-            <ArrowUpSvg style={{ width: 16, height: 16 }} />
+            style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', borderRadius: '0 9px 9px 0', background: 'rgba(229,131,115,0.12)', color: C.err, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+            <ArrowUpSvg style={{ width: 14, height: 14 }} />
             Egreso
           </button>
         </div>

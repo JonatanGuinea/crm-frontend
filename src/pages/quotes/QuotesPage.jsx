@@ -9,7 +9,7 @@ import QuoteModalPotential from './QuoteModalPotential'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import DatePicker from '../../components/DatePicker'
-import { ClienteIcon, MasIcon } from '../../components/DuIcons'
+import { PresupuestoIcon, MasIcon } from '../../components/DuIcons'
 import { fmt } from '../../utils/fmt'
 
 const C = {
@@ -415,10 +415,10 @@ export default function QuotesPage() {
     <div className="px-4 pt-5 pb-10 md:px-6 md:pt-7" style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
-        <div>
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: C.crema, margin: '0 0 4px', letterSpacing: '-0.02em' }}>Presupuestos</h2>
-          <p style={{ fontSize: 12.5, color: C.piedra, margin: 0 }}>Del borrador a la firma del cliente. Al aprobarse, el proyecto se crea solo.</p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <PresupuestoIcon style={{ width: 18, height: 18, color: C.arena }} />
+          <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Presupuestos</h2>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
           <button

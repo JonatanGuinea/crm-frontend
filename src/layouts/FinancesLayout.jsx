@@ -65,13 +65,10 @@ export default function FinancesLayout() {
 
       {/* ── Header ── */}
       <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ display: 'flex', flexDirection: 'column', gap: 16, borderBottom: `1px solid ${C.linea}` }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <CobroIcon style={{ width: 18, height: 18, color: C.crema }} />
-              <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Finanzas</h2>
-            </div>
-            <p style={{ fontSize: 12, color: C.piedra, marginTop: 4 }}>Cuentas, movimientos, lo que hay que cobrar y lo que hay que pagar.</p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <CobroIcon style={{ width: 18, height: 18, color: C.arena }} />
+            <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Finanzas</h2>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             {isResumen && (
