@@ -440,7 +440,7 @@ export default function QuotesPage() {
               onClick={openNewMenu}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
-                height: 36, padding: '0 16px',
+                height: 34, padding: '0 14px',
                 background: C.crema, color: C.bg,
                 border: 'none', borderRadius: '0 9px 9px 0',
                 fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
@@ -448,7 +448,8 @@ export default function QuotesPage() {
               onMouseEnter={e => e.currentTarget.style.background = '#E8E3D9'}
               onMouseLeave={e => e.currentTarget.style.background = C.crema}
             >
-              + Nuevo presupuesto
+              <MasIcon style={{ width: 12, height: 12 }} />
+               Nuevo
             </button>
           )}
         </div>

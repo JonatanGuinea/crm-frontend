@@ -117,7 +117,7 @@ export default function ClientsPage() {
           {canWrite && (
             <button
               onClick={() => setModalOpen(true)}
-              style={{ display: 'flex', alignItems: 'center', gap: 7, height: CTRL_H, padding: '0 14px', background: C.crema, color: C.bg, border: 'none', borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, height: CTRL_H, padding: '0 14px', background: C.crema, color: C.bg, border: 'none', borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
               onMouseEnter={e => e.currentTarget.style.background = '#E8E3D9'}
               onMouseLeave={e => e.currentTarget.style.background = C.crema}
             >

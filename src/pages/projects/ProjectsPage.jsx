@@ -9,7 +9,7 @@ import QuoteModal from '../quotes/QuoteModal'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
-import { ProyectoIcon, CarpetaIcon } from '../../components/DuIcons'
+import { ProyectoIcon, CarpetaIcon, MasIcon } from '../../components/DuIcons'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 
 const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
@@ -281,9 +281,10 @@ export default function ProjectsPage() {
           </button>
           {canWrite && (
             <button onClick={() => { setEditing(null); setModalOpen(true) }}
-              style={{ height: 34, padding: '0 14px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}
             >
-              + Nuevo
+              <MasIcon style={{ width: 12, height: 12 }} />
+              Nuevo
             </button>
           )}
         </div>

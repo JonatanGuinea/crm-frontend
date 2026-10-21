@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getCashAccounts } from '../api/finances'
-import { CobroIcon } from '../components/DuIcons'
+import { CobroIcon, MasIcon } from '../components/DuIcons'
 import MovementModal from '../pages/finances/MovementModal'
 
 const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373' }
@@ -12,9 +12,6 @@ function ChevronLSvg({ style }) {
 }
 function ChevronRSvg({ style }) {
   return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
-}
-function PlusSvg({ style }) {
-  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
 }
 
 const NAV_TABS = [
@@ -91,8 +88,8 @@ export default function FinancesLayout() {
               </div>
             )}
             <button onClick={() => setMovementModal('income')} disabled={accounts.length === 0}
-              style={{ display: 'flex', alignItems: 'center', gap: 5, height: 34, padding: '0 14px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: accounts.length === 0 ? 'not-allowed' : 'pointer', opacity: accounts.length === 0 ? 0.4 : 1 }}>
-              <PlusSvg style={{ width: 13, height: 13 }} />
+              style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: accounts.length === 0 ? 'not-allowed' : 'pointer', opacity: accounts.length === 0 ? 0.4 : 1 }}>
+              <MasIcon style={{ width: 12, height: 12 }} />
               Nuevo movimiento
             </button>
           </div>
