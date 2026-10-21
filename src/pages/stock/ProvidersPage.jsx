@@ -216,7 +216,7 @@ export default function ProvidersPage() {
           <button onClick={() => setModal('new')}
             style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: '0 10px 10px 0', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
             <PlusSvg style={{ width: 16, height: 16 }} />
-            Nuevo proveedor
+            Nuevo
           </button>
         )}
       </div>
@@ -240,7 +240,7 @@ export default function ProvidersPage() {
           {!search && canWrite && (
             <button onClick={() => setModal('new')}
               style={{ fontSize: 14, color: C.arena, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
-              + Nuevo proveedor
+              + Nuevo
             </button>
           )}
         </div>

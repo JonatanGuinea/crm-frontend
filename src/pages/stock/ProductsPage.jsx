@@ -172,7 +172,7 @@ export default function ProductsPage() {
           <button onClick={() => setModal({ type: 'product' })}
             style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: '0 10px 10px 0', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
             <PlusSvg style={{ width: 16, height: 16 }} />
-            Nuevo producto
+            Nuevo
           </button>
         </div>
       </div>
