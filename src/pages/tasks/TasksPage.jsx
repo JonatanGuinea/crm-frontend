@@ -4,7 +4,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import {
   DndContext,
   DragOverlay,
-  PointerSensor,
+  MouseSensor,
   useSensor,
   useSensors,
   useDraggable,
@@ -422,19 +422,21 @@ function TaskCard({ task, onEdit, onDelete, onMove, isOverlay = false, justCompl
         </p>
       )}
 
-      {/* Botones movimiento — solo mobile */}
-      {!isOverlay && !isCancelled && (
-        <div className="flex items-center gap-1.5 pt-1 border-t border-line md:hidden">
-          <button disabled={!canPrev} onClick={() => canPrev && onMove(task, PREV_STATUS[task.status])}
-            style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: canPrev ? C.piedra : 'transparent', background: 'none', border: 'none', cursor: canPrev ? 'pointer' : 'default', padding: '2px 4px', borderRadius: '0 4px 4px 0' }}
+      {/* Botón acción — solo mobile/tablet */}
+      {!isOverlay && !isCancelled && canNext && (
+        <div className="md:hidden" style={{ borderTop: `1px solid ${C.linea}`, paddingTop: 10, marginTop: 2 }}>
+          <button
+            onClick={() => onMove(task, NEXT_STATUS[task.status])}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              height: 32, borderRadius: '0 8px 8px 0', border: `1px solid ${C.linea}`,
+              background: task.status === 'in_progress' ? 'rgba(125,190,147,0.10)' : C.s3,
+              color: task.status === 'in_progress' ? C.ok : C.arena,
+              fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            }}
           >
-            <ChevronRSvg style={{ width: 10, height: 10, transform: 'rotate(180deg)' }} /> Atrás
-          </button>
-          <div style={{ flex: 1 }} />
-          <button disabled={!canNext} onClick={() => canNext && onMove(task, NEXT_STATUS[task.status])}
-            style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: canNext ? C.piedra : 'transparent', background: 'none', border: 'none', cursor: canNext ? 'pointer' : 'default', padding: '2px 4px', borderRadius: '0 4px 4px 0' }}
-          >
-            Siguiente <ChevronRSvg style={{ width: 10, height: 10 }} />
+            <ChevronRSvg style={{ width: 11, height: 11 }} />
+            {task.status === 'todo' ? 'Pasar a En proceso' : 'Completar'}
           </button>
         </div>
       )}
@@ -513,7 +515,7 @@ export default function TasksPage() {
   const [justCompletedId, setJustCompletedId] = useState(null)
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
+    useSensor(MouseSensor, { activationConstraint: { distance: 6 } })
   )
 
   const { data: tasks = [], isLoading } = useQuery({
