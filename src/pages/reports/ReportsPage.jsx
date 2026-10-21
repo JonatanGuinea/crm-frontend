@@ -167,7 +167,7 @@ function KpiCard({ Icon, iconBg, iconColor, label, value, sub }) {
         </div>
         <p style={{ fontSize: 10, fontWeight: 600, color: C.piedra, textTransform: 'uppercase', letterSpacing: '0.07em', margin: 0, lineHeight: 1.4 }}>{label}</p>
       </div>
-      <p style={{ fontSize: 15, fontWeight: 700, color: C.crema, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.2 }}>{value}</p>
+      <p style={{ fontSize: 15, fontWeight: 500, color: C.crema, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.2 }}>{value}</p>
       {sub && <p style={{ fontSize: 11, color: C.piedra, margin: 0 }}>{sub}</p>}
     </div>
   )
