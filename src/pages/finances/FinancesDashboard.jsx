@@ -64,9 +64,9 @@ const tdStyle = { padding: '10px 14px', fontSize: 13 }
 
 function KpiCard({ label, value, sub, valueColor = C.crema }) {
   return (
-    <div style={{ background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
-      <p style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: C.piedra }}>{label}</p>
-      <p style={{ fontFamily: CIFRAS, fontSize: 34, fontWeight: 700, color: valueColor, lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</p>
+    <div className="p-3 md:p-5" style={{ background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
+      <p style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: C.piedra, lineHeight: 1.3 }}>{label}</p>
+      <p className="text-xl md:text-3xl lg:text-4xl" style={{ fontFamily: CIFRAS, fontWeight: 700, color: valueColor, lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</p>
       {sub && <p style={{ fontSize: 12, color: C.piedra, marginTop: 2 }}>{sub}</p>}
     </div>
   )
