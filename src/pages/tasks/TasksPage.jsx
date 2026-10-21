@@ -663,42 +663,26 @@ export default function TasksPage() {
       `}</style>
 
       {/* Header */}
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <TasksSvg style={{ width: 18, height: 18, color: C.arena }} />
-            <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Tareas</h2>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, flexWrap: 'wrap' }}>
-            <button
-              onClick={() => setTab(tab === 'history' ? 'board' : 'history')}
-              style={{ height: 34, padding: '0 14px', background: tab === 'history' ? C.s2 : 'none', border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', color: C.piedra, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'color 0.12s, border-color 0.12s' }}
-              onMouseEnter={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.arena }}
-              onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}
-            >
-              {tab === 'history' ? 'Ver tablero' : 'Historial'}
-            </button>
-            {tab === 'board' && (
-              <button onClick={() => setFiltersOpen(v => !v)}
-                className="md:hidden flex items-center"
-                style={{ gap: 6, height: 34, padding: '0 12px', borderRadius: '0 9px 9px 0', border: `1px solid ${activeFilterCount > 0 ? C.arena : C.linea}`, background: activeFilterCount > 0 ? 'rgba(242,237,227,0.06)' : 'none', color: activeFilterCount > 0 ? C.crema : C.piedra, fontSize: 12, cursor: 'pointer' }}
-              >
-                Filtros
-                {activeFilterCount > 0 && (
-                  <span style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: C.crema, color: C.bg, fontSize: 10, fontWeight: 700 }}>
-                    {activeFilterCount}
-                  </span>
-                )}
-                <ChevronDownSvg style={{ width: 12, height: 12, transform: filtersOpen ? 'rotate(180deg)' : 'none' }} />
-              </button>
-            )}
-            <button onClick={() => setModal({ defaultStatus: 'todo' })}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}
-            >
-              <MasIcon style={{ width: 12, height: 12 }} />
-              Nueva
-            </button>
-          </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <TasksSvg style={{ width: 18, height: 18, color: C.arena }} />
+          <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Tareas</h2>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <button
+            onClick={() => setTab(tab === 'history' ? 'board' : 'history')}
+            style={{ height: 34, padding: '0 14px', background: tab === 'history' ? C.s2 : 'none', border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', color: C.piedra, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'color 0.12s, border-color 0.12s' }}
+            onMouseEnter={e => { e.currentTarget.style.color = C.arena; e.currentTarget.style.borderColor = C.arena }}
+            onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}
+          >
+            {tab === 'history' ? 'Ver tablero' : 'Historial'}
+          </button>
+          <button onClick={() => setModal({ defaultStatus: 'todo' })}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}
+          >
+            <MasIcon style={{ width: 12, height: 12 }} />
+            Nueva
+          </button>
         </div>
       </div>
 
@@ -706,6 +690,21 @@ export default function TasksPage() {
 
       {tab === 'board' && (
         <>
+          {/* Mobile: botón Filtros */}
+          <div className="md:hidden" style={{ marginBottom: 10 }}>
+            <button onClick={() => setFiltersOpen(v => !v)}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 12px', borderRadius: '0 9px 9px 0', border: `1px solid ${activeFilterCount > 0 ? C.arena : C.linea}`, background: activeFilterCount > 0 ? 'rgba(242,237,227,0.06)' : 'none', color: activeFilterCount > 0 ? C.crema : C.piedra, fontSize: 12, cursor: 'pointer' }}
+            >
+              Filtros
+              {activeFilterCount > 0 && (
+                <span style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: C.crema, color: C.bg, fontSize: 10, fontWeight: 700 }}>
+                  {activeFilterCount}
+                </span>
+              )}
+              <ChevronDownSvg style={{ width: 12, height: 12, transform: filtersOpen ? 'rotate(180deg)' : 'none' }} />
+            </button>
+          </div>
+
           {/* Mobile: panel de filtros */}
           {filtersOpen && (
             <div className="md:hidden" style={{ padding: 12, borderRadius: '0 12px 12px 0', border: `1px solid ${C.linea}`, background: C.s2, display: 'flex', flexDirection: 'column', gap: 8 }}>
