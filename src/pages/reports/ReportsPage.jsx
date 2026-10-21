@@ -7,7 +7,7 @@ import { getStockDashboard, getProducts } from '../../api/stock'
 import { getTopClients } from '../../api/clients'
 import { getOrganizations } from '../../api/organizations'
 import { useAuth } from '../../context/AuthContext'
-import { ReporteIcon } from '../../components/DuIcons'
+import { ReporteIcon, CobroIcon, RecorridoIcon, RecorridoDownIcon, PresupuestoIcon, CarpetaIcon, StockIcon } from '../../components/DuIcons'
 import { generateFullReportPDF } from '../../utils/generateReport'
 
 const C      = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
@@ -18,24 +18,6 @@ const fmt = (n, currency = 'USD') => {
   return `${currency} ${num.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
-function BanknotesSvg({ style }) {
-  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /><circle cx="12" cy="14" r="2" /><path d="M6 14h.01M18 14h.01" /></svg>
-}
-function TrendUpSvg({ style }) {
-  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>
-}
-function TrendDownSvg({ style }) {
-  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6" /><polyline points="17 18 23 18 23 12" /></svg>
-}
-function DocSvg({ style }) {
-  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><line x1="10" y1="9" x2="8" y2="9" /></svg>
-}
-function FolderOpenSvg({ style }) {
-  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
-}
-function CubeSvg({ style }) {
-  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" /></svg>
-}
 function WarnSvg({ style }) {
   return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
 }
@@ -47,9 +29,6 @@ function CheckCircleSvg({ style }) {
 }
 function ClockSvg({ style }) {
   return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
-}
-function BankSvg({ style }) {
-  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="22" x2="21" y2="22" /><line x1="6" y1="18" x2="6" y2="11" /><line x1="10" y1="18" x2="10" y2="11" /><line x1="14" y1="18" x2="14" y2="11" /><line x1="18" y1="18" x2="18" y2="11" /><polygon points="12 2 20 7 4 7" /></svg>
 }
 function ChevronLeftSvg({ style }) {
   return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
@@ -297,25 +276,25 @@ function FinancesTab({ data, year, month, currency }) {
       <div>
         <SectionTitle>Resumen ejecutivo — {periodLabel(year, month)}</SectionTitle>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          <KpiCard Icon={BankSvg} iconBg={C.s2} iconColor={C.piedra}
+          <KpiCard Icon={CobroIcon} iconBg={C.s2} iconColor={C.piedra}
             label="Saldo inicial (estimado)" value={fmt(estimatedInitial, currency)} />
-          <KpiCard Icon={BankSvg} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
+          <KpiCard Icon={CobroIcon} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
             label="Saldo final en caja" value={fmt(totalBalance, currency)} />
-          <KpiCard Icon={BanknotesSvg}
+          <KpiCard Icon={CobroIcon}
             iconBg={netMonth >= 0 ? 'rgba(125,190,147,0.12)' : 'rgba(229,131,115,0.12)'}
             iconColor={netMonth >= 0 ? C.ok : C.err}
             label="Resultado del mes" value={fmt(netMonth, currency)} />
-          <KpiCard Icon={TrendUpSvg} iconBg="rgba(125,190,147,0.12)" iconColor={C.ok}
+          <KpiCard Icon={RecorridoIcon} iconBg="rgba(125,190,147,0.12)" iconColor={C.ok}
             label="Ingresos confirmados" value={fmt(incomeMonth, currency)} />
-          <KpiCard Icon={TrendDownSvg} iconBg="rgba(229,131,115,0.12)" iconColor={C.err}
+          <KpiCard Icon={RecorridoDownIcon} iconBg="rgba(229,131,115,0.12)" iconColor={C.err}
             label="Egresos confirmados" value={fmt(expenseMonth, currency)} />
-          <KpiCard Icon={TrendUpSvg} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
+          <KpiCard Icon={RecorridoIcon} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
             label="Margen operativo" value={operatingMargin !== null ? `${operatingMargin}%` : '—'} />
-          <KpiCard Icon={BankSvg} iconBg="rgba(142,177,222,0.12)" iconColor={C.info}
+          <KpiCard Icon={CobroIcon} iconBg="rgba(142,177,222,0.12)" iconColor={C.info}
             label="Ratio de cobertura" value={coverageRatio !== null ? `${coverageRatio}x` : '—'} />
           <KpiCard Icon={ClockSvg} iconBg={C.s2} iconColor={C.piedra}
             label="Movimientos del mes" value={`${incomeCount + expenseCount} ops`} />
-          <KpiCard Icon={TrendDownSvg} iconBg="rgba(226,182,99,0.12)" iconColor={C.warn}
+          <KpiCard Icon={RecorridoDownIcon} iconBg="rgba(226,182,99,0.12)" iconColor={C.warn}
             label="Categoría con mayor gasto" value={topCategory} />
         </div>
       </div>
@@ -324,19 +303,19 @@ function FinancesTab({ data, year, month, currency }) {
       <div>
         <SectionTitle>Liquidez y proyecciones</SectionTitle>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          <KpiCard Icon={TrendUpSvg} iconBg="rgba(125,190,147,0.12)" iconColor={C.ok}
+          <KpiCard Icon={RecorridoIcon} iconBg="rgba(125,190,147,0.12)" iconColor={C.ok}
             label="A cobrar (pendiente)" value={fmt(pendingIncome, currency)} />
-          <KpiCard Icon={TrendDownSvg} iconBg="rgba(229,131,115,0.12)" iconColor={C.err}
+          <KpiCard Icon={RecorridoDownIcon} iconBg="rgba(229,131,115,0.12)" iconColor={C.err}
             label="A pagar (pendiente)" value={fmt(pendingExpense, currency)} />
-          <KpiCard Icon={BanknotesSvg}
+          <KpiCard Icon={CobroIcon}
             iconBg={resultadoPendiente >= 0 ? 'rgba(125,190,147,0.12)' : 'rgba(229,131,115,0.12)'}
             iconColor={resultadoPendiente >= 0 ? C.ok : C.err}
             label="Resultado pendiente" value={fmt(resultadoPendiente, currency)} />
-          <KpiCard Icon={BankSvg} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
+          <KpiCard Icon={CobroIcon} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
             label="Saldo proyectado" value={fmt(saldoProyectado, currency)} />
           <KpiCard Icon={ClockSvg} iconBg="rgba(142,177,222,0.12)" iconColor={C.info}
             label="Cash runway" value={cashRunway !== null ? `${cashRunway} meses` : '∞'} />
-          <KpiCard Icon={TrendUpSvg} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
+          <KpiCard Icon={RecorridoIcon} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
             label="Eficiencia de cobro" value={`${eficienciaCobro}%`} />
         </div>
       </div>
@@ -345,17 +324,17 @@ function FinancesTab({ data, year, month, currency }) {
       <div>
         <SectionTitle>Indicadores del mes</SectionTitle>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          <KpiCard Icon={TrendUpSvg} iconBg="rgba(125,190,147,0.12)" iconColor={C.ok}
+          <KpiCard Icon={RecorridoIcon} iconBg="rgba(125,190,147,0.12)" iconColor={C.ok}
             label="Ingresos — cantidad" value={`${incomeCount} movimientos`} />
-          <KpiCard Icon={TrendDownSvg} iconBg="rgba(229,131,115,0.12)" iconColor={C.err}
+          <KpiCard Icon={RecorridoDownIcon} iconBg="rgba(229,131,115,0.12)" iconColor={C.err}
             label="Egresos — cantidad" value={`${expenseCount} movimientos`} />
-          <KpiCard Icon={BanknotesSvg} iconBg={C.s2} iconColor={C.piedra}
+          <KpiCard Icon={CobroIcon} iconBg={C.s2} iconColor={C.piedra}
             label="Ticket promedio ingreso" value={fmt(ticketIngreso, currency)} />
-          <KpiCard Icon={BanknotesSvg} iconBg={C.s2} iconColor={C.piedra}
+          <KpiCard Icon={CobroIcon} iconBg={C.s2} iconColor={C.piedra}
             label="Ticket promedio egreso" value={fmt(ticketEgreso, currency)} />
-          <KpiCard Icon={TrendUpSvg} iconBg="rgba(125,190,147,0.12)" iconColor={C.ok}
+          <KpiCard Icon={RecorridoIcon} iconBg="rgba(125,190,147,0.12)" iconColor={C.ok}
             label="Mayor ingreso del mes" value={fmt(mayorIngreso, currency)} />
-          <KpiCard Icon={TrendDownSvg} iconBg="rgba(229,131,115,0.12)" iconColor={C.err}
+          <KpiCard Icon={RecorridoDownIcon} iconBg="rgba(229,131,115,0.12)" iconColor={C.err}
             label="Mayor egreso del mes" value={fmt(mayorEgreso, currency)} />
         </div>
       </div>
@@ -512,11 +491,11 @@ function QuotesTab({ data, topClients, currency }) {
       <div>
         <SectionTitle>Resumen general</SectionTitle>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          <KpiCard Icon={DocSvg} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
+          <KpiCard Icon={PresupuestoIcon} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
             label="Total emitidos" value={`${totalCount} presupuestos`} />
-          <KpiCard Icon={BanknotesSvg} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
+          <KpiCard Icon={CobroIcon} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
             label="Monto total" value={fmt(totalValue, currency)} />
-          <KpiCard Icon={TrendUpSvg} iconBg="rgba(125,190,147,0.12)" iconColor={C.ok}
+          <KpiCard Icon={RecorridoIcon} iconBg="rgba(125,190,147,0.12)" iconColor={C.ok}
             label="Tasa de aprobación" value={approvalRate !== null ? `${approvalRate}%` : '—'}
             sub="enviados → aprobados" />
           <KpiCard Icon={CheckCircleSvg} iconBg="rgba(125,190,147,0.12)" iconColor={C.ok}
@@ -750,9 +729,9 @@ function ProjectsTab({ data }) {
       <div>
         <SectionTitle>Resumen general</SectionTitle>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <KpiCard Icon={FolderOpenSvg} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
+          <KpiCard Icon={CarpetaIcon} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
             label="Total proyectos" value={fmtN(total)} />
-          <KpiCard Icon={TrendUpSvg} iconBg="rgba(142,177,222,0.12)" iconColor={C.info}
+          <KpiCard Icon={RecorridoIcon} iconBg="rgba(142,177,222,0.12)" iconColor={C.info}
             label="En curso" value={fmtN(inProgress)} />
           <KpiCard Icon={CheckCircleSvg} iconBg="rgba(125,190,147,0.12)" iconColor={C.ok}
             label="Finalizados" value={fmtN(finished)} />
@@ -845,7 +824,7 @@ function StockTab({ summary, outOfStock, lowStock }) {
       <div>
         <SectionTitle>Resumen del inventario</SectionTitle>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <KpiCard Icon={CubeSvg} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
+          <KpiCard Icon={StockIcon} iconBg="rgba(242,237,227,0.08)" iconColor={C.crema}
             label="Total productos" value={fmtN(summary?.totalProducts)} sub={`${summary?.activeProducts ?? 0} activos`} />
           <KpiCard Icon={XCircleSvg}
             iconBg={summary?.outOfStock > 0 ? 'rgba(229,131,115,0.12)' : C.s2}
@@ -855,7 +834,7 @@ function StockTab({ summary, outOfStock, lowStock }) {
             iconBg={summary?.lowStock > 0 ? 'rgba(226,182,99,0.12)' : C.s2}
             iconColor={summary?.lowStock > 0 ? C.warn : C.piedra}
             label="Stock bajo" value={fmtN(summary?.lowStock)} />
-          <KpiCard Icon={CubeSvg} iconBg={C.s2} iconColor={C.piedra}
+          <KpiCard Icon={StockIcon} iconBg={C.s2} iconColor={C.piedra}
             label="Valor total" value={`$${Number(summary?.totalInventoryValue ?? 0).toLocaleString('es-AR', { maximumFractionDigits: 0 })}`} sub="stock × costo" />
         </div>
       </div>
@@ -964,10 +943,10 @@ function StockTab({ summary, outOfStock, lowStock }) {
 // ── main ──────────────────────────────────────────────────────────────────────
 
 const TABS = [
-  { key: 'finances',  label: 'Finanzas',     icon: BanknotesSvg },
-  { key: 'quotes',    label: 'Presupuestos',  icon: DocSvg },
-  { key: 'projects',  label: 'Proyectos',     icon: FolderOpenSvg },
-  { key: 'stock',     label: 'Stock',         icon: CubeSvg },
+  { key: 'finances',  label: 'Finanzas',     icon: CobroIcon },
+  { key: 'quotes',    label: 'Presupuestos',  icon: PresupuestoIcon },
+  { key: 'projects',  label: 'Proyectos',     icon: CarpetaIcon },
+  { key: 'stock',     label: 'Stock',         icon: StockIcon },
 ]
 
 export default function ReportsPage() {
