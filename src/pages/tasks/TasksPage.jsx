@@ -212,7 +212,19 @@ function HistoryView() {
   })
 
   if (isLoading) {
-    return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 0', fontSize: 13, color: C.piedra }}>Cargando historial...</div>
+    return (
+      <div>
+        {Array.from({ length: 6 }, (_, i) => (
+          <div key={i} style={{ display: 'flex', gap: 12, padding: '12px 0', borderBottom: `1px solid ${C.linea}` }}>
+            <div style={{ width: 10, height: 16, flexShrink: 0, marginTop: 2, borderLeft: `2.5px solid ${C.linea}`, borderBottom: `2.5px solid ${C.linea}` }} />
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div className="du-skeleton" style={{ height: 13, width: '70%' }} />
+              <div className="du-skeleton" style={{ height: 11, width: '40%', opacity: 0.6 }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    )
   }
 
   if (history.length === 0) {
@@ -787,7 +799,22 @@ export default function TasksPage() {
 
           {/* Kanban */}
           {isLoading ? (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 0', fontSize: 13, color: C.piedra }}>Cargando...</div>
+            <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 12 }}>
+              {COLUMNS.map(col => (
+                <div key={col.id} style={{ background: col.colBg, border: `1px solid ${C.linea}`, borderRadius: '0 14px 14px 0', padding: '14px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: col.dotColor, flexShrink: 0 }} />
+                    <span style={{ fontSize: 13, fontWeight: 600, color: col.labelColor }}>{col.label}</span>
+                  </div>
+                  {Array.from({ length: 3 }, (_, i) => (
+                    <div key={i} style={{ background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 12px 12px 0', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <div className="du-skeleton" style={{ height: 13, width: '85%' }} />
+                      <div className="du-skeleton" style={{ height: 11, width: '55%', opacity: 0.6 }} />
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
           ) : (
             <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
               <div className="kanban-scroll flex md:grid md:grid-cols-3 md:items-start" style={{ gap: 12 }}>

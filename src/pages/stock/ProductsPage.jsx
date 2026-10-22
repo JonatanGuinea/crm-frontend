@@ -234,7 +234,53 @@ export default function ProductsPage() {
 
       {/* Tabla */}
       {isLoading ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 0', color: C.piedra, fontSize: 14 }}>Cargando…</div>
+        <>
+          {/* Desktop skeleton */}
+          <div className="hidden md:block" style={{ overflow: 'hidden', borderRadius: '0 16px 16px 0', border: `1px solid ${C.linea}` }}>
+            <table style={{ width: '100%', fontSize: 14, borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${C.linea}`, background: 'rgba(38,38,42,0.6)' }}>
+                  {['SKU', 'Nombre', 'Tipo', 'Categoría', 'Stock', 'Costo', 'Proveedor', ''].map((h, i) => (
+                    <th key={i} style={{ padding: '10px 14px', textAlign: i >= 4 && i <= 5 ? 'right' : 'left', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: C.arena, whiteSpace: 'nowrap' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {Array.from({ length: 6 }, (_, i) => (
+                  <tr key={i} style={{ borderBottom: `1px solid ${C.linea}` }}>
+                    <td style={{ padding: '10px 14px' }}><div className="du-skeleton" style={{ height: 12, width: 50 }} /></td>
+                    <td style={{ padding: '10px 14px' }}><div className="du-skeleton" style={{ height: 13, width: '80%' }} /></td>
+                    <td style={{ padding: '10px 14px' }}><div className="du-skeleton" style={{ height: 20, width: 60 }} /></td>
+                    <td style={{ padding: '10px 14px' }}><div className="du-skeleton" style={{ height: 13, width: 70 }} /></td>
+                    <td style={{ padding: '10px 14px', textAlign: 'right' }}><div className="du-skeleton" style={{ height: 13, width: 30, marginLeft: 'auto' }} /></td>
+                    <td style={{ padding: '10px 14px', textAlign: 'right' }}><div className="du-skeleton" style={{ height: 13, width: 55, marginLeft: 'auto' }} /></td>
+                    <td style={{ padding: '10px 14px' }}><div className="du-skeleton" style={{ height: 13, width: 80 }} /></td>
+                    <td style={{ padding: '10px 14px' }} />
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {/* Mobile skeleton */}
+          <div className="flex flex-col gap-3 md:hidden">
+            {Array.from({ length: 4 }, (_, i) => (
+              <div key={i} style={{ background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 12px 12px 0', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    <div className="du-skeleton" style={{ height: 11, width: 45 }} />
+                    <div className="du-skeleton" style={{ height: 14, width: 130 }} />
+                    <div className="du-skeleton" style={{ height: 18, width: 55, marginTop: 2 }} />
+                  </div>
+                  <div className="du-skeleton" style={{ height: 22, width: 60 }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div className="du-skeleton" style={{ height: 13, width: '40%', opacity: 0.6 }} />
+                  <div className="du-skeleton" style={{ height: 26, width: 80 }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       ) : products.length === 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', gap: 12, color: C.piedra }}>
           <p style={{ fontSize: 14 }}>{hasFilters ? 'Sin productos con esos filtros.' : 'Aún no hay productos. ¡Creá el primero!'}</p>

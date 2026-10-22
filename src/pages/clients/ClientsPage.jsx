@@ -257,7 +257,56 @@ export default function ClientsPage() {
           </div>
 
           {isLoading ? (
-            <p style={{ fontSize: 13, color: C.piedra }}>Cargando...</p>
+            <>
+              {/* Desktop skeleton tabla */}
+              <div className="hidden md:block" style={{ ...card, overflow: 'hidden' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ background: C.linea }}>
+                      {['Cliente', 'Email', 'Empresa', 'Teléfono', ''].map((h, i) => (
+                        <th key={i} style={{ textAlign: 'left', padding: '12px 20px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: C.crema }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <tr key={i} style={{ borderBottom: `1px solid ${C.linea}` }}>
+                        <td style={{ padding: '12px 20px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{ width: 30, height: 30, flexShrink: 0, background: C.s3, borderRadius: '0 7px 7px 0' }} />
+                            <div className="du-skeleton" style={{ height: 13, width: 110 }} />
+                          </div>
+                        </td>
+                        <td style={{ padding: '12px 20px' }}><div className="du-skeleton" style={{ height: 13, width: 140 }} /></td>
+                        <td style={{ padding: '12px 20px' }}><div className="du-skeleton" style={{ height: 13, width: 90 }} /></td>
+                        <td style={{ padding: '12px 20px' }}><div className="du-skeleton" style={{ height: 13, width: 85 }} /></td>
+                        <td style={{ padding: '12px 20px' }} />
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {/* Mobile skeleton cards */}
+              <div className="md:hidden" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {Array.from({ length: 4 }, (_, i) => (
+                  <div key={i} style={{ ...card, padding: '16px 18px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                      <div style={{ width: 38, height: 38, flexShrink: 0, background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 10px 10px 0' }} />
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                        <div className="du-skeleton" style={{ height: 14, width: 120 }} />
+                        <div className="du-skeleton" style={{ height: 11, width: 80, opacity: 0.6 }} />
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 14 }}>
+                      <div className="du-skeleton" style={{ height: 12, width: '65%', opacity: 0.6 }} />
+                    </div>
+                    <div style={{ borderTop: `1px solid ${C.linea}`, paddingTop: 12 }}>
+                      <div className="du-skeleton" style={{ height: 34, width: '100%' }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           ) : (
             <>
               {/* Desktop: tabla */}

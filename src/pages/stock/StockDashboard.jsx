@@ -198,7 +198,17 @@ export default function StockDashboard() {
       {tab === 'dashboard' && (
         <>
           {isLoading ? (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 0', color: C.piedra, fontSize: 14 }}>Cargando…</div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {Array.from({ length: 6 }, (_, i) => (
+                <div key={i} style={{ background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div className="du-skeleton" style={{ height: 10, width: '60%' }} />
+                  </div>
+                  <div className="du-skeleton" style={{ height: 32, width: '50%' }} />
+                  <div className="du-skeleton" style={{ height: 10, width: '70%', opacity: 0.6 }} />
+                </div>
+              ))}
+            </div>
           ) : !data ? null : (
             <>
               {/* Stats: grid unificado 2×3 */}

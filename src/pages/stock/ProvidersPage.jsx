@@ -232,7 +232,49 @@ export default function ProvidersPage() {
 
       {/* Contenido */}
       {isLoading ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 0', color: C.piedra, fontSize: 14 }}>Cargando…</div>
+        <>
+          {/* Desktop skeleton */}
+          <div className="hidden md:block" style={{ overflow: 'hidden', borderRadius: '0 16px 16px 0', border: `1px solid ${C.linea}` }}>
+            <table style={{ width: '100%', fontSize: 14, borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${C.linea}`, background: 'rgba(38,38,42,0.6)' }}>
+                  {['Nombre', 'Contacto', 'Dirección', 'Productos', ''].map((h, i) => (
+                    <th key={i} style={{ padding: '10px 14px', textAlign: i === 3 ? 'center' : 'left', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: C.arena }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {Array.from({ length: 5 }, (_, i) => (
+                  <tr key={i} style={{ borderBottom: `1px solid ${C.linea}` }}>
+                    <td style={{ padding: '10px 14px' }}>
+                      <div className="du-skeleton" style={{ height: 14, width: 130 }} />
+                      <div className="du-skeleton" style={{ height: 11, width: 90, marginTop: 4, opacity: 0.6 }} />
+                    </td>
+                    <td style={{ padding: '10px 14px' }}><div className="du-skeleton" style={{ height: 13, width: 140 }} /></td>
+                    <td style={{ padding: '10px 14px' }}><div className="du-skeleton" style={{ height: 13, width: 110 }} /></td>
+                    <td style={{ padding: '10px 14px', textAlign: 'center' }}><div className="du-skeleton" style={{ height: 14, width: 24, margin: '0 auto' }} /></td>
+                    <td style={{ padding: '10px 14px' }} />
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {/* Mobile skeleton */}
+          <div className="flex flex-col gap-3 md:hidden">
+            {Array.from({ length: 4 }, (_, i) => (
+              <div key={i} style={{ background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 12px 12px 0', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    <div className="du-skeleton" style={{ height: 14, width: 120 }} />
+                    <div className="du-skeleton" style={{ height: 11, width: 80, opacity: 0.6 }} />
+                  </div>
+                  <div className="du-skeleton" style={{ height: 22, width: 50 }} />
+                </div>
+                <div className="du-skeleton" style={{ height: 12, width: '55%', opacity: 0.6 }} />
+              </div>
+            ))}
+          </div>
+        </>
       ) : suppliers.length === 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', gap: 16, color: C.piedra }}>
           <StoreSvg style={{ width: 48, height: 48, opacity: 0.2 }} />

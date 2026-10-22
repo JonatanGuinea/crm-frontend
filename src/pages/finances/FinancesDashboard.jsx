@@ -62,12 +62,18 @@ const tdStyle = { padding: '10px 14px', fontSize: 13 }
 
 // ── KpiCard ───────────────────────────────────────────────────────────────────
 
-function KpiCard({ label, value, sub, valueColor = C.crema }) {
+function KpiCard({ label, value, sub, valueColor = C.crema, loading = false }) {
   return (
     <div className="p-3 md:p-5" style={{ background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
       <p style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: C.piedra, lineHeight: 1.3 }}>{label}</p>
-      <p className="text-xl md:text-3xl lg:text-4xl" style={{ fontFamily: CIFRAS, fontWeight: 700, color: valueColor, lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</p>
-      {sub && <p style={{ fontSize: 12, color: C.piedra, marginTop: 2 }}>{sub}</p>}
+      {loading
+        ? <div className="du-skeleton" style={{ height: 36, width: '70%' }} />
+        : <p className="text-xl md:text-3xl lg:text-4xl" style={{ fontFamily: CIFRAS, fontWeight: 700, color: valueColor, lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</p>
+      }
+      {loading
+        ? <div className="du-skeleton" style={{ height: 10, width: '50%', opacity: 0.6 }} />
+        : sub && <p style={{ fontSize: 12, color: C.piedra, marginTop: 2 }}>{sub}</p>
+      }
     </div>
   )
 }
@@ -105,10 +111,6 @@ export default function FinancesDashboard() {
     }
   }
 
-  if (isLoading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 0', fontSize: 13, color: C.piedra }}>Cargando…</div>
-  )
-
   const allAccounts      = data?.allAccounts ?? []
   const pendingMovements = data?.pendingMovements ?? []
   const netMonth         = Number(data?.netMonth ?? 0)
@@ -131,12 +133,14 @@ export default function FinancesDashboard() {
       {/* ── KPI cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard
+          loading={isLoading}
           label="Resultado neto del mes"
           value={`${netPositive ? '+' : ''}$${fmtKPI(netMonth)}`}
           sub="Ingresos menos egresos"
           valueColor={netPositive ? C.ok : C.err}
         />
         <KpiCard
+          loading={isLoading}
           label="A cobrar"
           value={`$${fmtKPI(data?.pendingIncome)}`}
           sub={pendingIncomeCount > 0
@@ -145,6 +149,7 @@ export default function FinancesDashboard() {
           valueColor={Number(data?.pendingIncome) > 0 ? C.warn : C.crema}
         />
         <KpiCard
+          loading={isLoading}
           label="A pagar"
           value={`$${fmtKPI(data?.pendingExpense)}`}
           sub={pendingExpenseCount > 0
@@ -153,6 +158,7 @@ export default function FinancesDashboard() {
           valueColor={Number(data?.pendingExpense) > 0 ? C.warn : C.crema}
         />
         <KpiCard
+          loading={isLoading}
           label="Saldo en caja"
           value={`$${fmtKPI(data?.totalBalance)}`}
           sub={accountNames || 'Sin cuentas'}

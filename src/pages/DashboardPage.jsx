@@ -200,7 +200,7 @@ function Badge({ bg, color, label }) {
 
 // ── sub-components ────────────────────────────────────────────────────────────
 
-function KpiCard({ icon: Icon, iconBg, iconColor, label, value, sub, valueColor }) {
+function KpiCard({ icon: Icon, iconBg, iconColor, label, value, sub, valueColor, loading = false }) {
   return (
     <div style={{ ...card, padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{
@@ -214,10 +214,14 @@ function KpiCard({ icon: Icon, iconBg, iconColor, label, value, sub, valueColor 
         <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: C.piedra }}>
           {label}
         </p>
-        <p style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.03em', color: valueColor || C.crema, marginTop: 4, fontFamily: CIFRAS }} className="truncate">
-          {value}
-        </p>
-        {sub != null && <p style={{ fontSize: 11, color: C.piedra, marginTop: 3 }} className="truncate">{sub}</p>}
+        {loading
+          ? <div className="du-skeleton" style={{ height: 28, width: '65%', marginTop: 4 }} />
+          : <p style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.03em', color: valueColor || C.crema, marginTop: 4, fontFamily: CIFRAS }} className="truncate">{value}</p>
+        }
+        {loading
+          ? <div className="du-skeleton" style={{ height: 10, width: '50%', marginTop: 6, opacity: 0.6 }} />
+          : sub != null && <p style={{ fontSize: 11, color: C.piedra, marginTop: 3 }} className="truncate">{sub}</p>
+        }
       </div>
     </div>
   )
@@ -840,7 +844,7 @@ export default function DashboardPage() {
     queryFn: () => getProfile().then(r => r.data.data),
   })
 
-  const { data: projects } = useQuery({
+  const { data: projects, isLoading: projectsLoading } = useQuery({
     queryKey: ['projects-dashboard'],
     queryFn: () => getProjectsDashboard().then(r => r.data.data),
   })
@@ -857,7 +861,7 @@ export default function DashboardPage() {
     enabled: !isMember,
   })
 
-  const { data: finData } = useQuery({
+  const { data: finData, isLoading: finLoading } = useQuery({
     queryKey: ['finances-dashboard-main', now.getFullYear(), now.getMonth() + 1],
     queryFn: () => getFinancesDashboard({ year: now.getFullYear(), month: now.getMonth() + 1 })
       .then(r => r.data.data),
@@ -870,7 +874,7 @@ export default function DashboardPage() {
     enabled: !isMember,
   })
 
-  const { data: myTasks } = useQuery({
+  const { data: myTasks, isLoading: tasksLoading } = useQuery({
     queryKey: ['tasks-assigned', user?.uid],
     queryFn: () => getTasks({ assignedToId: user?.uid }).then(r => r.data.data),
     enabled: isMember && Boolean(user?.uid),
@@ -935,30 +939,34 @@ export default function DashboardPage() {
       {/* KPIs */}
       {isMember ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ marginBottom: 24 }}>
-          <KpiCard icon={CarpetaIcon}  iconBg="rgba(142,177,222,0.1)" iconColor={C.info} label="Proyectos en curso" value={activeProjects} />
-          <KpiCard icon={ProyectoIcon} iconBg="rgba(226,182,99,0.1)"  iconColor={C.warn} label="Tareas asignadas"   value={myPendingTasks} />
+          <KpiCard loading={projectsLoading} icon={CarpetaIcon}  iconBg="rgba(142,177,222,0.1)" iconColor={C.info} label="Proyectos en curso" value={activeProjects} />
+          <KpiCard loading={tasksLoading}    icon={ProyectoIcon} iconBg="rgba(226,182,99,0.1)"  iconColor={C.warn} label="Tareas asignadas"   value={myPendingTasks} />
         </div>
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" style={{ marginBottom: 24 }}>
           <KpiCard
+            loading={projectsLoading}
             icon={CarpetaIcon}
             iconBg="rgba(142,177,222,0.1)" iconColor={C.info}
             label="Proyectos en curso" value={activeProjects}
             sub={`${quotes?.byStatus?.filter(s => ['draft','sent'].includes(s.status))?.reduce((a,s)=>a+s.count,0)??0} presupuestos abiertos`}
           />
           <KpiCard
+            loading={finLoading}
             icon={CobroIcon}
             iconBg="rgba(242,237,227,0.09)" iconColor={C.crema}
             label="Saldo en caja" value={fmt(totalBalance, currency)} valueColor={C.crema}
             sub={finData?.accounts?.length ? `${finData.accounts.length} cuenta${finData.accounts.length !== 1 ? 's' : ''}` : undefined}
           />
           <KpiCard
+            loading={finLoading}
             icon={RecorridoIcon}
             iconBg="rgba(125,190,147,0.1)" iconColor={C.ok}
             label="Ingresos del mes" value={fmt(incomeMonth, currency)} valueColor={C.ok}
             sub="movimientos confirmados"
           />
           <KpiCard
+            loading={finLoading}
             icon={RecorridoDownIcon}
             iconBg="rgba(229,131,115,0.1)" iconColor={C.err}
             label="Egresos del mes" value={fmt(expenseMonth, currency)} valueColor={C.err}

@@ -467,44 +467,50 @@ export default function QuotesPage() {
             {/* Enviados sin respuesta */}
             <div style={{ ...card, padding: '18px 20px' }}>
               <p style={{ fontSize: 11, color: C.piedra, marginBottom: 8 }}>Enviados sin respuesta</p>
-              <p style={{ fontFamily: CIFRAS, fontSize: 28, fontWeight: 700, color: C.crema, lineHeight: 1, marginBottom: 6 }}>
-                {isLoading ? '—' : sentNoReply.length}
-              </p>
-              <p style={{ fontSize: 11.5, color: C.arena }}>
-                {sentNoReply.length > 0 ? fmt(sentNoReplyAmount, allQuotes[0]?.currency || 'ARS') : 'Sin enviados pendientes'}
-              </p>
+              {isLoading
+                ? <div className="du-skeleton" style={{ height: 28, width: '55%', marginBottom: 6 }} />
+                : <p style={{ fontFamily: CIFRAS, fontSize: 28, fontWeight: 700, color: C.crema, lineHeight: 1, marginBottom: 6 }}>{sentNoReply.length}</p>
+              }
+              {isLoading
+                ? <div className="du-skeleton" style={{ height: 10, width: '80%', opacity: 0.6 }} />
+                : <p style={{ fontSize: 11.5, color: C.arena }}>{sentNoReply.length > 0 ? fmt(sentNoReplyAmount, allQuotes[0]?.currency || 'ARS') : 'Sin enviados pendientes'}</p>
+              }
             </div>
 
             {/* Aprobados este mes */}
             <div style={{ ...card, padding: '18px 20px' }}>
               <p style={{ fontSize: 11, color: C.piedra, marginBottom: 8 }}>Aprobados este mes</p>
-              <p style={{ fontFamily: CIFRAS, fontSize: 28, fontWeight: 700, color: C.crema, lineHeight: 1, marginBottom: 6 }}>
-                {isLoading ? '—' : approvedThisMonth.length}
-              </p>
-              <p style={{ fontSize: 11.5, color: approvedDiff > 0 ? C.ok : approvedDiff < 0 ? C.err : C.arena }}>
-                {isLoading ? '—' : approvedDiff === 0 ? 'Igual que el mes pasado'
-                  : `${approvedDiff > 0 ? '+' : ''}${approvedDiff} vs. mes pasado`}
-              </p>
+              {isLoading
+                ? <div className="du-skeleton" style={{ height: 28, width: '55%', marginBottom: 6 }} />
+                : <p style={{ fontFamily: CIFRAS, fontSize: 28, fontWeight: 700, color: C.crema, lineHeight: 1, marginBottom: 6 }}>{approvedThisMonth.length}</p>
+              }
+              {isLoading
+                ? <div className="du-skeleton" style={{ height: 10, width: '75%', opacity: 0.6 }} />
+                : <p style={{ fontSize: 11.5, color: approvedDiff > 0 ? C.ok : approvedDiff < 0 ? C.err : C.arena }}>{approvedDiff === 0 ? 'Igual que el mes pasado' : `${approvedDiff > 0 ? '+' : ''}${approvedDiff} vs. mes pasado`}</p>
+              }
             </div>
 
             {/* Tasa de aprobación */}
             <div style={{ ...card, padding: '18px 20px' }}>
               <p style={{ fontSize: 11, color: C.piedra, marginBottom: 8 }}>Tasa de aprobación</p>
-              <p style={{ fontFamily: CIFRAS, fontSize: 28, fontWeight: 700, color: C.crema, lineHeight: 1, marginBottom: 6 }}>
-                {isLoading ? '—' : `${approvalRate}%`}
-              </p>
+              {isLoading
+                ? <div className="du-skeleton" style={{ height: 28, width: '55%', marginBottom: 6 }} />
+                : <p style={{ fontFamily: CIFRAS, fontSize: 28, fontWeight: 700, color: C.crema, lineHeight: 1, marginBottom: 6 }}>{`${approvalRate}%`}</p>
+              }
               <p style={{ fontSize: 11.5, color: C.arena }}>últimos 90 días</p>
             </div>
 
             {/* Por vencer */}
             <div style={{ ...card, padding: '18px 20px' }}>
               <p style={{ fontSize: 11, color: C.piedra, marginBottom: 8 }}>Por vencer (7 días)</p>
-              <p style={{ fontFamily: CIFRAS, fontSize: 28, fontWeight: 700, color: expiringSoon.length > 0 ? C.warn : C.crema, lineHeight: 1, marginBottom: 6 }}>
-                {isLoading ? '—' : expiringSoon.length}
-              </p>
-              <p style={{ fontSize: 11.5, color: C.arena, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {expiringSoon.length > 0 ? expiringSoonLabel : 'Sin vencimientos próximos'}
-              </p>
+              {isLoading
+                ? <div className="du-skeleton" style={{ height: 28, width: '55%', marginBottom: 6 }} />
+                : <p style={{ fontFamily: CIFRAS, fontSize: 28, fontWeight: 700, color: expiringSoon.length > 0 ? C.warn : C.crema, lineHeight: 1, marginBottom: 6 }}>{expiringSoon.length}</p>
+              }
+              {isLoading
+                ? <div className="du-skeleton" style={{ height: 10, width: '80%', opacity: 0.6 }} />
+                : <p style={{ fontSize: 11.5, color: C.arena, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{expiringSoon.length > 0 ? expiringSoonLabel : 'Sin vencimientos próximos'}</p>
+              }
             </div>
           </div>
 
@@ -660,7 +666,51 @@ export default function QuotesPage() {
 
           {/* Tabla */}
           {isLoading ? (
-            <p style={{ fontSize: 13, color: C.piedra, padding: '40px 0', textAlign: 'center' }}>Cargando...</p>
+            <>
+              {/* Mobile skeleton */}
+              <div className="md:hidden" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {Array.from({ length: 4 }, (_, i) => (
+                  <div key={i} style={{ ...card, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <div className="du-skeleton" style={{ height: 11, width: 36 }} />
+                      <div className="du-skeleton" style={{ height: 20, width: 60 }} />
+                    </div>
+                    <div className="du-skeleton" style={{ height: 14, width: '75%' }} />
+                    <div className="du-skeleton" style={{ height: 11, width: '50%', opacity: 0.6 }} />
+                    <div style={{ display: 'flex', gap: 8, paddingTop: 10, borderTop: `1px solid ${C.linea}` }}>
+                      <div className="du-skeleton" style={{ height: 30, width: 30 }} />
+                      <div className="du-skeleton" style={{ flex: 1, height: 30 }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Desktop skeleton tabla */}
+              <div className="hidden md:block" style={{ ...card, overflow: 'hidden', marginBottom: 14 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ background: C.linea }}>
+                      {['No', 'Título', 'Cliente', 'Estado', 'Válido hasta', 'Cuotas', 'Total', ''].map((h, i) => (
+                        <th key={i} style={{ color: C.arena, fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '11px 14px', textAlign: i >= 5 ? 'right' : 'left', whiteSpace: 'nowrap' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <tr key={i}>
+                        <td style={{ padding: '12px 14px', borderBottom: `1px solid ${C.linea}` }}><div className="du-skeleton" style={{ height: 11, width: 28 }} /></td>
+                        <td style={{ padding: '12px 14px', borderBottom: `1px solid ${C.linea}` }}><div className="du-skeleton" style={{ height: 13, width: '80%' }} /></td>
+                        <td style={{ padding: '12px 14px', borderBottom: `1px solid ${C.linea}` }}><div className="du-skeleton" style={{ height: 13, width: 100 }} /></td>
+                        <td style={{ padding: '12px 14px', borderBottom: `1px solid ${C.linea}` }}><div className="du-skeleton" style={{ height: 20, width: 70 }} /></td>
+                        <td style={{ padding: '12px 14px', borderBottom: `1px solid ${C.linea}` }}><div className="du-skeleton" style={{ height: 13, width: 80 }} /></td>
+                        <td style={{ padding: '12px 14px', borderBottom: `1px solid ${C.linea}`, textAlign: 'right' }}><div className="du-skeleton" style={{ height: 13, width: 20, marginLeft: 'auto' }} /></td>
+                        <td style={{ padding: '12px 14px', borderBottom: `1px solid ${C.linea}`, textAlign: 'right' }}><div className="du-skeleton" style={{ height: 14, width: 70, marginLeft: 'auto' }} /></td>
+                        <td style={{ padding: '12px 14px', borderBottom: `1px solid ${C.linea}` }} />
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           ) : (
             <>
               {/* Mobile cards */}

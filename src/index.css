@@ -118,6 +118,16 @@
   0%, 100% { transform: scale(1);   opacity: 0.35; }
   50%       { transform: scale(1.6); opacity: 0.9;  }
 }
+@keyframes du-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.du-skeleton {
+  background: linear-gradient(90deg, #1E1E20 25%, #2C2C2F 50%, #1E1E20 75%);
+  background-size: 200% 100%;
+  animation: du-shimmer 3s ease infinite;
+  border-radius: 0 6px 6px 0;
+}
 
 button, [role="button"] {
   cursor: pointer;
