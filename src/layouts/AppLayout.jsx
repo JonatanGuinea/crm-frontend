@@ -751,7 +751,12 @@ function BottomSheet({ open, onClose, user }) {
         </div>
 
         {/* Sub-menú Stock */}
-        {stockOpen && (
+        <div style={{
+          overflow: 'hidden',
+          maxHeight: stockOpen ? 120 : 0,
+          opacity: stockOpen ? 1 : 0,
+          transition: 'max-height 0.28s cubic-bezier(0.4,0,0.2,1), opacity 0.2s ease',
+        }}>
           <div style={{
             margin: '4px 8px 8px',
             borderTop: `1px solid ${C.linea}`,
@@ -784,7 +789,7 @@ function BottomSheet({ open, onClose, user }) {
               )
             })}
           </div>
-        )}
+        </div>
       </div>
     </>,
     document.body
