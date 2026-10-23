@@ -680,6 +680,11 @@ function BottomSheet({ open, onClose, user }) {
           <div style={{ width: 36, height: 3, background: C.linea, borderRadius: 99 }} />
         </div>
 
+        {/* Org switcher */}
+        <div style={{ padding: '8px 16px 4px' }}>
+          <OrgSwitcher />
+        </div>
+
         {/* Grid de ítems */}
         <div style={{
           display: 'grid',
