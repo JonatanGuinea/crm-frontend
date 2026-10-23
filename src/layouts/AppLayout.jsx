@@ -558,13 +558,12 @@ function BottomNav({ user, onMoreClick, moreOpen }) {
 
   return (
     <nav
-      className="md:hidden"
+      className="md:hidden flex items-stretch"
       style={{
         position: 'fixed', bottom: 0, left: 0, right: 0,
         zIndex: 90,
         background: C.s1,
         borderTop: `1px solid ${C.linea}`,
-        display: 'flex', alignItems: 'stretch',
         height: 56,
         fontFamily: 'Geist, system-ui, sans-serif',
       }}
