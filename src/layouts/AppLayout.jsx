@@ -21,7 +21,7 @@ import isotipoUrl from '../assets/danteup/isotipo-crema.svg'
 import {
   ClienteIcon, PresupuestoIcon, ProyectoIcon, AgendaIcon,
   CobroIcon, ReporteIcon, EquipoIcon, StockIcon,
-  CampanaIcon, AjustesIcon,CarpetaIcon,ModulosIcon
+  CampanaIcon, AjustesIcon, CarpetaIcon, ModulosIcon
 } from '../components/DuIcons'
 import { imgUrl } from '../utils/imgUrl.js'
 
@@ -39,7 +39,7 @@ const C = {
 const ROLE_LABEL = { owner: 'Dueño', admin: 'Admin', member: 'Miembro' }
 
 const navTop = [
-  { to: '/',                  label: 'Inicio',       icon: ModulosIcon,         exact: true },
+  { to: '/',                  label: 'Inicio',       icon: ModulosIcon,     exact: true },
   { to: '/clients',           label: 'Clientes',     icon: ClienteIcon },
   { to: '/quotes',            label: 'Presupuestos', icon: PresupuestoIcon, memberHidden: true },
   { to: '/projects',          label: 'Proyectos',    icon: CarpetaIcon },
@@ -58,6 +58,26 @@ const stockSub = [
   { to: '/stock/products',  label: 'Productos',   icon: ProductosSvg },
   { to: '/stock/providers', label: 'Proveedores', icon: ProveedoresSvg },
 ]
+
+// 4 tabs directos del bottom nav mobile
+const BOTTOM_NAV = [
+  { to: '/',          label: 'Inicio',    icon: ModulosIcon,     exact: true },
+  { to: '/projects',  label: 'Proyectos', icon: CarpetaIcon },
+  { to: '/quotes',    label: 'Presup.',   icon: PresupuestoIcon, memberHidden: true },
+  { to: '/tasks',     label: 'Tareas',    icon: ProyectoIcon },
+]
+
+// Items del bottom sheet "Más"
+const MORE_ITEMS = [
+  { to: '/clients',           label: 'Clientes',  icon: ClienteIcon },
+  { to: '/projects/calendar', label: 'Agenda',    icon: AgendaIcon },
+  { to: '/finances',          label: 'Finanzas',  icon: CobroIcon,   memberHidden: true },
+  { to: '/stock',             label: 'Stock',     icon: StockIcon },
+  { to: '/reports',           label: 'Reportes',  icon: ReporteIcon, memberHidden: true },
+  { to: '/members',           label: 'Equipo',    icon: EquipoIcon },
+]
+
+/* ── NavItem (sidebar desktop) ───────────────────────────────────────────── */
 
 function NavItem({ to, label, icon: Icon, exact, collapsed, onNavClick, badge }) {
   return (
@@ -92,6 +112,8 @@ function NavItem({ to, label, icon: Icon, exact, collapsed, onNavClick, badge })
     </NavLink>
   )
 }
+
+/* ── StockGroup (sidebar desktop) ────────────────────────────────────────── */
 
 function StockGroup({ collapsed, onNavClick }) {
   const location = useLocation()
@@ -187,6 +209,8 @@ function StockGroup({ collapsed, onNavClick }) {
   )
 }
 
+/* ── SidebarAvatar ────────────────────────────────────────────────────────── */
+
 function SidebarAvatar({ avatar, name }) {
   const [imgError, setImgError] = useState(false)
   const initials = name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
@@ -211,6 +235,8 @@ function SidebarAvatar({ avatar, name }) {
     </div>
   )
 }
+
+/* ── ProfileDropdown ──────────────────────────────────────────────────────── */
 
 function ProfileDropdown({ profile, user, compact = false, position = 'up' }) {
   const { logout } = useAuth()
@@ -390,25 +416,6 @@ function ProveedoresSvg({ style }) {
   )
 }
 
-function HamburgerSvg({ style }) {
-  return (
-    <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
-      <line x1="3" y1="6" x2="21" y2="6" />
-      <line x1="3" y1="12" x2="21" y2="12" />
-      <line x1="3" y1="18" x2="21" y2="18" />
-    </svg>
-  )
-}
-
-function CloseSvg({ style }) {
-  return (
-    <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-  )
-}
-
 function ChevronDownSvg({ style }) {
   return (
     <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -471,14 +478,7 @@ function SunIcon() {
   )
 }
 
-function MoonIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}
-      strokeLinecap="round" strokeLinejoin="round" style={{ width: 16, height: 16, flexShrink: 0 }}>
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-    </svg>
-  )
-}
+/* ── SidebarContent (desktop) ────────────────────────────────────────────── */
 
 function SidebarContent({ collapsed, onNavClick, newProjectsCount, user }) {
   const isMember = user?.role === 'member'
@@ -491,10 +491,8 @@ function SidebarContent({ collapsed, onNavClick, newProjectsCount, user }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
-      {/* Org switcher */}
       {!collapsed && <OrgSwitcher />}
 
-      {/* Nav */}
       <nav style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
         {navTop
           .filter(item => !(isMember && item.memberHidden))
@@ -526,7 +524,6 @@ function SidebarContent({ collapsed, onNavClick, newProjectsCount, user }) {
         }
       </nav>
 
-      {/* Theme toggle */}
       <div style={{ borderTop: `1px solid ${C.linea}`, flexShrink: 0 }}>
         <button
           onClick={handleThemeClick}
@@ -545,18 +542,207 @@ function SidebarContent({ collapsed, onNavClick, newProjectsCount, user }) {
           {!collapsed && 'Modo claro'}
         </button>
       </div>
-
     </div>
   )
 }
+
+/* ── BottomNav (mobile only) ─────────────────────────────────────────────── */
+
+function BottomNav({ user, onMoreClick, moreOpen }) {
+  const location = useLocation()
+  const isMember = user?.role === 'member'
+  const tabs = BOTTOM_NAV.filter(item => !(isMember && item.memberHidden))
+  const moreActive = !moreOpen && MORE_ITEMS.some(item =>
+    item.to !== '/' && location.pathname.startsWith(item.to)
+  )
+
+  return (
+    <nav
+      className="md:hidden"
+      style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        zIndex: 90,
+        background: C.s1,
+        borderTop: `1px solid ${C.linea}`,
+        display: 'flex', alignItems: 'stretch',
+        height: 56,
+        fontFamily: 'Geist, system-ui, sans-serif',
+      }}
+    >
+      {tabs.map(({ to, label, icon: Icon, exact }) => (
+        <NavLink
+          key={to}
+          to={to}
+          end={exact}
+          style={{ flex: 1, display: 'flex' }}
+        >
+          {({ isActive }) => (
+            <div style={{
+              flex: 1, display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', gap: 4,
+              color: isActive ? C.crema : C.piedra,
+              position: 'relative',
+              transition: 'color 0.12s',
+            }}>
+              {isActive && (
+                <div style={{
+                  position: 'absolute', top: 0, left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: 24, height: 2,
+                  background: C.crema,
+                  borderRadius: '0 0 3px 3px',
+                }} />
+              )}
+              <Icon style={{ width: 22, height: 22 }} />
+              <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: '0.01em' }}>{label}</span>
+            </div>
+          )}
+        </NavLink>
+      ))}
+
+      {/* Botón Más */}
+      <button
+        onClick={onMoreClick}
+        style={{
+          flex: 1, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', gap: 4,
+          background: 'none', border: 'none', cursor: 'pointer',
+          color: moreActive || moreOpen ? C.crema : C.piedra,
+          position: 'relative',
+          fontFamily: 'inherit',
+          transition: 'color 0.12s',
+        }}
+      >
+        {(moreActive || moreOpen) && (
+          <div style={{
+            position: 'absolute', top: 0, left: '50%',
+            transform: 'translateX(-50%)',
+            width: 24, height: 2,
+            background: C.crema,
+            borderRadius: '0 0 3px 3px',
+          }} />
+        )}
+        <MasSvg />
+        <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: '0.01em' }}>Más</span>
+      </button>
+    </nav>
+  )
+}
+
+/* ── BottomSheet "Más" (mobile only) ─────────────────────────────────────── */
+
+function BottomSheet({ open, onClose, user }) {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const isMember = user?.role === 'member'
+  const items = MORE_ITEMS.filter(item => !(isMember && item.memberHidden))
+
+  useEffect(() => { onClose() }, [location.pathname])
+
+  function go(to) {
+    onClose()
+    navigate(to)
+  }
+
+  return createPortal(
+    <>
+      {/* Overlay */}
+      <div
+        className="md:hidden"
+        style={{
+          position: 'fixed', inset: 0, zIndex: 100,
+          background: 'rgba(0,0,0,0.65)',
+          opacity: open ? 1 : 0,
+          pointerEvents: open ? 'auto' : 'none',
+          transition: 'opacity 0.25s ease',
+        }}
+        onClick={onClose}
+      />
+
+      {/* Sheet */}
+      <div
+        className="md:hidden"
+        style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0,
+          zIndex: 101,
+          background: C.s1,
+          borderTop: `1px solid ${C.linea}`,
+          borderRight: `1px solid ${C.linea}`,
+          borderRadius: '0 20px 0 0',
+          transform: open ? 'translateY(0)' : 'translateY(100%)',
+          transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
+          paddingBottom: 72,
+          fontFamily: 'Geist, system-ui, sans-serif',
+        }}
+      >
+        {/* Handle */}
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px' }}>
+          <div style={{ width: 36, height: 3, background: C.linea, borderRadius: 99 }} />
+        </div>
+
+        {/* Grid de ítems */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: 1,
+          padding: '12px 8px 8px',
+        }}>
+          {items.map(({ to, label, icon: Icon }) => {
+            const isActive = to !== '/' && location.pathname.startsWith(to)
+            return (
+              <button
+                key={to}
+                onClick={() => go(to)}
+                style={{
+                  display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center', gap: 8,
+                  padding: '18px 8px',
+                  background: isActive ? 'rgba(242,237,227,0.06)' : 'none',
+                  border: 'none', cursor: 'pointer',
+                  borderRadius: '0 12px 12px 0',
+                  color: isActive ? C.crema : C.arena,
+                  transition: 'color 0.12s, background 0.12s',
+                  fontFamily: 'inherit',
+                }}
+              >
+                <Icon style={{ width: 24, height: 24 }} />
+                <span style={{ fontSize: 11, fontWeight: 500 }}>{label}</span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    </>,
+    document.body
+  )
+}
+
+/* ── SVG ícon "Más" (3 líneas) ───────────────────────────────────────────── */
+
+function MasSvg() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"
+      strokeLinecap="round" style={{ width: 22, height: 22, display: 'block' }}>
+      <line x1="3" y1="6"  x2="21" y2="6"  />
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="18" x2="21" y2="18" />
+    </svg>
+  )
+}
+
+/* ── AppLayout ────────────────────────────────────────────────────────────── */
 
 export default function AppLayout() {
   const { user, switchOrg } = useAuth()
   const { dark } = useTheme()
   const qc = useQueryClient()
   const navigate = useNavigate()
+  const location = useLocation()
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('sidebar') === 'collapsed')
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
+
+  // Cerrar bottom sheet al navegar con botón atrás del browser
+  useEffect(() => { setMoreOpen(false) }, [location.pathname])
 
   const { data: orgs } = useQuery({
     queryKey: ['organizations'],
@@ -620,45 +806,6 @@ export default function AppLayout() {
     <div className={dark ? 'dark' : ''} style={{ display: 'flex', height: '100dvh', overflow: 'hidden', background: C.bg, fontFamily: 'Geist, system-ui, sans-serif', WebkitFontSmoothing: 'antialiased' }}>
       {needsOrg && <SetupOrgModal onCreated={handleOrgCreated} />}
 
-      {/* Mobile overlay */}
-      {mobileOpen && (
-        <div
-          style={{ position: 'fixed', inset: 0, zIndex: 40, background: 'rgba(0,0,0,.6)' }}
-          className="md:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
-
-      {/* Mobile sidebar (drawer) */}
-      <aside
-        className="flex md:hidden"
-        style={{
-          ...sidebarShared,
-          position: 'fixed', top: 0, left: 0, bottom: 0,
-          zIndex: 50, width: 240,
-          transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)',
-          transition: 'transform 0.28s ease',
-        }}
-      >
-        {/* Logo mobile */}
-        <div style={{ padding: '18px 20px 16px', borderBottom: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-          <img src={logoUrl} alt="DANTEUP" style={{ height: 24, width: 'auto' }} />
-          <button
-            onClick={() => setMobileOpen(false)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, padding: 4 }}
-          >
-            <CloseSvg style={{ width: 18, height: 18 }} />
-          </button>
-        </div>
-        <SidebarContent
-          collapsed={false}
-          onNavClick={() => setMobileOpen(false)}
-          newProjectsCount={newProjectsCount}
-          user={user}
-          profile={profile}
-        />
-      </aside>
-
       {/* Desktop sidebar */}
       <aside
         className="hidden md:flex"
@@ -672,7 +819,6 @@ export default function AppLayout() {
           position: 'relative',
         }}
       >
-        {/* Logo desktop */}
         <div style={{
           padding: collapsed ? '18px 0' : '18px 20px 16px',
           borderBottom: `1px solid ${C.linea}`,
@@ -711,7 +857,6 @@ export default function AppLayout() {
           user={user}
           profile={profile}
         />
-
       </aside>
 
       {/* Main content */}
@@ -724,14 +869,10 @@ export default function AppLayout() {
           display: 'flex', alignItems: 'center',
           padding: '0 20px', gap: 12,
         }}>
-          {/* Hamburger mobile */}
-          <button
-            className="md:hidden"
-            onClick={() => setMobileOpen(true)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, padding: 4, flexShrink: 0 }}
-          >
-            <HamburgerSvg style={{ width: 20, height: 20 }} />
-          </button>
+          {/* Logo mobile (reemplaza hamburger) */}
+          <div className="md:hidden" style={{ flexShrink: 0 }}>
+            <img src={isotipoUrl} alt="D" style={{ height: 22, width: 'auto', display: 'block' }} />
+          </div>
 
           {/* Search */}
           <div style={{ flex: 1 }}>
@@ -764,8 +905,8 @@ export default function AppLayout() {
           <ProfileDropdown compact position="down" profile={profile} user={user} />
         </header>
 
-        {/* Page content */}
-        <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+        {/* Page content — padding-bottom en mobile para no quedar bajo el bottom nav */}
+        <main className="pb-14 md:pb-0" style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
           <DBStatusBanner />
           <InvitationsBanner />
           <AnnouncementBanner />
@@ -774,6 +915,20 @@ export default function AppLayout() {
           </div>
         </main>
       </div>
+
+      {/* Bottom nav mobile */}
+      <BottomNav
+        user={user}
+        onMoreClick={() => setMoreOpen(true)}
+        moreOpen={moreOpen}
+      />
+
+      {/* Bottom sheet "Más" */}
+      <BottomSheet
+        open={moreOpen}
+        onClose={() => setMoreOpen(false)}
+        user={user}
+      />
     </div>
   )
 }
