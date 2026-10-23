@@ -580,19 +580,17 @@ function BottomNav({ user, onMoreClick, moreOpen }) {
               flex: 1, display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center', gap: 4,
               color: isActive ? C.crema : C.piedra,
-              position: 'relative',
               transition: 'color 0.12s',
             }}>
-              {isActive && (
-                <div style={{
-                  position: 'absolute', top: 0, left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: 24, height: 2,
-                  background: C.crema,
-                  borderRadius: '0 0 3px 3px',
-                }} />
-              )}
-              <Icon style={{ width: 22, height: 22 }} />
+              <div style={{
+                width: 44, height: 28,
+                borderRadius: '0 12px 12px 0',
+                background: isActive ? 'rgba(242,237,227,0.1)' : 'transparent',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'background 0.15s',
+              }}>
+                <Icon style={{ width: 22, height: 22 }} />
+              </div>
               <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: '0.01em' }}>{label}</span>
             </div>
           )}
@@ -607,21 +605,19 @@ function BottomNav({ user, onMoreClick, moreOpen }) {
           alignItems: 'center', justifyContent: 'center', gap: 4,
           background: 'none', border: 'none', cursor: 'pointer',
           color: moreActive || moreOpen ? C.crema : C.piedra,
-          position: 'relative',
           fontFamily: 'inherit',
           transition: 'color 0.12s',
         }}
       >
-        {(moreActive || moreOpen) && (
-          <div style={{
-            position: 'absolute', top: 0, left: '50%',
-            transform: 'translateX(-50%)',
-            width: 24, height: 2,
-            background: C.crema,
-            borderRadius: '0 0 3px 3px',
-          }} />
-        )}
-        <MasSvg />
+        <div style={{
+          width: 44, height: 28,
+          borderRadius: '0 12px 12px 0',
+          background: moreActive || moreOpen ? 'rgba(242,237,227,0.1)' : 'transparent',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'background 0.15s',
+        }}>
+          <MasSvg />
+        </div>
         <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: '0.01em' }}>Más</span>
       </button>
     </nav>
