@@ -514,41 +514,48 @@ export default function QuotesPage() {
             </div>
           </div>
 
-          {/* Filtros: tabs de estado + fecha + cliente */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+          {/* Tabs de estado */}
+          <div
+            className="-mx-4 md:-mx-6 px-4 md:px-6"
+            style={{ display: 'flex', gap: 0, borderBottom: `1px solid ${C.linea}`, overflowX: 'auto', WebkitOverflowScrolling: 'touch', marginBottom: 0 }}
+          >
+            {visibleTabs.map(t => {
+              const active = statusFilter === t.key
+              const st = QUOTE_STATUS[t.key]
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => changeTab(t.key)}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '8px 14px', flexShrink: 0,
+                    background: active ? C.s2 : 'transparent',
+                    borderTop: active ? `1px solid ${C.linea}` : '1px solid transparent',
+                    borderLeft: active ? `1px solid ${C.linea}` : '1px solid transparent',
+                    borderRight: active ? `1px solid ${C.linea}` : '1px solid transparent',
+                    borderBottom: 'none',
+                    borderRadius: '0 8px 0 0',
+                    color: active ? C.crema : C.piedra,
+                    fontSize: 13, fontWeight: 500,
+                    cursor: 'pointer', fontFamily: 'inherit',
+                    whiteSpace: 'nowrap',
+                    transition: 'color 0.15s',
+                  }}
+                  onMouseEnter={e => { if (!active) e.currentTarget.style.color = C.crema }}
+                  onMouseLeave={e => { if (!active) e.currentTarget.style.color = C.piedra }}
+                >
+                  {t.key && st && <span style={{ width: 5, height: 5, borderRadius: '50%', background: active ? st.color : C.piedra, flexShrink: 0, transition: 'background 0.12s' }} />}
+                  {t.label}
+                  <span style={{ fontSize: 11, fontWeight: 600, color: active ? C.arena : C.piedra, fontFamily: CIFRAS }}>
+                    {tabCounts[t.key] ?? 0}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
 
-            {/* Tabs de estado */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-              {visibleTabs.map(t => {
-                const active = statusFilter === t.key
-                const st = QUOTE_STATUS[t.key]
-                return (
-                  <button
-                    key={t.key}
-                    onClick={() => changeTab(t.key)}
-                    style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 6,
-                      height: 32, padding: '0 12px',
-                      background: active ? C.s2 : 'none',
-                      border: `1px solid ${active ? C.arena : C.linea}`,
-                      borderRadius: '0 8px 8px 0',
-                      color: active ? C.crema : C.piedra,
-                      fontSize: 12.5, fontWeight: active ? 600 : 400,
-                      cursor: 'pointer', fontFamily: 'inherit',
-                      transition: 'all 0.12s',
-                    }}
-                    onMouseEnter={e => { if (!active) { e.currentTarget.style.borderColor = C.arena; e.currentTarget.style.color = C.arena } }}
-                    onMouseLeave={e => { if (!active) { e.currentTarget.style.borderColor = C.linea; e.currentTarget.style.color = C.piedra } }}
-                  >
-                    {t.key && st && <span style={{ width: 5, height: 5, borderRadius: '50%', background: active ? st.color : C.piedra, flexShrink: 0, transition: 'background 0.12s' }} />}
-                    {t.label}
-                    <span style={{ fontSize: 11, fontWeight: 600, color: active ? C.arena : C.piedra, fontFamily: CIFRAS }}>
-                      {tabCounts[t.key] ?? 0}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
+          {/* Filtros: fecha + cliente */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, marginTop: 14, marginBottom: 16, flexWrap: 'wrap' }}>
 
             {/* Fecha + cliente */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
