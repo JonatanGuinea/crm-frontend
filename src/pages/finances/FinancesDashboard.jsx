@@ -68,7 +68,7 @@ function KpiCard({ label, value, sub, valueColor = C.crema, loading = false }) {
       <p style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: C.piedra, lineHeight: 1.3 }}>{label}</p>
       {loading
         ? <div className="du-skeleton" style={{ height: 36, width: '70%' }} />
-        : <p className="text-xl md:text-3xl lg:text-4xl" style={{ fontFamily: CIFRAS, fontWeight: 700, color: valueColor, lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</p>
+        : <p style={{ fontFamily: CIFRAS, fontSize: 22, fontWeight: 700, letterSpacing: '-0.03em', color: valueColor, lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 4 }}>{value}</p>
       }
       {loading
         ? <div className="du-skeleton" style={{ height: 10, width: '50%', opacity: 0.6 }} />
