@@ -72,7 +72,7 @@ const MORE_ITEMS = [
   { to: '/clients',           label: 'Clientes',  icon: ClienteIcon },
   { to: '/projects/calendar', label: 'Agenda',    icon: AgendaIcon },
   { to: '/finances',          label: 'Finanzas',  icon: CobroIcon,   memberHidden: true },
-  { to: '/stock',             label: 'Stock',     icon: StockIcon },
+  { to: '/stock',             label: 'Stock',     icon: StockIcon,   expandable: true },
   { to: '/reports',           label: 'Reportes',  icon: ReporteIcon, memberHidden: true },
   { to: '/members',           label: 'Equipo',    icon: EquipoIcon },
 ]
@@ -636,8 +636,11 @@ function BottomSheet({ open, onClose, user }) {
   const location = useLocation()
   const isMember = user?.role === 'member'
   const items = MORE_ITEMS.filter(item => !(isMember && item.memberHidden))
+  const isOnStock = location.pathname.startsWith('/stock')
+  const [stockOpen, setStockOpen] = useState(isOnStock)
 
   useEffect(() => { onClose() }, [location.pathname])
+  useEffect(() => { if (isOnStock) setStockOpen(true) }, [isOnStock])
 
   function go(to) {
     onClose()
@@ -690,9 +693,39 @@ function BottomSheet({ open, onClose, user }) {
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
           gap: 1,
-          padding: '12px 8px 8px',
+          padding: '12px 8px 4px',
         }}>
-          {items.map(({ to, label, icon: Icon }) => {
+          {items.map(({ to, label, icon: Icon, expandable }) => {
+            if (expandable) {
+              return (
+                <button
+                  key={to}
+                  onClick={() => setStockOpen(o => !o)}
+                  style={{
+                    display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center', gap: 8,
+                    padding: '18px 8px',
+                    background: isOnStock || stockOpen ? 'rgba(242,237,227,0.06)' : 'none',
+                    border: 'none', cursor: 'pointer',
+                    borderRadius: '0 12px 12px 0',
+                    color: isOnStock || stockOpen ? C.crema : C.arena,
+                    transition: 'color 0.12s, background 0.12s',
+                    fontFamily: 'inherit',
+                    position: 'relative',
+                  }}
+                >
+                  <Icon style={{ width: 24, height: 24 }} />
+                  <span style={{ fontSize: 11, fontWeight: 500 }}>{label}</span>
+                  <ChevronDownSvg style={{
+                    position: 'absolute', top: 7, right: 9,
+                    width: 11, height: 11, color: C.piedra,
+                    transform: stockOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s',
+                  }} />
+                </button>
+              )
+            }
+
             const isActive = to !== '/' && location.pathname.startsWith(to)
             return (
               <button
@@ -716,6 +749,42 @@ function BottomSheet({ open, onClose, user }) {
             )
           })}
         </div>
+
+        {/* Sub-menú Stock */}
+        {stockOpen && (
+          <div style={{
+            margin: '4px 8px 8px',
+            borderTop: `1px solid ${C.linea}`,
+            paddingTop: 4,
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: 1,
+          }}>
+            {stockSub.map(({ to, label, icon: Icon, exact }) => {
+              const isActive = exact ? location.pathname === to : location.pathname.startsWith(to)
+              return (
+                <button
+                  key={to}
+                  onClick={() => go(to)}
+                  style={{
+                    display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center', gap: 6,
+                    padding: '12px 8px',
+                    background: isActive ? 'rgba(242,237,227,0.06)' : 'none',
+                    border: 'none', cursor: 'pointer',
+                    borderRadius: '0 10px 10px 0',
+                    color: isActive ? C.crema : C.piedra,
+                    transition: 'color 0.12s, background 0.12s',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  <Icon style={{ width: 18, height: 18 }} />
+                  <span style={{ fontSize: 10.5, fontWeight: 500 }}>{label}</span>
+                </button>
+              )
+            })}
+          </div>
+        )}
       </div>
     </>,
     document.body
