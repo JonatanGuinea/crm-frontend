@@ -22,15 +22,16 @@ export default function SplashScreen({ onDone }) {
         opacity:    phase >= 2 ? 0 : 1,
         transition: phase >= 2 ? 'opacity 0.55s ease' : 'none',
         fontFamily: 'Geist, system-ui, sans-serif',
+        overflow: 'hidden',
       }}
     >
-      {/* Trama sutil */}
+      {/* Trama */}
       <div
         aria-hidden="true"
         style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
           background: `url(${tramaUrl}) 0 0/768px 768px repeat`,
-          opacity: 0.45,
+          opacity: 0.75,
         }}
       />
 
