@@ -241,6 +241,7 @@ function SidebarAvatar({ avatar, name }) {
 function ProfileDropdown({ profile, user, compact = false, position = 'up' }) {
   const { logout } = useAuth()
   const navigate = useNavigate()
+  const qc = useQueryClient()
   const [open, setOpen] = useState(false)
   const [menuPos, setMenuPos] = useState({})
   const btnRef = useRef()
@@ -354,7 +355,7 @@ function ProfileDropdown({ profile, user, compact = false, position = 'up' }) {
 
           <div style={{ borderTop: `1px solid ${C.linea}`, padding: '4px 0' }}>
             <button
-              onClick={() => { setOpen(false); logout() }}
+              onClick={() => { setOpen(false); qc.clear(); logout() }}
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', gap: 10,
                 padding: '9px 14px', background: 'none', border: 'none',
