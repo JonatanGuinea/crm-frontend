@@ -235,16 +235,12 @@ export default function MovementsPage() {
                 <FunnelSvg style={{ width: 14, height: 14 }} />
                 Filtros{hasActiveFilters && ` (${activeFilterCount})`}
               </button>
-              <Link to="/finances/categories"
-                style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 12px', borderRadius: '0 9px 9px 0', border: `1px solid ${C.linea}`, color: C.piedra, fontSize: 13, fontWeight: 500, textDecoration: 'none' }}
-                onMouseEnter={e => { e.currentTarget.style.color = C.crema; e.currentTarget.style.borderColor = C.arena }}
-                onMouseLeave={e => { e.currentTarget.style.color = C.piedra; e.currentTarget.style.borderColor = C.linea }}>
-                <TagSvg style={{ width: 14, height: 14 }} /> Categorías
-              </Link>
+
               <button onClick={() => setMovementModal('expense')} disabled={accounts.length === 0}
                 style={{ display: 'flex', alignItems: 'center', gap: 5, height: 34, padding: '0 12px', background: 'rgba(229,131,115,0.12)', color: C.err, border: `1px solid rgba(229,131,115,0.25)`, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 500, cursor: accounts.length === 0 ? 'not-allowed' : 'pointer', opacity: accounts.length === 0 ? 0.4 : 1 }}>
                 <TrendDownSvg style={{ width: 14, height: 14 }} /> Egreso
               </button>
+              
               <button onClick={() => setMovementModal('income')} disabled={accounts.length === 0}
                 style={{ display: 'flex', alignItems: 'center', gap: 5, height: 34, padding: '0 12px', background: 'rgba(125,190,147,0.12)', color: C.ok, border: `1px solid rgba(125,190,147,0.25)`, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 500, cursor: accounts.length === 0 ? 'not-allowed' : 'pointer', opacity: accounts.length === 0 ? 0.4 : 1 }}>
                 <TrendUpSvg style={{ width: 14, height: 14 }} /> Ingreso
