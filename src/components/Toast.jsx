@@ -50,13 +50,12 @@ export function ToastProvider({ children }) {
           {toasts.map(toast => (
             <div
               key={toast.id}
-              style={{ animation: `${toast.exiting ? 'toast-out' : 'toast-in'} 0.25s cubic-bezier(0.4,0,0.2,1) forwards` }}
               className={`flex items-start gap-3 px-4 py-3 border shadow-lg backdrop-blur-xl pointer-events-auto
                 ${toast.type === 'success'
                   ? 'bg-surface/90 border-brand/30 text-fg'
                   : 'bg-surface/90 border-danger/30 text-fg'
                 }`}
-              style={{ borderRadius: '0 12px 12px 0' }}
+              style={{ animation: `${toast.exiting ? 'toast-out' : 'toast-in'} 0.25s cubic-bezier(0.4,0,0.2,1) forwards`, borderRadius: '0 12px 12px 0' }}
             >
               {toast.type === 'success'
                 ? <CheckCircleSvg className="w-5 h-5 text-brand shrink-0 mt-0.5" />
