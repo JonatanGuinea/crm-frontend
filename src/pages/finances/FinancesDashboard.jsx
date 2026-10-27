@@ -132,6 +132,15 @@ export default function FinancesDashboard() {
 
       {/* ── KPI cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+
+        <KpiCard
+          loading={isLoading}
+          label="Saldo en caja"
+          value={`$${fmtKPI(data?.totalBalance)}`}
+          sub={accountNames || 'Sin cuentas'}
+          valueColor={Number(data?.totalBalance) >= 0 ? C.crema : C.err}
+        />
+        
         <KpiCard
           loading={isLoading}
           label="Resultado neto del mes"
@@ -157,13 +166,7 @@ export default function FinancesDashboard() {
             : 'Sin pendientes'}
           valueColor={Number(data?.pendingExpense) > 0 ? C.warn : C.crema}
         />
-        <KpiCard
-          loading={isLoading}
-          label="Saldo en caja"
-          value={`$${fmtKPI(data?.totalBalance)}`}
-          sub={accountNames || 'Sin cuentas'}
-          valueColor={Number(data?.totalBalance) >= 0 ? C.crema : C.err}
-        />
+        
       </div>
 
       {/* ── Main 2-col layout ── */}
