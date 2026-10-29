@@ -185,6 +185,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [registered, setRegistered] = useState(false)
   const [registeredEmail, setRegisteredEmail] = useState('')
+  const [suspended, setSuspended] = useState(false)
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -211,10 +212,40 @@ export default function RegisterPage() {
       setRegisteredEmail(form.email)
       setRegistered(true)
     } catch (err) {
+      if (err.response?.status === 503) {
+        setSuspended(true)
+        return
+      }
       setError(err.response?.data?.error || 'Error al registrarse')
     } finally {
       setLoading(false)
     }
+  }
+
+  if (suspended) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20, textAlign: 'center' }}>
+        <div style={{ width: 56, height: 56, borderRadius: '0 18px 18px 0', background: C.grafito, border: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={C.arena} strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+          </svg>
+        </div>
+        <div>
+          <h2 style={{ fontSize: 24, fontWeight: 600, letterSpacing: '-0.025em', color: C.crema }}>Registros pausados</h2>
+          <p style={{ fontSize: 14.5, color: C.arena, marginTop: 8, lineHeight: 1.6 }}>
+            Los nuevos registros están temporalmente suspendidos.<br />
+            Si fuiste invitado, accedé mediante el link de tu invitación.
+          </p>
+        </div>
+        <div style={{ height: 1, background: C.linea }} />
+        <p style={{ fontSize: 14.5, color: C.piedra, textAlign: 'center' }}>
+          ¿Ya tenés cuenta?{' '}
+          <Link to="/login" style={{ color: C.crema, textDecoration: 'none', fontWeight: 500 }}>
+            Iniciar sesión
+          </Link>
+        </p>
+      </div>
+    )
   }
 
   if (registered) {
