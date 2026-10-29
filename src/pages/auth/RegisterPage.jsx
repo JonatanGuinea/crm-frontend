@@ -185,7 +185,9 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [registered, setRegistered] = useState(false)
   const [registeredEmail, setRegisteredEmail] = useState('')
-  const [suspended, setSuspended] = useState(false)
+  const [suspended, setSuspended] = useState(
+    import.meta.env.VITE_REGISTRATIONS_OPEN === 'false' && !inviteToken
+  )
 
   async function handleSubmit(e) {
     e.preventDefault()
