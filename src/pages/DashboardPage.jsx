@@ -12,14 +12,8 @@ import { getFinancesDashboard } from '../api/finances'
 import { useAuth } from '../context/AuthContext'
 import { fmt } from '../utils/fmt'
 import {
-  ArrowRightIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from '@heroicons/react/24/outline'
-import {
   AgendaIcon,
   CarpetaIcon,
-  ClienteIcon,
   CobroIcon,
   MasIcon,
   PresupuestoIcon,
@@ -52,6 +46,33 @@ const card = {
   background: C.s1,
   border: `1px solid ${C.linea}`,
   borderRadius: '0 16px 16px 0',
+}
+
+// ── svg helpers ───────────────────────────────────────────────────────────────
+
+function ArrowRightSvg({ style }) {
+  return (
+    <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </svg>
+  )
+}
+
+function ChevronLeftSvg({ style }) {
+  return (
+    <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="15 18 9 12 15 6" />
+    </svg>
+  )
+}
+
+function ChevronRightSvg({ style }) {
+  return (
+    <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  )
 }
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -155,7 +176,7 @@ function SeeAllLink({ to, label = 'Ver todos' }) {
       onMouseEnter={e => e.currentTarget.style.color = C.arena}
       onMouseLeave={e => e.currentTarget.style.color = C.piedra}
     >
-      {label} <ArrowRightIcon style={{ width: 11, height: 11 }} />
+      {label} <ArrowRightSvg style={{ width: 11, height: 11 }} />
     </Link>
   )
 }
@@ -747,7 +768,7 @@ function PendingMovementsPanel({ movements, currency }) {
           <button onClick={prev} style={navBtn(false)}
             onMouseEnter={e => e.currentTarget.style.color = C.arena}
             onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
-            <ChevronLeftIcon style={{ width: 14, height: 14 }} />
+            <ChevronLeftSvg style={{ width: 14, height: 14 }} />
           </button>
           <span style={{ fontSize: 11.5, fontWeight: 500, color: C.crema, textTransform: 'capitalize', minWidth: 120, textAlign: 'center' }}>
             {monthTitle}
@@ -755,7 +776,7 @@ function PendingMovementsPanel({ movements, currency }) {
           <button onClick={next} disabled={isMax} style={navBtn(isMax)}
             onMouseEnter={e => !isMax && (e.currentTarget.style.color = C.arena)}
             onMouseLeave={e => !isMax && (e.currentTarget.style.color = C.piedra)}>
-            <ChevronRightIcon style={{ width: 14, height: 14 }} />
+            <ChevronRightSvg style={{ width: 14, height: 14 }} />
           </button>
           <div style={{ marginLeft: 8 }}>
             <SeeAllLink to="/finances/movements" />
