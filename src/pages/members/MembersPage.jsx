@@ -159,24 +159,22 @@ export default function MembersPage() {
     <div style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* Header */}
-      <div style={{ padding: '20px 24px 16px', borderBottom: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: `1px solid ${C.linea}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <EquipoIcon style={{ width: 18, height: 18, color: C.crema }} />
-          <div>
-            <h1 style={{ fontSize: 18, fontWeight: 700, color: C.crema, margin: 0, lineHeight: 1.2 }}>Equipo</h1>
-            {!isLoading && (
-              <p style={{ fontSize: 12, color: C.piedra, margin: 0, marginTop: 2 }}>
-                {members.length} {members.length === 1 ? 'miembro' : 'miembros'}
-              </p>
-            )}
-          </div>
+          <EquipoIcon style={{ width: 18, height: 18, color: C.arena }} />
+          <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Equipo</h2>
+          {!isLoading && (
+            <span className="hidden sm:inline" style={{ fontSize: 12, color: C.piedra }}>
+              {members.length} {members.length === 1 ? 'miembro' : 'miembros'}
+            </span>
+          )}
         </div>
         {canInvite && (
           <button
             onClick={() => { setShowInvite(true); setInviteError('') }}
             style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
             <PlusSvg style={{ width: 13, height: 13 }} />
-            Invitar miembro
+            <span className="hidden sm:inline">Invitar miembro</span>
           </button>
         )}
       </div>
@@ -192,7 +190,7 @@ export default function MembersPage() {
       )}
 
       {/* Content */}
-      <div className="px-4 pt-4 pb-10 md:px-6 md:pt-5">
+      <div className="px-4 pt-6 pb-10 md:px-6">
         {isLoading ? (
           <div style={{ padding: '60px 0', textAlign: 'center', fontSize: 13, color: C.piedra }}>Cargando…</div>
         ) : members.length === 0 ? (

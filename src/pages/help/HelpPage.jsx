@@ -529,15 +529,15 @@ export default function HelpPage() {
       <main ref={mainRef} style={{ flex: 1, overflowY: 'auto', minWidth: 0 }}>
 
         {/* Header */}
-        <div style={{ padding: '20px 24px 16px', borderBottom: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', gap: 10 }}>
-          <QuestionSvg style={{ width: 18, height: 18, color: C.crema }} />
-          <div>
-            <h1 style={{ fontSize: 18, fontWeight: 700, color: C.crema, margin: 0, lineHeight: 1.2 }}>Manual de uso</h1>
-            <p style={{ fontSize: 12, color: C.piedra, margin: 0, marginTop: 2 }}>Documentación del CRM · {TOTAL_QUESTIONS} preguntas frecuentes</p>
+        <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: `1px solid ${C.linea}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+            <QuestionSvg style={{ width: 18, height: 18, color: C.arena, flexShrink: 0 }} />
+            <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0, whiteSpace: 'nowrap' }}>Manual de uso</h2>
+            <span className="hidden sm:inline" style={{ fontSize: 12, color: C.piedra, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{TOTAL_QUESTIONS} preguntas frecuentes</span>
           </div>
         </div>
 
-        <div style={{ maxWidth: 680, margin: '0 auto', padding: '24px 24px 48px', display: 'flex', flexDirection: 'column', gap: 32 }}>
+        <div className="px-4 pt-6 pb-12 md:px-6" style={{ maxWidth: 680, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 32 }}>
 
           {/* Chips mobile */}
           <div className="flex flex-wrap lg:hidden" style={{ gap: 6 }}>

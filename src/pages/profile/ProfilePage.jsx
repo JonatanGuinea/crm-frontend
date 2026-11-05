@@ -133,12 +133,12 @@ export default function ProfilePage() {
     <div style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* Header */}
-      <div style={{ padding: '20px 24px 16px', borderBottom: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', gap: 10 }}>
-        <UserSvg style={{ width: 18, height: 18, color: C.crema }} />
-        <div>
-          <h1 style={{ fontSize: 18, fontWeight: 700, color: C.crema, margin: 0, lineHeight: 1.2 }}>Mi perfil</h1>
+      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: `1px solid ${C.linea}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+          <UserSvg style={{ width: 18, height: 18, color: C.arena, flexShrink: 0 }} />
+          <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0, whiteSpace: 'nowrap' }}>Mi perfil</h2>
           {!isLoading && data?.email && (
-            <p style={{ fontSize: 12, color: C.piedra, margin: 0, marginTop: 2 }}>{data.email}</p>
+            <span className="hidden sm:inline" style={{ fontSize: 12, color: C.piedra, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{data.email}</span>
           )}
         </div>
       </div>
@@ -155,7 +155,7 @@ export default function ProfilePage() {
       {isLoading ? (
         <div style={{ padding: '60px 0', textAlign: 'center', fontSize: 13, color: C.piedra }}>Cargando…</div>
       ) : (
-        <div style={{ padding: '24px 24px 40px', maxWidth: 520 }}>
+        <div className="px-4 pt-6 pb-10 md:px-6" style={{ maxWidth: 520 }}>
 
           {/* Avatar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 28 }}>

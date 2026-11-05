@@ -198,15 +198,17 @@ export default function OrgSettingsPage() {
     <div style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* Header */}
-      <div style={{ padding: '20px 24px 16px', borderBottom: `1px solid ${C.linea}`, display: 'flex', alignItems: 'center', gap: 10 }}>
-        <AjustesIcon style={{ width: 18, height: 18, color: C.crema }} />
-        <div>
-          <h1 style={{ fontSize: 18, fontWeight: 700, color: C.crema, margin: 0, lineHeight: 1.2 }}>Organización</h1>
-          {orgData?.name && <p style={{ fontSize: 12, color: C.piedra, margin: 0, marginTop: 2 }}>{orgData.name}</p>}
+      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: `1px solid ${C.linea}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+          <AjustesIcon style={{ width: 18, height: 18, color: C.arena, flexShrink: 0 }} />
+          <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Organización</h2>
+          {orgData?.name && (
+            <span className="hidden sm:inline" style={{ fontSize: 12, color: C.piedra, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{orgData.name}</span>
+          )}
         </div>
       </div>
 
-      <div style={{ padding: '24px 24px 40px', maxWidth: 580 }}>
+      <div className="px-4 pt-6 pb-10 md:px-6" style={{ maxWidth: 580 }}>
 
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 28 }}>
