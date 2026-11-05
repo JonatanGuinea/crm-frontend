@@ -670,7 +670,7 @@ export default function TasksPage() {
   }
 
   return (
-    <div className="px-4 pt-5 pb-10 md:px-6 md:pt-7" style={{ fontFamily: 'Geist, system-ui, sans-serif', display: 'flex', flexDirection: 'column', gap: 20, minHeight: '100%' }}>
+    <div style={{ fontFamily: 'Geist, system-ui, sans-serif', display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
       <style>{`
         @media (prefers-reduced-motion: reduce) {
           *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
@@ -685,7 +685,7 @@ export default function TasksPage() {
       `}</style>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: `1px solid ${C.linea}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <TasksSvg style={{ width: 18, height: 18, color: C.arena }} />
           <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Tareas</h2>
@@ -703,10 +703,12 @@ export default function TasksPage() {
             style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}
           >
             <MasIcon style={{ width: 12, height: 12 }} />
-            Nueva
+            <span className="hidden sm:inline">Nueva</span>
           </button>
         </div>
       </div>
+
+      <div className="px-4 pt-6 pb-10 md:px-6" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 20 }}>
 
       {tab === 'history' && <HistoryView />}
 
@@ -920,6 +922,8 @@ export default function TasksPage() {
           )}
         </>
       )}
+
+      </div>
 
       {modal && (
         <TaskModal

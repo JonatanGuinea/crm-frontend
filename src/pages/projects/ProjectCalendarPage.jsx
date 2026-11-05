@@ -139,14 +139,19 @@ export default function ProjectCalendarPage() {
   const totalW = days.length * DAY_W
 
   return (
-    <div className="px-4 pt-5 pb-10 md:px-6 md:pt-7" style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
-      {/* Toolbar */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
+    <div style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
+      {/* Header */}
+      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: `1px solid ${C.linea}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <AgendaIcon style={{ width: 18, height: 18, color: C.arena }} />
           <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Agenda de Proyectos</h2>
         </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+      </div>
+
+      <div className="px-4 pt-6 pb-10 md:px-6">
+
+      {/* Toolbar */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 16 }}>
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
             style={{ height: 34, padding: '0 12px', background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', color: C.crema, fontSize: 13, outline: 'none', appearance: 'none', cursor: 'pointer' }}
           >
@@ -178,7 +183,6 @@ export default function ProjectCalendarPage() {
               <ChevronRSvg />
             </button>
           </div>
-        </div>
       </div>
 
       {/* Leyenda */}
@@ -334,6 +338,8 @@ export default function ProjectCalendarPage() {
           </div>
         </>
       )}
+
+      </div>
     </div>
   )
 }

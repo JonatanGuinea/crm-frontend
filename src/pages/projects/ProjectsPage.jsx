@@ -263,9 +263,9 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="px-4 pt-5 pb-10 md:px-6 md:pt-7" style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
+    <div style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
       {/* Título + controles */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10, flexWrap: 'wrap' }}>
+      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: `1px solid ${C.linea}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <ProyectoIcon style={{ width: 18, height: 18, color: C.arena }} />
           <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Proyectos</h2>
@@ -284,15 +284,17 @@ export default function ProjectsPage() {
               style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', background: C.crema, color: C.bg, borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}
             >
               <MasIcon style={{ width: 12, height: 12 }} />
-              Nuevo
+              <span className="hidden sm:inline">Nuevo</span>
             </button>
           )}
         </div>
       </div>
 
+      <div className="px-4 pt-6 pb-10 md:px-6">
+
       {/* Tab historial */}
       {tab === 'history' && (
-        <div style={{ maxWidth: 680, marginTop: 16 }}>
+        <div style={{ maxWidth: 680 }}>
           {historyData.length === 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 0', gap: 10, color: C.piedra }}>
               <ClockSvg style={{ width: 36, height: 36, opacity: 0.3 }} />
@@ -438,6 +440,8 @@ export default function ProjectsPage() {
           )}
         </>
       )}
+
+      </div>
 
       {modalOpen && (
         <ProjectModal

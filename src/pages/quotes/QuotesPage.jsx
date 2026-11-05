@@ -412,19 +412,19 @@ export default function QuotesPage() {
 
   // ── render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="px-4 pt-5 pb-10 md:px-6 md:pt-7" style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
+    <div style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <PresupuestoIcon style={{ width: 18, height: 18, color: C.arena }} />
+      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: `1px solid ${C.linea}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+          <PresupuestoIcon style={{ width: 18, height: 18, color: C.arena, flexShrink: 0 }} />
           <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Presupuestos</h2>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           <button
             onClick={() => setShowHistory(v => !v)}
             style={{
-              height: 36, padding: '0 14px', background: showHistory ? C.s2 : 'none',
+              height: 34, padding: '0 14px', background: showHistory ? C.s2 : 'none',
               border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0',
               color: C.piedra, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit',
               transition: 'color 0.12s, border-color 0.12s',
@@ -449,11 +449,13 @@ export default function QuotesPage() {
               onMouseLeave={e => e.currentTarget.style.background = C.crema}
             >
               <MasIcon style={{ width: 12, height: 12 }} />
-               Nuevo
+              <span className="hidden sm:inline">Nuevo</span>
             </button>
           )}
         </div>
       </div>
+
+      <div className="px-4 pt-6 pb-10 md:px-6">
 
       {/* Historial view */}
       {showHistory && (
@@ -951,6 +953,8 @@ export default function QuotesPage() {
           )}
         </>
       )}
+
+      </div>
 
       {/* Dropdown Nuevo */}
       {newMenuOpen && createPortal(

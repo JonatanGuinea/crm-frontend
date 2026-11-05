@@ -199,27 +199,27 @@ export default function ProvidersPage() {
   const tdStyle = { padding: '12px 14px' }
 
   return (
-    <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 24 }} className="md:p-8">
+    <div style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <StoreSvg style={{ width: 18, height: 18, color: C.arena }} />
-            <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Proveedores</h2>
-          </div>
-          <p style={{ fontSize: 12, color: C.piedra, marginTop: 2 }}>
+      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: `1px solid ${C.linea}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <StoreSvg style={{ width: 18, height: 18, color: C.arena }} />
+          <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Proveedores</h2>
+          <span className="hidden sm:inline" style={{ fontSize: 12, color: C.piedra }}>
             {suppliers.length} proveedor{suppliers.length !== 1 ? 'es' : ''}{search ? ' (filtrados)' : ''}
-          </p>
+          </span>
         </div>
         {canWrite && (
           <button onClick={() => setModal('new')}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: '0 10px 10px 0', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
-            <PlusSvg style={{ width: 16, height: 16 }} />
+            style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', borderRadius: '0 9px 9px 0', background: C.crema, color: C.bg, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+            <PlusSvg style={{ width: 14, height: 14 }} />
             Nuevo
           </button>
         )}
       </div>
+
+      <div className="px-4 pt-6 pb-10 md:px-6" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
       {/* Buscador */}
       <div style={{ position: 'relative', maxWidth: 320 }}>
@@ -411,6 +411,8 @@ export default function ProvidersPage() {
           </div>
         </>
       )}
+
+      </div>
 
       {(modal === 'new' || (modal && typeof modal === 'object')) && (
         <SupplierModal

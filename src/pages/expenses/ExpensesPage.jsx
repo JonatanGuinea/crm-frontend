@@ -64,10 +64,10 @@ export default function ExpensesPage() {
   const totalFiltered = expenses.reduce((acc, e) => acc + e.amount, 0)
 
   return (
-    <div className="px-4 pt-5 pb-10 md:px-6 md:pt-7" style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
+    <div style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 20 }}>
+      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: `1px solid ${C.linea}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <TrendDownSvg style={{ width: 18, height: 18, color: C.arena }} />
           <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Egresos</h2>
@@ -81,6 +81,8 @@ export default function ExpensesPage() {
           </button>
         )}
       </div>
+
+      <div className="px-4 pt-6 pb-10 md:px-6">
 
       {/* Filtros */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
@@ -218,6 +220,8 @@ export default function ExpensesPage() {
           <Pagination pagination={pagination} onPageChange={setPage} />
         </>
       )}
+
+      </div>
 
       {(modalOpen || editing) && (
         <ExpenseModal

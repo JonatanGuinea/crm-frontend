@@ -97,10 +97,10 @@ export default function ClientsPage() {
   })
 
   return (
-    <div className="px-4 pt-5 pb-10 md:px-6 md:pt-7" style={{ width: '100%', fontFamily: 'Geist, system-ui, sans-serif' }}>
+    <div style={{ width: '100%', fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* ── Header ──────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10, flexWrap: 'wrap' }}>
+      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: `1px solid ${C.linea}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <ClienteIcon style={{ width: 18, height: 18, color: C.arena }} />
           <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>Clientes</h2>
@@ -127,6 +127,8 @@ export default function ClientsPage() {
           )}
         </div>
       </div>
+
+      <div className="px-4 pt-6 pb-10 md:px-6">
 
       {/* ── Historial ─────────────────────────────────────────────── */}
       {tab === 'history' && (
@@ -445,6 +447,8 @@ export default function ClientsPage() {
           )}
         </>
       )}
+
+      </div>
 
       {modalOpen && (
         <ClientModal

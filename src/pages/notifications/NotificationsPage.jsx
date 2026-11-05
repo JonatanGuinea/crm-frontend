@@ -4,6 +4,7 @@ import { getNotifications, markAllAsRead, deleteNotification } from '../../api/n
 import { getPendingInvitations, acceptInvitation, declineInvitation } from '../../api/invitations'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate, Link } from 'react-router-dom'
+import { CampanaIcon } from '../../components/DuIcons'
 
 const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
 
@@ -123,17 +124,22 @@ export default function NotificationsPage() {
   })
 
   return (
-    <div className="px-4 pt-5 pb-10 md:px-6 md:pt-7" style={{ maxWidth: 640, fontFamily: 'Geist, system-ui, sans-serif' }}>
+    <div style={{ fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>
-          Notificaciones
-        </h2>
+      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: `1px solid ${C.linea}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <CampanaIcon style={{ width: 18, height: 18, color: C.arena }} />
+          <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0 }}>
+            Notificaciones
+          </h2>
+        </div>
         {!isEmpty && (
           <span style={{ fontSize: 11, color: C.piedra }}>{notifications.length + invitations.length} en total</span>
         )}
       </div>
+
+      <div className="px-4 pt-6 pb-10 md:px-6" style={{ maxWidth: 640 }}>
 
       {isLoading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: '48px 0' }}>
@@ -259,6 +265,8 @@ export default function NotificationsPage() {
           )}
         </div>
       )}
+
+      </div>
 
       {/* Modal confirmar rechazo */}
       {decliningId && (

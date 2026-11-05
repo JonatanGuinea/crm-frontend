@@ -915,35 +915,17 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="px-4 pt-5 pb-10 md:px-6 md:pt-7" style={{ width: '100%', fontFamily: 'Geist, system-ui, sans-serif' }}>
+    <div style={{ width: '100%', fontFamily: 'Geist, system-ui, sans-serif' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 28, flexWrap: 'wrap' }}>
-        <div>
+      <div className="px-4 pt-5 pb-4 md:px-6 md:pt-7" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: `1px solid ${C.linea}` }}>
+        <div style={{ minWidth: 0 }}>
           <h1 style={{ fontSize: 24, fontWeight: 600, letterSpacing: '-0.03em', color: C.crema, lineHeight: 1.2 }}>
             {greeting(profile?.name ?? user?.name)}
           </h1>
           <p style={{ fontSize: 13, color: C.piedra, marginTop: 5, textTransform: 'capitalize' }}>{fmtDate()}</p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-          {!isMember && (
-            <Link
-              to="/clients"
-              style={{ ...actionBtnBase, background: C.s2, border: `1px solid ${C.linea}`, color: C.arena }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.s3; e.currentTarget.style.color = C.crema }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = C.s2; e.currentTarget.style.color = C.arena }}
-            >
-              <MasIcon style={{ width: 13, height: 13 }} />Cliente
-            </Link>
-          )}
-          <Link
-            to="/projects"
-            style={{ ...actionBtnBase, background: C.s2, border: `1px solid ${C.linea}`, color: C.arena }}
-            onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.s3; e.currentTarget.style.color = C.crema }}
-            onMouseLeave={e => { e.currentTarget.style.backgroundColor = C.s2; e.currentTarget.style.color = C.arena }}
-          >
-            <MasIcon style={{ width: 13, height: 13 }} />Proyecto
-          </Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
           {!isMember && (
             <Link
               to="/quotes"
@@ -951,11 +933,13 @@ export default function DashboardPage() {
               onMouseEnter={e => e.currentTarget.style.backgroundColor = '#E8E3D9'}
               onMouseLeave={e => e.currentTarget.style.backgroundColor = C.crema}
             >
-              <MasIcon style={{ width: 13, height: 13 }} />Presupuesto
+              <MasIcon style={{ width: 13, height: 13 }} /><span className="hidden sm:inline">Presupuesto</span>
             </Link>
           )}
         </div>
       </div>
+
+      <div className="px-4 pt-6 pb-10 md:px-6">
 
       {/* KPIs */}
       {isMember ? (
@@ -1045,6 +1029,7 @@ export default function DashboardPage() {
         </div>
       )}
 
+      </div>
     </div>
   )
 }
