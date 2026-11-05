@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { useAuth } from '../../context/AuthContext'
 
 const C = { bg: '#0B0B0C', s1: '#141415', s2: '#1E1E20', s3: '#26262A', linea: '#2C2C2F', crema: '#F2EDE3', arena: '#B9B4AA', piedra: '#8C877E', ok: '#7DBE93', warn: '#E2B663', err: '#E58373', info: '#8EB1DE' }
 
@@ -30,6 +31,9 @@ function CubeSvg({ style }) {
 }
 function BanknotesSvg({ style }) {
   return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="12" rx="2" /><circle cx="12" cy="12" r="2" /><path d="M6 12h.01M18 12h.01" /></svg>
+}
+function CardSvg({ style }) {
+  return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /><line x1="6" y1="15" x2="10" y2="15" /></svg>
 }
 function ChartSvg({ style }) {
   return <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
@@ -70,7 +74,7 @@ const SECTIONS = [
       },
       {
         q: '¿Cómo está organizado el sistema?',
-        a: 'El CRM tiene 9 módulos principales accesibles desde el menú lateral:\n\n• Dashboard — resumen general del negocio\n• Clientes — gestión de contactos y empresas\n• Proyectos — seguimiento de trabajos en curso\n• Tareas — kanban de actividades del equipo\n• Presupuestos — creación y envío de cotizaciones\n• Stock — inventario de productos\n• Finanzas — cuentas y movimientos\n• Reportes — análisis y exportación PDF\n• Equipo — miembros y permisos',
+        a: 'El CRM tiene 10 módulos principales accesibles desde el menú lateral:\n\n• Dashboard — resumen general del negocio\n• Clientes — gestión de contactos y empresas\n• Proyectos — seguimiento de trabajos en curso\n• Tareas — kanban de actividades del equipo\n• Presupuestos — creación y envío de cotizaciones\n• Stock — inventario de productos\n• Finanzas — cuentas y movimientos\n• Membresías — cobros mensuales recurrentes a clientes\n• Reportes — análisis y exportación PDF\n• Equipo — miembros y permisos',
       },
       {
         q: '¿Cómo invitar miembros al equipo?',
@@ -78,7 +82,7 @@ const SECTIONS = [
       },
       {
         q: '¿Qué diferencia hay entre los roles?',
-        a: '• Dueño (owner): acceso total. Es el único que puede ver y modificar la configuración de la empresa (/organization).\n• Administrador (admin): acceso total excepto la configuración de la empresa.\n• Miembro (member): puede ver clientes, proyectos, tareas y stock. No ve finanzas, presupuestos ni reportes.',
+        a: '• Dueño (owner): acceso total. Es el único que puede ver y modificar la configuración de la empresa (/organization).\n• Administrador (admin): acceso total excepto la configuración de la empresa.\n• Miembro (member): puede ver clientes, proyectos, tareas y stock. No ve finanzas, membresías, presupuestos ni reportes.',
       },
       {
         q: '¿Cómo cambio entre modo claro y oscuro?',
@@ -243,7 +247,7 @@ const SECTIONS = [
       },
       {
         q: '¿Cuáles son los estados de un presupuesto?',
-        a: '• Borrador: en preparación, no enviado\n• Enviado: el cliente ya lo recibió\n• Aprobado: el cliente aceptó\n• Rechazado: el cliente rechazó (con motivo registrado)\n• Vencido: superó la fecha límite sin respuesta\n• Firmado: tiene firma digital del cliente',
+        a: '• Borrador: en preparación, no enviado\n• Enviado: el cliente ya lo recibió\n• Aprobado: el cliente aceptó\n• Rechazado: el cliente rechazó (con motivo registrado)\n• Vencido: superó la fecha de validez sin respuesta (se marca automáticamente)\n• Firmado: tiene firma digital del cliente',
       },
       {
         q: '¿Cómo envío un presupuesto al cliente?',
@@ -252,6 +256,10 @@ const SECTIONS = [
       {
         q: '¿Qué pasa si el cliente no responde el presupuesto?',
         a: 'El sistema actúa automáticamente en dos momentos:\n\n• A las 48 hs de enviado sin respuesta: se envía un email de recordatorio al cliente con el mismo enlace al presupuesto. Se envía una sola vez por presupuesto.\n\n• 1 día antes de que venza (si sigue sin respuesta): el equipo completo recibe una notificación interna que dice "El cliente no respondió el presupuesto #X y vence mañana". Si para el día del vencimiento aún no hubo respuesta, la notificación se actualiza a "vence hoy" y se reactiva como no leída.\n\nSi el presupuesto ya venció al momento de la verificación, no se envía el email de recordatorio.',
+      },
+      {
+        q: '¿Qué pasa cuando un presupuesto vence?',
+        a: 'La fecha de validez incluye ese día completo. A partir del día siguiente, si el presupuesto sigue "Enviado" sin respuesta, el sistema lo pasa automáticamente a "Vencido" y lo registra en el historial como "Sistema".\n\nDesde ese momento el cliente ya no puede aprobarlo, firmarlo ni rechazarlo desde el enlace: ve un aviso de que el plazo venció y que debe contactarte para pedir uno nuevo.\n\nLos borradores no vencen automáticamente: si un borrador tiene la fecha pasada, actualizala antes de enviarlo. Los presupuestos sin fecha de validez nunca vencen.',
       },
       {
         q: '¿Qué es la firma digital?',
@@ -332,7 +340,63 @@ const SECTIONS = [
       },
       {
         q: '¿Qué son los movimientos pendientes?',
-        a: 'Son movimientos en estado "pendiente" (por ejemplo, una factura a cobrar o un pago a realizar). Se muestran separados de los movimientos confirmados y aparecen en el indicador de "Cuentas por cobrar/pagar" del Dashboard.',
+        a: 'Son movimientos en estado "pendiente" (por ejemplo, una factura a cobrar o un pago a realizar). Se muestran separados de los movimientos confirmados y aparecen en los indicadores "A cobrar" y "A pagar" del resumen de Finanzas.\n\nCon las flechas del selector de mes podés avanzar a meses futuros para ver los pendientes de ese mes (por ejemplo, los cobros de membresías).',
+      },
+    ],
+  },
+  {
+    id: 'membresias',
+    label: 'Membresías',
+    icon: CardSvg,
+    color: C.ok,
+    bg: 'rgba(125,190,147,0.12)',
+    description: 'Cobros mensuales recurrentes a clientes, con recordatorio automático.',
+    memberHidden: true,
+    hiddenForMembers: true,
+    items: [
+      {
+        q: '¿Qué es una membresía?',
+        a: 'Es un cobro que se repite todos los meses a un mismo cliente: un abono, un plan de mantenimiento, una cuota mensual, etc.\n\nEn lugar de cargar el ingreso a mano cada mes, creás la membresía una sola vez y el sistema genera automáticamente los cobros pendientes en Finanzas.',
+      },
+      {
+        q: '¿Cómo creo una membresía?',
+        a: 'Ir a Membresías → "Nueva" y completar:\n• Cliente\n• Nombre (ej: "Plan mensual", "Mantenimiento web")\n• Monto mensual — en la moneda configurada para la empresa\n• Día de cobro — del 1 al 31\n• Fecha de inicio y, opcionalmente, fecha de fin\n• Cuenta donde se acredita el cobro\n• Categoría y notas (opcionales)\n\nNecesitás tener al menos una cuenta creada en Finanzas.',
+      },
+      {
+        q: '¿Qué pasa cuando creo una membresía?',
+        a: 'Se generan los cobros pendientes en Finanzas, uno por mes, hasta 12 meses adelante. A medida que pasa el tiempo el sistema extiende ese horizonte solo.\n\nLos cobros arrancan desde la fecha de inicio (o desde hoy si el inicio ya pasó): nunca se generan cobros hacia atrás.\n\nPodés verlos en Finanzas avanzando de mes con las flechas: aparecen en el indicador "A cobrar" y en la lista de movimientos pendientes.',
+      },
+      {
+        q: '¿Qué pasa si el día de cobro no existe en un mes?',
+        a: 'Si elegís un día que algunos meses no tienen (por ejemplo el 31, o el 29 en febrero), en esos meses el cobro vence el último día del mes.',
+      },
+      {
+        q: '¿Cómo registro que el cliente pagó?',
+        a: 'Igual que cualquier ingreso pendiente: en el resumen de Finanzas, en la lista de movimientos pendientes, usá el botón de confirmar del cobro.\n\nAl confirmarlo, el monto se suma al saldo de la cuenta con la fecha del día en que lo confirmás.',
+      },
+      {
+        q: '¿Qué pasa si un cobro se atrasa?',
+        a: 'Si la fecha de cobro pasa y el movimiento sigue pendiente:\n• En Finanzas aparece marcado como "Atrasado".\n• En Membresías se muestra el contador de cobros atrasados y el monto total adeudado.\n• El sistema envía automáticamente un email al cliente recordándole el pago. Se envía una sola vez por cobro, y solo si el cliente tiene email cargado.',
+      },
+      {
+        q: '¿Cómo cambio el monto, pauso o cancelo una membresía?',
+        a: 'Desde Membresías → "Editar". Podés cambiar el monto, el día de cobro, la cuenta, las fechas y el estado:\n• Activa: genera cobros normalmente.\n• Pausada: deja de generar cobros. Al reactivarla, vuelven a generarse desde ese día.\n• Cancelada: deja de generar cobros.\n\nAl guardar, todos los cobros pendientes desde hoy en adelante se actualizan con los datos nuevos. Los cobros ya atrasados y los ya confirmados no se modifican.',
+      },
+      {
+        q: '¿Qué pasa si elimino una membresía?',
+        a: 'Se borran todos sus cobros pendientes. Los cobros que ya fueron confirmados quedan registrados en Finanzas como ingresos normales.',
+      },
+      {
+        q: '¿Puedo saltear un mes?',
+        a: 'Por ahora no directamente: si borrás a mano un cobro pendiente de una membresía, el sistema lo vuelve a generar. Para no cobrar un período, pausá la membresía y reactivala después de la fecha de cobro de ese mes.',
+      },
+      {
+        q: '¿Dónde veo las membresías de un cliente?',
+        a: 'En la ficha del cliente (Clientes → el cliente) hay un panel "Membresías" con sus membresías, el día de cobro, el monto, el estado y los cobros atrasados.',
+      },
+      {
+        q: '¿Quién puede ver las membresías?',
+        a: 'Solo el Dueño y los Administradores. Los Miembros no ven el módulo ni el panel de membresías en la ficha del cliente.',
       },
     ],
   },
@@ -385,7 +449,7 @@ const SECTIONS = [
       },
       {
         q: '¿Qué puede hacer un Miembro vs un Administrador vs un Dueño?',
-        a: 'Miembro: Dashboard limitado, Clientes, Proyectos (ver y cambiar estado), Tareas, Stock.\n\nAdministrador: todo lo anterior + Presupuestos, Finanzas, Reportes, Equipo.\n\nDueño: todo lo anterior + Configuración de la empresa (único rol con acceso).',
+        a: 'Miembro: Dashboard limitado, Clientes, Proyectos (ver y cambiar estado), Tareas, Stock.\n\nAdministrador: todo lo anterior + Presupuestos, Finanzas, Membresías, Reportes, Equipo.\n\nDueño: todo lo anterior + Configuración de la empresa (único rol con acceso).',
       },
     ],
   },
@@ -414,7 +478,6 @@ const SECTIONS = [
   },
 ]
 
-const TOTAL_QUESTIONS = SECTIONS.reduce((a, s) => a + s.items.length, 0)
 
 // ── Componentes ───────────────────────────────────────────────────────────────
 
@@ -475,6 +538,12 @@ function Section({ section, innerRef }) {
 // ── Página principal ──────────────────────────────────────────────────────────
 
 export default function HelpPage() {
+  const { user } = useAuth()
+  const isMember = user?.role === 'member'
+  // hiddenForMembers: la sección no se muestra a Miembros (memberHidden solo agrega la etiqueta "Admin")
+  const sections = SECTIONS.filter(s => !(isMember && s.hiddenForMembers))
+  const totalQuestions = sections.reduce((a, s) => a + s.items.length, 0)
+
   const [activeId, setActiveId] = useState('inicio')
   const sectionRefs = useRef({})
   const mainRef     = useRef(null)
@@ -501,12 +570,12 @@ export default function HelpPage() {
             <QuestionSvg style={{ width: 16, height: 16, color: C.crema }} />
             <p style={{ fontSize: 13, fontWeight: 600, color: C.crema, margin: 0 }}>Manual de uso</p>
           </div>
-          <p style={{ fontSize: 11, color: C.piedra, margin: 0, marginTop: 3 }}>{SECTIONS.length} secciones · {TOTAL_QUESTIONS} preguntas</p>
+          <p style={{ fontSize: 11, color: C.piedra, margin: 0, marginTop: 3 }}>{sections.length} secciones · {totalQuestions} preguntas</p>
         </div>
 
         {/* Nav items */}
         <nav style={{ padding: '8px 8px 24px', display: 'flex', flexDirection: 'column', gap: 1 }}>
-          {SECTIONS.map(s => {
+          {sections.map(s => {
             const Icon     = s.icon
             const isActive = activeId === s.id
             return (
@@ -533,7 +602,7 @@ export default function HelpPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
             <QuestionSvg style={{ width: 18, height: 18, color: C.arena, flexShrink: 0 }} />
             <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: C.crema, margin: 0, whiteSpace: 'nowrap' }}>Manual de uso</h2>
-            <span className="hidden sm:inline" style={{ fontSize: 12, color: C.piedra, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{TOTAL_QUESTIONS} preguntas frecuentes</span>
+            <span className="hidden sm:inline" style={{ fontSize: 12, color: C.piedra, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{totalQuestions} preguntas frecuentes</span>
           </div>
         </div>
 
@@ -541,7 +610,7 @@ export default function HelpPage() {
 
           {/* Chips mobile */}
           <div className="flex flex-wrap lg:hidden" style={{ gap: 6 }}>
-            {SECTIONS.map(s => {
+            {sections.map(s => {
               const isActive = activeId === s.id
               return (
                 <button key={s.id} onClick={() => scrollTo(s.id)}
@@ -553,7 +622,7 @@ export default function HelpPage() {
           </div>
 
           {/* Secciones */}
-          {SECTIONS.map(s => (
+          {sections.map(s => (
             <Section key={s.id} section={s} innerRef={el => { sectionRefs.current[s.id] = el }} />
           ))}
 
