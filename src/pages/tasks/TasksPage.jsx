@@ -731,7 +731,7 @@ export default function TasksPage() {
 
           {/* Mobile: panel de filtros */}
           {filtersOpen && (
-            <div className="md:hidden" style={{ padding: 12, borderRadius: '0 12px 12px 0', border: `1px solid ${C.linea}`, background: C.s2, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div className="flex flex-col md:hidden" style={{ padding: 12, borderRadius: '0 12px 12px 0', border: `1px solid ${C.linea}`, background: C.s2, gap: 8 }}>
               <button onClick={() => setOnlyMine(v => !v)}
                 style={{ width: '100%', padding: '8px 12px', borderRadius: '0 9px 9px 0', border: `1px solid ${onlyMine ? C.crema : C.linea}`, fontSize: 13, fontWeight: 500, color: onlyMine ? C.bg : C.arena, background: onlyMine ? C.crema : 'none', textAlign: 'left', cursor: 'pointer' }}
               >

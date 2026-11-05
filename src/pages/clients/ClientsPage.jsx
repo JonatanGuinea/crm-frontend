@@ -289,7 +289,7 @@ export default function ClientsPage() {
                 </table>
               </div>
               {/* Mobile skeleton cards */}
-              <div className="md:hidden" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div className="flex flex-col md:hidden" style={{ gap: 10 }}>
                 {Array.from({ length: 4 }, (_, i) => (
                   <div key={i} style={{ ...card, padding: '16px 18px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>

@@ -165,7 +165,7 @@ export default function MembershipsPage() {
         ) : (
           <>
             {/* Mobile: cards */}
-            <div className="md:hidden" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div className="flex flex-col md:hidden" style={{ gap: 10 }}>
               {items.map(m => (
                 <div key={m.id} style={{ ...card, padding: '16px 18px' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
