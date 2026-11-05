@@ -37,7 +37,6 @@ export default function FinancesLayout() {
     setSelectedMonth(({ year, month }) => month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 })
   }
 
-  const isCurrentMonth = selectedMonth.year === _now.getFullYear() && selectedMonth.month === _now.getMonth() + 1
   const monthLabel = new Date(selectedMonth.year, selectedMonth.month - 1, 1)
     .toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
   const shortMonthLabel = new Date(selectedMonth.year, selectedMonth.month - 1, 1)
@@ -83,10 +82,10 @@ export default function FinancesLayout() {
               <span className="hidden sm:inline" style={{ fontSize: 13, fontWeight: 500, color: C.crema, textTransform: 'capitalize', padding: '0 8px', minWidth: 112, textAlign: 'center' }}>
                 {monthLabel}
               </span>
-              <button onClick={nextMonth} disabled={isCurrentMonth}
-                style={{ padding: 5, borderRadius: '0 6px 6px 0', background: 'none', border: 'none', cursor: isCurrentMonth ? 'not-allowed' : 'pointer', color: isCurrentMonth ? C.linea : C.piedra, display: 'flex' }}
-                onMouseEnter={e => { if (!isCurrentMonth) e.currentTarget.style.color = C.crema }}
-                onMouseLeave={e => { if (!isCurrentMonth) e.currentTarget.style.color = C.piedra }}>
+              <button onClick={nextMonth}
+                style={{ padding: 5, borderRadius: '0 6px 6px 0', background: 'none', border: 'none', cursor: 'pointer', color: C.piedra, display: 'flex' }}
+                onMouseEnter={e => e.currentTarget.style.color = C.crema}
+                onMouseLeave={e => e.currentTarget.style.color = C.piedra}>
                 <ChevronRSvg style={{ width: 14, height: 14 }} />
               </button>
             </div>
