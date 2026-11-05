@@ -38,6 +38,7 @@ import TasksPage from './pages/tasks/TasksPage'
 import QuotePublicPage from './pages/public/QuotePublicPage'
 import StockDashboard from './pages/stock/StockDashboard'
 import ReportsPage from './pages/reports/ReportsPage'
+import MembershipsPage from './pages/memberships/MembershipsPage'
 import ProductsPage from './pages/stock/ProductsPage'
 import ProductDetailPage from './pages/stock/ProductDetailPage'
 import ProvidersPage from './pages/stock/ProvidersPage'
@@ -116,6 +117,7 @@ export default function App() {
                 <Route path="accounts" element={<AccountsPage />} />
                 <Route path="categories" element={<CategoriesPage />} />
               </Route>
+              <Route path="/memberships" element={<AdminRoute><MembershipsPage /></AdminRoute>} />
               <Route path="/tasks" element={<TasksPage />} />
               <Route path="/stock" element={<StockDashboard />} />
               <Route path="/stock/products" element={<ProductsPage />} />

@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import { getClientById, getClientHistory } from '../../api/clients'
 import { getProjects } from '../../api/projects'
 import { getQuotes } from '../../api/quotes'
+import { getMemberships } from '../../api/memberships'
 import ClientModal from './ClientModal'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import {
@@ -13,6 +14,7 @@ import {
   ProyectoIcon,
   PresupuestoIcon,
   AjustesIcon,
+  MembresiaIcon,
 } from '../../components/DuIcons'
 
 // ── tokens ────────────────────────────────────────────────────────────────────
@@ -66,6 +68,12 @@ const QUOTE_STATUS = {
   paid:      { label: 'Pagado',            bg: 'rgba(125,190,147,0.12)', color: C.ok },
   overdue:   { label: 'Vencido',           bg: 'rgba(229,131,115,0.12)', color: C.err },
   partial:   { label: 'Cuotas pendientes', bg: 'rgba(226,182,99,0.12)',  color: C.warn },
+}
+
+const MEMBERSHIP_STATUS = {
+  active:    { label: 'Activa',    bg: 'rgba(125,190,147,0.12)', color: C.ok },
+  paused:    { label: 'Pausada',   bg: 'rgba(226,182,99,0.12)',  color: C.warn },
+  cancelled: { label: 'Cancelada', bg: 'rgba(242,237,227,0.07)', color: C.piedra },
 }
 
 // ── atoms ─────────────────────────────────────────────────────────────────────
@@ -140,12 +148,19 @@ export default function ClientDetailPage() {
     queryFn: () => getClientHistory(id).then(r => r.data.data),
   })
 
+  const { data: membershipsRes } = useQuery({
+    queryKey: ['memberships', { clientId: id }],
+    queryFn: () => getMemberships({ clientId: id }).then(r => r.data.data),
+    enabled: canWrite,
+  })
+
   if (isLoading) return <div style={{ padding: '40px 24px', fontSize: 13, color: C.piedra, fontFamily: 'Geist, system-ui, sans-serif' }}>Cargando...</div>
   if (!clientRes) return <div style={{ padding: '40px 24px', fontSize: 13, color: C.piedra, fontFamily: 'Geist, system-ui, sans-serif' }}>Cliente no encontrado</div>
 
   const client   = clientRes
   const projects = projectsRes?.data || []
   const quotes   = quotesRes?.data || []
+  const memberships = membershipsRes?.items || []
   const initials = client.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
 
   const tabBtn = (active) => ({
@@ -373,6 +388,44 @@ export default function ClientDetailPage() {
                 </table>
               )}
             </div>
+
+            {/* Membresías */}
+            {canWrite && (
+              <div style={{ ...card, overflow: 'hidden' }}>
+                <div style={{ padding: '16px 20px', borderBottom: `1px solid ${C.linea}` }}>
+                  <PanelHead title="Membresías" count={memberships.length} to="/memberships" linkLabel="Gestionar" />
+                </div>
+                {memberships.length === 0 ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '16px 20px' }}>
+                    <MembresiaIcon style={{ width: 14, height: 14, color: C.linea }} />
+                    <p style={{ fontSize: 13, color: C.piedra }}>Sin membresías</p>
+                  </div>
+                ) : (
+                  <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                    {memberships.map((m, i) => {
+                      const st = MEMBERSHIP_STATUS[m.status] ?? MEMBERSHIP_STATUS.active
+                      return (
+                        <li key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '11px 20px', borderBottom: i < memberships.length - 1 ? `1px solid ${C.linea}` : 'none' }}>
+                          <div style={{ minWidth: 0 }}>
+                            <p style={{ fontSize: 13, fontWeight: 500, color: C.crema, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</p>
+                            <p style={{ fontSize: 11, color: C.piedra, marginTop: 2 }}>
+                              Día {m.billingDay} de cada mes
+                              {m.overdueCount > 0 && <span style={{ color: C.err }}> · {m.overdueCount} atrasado{m.overdueCount !== 1 ? 's' : ''}</span>}
+                            </p>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                            <span style={{ fontFamily: "'DanteUP Cifras', Geist, sans-serif", fontWeight: 600, color: C.arena }}>
+                              ${Number(m.amount).toLocaleString('es-AR')}
+                            </span>
+                            <Badge bg={st.bg} color={st.color} label={st.label} />
+                          </div>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )}
+              </div>
+            )}
 
           </div>
         </div>

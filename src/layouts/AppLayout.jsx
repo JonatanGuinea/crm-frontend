@@ -20,7 +20,7 @@ import isotipoUrl from '../assets/danteup/isotipo-crema.svg'
 import {
   ClienteIcon, PresupuestoIcon, ProyectoIcon, AgendaIcon,
   CobroIcon, ReporteIcon, EquipoIcon, StockIcon,
-  CampanaIcon, AjustesIcon, CarpetaIcon, ModulosIcon
+  CampanaIcon, AjustesIcon, CarpetaIcon, ModulosIcon, MembresiaIcon
 } from '../components/DuIcons'
 import { imgUrl } from '../utils/imgUrl.js'
 
@@ -47,9 +47,10 @@ const navTop = [
 ]
 
 const navBottom = [
-  { to: '/finances', label: 'Finanzas', icon: CobroIcon,   memberHidden: true },
-  { to: '/reports',  label: 'Reportes', icon: ReporteIcon, memberHidden: true },
-  { to: '/members',  label: 'Equipo',   icon: EquipoIcon },
+  { to: '/finances',    label: 'Finanzas',    icon: CobroIcon,     memberHidden: true },
+  { to: '/memberships', label: 'Membresías',  icon: MembresiaIcon, memberHidden: true },
+  { to: '/reports',     label: 'Reportes',    icon: ReporteIcon,   memberHidden: true },
+  { to: '/members',     label: 'Equipo',      icon: EquipoIcon },
 ]
 
 const stockSub = [
@@ -71,6 +72,7 @@ const MORE_ITEMS = [
   { to: '/clients',           label: 'Clientes',  icon: ClienteIcon },
   { to: '/projects/calendar', label: 'Agenda',    icon: AgendaIcon },
   { to: '/finances',          label: 'Finanzas',  icon: CobroIcon,   memberHidden: true },
+  { to: '/memberships',       label: 'Membresías', icon: MembresiaIcon, memberHidden: true },
   { to: '/stock',             label: 'Stock',     icon: StockIcon,   expandable: true },
   { to: '/reports',           label: 'Reportes',  icon: ReporteIcon, memberHidden: true },
   { to: '/members',           label: 'Equipo',    icon: EquipoIcon },
