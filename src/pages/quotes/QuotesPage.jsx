@@ -152,6 +152,7 @@ function actionText(entry) {
     case 'status_changed': return entry.detail ?? 'cambió el estado'
     case 'updated':        return `actualizó ${entry.detail ?? 'el presupuesto'}`
     case 'sent_email':     return `envió por email${entry.detail ? ` a ${entry.detail}` : ''}`
+    case 'auto_expired':   return 'venció automáticamente por fecha de validez'
     default:               return entry.action
   }
 }
@@ -191,7 +192,7 @@ function HistoryView({ historyData, isLoading }) {
                 <div style={{ width: 10, height: 16, flexShrink: 0, marginTop: 2, borderLeft: `2.5px solid ${C.piedra}`, borderBottom: `2.5px solid ${C.piedra}` }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 4 }}>
-                    <span style={{ fontWeight: 600, color: C.crema }}>{entry.user?.name ?? 'Alguien'}</span>
+                    <span style={{ fontWeight: 600, color: C.crema }}>{entry.action === 'auto_expired' ? 'Sistema' : (entry.user?.name ?? 'Alguien')}</span>
                     <span style={{ color: C.arena }}>{actionText(entry)}</span>
                     {entry.quote && (
                       <Link to={`/quotes/${entry.quote.id}`} style={{ fontWeight: 600, color: C.crema, textDecoration: 'none' }}

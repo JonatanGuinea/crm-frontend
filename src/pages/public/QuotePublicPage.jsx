@@ -131,8 +131,12 @@ export default function QuotePublicPage() {
   const pageBg = (bp && bs) ? `linear-gradient(145deg, ${bp} 0%, ${bs} 100%)` : bp || BG
 
   const isPotential   = !quote.client && !!quote.potentialClientName
-  const isConfirmable = quote.status === 'draft' || quote.status === 'sent'
-  const isExpired     = quote.status === 'expired'
+  // La validez incluye el día de validUntil; desde el día siguiente se trata como vencido aunque el cron no haya corrido
+  const _d            = new Date()
+  const todayStr      = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`
+  const pastValidity  = !!quote.validUntil && quote.validUntil.slice(0, 10) < todayStr
+  const isConfirmable = (quote.status === 'draft' || quote.status === 'sent') && !pastValidity
+  const isExpired     = quote.status === 'expired' || ((quote.status === 'draft' || quote.status === 'sent') && pastValidity)
   const isRejected    = quote.status === 'rejected'
   const isSigned      = quote.status === 'signed'
 
