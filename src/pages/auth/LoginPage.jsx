@@ -14,16 +14,23 @@ function ForgotPasswordModal({ onClose }) {
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
+  const [captchaToken, setCaptchaToken] = useState(null)
+  const captchaRef = useRef(null)
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+    if (turnstileEnabled && !captchaToken) {
+      setError('Completá la verificación "No soy un robot".')
+      return
+    }
     setLoading(true)
     try {
-      await forgotPasswordApi(email)
+      await forgotPasswordApi(email, captchaToken)
       setSent(true)
     } catch (err) {
       setError(err.response?.data?.error || 'Error al enviar el email. Intentá de nuevo.')
+      captchaRef.current?.reset() // el token es de un solo uso
     } finally {
       setLoading(false)
     }
@@ -73,6 +80,9 @@ function ForgotPasswordModal({ onClose }) {
                   className="du-input"
                 />
               </div>
+
+              {/* No soy un robot (Cloudflare Turnstile) */}
+              <Turnstile ref={captchaRef} onToken={setCaptchaToken} />
 
               {error && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'rgba(229,131,115,.08)', border: `1px solid rgba(229,131,115,.25)`, borderRadius: '0 10px 10px 0' }}>
