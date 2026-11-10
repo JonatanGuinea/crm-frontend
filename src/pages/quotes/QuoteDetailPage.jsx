@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
-import { getQuoteById, downloadQuotePdf, deleteQuote, reactivateQuote, duplicateQuote } from '../../api/quotes'
+import { getQuoteById, downloadQuotePdf, deleteQuote, reactivateQuote, duplicateQuote, markRenewalRead, sendQuote } from '../../api/quotes'
 import DatePicker from '../../components/DatePicker'
 import { fmt } from '../../utils/fmt'
 import QuoteModal from './QuoteModal'
@@ -69,18 +69,25 @@ function ReactivateModal({ quote, onClose, onDone }) {
   const d = new Date(); d.setDate(d.getDate() + 15)
   const [validUntil, setValidUntil] = useState(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`)
   const [saving, setSaving] = useState(false)
+  const recipientEmail = quote.client?.email || quote.potentialClientEmail || ''
+  const [sendEmail, setSendEmail] = useState(!!recipientEmail)
 
   async function submit() {
     if (!validUntil) return toast('Elegí la nueva fecha de validez', 'error')
     setSaving(true)
     try {
       await reactivateQuote(quote.id, validUntil)
-      onDone()
     } catch (err) {
-      toast(err.response?.data?.error || 'No se pudo reactivar', 'error')
-    } finally {
       setSaving(false)
+      return toast(err.response?.data?.error || 'No se pudo reactivar', 'error')
     }
+    // Reactivado. Si se pidió, se reenvía por email; si falla, queda reactivado y se puede reenviar a mano.
+    let emailError = null
+    if (sendEmail && recipientEmail) {
+      try { await sendQuote(quote.id) } catch (err) { emailError = err.response?.data?.error || 'No se pudo enviar el email' }
+    }
+    setSaving(false)
+    onDone({ emailed: sendEmail && recipientEmail && !emailError, emailError })
   }
 
   return (
@@ -91,19 +98,33 @@ function ReactivateModal({ quote, onClose, onDone }) {
         </div>
         <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <p style={{ fontSize: 13, color: C.arena, lineHeight: 1.6, margin: 0 }}>
-            Vuelve a estado <strong style={{ color: C.crema }}>Enviado</strong> con el mismo número y el mismo enlace, así el cliente puede aprobarlo o firmarlo de nuevo. Los precios no cambian: si hay que actualizarlos, editalo después o duplicalo.
+            Vuelve a estado <strong style={{ color: C.crema }}>Enviado</strong> con el mismo número y el mismo enlace, así el cliente puede aprobarlo o firmarlo de nuevo. Los precios no cambian: si hay que actualizarlos, editalo antes de reactivar.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             <label style={{ fontSize: 11, fontWeight: 500, color: C.piedra }}>Nueva fecha de validez</label>
             <DatePicker value={validUntil} onChange={e => setValidUntil(e.target.value)}
               className="h-[34px] px-3 bg-[#141415] border border-[#2C2C2F] rounded-[0_9px_9px_0] text-[13px] outline-none w-full" />
           </div>
+          {recipientEmail ? (
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 9, padding: '10px 12px', background: C.s2, borderRadius: '0 9px 9px 0', cursor: 'pointer' }}>
+              <input type="checkbox" checked={sendEmail} onChange={e => setSendEmail(e.target.checked)}
+                style={{ marginTop: 2, accentColor: C.crema, width: 14, height: 14, flexShrink: 0, cursor: 'pointer' }} />
+              <span style={{ fontSize: 12.5, color: C.crema, lineHeight: 1.5 }}>
+                Enviar por email al cliente ahora
+                <span style={{ display: 'block', fontSize: 11.5, color: C.piedra, overflowWrap: 'anywhere' }}>{recipientEmail}</span>
+              </span>
+            </label>
+          ) : (
+            <p style={{ fontSize: 12, color: C.piedra, lineHeight: 1.5, margin: 0 }}>
+              El cliente no tiene email. Después de reactivarlo podés mandarlo por WhatsApp desde la lista o copiar el enlace con "Compartir".
+            </p>
+          )}
         </div>
         <div style={{ padding: '12px 20px 18px', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
           <button onClick={onClose} style={{ padding: '0 16px', height: 34, background: 'none', border: 'none', color: C.arena, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
           <button onClick={submit} disabled={saving}
             style={{ padding: '0 18px', height: 34, background: C.crema, color: C.bg, border: 'none', borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.5 : 1, fontFamily: 'inherit' }}>
-            {saving ? 'Reactivando…' : 'Reactivar'}
+            {saving ? (sendEmail && recipientEmail ? 'Reactivando y enviando…' : 'Reactivando…') : (sendEmail && recipientEmail ? 'Reactivar y enviar' : 'Reactivar')}
           </button>
         </div>
       </div>
@@ -164,6 +185,34 @@ export default function QuoteDetailPage() {
     queryKey: ['quote', id],
     queryFn: () => getQuoteById(id).then(r => r.data.data),
   })
+
+  // Pedido de presupuesto actualizado: al abrir el detalle se marca como visto (apaga el globo rojo de la lista)
+  const seenSentFor = useRef(null)
+  useEffect(() => {
+    if (!quote?.renewalRequestedAt || quote.renewalSeenAt || seenSentFor.current === quote.id) return
+    seenSentFor.current = quote.id
+    markRenewalRead(quote.id, 'seen')
+      .then(({ data }) => {
+        qc.setQueryData(['quote', id], prev => prev ? { ...prev, ...data.data } : prev)
+        qc.invalidateQueries({ queryKey: ['quotes'] })
+        qc.invalidateQueries({ queryKey: ['notifications'] })
+      })
+      .catch(() => { seenSentFor.current = null })
+  }, [quote?.id, quote?.renewalRequestedAt, quote?.renewalSeenAt])
+
+  const [acking, setAcking] = useState(false)
+  async function handleAckRenewal() {
+    setAcking(true)
+    try {
+      const { data } = await markRenewalRead(id, 'ack')
+      qc.setQueryData(['quote', id], prev => prev ? { ...prev, ...data.data } : prev)
+      qc.invalidateQueries({ queryKey: ['quotes'] })
+    } catch (err) {
+      toast(err.response?.data?.error || 'No se pudo marcar como leído', 'error')
+    } finally {
+      setAcking(false)
+    }
+  }
 
   const del = useMutation({
     mutationFn: () => deleteQuote(id),
@@ -297,14 +346,28 @@ export default function QuoteDetailPage() {
       )}
 
       {/* Pedido de presupuesto actualizado */}
-      {quote.status === 'expired' && quote.renewalRequestedAt && (
-        <div style={{ marginBottom: 20, padding: '12px 16px', background: 'rgba(226,182,99,0.08)', border: `1px solid rgba(226,182,99,0.25)`, borderRadius: '0 12px 12px 0', display: 'flex', gap: 10 }}>
-          <span style={{ color: C.warn, fontSize: 15, flexShrink: 0 }}>↻</span>
-          <div>
-            <p style={{ fontSize: 12, fontWeight: 600, color: C.warn, margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>El cliente pidió un presupuesto actualizado</p>
-            <p style={{ fontSize: 13, color: C.arena, margin: 0, lineHeight: 1.5 }}>
-              Lo solicitó el {new Date(quote.renewalRequestedAt).toLocaleDateString('es-AR')} desde el enlace. Podés reactivarlo con una nueva fecha o duplicarlo para actualizar precios.
-            </p>
+      {quote.renewalRequestedAt && !quote.renewalAckAt && (
+        <div className="flex flex-col sm:flex-row sm:items-center" style={{ marginBottom: 20, padding: '12px 16px', background: 'rgba(226,182,99,0.08)', border: `1px solid rgba(226,182,99,0.25)`, borderRadius: '0 12px 12px 0', gap: 12 }}>
+          <div style={{ display: 'flex', gap: 10, flex: 1, minWidth: 0 }}>
+            <span style={{ color: C.warn, fontSize: 15, flexShrink: 0 }}>↻</span>
+            <div>
+              <p style={{ fontSize: 12, fontWeight: 600, color: C.warn, margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>El cliente pidió un presupuesto actualizado</p>
+              <p style={{ fontSize: 13, color: C.arena, margin: 0, lineHeight: 1.5 }}>
+                Lo solicitó el {new Date(quote.renewalRequestedAt).toLocaleDateString('es-AR')} desde el enlace. Si hay que cambiar precios, editalo; después reactivalo con una nueva fecha y reenvialo.
+              </p>
+            </div>
+          </div>
+          <div className="self-start sm:self-center" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', flexShrink: 0 }}>
+            {canWrite && !isSigned && (
+              <GhostBtn onClick={() => setEditOpen(true)}><EditSvg /> Editar</GhostBtn>
+            )}
+            {canWrite && quote.status === 'expired' && (
+              <GhostBtn onClick={() => setReactivateOpen(true)}><RefreshSvg /> Reactivar</GhostBtn>
+            )}
+            <button onClick={handleAckRenewal} disabled={acking}
+              style={{ height: 32, padding: '0 16px', background: C.warn, color: C.bg, border: 'none', borderRadius: '0 8px 8px 0', fontSize: 12.5, fontWeight: 600, cursor: acking ? 'not-allowed' : 'pointer', opacity: acking ? 0.5 : 1, fontFamily: 'inherit' }}>
+              {acking ? 'Guardando…' : 'Entendido'}
+            </button>
           </div>
         </div>
       )}
@@ -561,10 +624,11 @@ export default function QuoteDetailPage() {
 
       {reactivateOpen && (
         <ReactivateModal quote={quote} onClose={() => setReactivateOpen(false)}
-          onDone={() => {
+          onDone={({ emailed, emailError } = {}) => {
             setReactivateOpen(false)
             qc.invalidateQueries(['quote', id]); qc.invalidateQueries(['quotes'])
-            toast('Presupuesto reactivado', 'success')
+            if (emailError) toast(`Reactivado, pero no se envió el email: ${emailError}`, 'error')
+            else toast(emailed ? 'Presupuesto reactivado y enviado por email' : 'Presupuesto reactivado', 'success')
           }}
         />
       )}

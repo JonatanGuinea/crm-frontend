@@ -72,6 +72,18 @@ function CalendarSvg() {
 }
 
 /* ── Badge ────────────────────────────────────────────────────────────────── */
+/* ── Globo rojo: el cliente pidió un presupuesto actualizado y nadie abrió el detalle ── */
+const hasUnseenRenewal = q => !!q.renewalRequestedAt && !q.renewalSeenAt
+
+function RenewalDot() {
+  return (
+    <span aria-label="Pedido de presupuesto actualizado sin ver" style={{
+      position: 'absolute', top: -4, right: -4, width: 10, height: 10, borderRadius: '50%',
+      background: C.err, boxShadow: `0 0 0 2px ${C.s1}`, pointerEvents: 'none',
+    }} />
+  )
+}
+
 function QBadge({ status }) {
   const s = QUOTE_STATUS[status] ?? QUOTE_STATUS.draft
   return (
@@ -784,11 +796,13 @@ export default function QuotesPage() {
                           </>
                         )}
                         <Link to={`/quotes/${q.id}`}
-                          style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 30, background: C.linea, color: C.crema, borderRadius: '0 7px 7px 0', textDecoration: 'none', fontSize: 12.5, fontWeight: 500 }}
+                          title={hasUnseenRenewal(q) ? 'El cliente pidió un presupuesto actualizado' : undefined}
+                          style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 30, background: C.linea, color: C.crema, borderRadius: '0 7px 7px 0', textDecoration: 'none', fontSize: 12.5, fontWeight: 500 }}
                           onMouseEnter={e => e.currentTarget.style.background = C.s3}
                           onMouseLeave={e => e.currentTarget.style.background = C.linea}
                         >
                           Ver →
+                          {hasUnseenRenewal(q) && <RenewalDot />}
                         </Link>
                       </div>
                     </div>
@@ -895,11 +909,13 @@ export default function QuotesPage() {
                                 <DownloadSvg size={13} />
                               </button>
                               <Link to={`/quotes/${q.id}`}
-                                style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: '0 6px 6px 0', background: C.linea, color: C.crema, textDecoration: 'none', fontSize: 11.5, transition: 'background 0.12s' }}
+                                title={hasUnseenRenewal(q) ? 'El cliente pidió un presupuesto actualizado' : undefined}
+                                style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: '0 6px 6px 0', background: C.linea, color: C.crema, textDecoration: 'none', fontSize: 11.5, transition: 'background 0.12s' }}
                                 onMouseEnter={e => e.currentTarget.style.background = C.s3}
                                 onMouseLeave={e => e.currentTarget.style.background = C.linea}
                               >
                                 Ver →
+                                {hasUnseenRenewal(q) && <RenewalDot />}
                               </Link>
                             </div>
                           </td>

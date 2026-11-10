@@ -263,11 +263,11 @@ const SECTIONS = [
       },
       {
         q: '¿Qué pasa cuando el cliente pide un presupuesto actualizado?',
-        a: 'Cuando el cliente toca "Solicitar presupuesto actualizado" en el enlace de un presupuesto vencido:\n• El Dueño y los Administradores reciben una notificación "Piden un presupuesto actualizado", con acceso directo a WhatsApp si el cliente tiene teléfono.\n• En el detalle del presupuesto aparece un aviso con la fecha del pedido.\n\nLa solicitud se registra una sola vez por presupuesto. Desde ahí podés reactivarlo o duplicarlo.',
+        a: 'Cuando el cliente toca "Solicitar presupuesto actualizado" en el enlace de un presupuesto vencido:\n• El Dueño y los Administradores reciben una notificación "Piden un presupuesto actualizado", con acceso directo a WhatsApp si el cliente tiene teléfono.\n• En la lista de presupuestos, el botón "Ver" muestra un globo rojo hasta que alguien del equipo abre el detalle.\n• En el detalle aparece un aviso con la fecha del pedido. Tocá "Entendido" para ocultarlo.\n\nLa solicitud se registra una sola vez por presupuesto. Desde ahí podés reactivarlo o duplicarlo.',
       },
       {
         q: '¿Cómo reactivo o duplico un presupuesto?',
-        a: 'Desde el detalle del presupuesto:\n\n• Reactivar (solo vencidos): elegís una nueva fecha de validez y vuelve a "Enviado" con el mismo número y el mismo enlace. El cliente puede aprobarlo o firmarlo de nuevo y el recordatorio de 48 hs vuelve a funcionar. Los precios no cambian.\n\n• Duplicar (cualquier presupuesto): crea un borrador nuevo con número nuevo, copiando cliente, ítems, IVA, descuento, notas e imágenes. No copia las cuotas ni las fechas de validez, entrega y pago. Es la opción para actualizar precios antes de enviarlo.',
+        a: 'Desde el detalle del presupuesto:\n\n• Reactivar (solo vencidos): elegís una nueva fecha de validez y vuelve a "Enviado" con el mismo número y el mismo enlace. El cliente puede aprobarlo o firmarlo de nuevo y el recordatorio de 48 hs vuelve a funcionar. Si el cliente tiene email, podés marcar "Enviar por email al cliente ahora" para reenviárselo en el mismo paso. Si no, los botones de WhatsApp y email de la lista quedan habilitados otra vez.\n\nPara actualizar precios y reenviarlo: Editar → Reactivar (con "Enviar por email") y listo. Si el cliente pidió un presupuesto actualizado, el aviso del detalle tiene accesos directos a Editar y Reactivar.\n\n• Duplicar (cualquier presupuesto): crea un borrador nuevo con número nuevo, copiando cliente, ítems, IVA, descuento, notas e imágenes. No copia las cuotas ni las fechas de validez, entrega y pago. Es la opción para actualizar precios antes de enviarlo.',
       },
       {
         q: '¿Qué es la firma digital?',
