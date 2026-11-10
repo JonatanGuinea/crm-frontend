@@ -24,6 +24,32 @@ const C = {
   info:  '#8EB1DE',
 }
 
+// ── WhatsApp ──────────────────────────────────────────────────────────────────
+const waDigits = phone => (phone || '').replace(/\D/g, '')
+const waLink = c => `https://wa.me/${waDigits(c.phone)}?text=${encodeURIComponent(`Hola ${c.name?.split(' ')[0] || ''}, `)}`
+
+function WaIcon({ size = 14 }) {
+  return <svg width={size} height={size} style={{ display: 'block' }} viewBox="0 0 16 16" fill="currentColor"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/></svg>
+}
+
+// Botón de WhatsApp: abre el chat con el cliente; deshabilitado si no tiene teléfono
+function WaButton({ client, size = 30 }) {
+  const has = waDigits(client.phone).length >= 6
+  const common = { width: size, height: size, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, borderRadius: '0 7px 7px 0', border: `1px solid ${C.linea}`, background: C.s2, color: '#25D366' }
+  if (!has) return (
+    <span title="El cliente no tiene teléfono" style={{ ...common, opacity: 0.3, cursor: 'not-allowed' }}><WaIcon /></span>
+  )
+  return (
+    <a href={waLink(client)} target="_blank" rel="noopener noreferrer" title={`WhatsApp a ${client.name}`} aria-label={`WhatsApp a ${client.name}`}
+      style={{ ...common, textDecoration: 'none', transition: 'background 0.12s, border-color 0.12s' }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(37,211,102,0.12)'; e.currentTarget.style.borderColor = 'rgba(37,211,102,0.4)' }}
+      onMouseLeave={e => { e.currentTarget.style.background = C.s2; e.currentTarget.style.borderColor = C.linea }}
+    >
+      <WaIcon />
+    </a>
+  )
+}
+
 const card = {
   background: C.s1,
   border: `1px solid ${C.linea}`,
@@ -351,7 +377,9 @@ export default function ClientsPage() {
                           <td style={{ padding: '12px 20px', color: C.piedra }}>{c.email || '—'}</td>
                           <td style={{ padding: '12px 20px', color: C.piedra }}>{c.company || '—'}</td>
                           <td style={{ padding: '12px 20px', color: C.piedra }}>{c.phone || '—'}</td>
-                          <td style={{ padding: '12px 20px', textAlign: 'right' }}>
+                          <td style={{ padding: '12px 20px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, verticalAlign: 'middle' }}>
+                            <WaButton client={c} size={28} />
                             <Link
                               to={`/clients/${c.id}`}
                               style={{
@@ -366,6 +394,7 @@ export default function ClientsPage() {
                             >
                               Ver →
                             </Link>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -407,10 +436,12 @@ export default function ClientsPage() {
                         {c.phone && <p style={{ fontSize: 12, color: C.piedra }}>{c.phone}</p>}
                       </div>
                     )}
-                    <div style={{ borderTop: `1px solid ${C.linea}`, paddingTop: 12 }}>
+                    <div style={{ borderTop: `1px solid ${C.linea}`, paddingTop: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <WaButton client={c} size={34} />
                       <Link
                         to={`/clients/${c.id}`}
                         style={{
+                          flex: 1,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           padding: '8px 0', borderRadius: '0 8px 8px 0',
                           background: C.s2, border: `1px solid ${C.linea}`,
