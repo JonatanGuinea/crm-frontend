@@ -167,6 +167,7 @@ function actionText(entry) {
     case 'auto_expired':   return 'venció automáticamente por fecha de validez'
     case 'reactivated':    return `reactivó el presupuesto${entry.detail ? ` (${entry.detail})` : ''}`
     case 'duplicated':     return `creó el presupuesto duplicando el ${entry.detail ?? 'original'}`
+    case 'renewal_answered': return `respondió el pedido de actualización con el ${entry.detail ?? 'duplicado'}`
     default:               return entry.action
   }
 }
@@ -327,6 +328,13 @@ export default function QuotesPage() {
     .map(q => `#${String(q.number).padStart(3, '0')}`)
     .slice(0, 3)
     .join(' · ')
+
+  // ── Pedidos de presupuesto actualizado (desde el link público de un vencido) ──
+  // Salen de la lista al reactivar o duplicar el presupuesto (ambos limpian renewalRequestedAt).
+  // No se filtra por estado: un "Enviado" fuera de fecha que el job todavía no venció también cuenta.
+  const renewalQuotes = allQuotes
+    .filter(q => q.renewalRequestedAt && !['approved', 'signed', 'rejected'].includes(q.status))
+    .sort((a, b) => new Date(b.renewalRequestedAt) - new Date(a.renewalRequestedAt))
 
   // ── Tab counts ─────────────────────────────────────────────────────────────
   const tabCounts = {}
@@ -530,6 +538,54 @@ export default function QuotesPage() {
               }
             </div>
           </div>
+
+          {/* Piden presupuesto actualizado */}
+          {!isLoading && renewalQuotes.length > 0 && (
+            <div style={{ ...card, border: '1px solid rgba(226,182,99,0.3)', overflow: 'hidden', marginBottom: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 18px', background: 'rgba(226,182,99,0.08)', borderBottom: '1px solid rgba(226,182,99,0.2)' }}>
+                <span style={{ color: C.warn, fontSize: 15, flexShrink: 0 }}>↻</span>
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: C.crema, margin: 0 }}>
+                    Piden presupuesto actualizado
+                    <span style={{ marginLeft: 8, fontFamily: CIFRAS, fontSize: 12, fontWeight: 700, color: C.warn }}>{renewalQuotes.length}</span>
+                  </p>
+                  <p style={{ fontSize: 11.5, color: C.arena, margin: '2px 0 0', lineHeight: 1.5 }}>
+                    Clientes que lo pidieron desde el enlace de un presupuesto vencido. Reactivalo o duplicalo para responder.
+                  </p>
+                </div>
+              </div>
+              {renewalQuotes.map((q, i) => (
+                <div key={q.id} className="flex flex-wrap items-center"
+                  style={{ gap: '6px 14px', padding: '12px 18px', borderTop: i ? `1px solid ${C.linea}` : 'none' }}>
+                  <span style={{ color: C.piedra, fontFamily: "'Geist Mono', monospace", fontSize: 11.5, flexShrink: 0 }}>
+                    #{String(q.number).padStart(3, '0')}
+                  </span>
+                  <div style={{ flex: '1 1 180px', minWidth: 0 }}>
+                    <Link to={`/quotes/${q.id}`}
+                      style={{ display: 'block', fontSize: 13, fontWeight: 500, color: C.crema, textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                      onMouseEnter={e => e.currentTarget.style.color = C.arena}
+                      onMouseLeave={e => e.currentTarget.style.color = C.crema}
+                    >
+                      {q.title}
+                    </Link>
+                    <span style={{ fontSize: 11.5, color: C.arena }}>
+                      {q.client?.name ?? q.potentialClientName ?? 'Sin cliente'} · lo pidió el {new Date(q.renewalRequestedAt).toLocaleDateString('es-AR')}
+                    </span>
+                  </div>
+                  <span style={{ fontFamily: CIFRAS, fontSize: 14, fontWeight: 600, color: C.crema, whiteSpace: 'nowrap', marginLeft: 'auto' }}>
+                    {fmt(q.total, q.currency)}
+                  </span>
+                  <Link to={`/quotes/${q.id}`}
+                    title={hasUnseenRenewal(q) ? 'Nadie abrió este pedido todavía' : undefined}
+                    style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', height: 30, padding: '0 14px', borderRadius: '0 7px 7px 0', background: C.warn, color: C.bg, textDecoration: 'none', fontSize: 12, fontWeight: 600, flexShrink: 0 }}
+                  >
+                    Atender →
+                    {hasUnseenRenewal(q) && <RenewalDot />}
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Tabs de estado */}
           <div

@@ -263,7 +263,7 @@ const SECTIONS = [
       },
       {
         q: '¿Qué pasa cuando el cliente pide un presupuesto actualizado?',
-        a: 'Cuando el cliente toca "Solicitar presupuesto actualizado" en el enlace de un presupuesto vencido:\n• El Dueño y los Administradores reciben una notificación "Piden un presupuesto actualizado", con acceso directo a WhatsApp si el cliente tiene teléfono.\n• En la lista de presupuestos, el botón "Ver" muestra un globo rojo hasta que alguien del equipo abre el detalle.\n• En el detalle aparece un aviso con la fecha del pedido. Tocá "Entendido" para ocultarlo.\n\nLa solicitud se registra una sola vez por presupuesto. Desde ahí podés reactivarlo o duplicarlo.',
+        a: 'Cuando el cliente toca "Solicitar presupuesto actualizado" en el enlace de un presupuesto vencido:\n• El Dueño y los Administradores reciben una notificación "Piden un presupuesto actualizado", con acceso directo a WhatsApp si el cliente tiene teléfono.\n• En Presupuestos aparece arriba de la tabla la sección "Piden presupuesto actualizado", con cada pedido y un botón "Atender". El presupuesto sale de esa sección cuando lo reactivás o lo duplicás.\n• El botón "Ver" muestra un globo rojo hasta que alguien del equipo abre el detalle.\n• En el detalle aparece un aviso con la fecha del pedido. Tocá "Entendido" para ocultarlo.\n\nLa solicitud se registra una sola vez por presupuesto. Desde ahí podés reactivarlo o duplicarlo.',
       },
       {
         q: '¿Cómo reactivo o duplico un presupuesto?',
