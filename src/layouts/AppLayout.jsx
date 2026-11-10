@@ -563,7 +563,7 @@ function BottomNav({ user, onMoreClick, moreOpen }) {
       className="md:hidden flex items-stretch"
       style={{
         position: 'fixed', bottom: 0, left: 0, right: 0,
-        zIndex: 90,
+        zIndex: 40, // debajo de los modales (z 50+), si no tapa sus botones en mobile
         background: C.s1,
         borderTop: `1px solid ${C.linea}`,
         height: 56,
