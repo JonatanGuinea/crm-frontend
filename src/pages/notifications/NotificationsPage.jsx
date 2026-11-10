@@ -35,6 +35,7 @@ const TYPE_LABELS = {
   stock_out:        'Sin stock',
   stock_low:        'Stock bajo',
   announcement:     'Novedad',
+  quote_renewal_requested: 'Pedido de actualización',
 }
 
 const TYPE_STYLES = {
@@ -47,6 +48,7 @@ const TYPE_STYLES = {
   stock_out:        { bg: 'rgba(229,131,115,0.12)', color: C.err },
   stock_low:        { bg: 'rgba(226,182,99,0.12)',  color: C.warn },
   announcement:     { bg: 'rgba(242,237,227,0.08)', color: C.crema },
+  quote_renewal_requested: { bg: 'rgba(226,182,99,0.12)', color: C.warn },
 }
 
 function timeAgo(dateStr) {
@@ -192,6 +194,7 @@ export default function NotificationsPage() {
             const typeStyle = TYPE_STYLES[n.type] ?? { bg: C.s2, color: C.arena }
             const meta = n.metadata ? (() => { try { return JSON.parse(n.metadata) } catch { return null } })() : null
             const isRejection = n.type === 'quote_rejected'
+            const isRenewal   = n.type === 'quote_renewal_requested'
 
             return (
               <div key={n.id} style={{
@@ -214,14 +217,16 @@ export default function NotificationsPage() {
                     </div>
                   )}
 
-                  {(isRejection || n.type === 'quote_approved') && meta && (
+                  {(isRejection || isRenewal || n.type === 'quote_approved') && meta && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                       {meta.phone && (
                         <a
                           href={`https://wa.me/${meta.phone}?text=${encodeURIComponent(
                             isRejection
                               ? `Hola ${meta.clientName}, recibimos tu respuesta sobre el presupuesto #${meta.quoteNumber} — ${meta.quoteTitle}. ¿Podemos hablar para ver cómo seguimos?`
-                              : `Hola ${meta.clientName}, ¡gracias por confirmar el presupuesto #${meta.quoteNumber} — ${meta.quoteTitle}! Nos ponemos en contacto para coordinar los próximos pasos.`
+                              : isRenewal
+                                ? `Hola ${meta.clientName}, recibimos tu pedido de un presupuesto actualizado para "${meta.quoteTitle}". Te lo preparamos y te lo enviamos a la brevedad.`
+                                : `Hola ${meta.clientName}, ¡gracias por confirmar el presupuesto #${meta.quoteNumber} — ${meta.quoteTitle}! Nos ponemos en contacto para coordinar los próximos pasos.`
                           )}`}
                           target="_blank"
                           rel="noopener noreferrer"

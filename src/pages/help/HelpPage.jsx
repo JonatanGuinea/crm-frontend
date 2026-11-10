@@ -126,7 +126,7 @@ const SECTIONS = [
       },
       {
         q: '¿Qué tipos de notificaciones existen y a quién le llegan?',
-        a: '• Presupuesto por vencer: cuando un presupuesto vence hoy o mañana → admins y owners\n• Proyecto por vencer (~5 días): cuando faltan 4–6 días para la fecha fin → todos los miembros\n• Proyecto por vencer (~1 día): cuando faltan 0–2 días para la fecha fin → todos los miembros\n• Presupuesto aprobado: cuando el cliente acepta → creador del presupuesto (o admins si lo confirma por el link público)\n• Presupuesto rechazado: cuando el cliente rechaza, con el motivo → creador (o admins si es por link público)\n• Tarea asignada: cuando alguien te asigna o reasigna una tarea → solo el asignado\n• Sin stock: cuando un producto llega a 0 unidades → todos los miembros activos\n• Stock bajo: cuando el stock cae al mínimo configurado del producto → todos los miembros activos\n• Nuevo miembro: cuando alguien acepta una invitación → solo el owner',
+        a: '• Presupuesto por vencer: cuando un presupuesto vence hoy o mañana → admins y owners\n• Proyecto por vencer (~5 días): cuando faltan 4–6 días para la fecha fin → todos los miembros\n• Proyecto por vencer (~1 día): cuando faltan 0–2 días para la fecha fin → todos los miembros\n• Presupuesto aprobado: cuando el cliente acepta → creador del presupuesto (o admins si lo confirma por el link público)\n• Presupuesto rechazado: cuando el cliente rechaza, con el motivo → creador (o admins si es por link público)\n• Piden un presupuesto actualizado: cuando el cliente lo solicita desde el enlace de un presupuesto vencido → admins y owners\n• Tarea asignada: cuando alguien te asigna o reasigna una tarea → solo el asignado\n• Sin stock: cuando un producto llega a 0 unidades → todos los miembros activos\n• Stock bajo: cuando el stock cae al mínimo configurado del producto → todos los miembros activos\n• Nuevo miembro: cuando alguien acepta una invitación → solo el owner',
       },
       {
         q: '¿Cada cuánto se actualizan las notificaciones?',
@@ -259,7 +259,15 @@ const SECTIONS = [
       },
       {
         q: '¿Qué pasa cuando un presupuesto vence?',
-        a: 'La fecha de validez incluye ese día completo. A partir del día siguiente, si el presupuesto sigue "Enviado" sin respuesta, el sistema lo pasa automáticamente a "Vencido" y lo registra en el historial como "Sistema".\n\nDesde ese momento el cliente ya no puede aprobarlo, firmarlo ni rechazarlo desde el enlace: ve un aviso de que el plazo venció y que debe contactarte para pedir uno nuevo.\n\nLos borradores no vencen automáticamente: si un borrador tiene la fecha pasada, actualizala antes de enviarlo. Los presupuestos sin fecha de validez nunca vencen.',
+        a: 'La fecha de validez incluye ese día completo. A partir del día siguiente, si el presupuesto sigue "Enviado" sin respuesta, el sistema lo pasa automáticamente a "Vencido" y lo registra en el historial como "Sistema".\n\nAdemás, si el cliente tiene email, le llega un aviso de que el presupuesto venció con un botón "Quiero un presupuesto actualizado".\n\nDesde ese momento el cliente ya no puede aprobarlo, firmarlo ni rechazarlo desde el enlace: ve un aviso de que el plazo venció y un botón para solicitar un presupuesto actualizado.\n\nLos borradores no vencen automáticamente: si un borrador tiene la fecha pasada, actualizala antes de enviarlo. Los presupuestos sin fecha de validez nunca vencen.',
+      },
+      {
+        q: '¿Qué pasa cuando el cliente pide un presupuesto actualizado?',
+        a: 'Cuando el cliente toca "Solicitar presupuesto actualizado" en el enlace de un presupuesto vencido:\n• El Dueño y los Administradores reciben una notificación "Piden un presupuesto actualizado", con acceso directo a WhatsApp si el cliente tiene teléfono.\n• En el detalle del presupuesto aparece un aviso con la fecha del pedido.\n\nLa solicitud se registra una sola vez por presupuesto. Desde ahí podés reactivarlo o duplicarlo.',
+      },
+      {
+        q: '¿Cómo reactivo o duplico un presupuesto?',
+        a: 'Desde el detalle del presupuesto:\n\n• Reactivar (solo vencidos): elegís una nueva fecha de validez y vuelve a "Enviado" con el mismo número y el mismo enlace. El cliente puede aprobarlo o firmarlo de nuevo y el recordatorio de 48 hs vuelve a funcionar. Los precios no cambian.\n\n• Duplicar (cualquier presupuesto): crea un borrador nuevo con número nuevo, copiando cliente, ítems, IVA, descuento, notas e imágenes. No copia las cuotas ni las fechas de validez, entrega y pago. Es la opción para actualizar precios antes de enviarlo.',
       },
       {
         q: '¿Qué es la firma digital?',

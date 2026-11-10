@@ -153,6 +153,8 @@ function actionText(entry) {
     case 'updated':        return `actualizó ${entry.detail ?? 'el presupuesto'}`
     case 'sent_email':     return `envió por email${entry.detail ? ` a ${entry.detail}` : ''}`
     case 'auto_expired':   return 'venció automáticamente por fecha de validez'
+    case 'reactivated':    return `reactivó el presupuesto${entry.detail ? ` (${entry.detail})` : ''}`
+    case 'duplicated':     return `creó el presupuesto duplicando el ${entry.detail ?? 'original'}`
     default:               return entry.action
   }
 }

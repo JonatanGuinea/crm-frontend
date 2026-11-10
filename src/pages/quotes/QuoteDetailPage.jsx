@@ -4,7 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
-import { getQuoteById, downloadQuotePdf, deleteQuote } from '../../api/quotes'
+import { getQuoteById, downloadQuotePdf, deleteQuote, reactivateQuote, duplicateQuote } from '../../api/quotes'
+import DatePicker from '../../components/DatePicker'
 import { fmt } from '../../utils/fmt'
 import QuoteModal from './QuoteModal'
 import QuoteModalPotential from './QuoteModalPotential'
@@ -55,6 +56,61 @@ function GhostBtn({ onClick, disabled, children }) {
   )
 }
 
+function CopySvg() {
+  return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+}
+function RefreshSvg() {
+  return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+}
+
+/* ── ReactivateModal ──────────────────────────────────────────────────────── */
+function ReactivateModal({ quote, onClose, onDone }) {
+  const toast = useToast()
+  const d = new Date(); d.setDate(d.getDate() + 15)
+  const [validUntil, setValidUntil] = useState(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`)
+  const [saving, setSaving] = useState(false)
+
+  async function submit() {
+    if (!validUntil) return toast('Elegí la nueva fecha de validez', 'error')
+    setSaving(true)
+    try {
+      await reactivateQuote(quote.id, validUntil)
+      onDone()
+    } catch (err) {
+      toast(err.response?.data?.error || 'No se pudo reactivar', 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 flex items-end sm:items-center justify-center z-50" style={{ background: 'rgba(0,0,0,0.65)' }}>
+      <div className="w-full sm:max-w-md sm:mx-4" style={{ background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
+        <div style={{ padding: '18px 20px 14px', borderBottom: `1px solid ${C.linea}` }}>
+          <p style={{ fontSize: 15, fontWeight: 600, color: C.crema, margin: 0 }}>Reactivar presupuesto</p>
+        </div>
+        <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <p style={{ fontSize: 13, color: C.arena, lineHeight: 1.6, margin: 0 }}>
+            Vuelve a estado <strong style={{ color: C.crema }}>Enviado</strong> con el mismo número y el mismo enlace, así el cliente puede aprobarlo o firmarlo de nuevo. Los precios no cambian: si hay que actualizarlos, editalo después o duplicalo.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <label style={{ fontSize: 11, fontWeight: 500, color: C.piedra }}>Nueva fecha de validez</label>
+            <DatePicker value={validUntil} onChange={e => setValidUntil(e.target.value)}
+              className="h-[34px] px-3 bg-[#141415] border border-[#2C2C2F] rounded-[0_9px_9px_0] text-[13px] outline-none w-full" />
+          </div>
+        </div>
+        <div style={{ padding: '12px 20px 18px', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <button onClick={onClose} style={{ padding: '0 16px', height: 34, background: 'none', border: 'none', color: C.arena, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
+          <button onClick={submit} disabled={saving}
+            style={{ padding: '0 18px', height: 34, background: C.crema, color: C.bg, border: 'none', borderRadius: '0 9px 9px 0', fontSize: 13, fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.5 : 1, fontFamily: 'inherit' }}>
+            {saving ? 'Reactivando…' : 'Reactivar'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ── SectionHead ──────────────────────────────────────────────────────────── */
 function SectionHead({ children }) {
   return (
@@ -85,6 +141,24 @@ export default function QuoteDetailPage() {
   const qc = useQueryClient()
   const [editOpen, setEditOpen] = useState(false)
   const [downloading, setDownloading] = useState(false)
+  const [reactivateOpen, setReactivateOpen] = useState(false)
+  const [duplicating, setDuplicating] = useState(false)
+
+  async function handleDuplicate() {
+    if (!await confirm('Se va a crear un borrador nuevo con el mismo cliente, ítems, notas e imágenes. Las cuotas y las fechas no se copian.', { confirmLabel: 'Duplicar' })) return
+    setDuplicating(true)
+    try {
+      const { data } = await duplicateQuote(id)
+      const { id: newId, number, skippedImages } = data.data
+      qc.invalidateQueries(['quotes'])
+      toast(`Borrador #${String(number).padStart(3, '0')} creado${skippedImages ? ` (${skippedImages} imagen${skippedImages !== 1 ? 'es' : ''} no se pudo copiar)` : ''}`, 'success')
+      navigate(`/quotes/${newId}`)
+    } catch (err) {
+      toast(err.response?.data?.error || 'No se pudo duplicar', 'error')
+    } finally {
+      setDuplicating(false)
+    }
+  }
 
   const { data: quote, isLoading } = useQuery({
     queryKey: ['quote', id],
@@ -187,6 +261,16 @@ export default function QuoteDetailPage() {
               <EditSvg /> Editar
             </GhostBtn>
           )}
+          {canWrite && (
+            <GhostBtn onClick={handleDuplicate} disabled={duplicating}>
+              <CopySvg /> {duplicating ? 'Duplicando...' : 'Duplicar'}
+            </GhostBtn>
+          )}
+          {canWrite && quote.status === 'expired' && (
+            <GhostBtn onClick={() => setReactivateOpen(true)}>
+              <RefreshSvg /> Reactivar
+            </GhostBtn>
+          )}
           {canWrite && quote.status === 'draft' && (
             <button
               onClick={async () => { if (await confirm('¿Eliminar este presupuesto? Esta acción no se puede deshacer.', { confirmLabel: 'Eliminar', danger: true })) del.mutate() }}
@@ -208,6 +292,19 @@ export default function QuoteDetailPage() {
           <div>
             <p style={{ fontSize: 12, fontWeight: 600, color: C.err, margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Motivo de rechazo</p>
             <p style={{ fontSize: 13, color: C.arena, margin: 0, lineHeight: 1.5 }}>{quote.rejectionReason}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Pedido de presupuesto actualizado */}
+      {quote.status === 'expired' && quote.renewalRequestedAt && (
+        <div style={{ marginBottom: 20, padding: '12px 16px', background: 'rgba(226,182,99,0.08)', border: `1px solid rgba(226,182,99,0.25)`, borderRadius: '0 12px 12px 0', display: 'flex', gap: 10 }}>
+          <span style={{ color: C.warn, fontSize: 15, flexShrink: 0 }}>↻</span>
+          <div>
+            <p style={{ fontSize: 12, fontWeight: 600, color: C.warn, margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>El cliente pidió un presupuesto actualizado</p>
+            <p style={{ fontSize: 13, color: C.arena, margin: 0, lineHeight: 1.5 }}>
+              Lo solicitó el {new Date(quote.renewalRequestedAt).toLocaleDateString('es-AR')} desde el enlace. Podés reactivarlo con una nueva fecha o duplicarlo para actualizar precios.
+            </p>
           </div>
         </div>
       )}
@@ -460,6 +557,16 @@ export default function QuoteDetailPage() {
             onSaved={() => { setEditOpen(false); qc.invalidateQueries(['quote', id]); qc.invalidateQueries(['quotes']) }}
           />
         )
+      )}
+
+      {reactivateOpen && (
+        <ReactivateModal quote={quote} onClose={() => setReactivateOpen(false)}
+          onDone={() => {
+            setReactivateOpen(false)
+            qc.invalidateQueries(['quote', id]); qc.invalidateQueries(['quotes'])
+            toast('Presupuesto reactivado', 'success')
+          }}
+        />
       )}
     </div>
   )

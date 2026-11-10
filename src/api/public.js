@@ -8,3 +8,4 @@ export const getPublicQuote       = (id)        => publicApi.get(`/public/quotes
 export const getPublicQuotePdfUrl = (id)        => `${import.meta.env.VITE_API_URL}/public/quotes/${id}/pdf`
 export const confirmQuote         = (id, data)  => publicApi.post(`/public/quotes/${id}/confirm`, data)
 export const rejectQuote          = (id, reason) => publicApi.post(`/public/quotes/${id}/reject`, { reason })
+export const requestQuoteRenewal  = (id)        => publicApi.post(`/public/quotes/${id}/request-renewal`)

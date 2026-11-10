@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { getPublicQuote, getPublicQuotePdfUrl, confirmQuote, rejectQuote } from '../../api/public'
+import { getPublicQuote, getPublicQuotePdfUrl, confirmQuote, rejectQuote, requestQuoteRenewal } from '../../api/public'
 import ProvinceSelect from '../../components/ProvinceSelect'
 import PhoneInput, { PHONE_COUNTRIES } from '../../components/PhoneInput'
 import danteupLogo from '../../assets/danteup/logotipo-horizontal-negro.png'
@@ -73,6 +73,19 @@ export default function QuotePublicPage() {
   const [rejectOther, setRejectOther]     = useState('')
   const [rejectLoading, setRejectLoading] = useState(false)
   const [rejectError, setRejectError]     = useState('')
+
+  // Pedido de presupuesto actualizado (solo en vencidos): idle | loading | done | error
+  const [renewal, setRenewal] = useState('idle')
+
+  async function handleRequestRenewal() {
+    setRenewal('loading')
+    try {
+      await requestQuoteRenewal(id)
+      setRenewal('done')
+    } catch {
+      setRenewal('error')
+    }
+  }
 
   const { data: quote, isLoading, isError } = useQuery({
     queryKey: ['public-quote', id],
@@ -491,6 +504,24 @@ export default function QuotePublicPage() {
               {isExpired  && `El plazo de validez venció el ${fmtDate(quote.validUntil)}. Contactá a ${org.name} para solicitar un nuevo presupuesto.`}
               {isRejected && `Contactá a ${org.name} si querés revisar las condiciones del presupuesto.`}
             </p>
+
+            {isExpired && (
+              (renewal === 'done' || quote.renewalRequestedAt) ? (
+                <p style={{ fontSize: 12, fontWeight: 600, color: '#92400E', marginTop: 12 }}>
+                  ✓ Solicitud enviada. {org.name} te va a contactar con un presupuesto actualizado.
+                </p>
+              ) : (
+                <div style={{ marginTop: 12 }}>
+                  <button type="button" onClick={handleRequestRenewal} disabled={renewal === 'loading'}
+                    style={{ padding: '9px 16px', borderRadius: 6, border: 'none', background: INK, color: '#FFFFFF', fontSize: 13, fontWeight: 600, cursor: renewal === 'loading' ? 'not-allowed' : 'pointer', opacity: renewal === 'loading' ? 0.6 : 1, fontFamily: 'inherit' }}>
+                    {renewal === 'loading' ? 'Enviando…' : 'Solicitar presupuesto actualizado'}
+                  </button>
+                  {renewal === 'error' && (
+                    <p style={{ fontSize: 12, color: '#991B1B', marginTop: 8 }}>No se pudo enviar la solicitud. Probá de nuevo en unos minutos.</p>
+                  )}
+                </div>
+              )
+            )}
           </div>
         )}
 
