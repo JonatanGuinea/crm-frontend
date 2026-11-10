@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import Turnstile, { turnstileEnabled } from '../../components/Turnstile'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { login as loginApi, forgotPassword as forgotPasswordApi } from '../../api/auth'
@@ -106,17 +107,24 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showForgot, setShowForgot] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState(null)
+  const captchaRef = useRef(null)
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+    if (turnstileEnabled && !captchaToken) {
+      setError('Completá la verificación "No soy un robot".')
+      return
+    }
     setLoading(true)
     try {
-      const res = await loginApi(form)
+      const res = await loginApi({ ...form, ...(captchaToken ? { turnstileToken: captchaToken } : {}) })
       login(res.data.data.token, remember)
       navigate('/')
     } catch (err) {
       setError(err.response?.data?.error || 'Error al iniciar sesión')
+      captchaRef.current?.reset() // el token es de un solo uso
     } finally {
       setLoading(false)
     }
@@ -201,6 +209,9 @@ export default function LoginPage() {
           </div>
           <span style={{ fontSize: 13, color: C.piedra }}>Recordarme</span>
         </label>
+
+        {/* No soy un robot (Cloudflare Turnstile) */}
+        <Turnstile ref={captchaRef} onToken={setCaptchaToken} />
 
         {/* Error */}
         {error && (

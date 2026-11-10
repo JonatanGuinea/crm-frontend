@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import Turnstile, { turnstileEnabled } from '../../components/Turnstile'
 import { createPortal } from 'react-dom'
 import { useSearchParams, Link } from 'react-router-dom'
 import { register as registerApi } from '../../api/auth'
@@ -185,6 +186,8 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [registered, setRegistered] = useState(false)
   const [registeredEmail, setRegisteredEmail] = useState('')
+  const [captchaToken, setCaptchaToken] = useState(null)
+  const captchaRef = useRef(null)
   const [suspended, setSuspended] = useState(
     import.meta.env.VITE_REGISTRATIONS_OPEN === 'false' && !inviteToken
   )
@@ -205,15 +208,21 @@ export default function RegisterPage() {
       return
     }
 
+    if (turnstileEnabled && !captchaToken) {
+      setError('Completá la verificación "No soy un robot".')
+      return
+    }
+
     setLoading(true)
     try {
       const userCountryData = COUNTRIES.find(c => c.code === userCountry)
       const userPhone = `${userCountryData.dial} ${userPhoneNumber.trim()}`
       const { passwordConfirm: _, ...formData } = form
-      await registerApi({ ...formData, userPhone, ...(inviteToken ? { inviteToken } : {}) })
+      await registerApi({ ...formData, userPhone, ...(inviteToken ? { inviteToken } : {}), ...(captchaToken ? { turnstileToken: captchaToken } : {}) })
       setRegisteredEmail(form.email)
       setRegistered(true)
     } catch (err) {
+      captchaRef.current?.reset() // el token es de un solo uso
       if (err.response?.status === 503) {
         setSuspended(true)
         return
@@ -402,6 +411,9 @@ export default function RegisterPage() {
         onChangeCountry={setUserCountry}
         onChangeNumber={setUserPhoneNumber}
       />
+
+      {/* No soy un robot (Cloudflare Turnstile) */}
+      <Turnstile ref={captchaRef} onToken={setCaptchaToken} />
 
       {/* Error general */}
       {error && (
