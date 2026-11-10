@@ -27,7 +27,7 @@ function PhotoSvg() {
 const inputCls = "du-input"
 const labelCls = "block text-sm font-medium text-fg-soft mb-1"
 
-export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId = '', initialProjectId = '' }) {
+export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId = '', initialProjectId = '', submitLabel }) {
   const isEditing = Boolean(quoteId)
   const { user } = useAuth()
   const canWrite = user?.role !== 'member'
@@ -866,7 +866,7 @@ export default function QuoteModal({ quoteId, onClose, onSaved, initialClientId 
         <div className="shrink-0 border-t border-line px-5 py-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
           <button type="button" onClick={onClose} className="px-4 py-2 text-sm transition-colors" style={{ color: C.arena }}>Cancelar</button>
           <button type="submit" form="quote-form" disabled={loading} className="du-btn-pri disabled:opacity-50" style={{ width: 'auto', height: 38, paddingInline: 20, fontSize: 14 }}>
-            {loading ? 'Guardando...' : 'Guardar'}
+            {loading ? 'Guardando...' : (submitLabel || 'Guardar')}
           </button>
         </div>
       </div>

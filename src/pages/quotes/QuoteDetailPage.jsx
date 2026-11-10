@@ -4,7 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../components/Toast'
 import { useConfirm } from '../../components/ConfirmDialog'
-import { getQuoteById, downloadQuotePdf, deleteQuote, reactivateQuote, duplicateQuote, markRenewalRead, sendQuote } from '../../api/quotes'
+import { getQuoteById, downloadQuotePdf, deleteQuote, reactivateQuote, duplicateQuote, markRenewalRead, sendQuote, updateQuote } from '../../api/quotes'
+import { getOrganizations } from '../../api/organizations'
 import DatePicker from '../../components/DatePicker'
 import { fmt } from '../../utils/fmt'
 import QuoteModal from './QuoteModal'
@@ -61,6 +62,115 @@ function CopySvg() {
 }
 function RefreshSvg() {
   return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+}
+
+function WaIcon({ size = 14 }) {
+  return <svg width={size} height={size} style={{ display: 'block' }} viewBox="0 0 16 16" fill="currentColor"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/></svg>
+}
+function MailSvg() {
+  return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+}
+
+const isoLocal = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+const ddmmyyyy = iso => iso ? iso.slice(0, 10).split('-').reverse().join('/') : ''
+
+/* ── ResendModal: reenviar por email o WhatsApp (sin cambios / actualizado) ── */
+// mode 'resend': "Enviar sin cambios" · mode 'updated': después de "Editar y enviar".
+// Si está vencido lo reactiva con la nueva validez; después envía y eso responde el pedido del cliente.
+function ResendModal({ quote, mode, hasSignature, onClose, onDone }) {
+  const toast = useToast()
+  const todayIso   = isoLocal(new Date())
+  const currentIso = quote.validUntil?.slice(0, 10) || ''
+  const plus15 = new Date(); plus15.setDate(plus15.getDate() + 15)
+  const [validUntil, setValidUntil] = useState(currentIso && currentIso >= todayIso ? currentIso : isoLocal(plus15))
+  const [busy, setBusy] = useState(null) // 'email' | 'wa'
+
+  const email = quote.client?.email || quote.potentialClientEmail || ''
+  const phone = (quote.client?.phone || quote.potentialClientPhone || '').replace(/\D/g, '')
+  const name  = quote.client?.name  || quote.potentialClientName  || 'cliente'
+  const num   = String(quote.number).padStart(3, '0')
+  const updated = mode === 'updated'
+
+  async function send(channel) {
+    if (!validUntil) return toast('Elegí la fecha de validez', 'error')
+    if (validUntil < todayIso) return toast('La fecha de validez no puede ser anterior a hoy', 'error')
+    if (!hasSignature) return toast('Configurá la firma en Ajustes antes de enviar presupuestos.', 'error')
+
+    // WhatsApp: la pestaña se abre ya (dentro del click) para que el navegador no la bloquee
+    const waWin = channel === 'wa' ? window.open('', '_blank') : null
+    setBusy(channel)
+    let step = 'date'
+    try {
+      if (quote.status === 'expired')     await reactivateQuote(quote.id, validUntil)
+      else if (validUntil !== currentIso) await updateQuote(quote.id, { validUntil })
+      step = 'send'
+      if (channel === 'email') {
+        await sendQuote(quote.id, mode)
+      } else {
+        const url = `${window.location.origin}/p/presupuesto/${quote.id}`
+        const msg = updated
+          ? `Hola ${name}, como nos pediste, te enviamos el presupuesto #${num} — ${quote.title} actualizado, válido hasta el ${ddmmyyyy(validUntil)}:\n${url}`
+          : `Hola ${name}, como nos pediste, te reenviamos el presupuesto #${num} — ${quote.title}, ahora válido hasta el ${ddmmyyyy(validUntil)}:\n${url}`
+        const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
+        await updateQuote(quote.id, { sentByWhatsapp: true })
+        let opened = false
+        try { if (waWin && !waWin.closed) { waWin.location.href = waUrl; opened = true } } catch { /* pestaña no utilizable */ }
+        if (!opened) window.open(waUrl, '_blank')
+      }
+      onDone(channel === 'email'
+        ? `Presupuesto ${updated ? 'actualizado ' : ''}enviado por email a ${email}`
+        : `Presupuesto ${updated ? 'actualizado ' : ''}compartido por WhatsApp`)
+    } catch (err) {
+      try { if (waWin) waWin.close() } catch { /* ya cerrada */ }
+      const msg = err.response?.data?.error || 'No se pudo enviar'
+      if (step === 'send') { onDone(null, `Se actualizó la validez, pero no se pudo enviar: ${msg}`) }
+      else { toast(msg, 'error'); setBusy(null) }
+    }
+  }
+
+  const channelBtn = (channel, enabled, icon, label, sub) => (
+    <button onClick={() => send(channel)} disabled={!enabled || !!busy}
+      style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '11px 14px', background: C.s2, border: `1px solid ${C.linea}`, borderRadius: '0 9px 9px 0', color: channel === 'wa' ? '#25D366' : C.crema, cursor: (!enabled || busy) ? 'not-allowed' : 'pointer', opacity: !enabled ? 0.4 : (busy && busy !== channel ? 0.5 : 1), fontFamily: 'inherit', textAlign: 'left' }}
+      onMouseEnter={e => { if (enabled && !busy) e.currentTarget.style.borderColor = C.arena }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = C.linea }}
+    >
+      {icon}
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.crema }}>{busy === channel ? 'Enviando…' : label}</span>
+        <span style={{ display: 'block', fontSize: 11.5, color: C.piedra, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</span>
+      </span>
+    </button>
+  )
+
+  return (
+    <div className="fixed inset-0 flex items-end sm:items-center justify-center z-50" style={{ background: 'rgba(0,0,0,0.65)' }}>
+      <div className="w-full sm:max-w-md sm:mx-4" style={{ background: C.s1, border: `1px solid ${C.linea}`, borderRadius: '0 16px 16px 0', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
+        <div style={{ padding: '18px 20px 14px', borderBottom: `1px solid ${C.linea}` }}>
+          <p style={{ fontSize: 15, fontWeight: 600, color: C.crema, margin: 0 }}>
+            {updated ? 'Enviar presupuesto actualizado' : '¿Enviar presupuesto sin cambios?'}
+          </p>
+        </div>
+        <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <p style={{ fontSize: 13, color: C.arena, lineHeight: 1.6, margin: 0 }}>
+            {updated
+              ? <>Los cambios ya están guardados. Se envía el <strong style={{ color: C.crema }}>#{num}</strong> con el mismo enlace y el cliente recibe un aviso de que es la versión actualizada.</>
+              : <>Se reenvía el <strong style={{ color: C.crema }}>#{num}</strong> con los mismos ítems y precios, el mismo enlace y una nueva fecha de validez.</>}
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <label style={{ fontSize: 11, fontWeight: 500, color: C.piedra }}>Válido hasta</label>
+            <DatePicker value={validUntil} onChange={e => setValidUntil(e.target.value)}
+              className="h-[34px] px-3 bg-[#141415] border border-[#2C2C2F] rounded-[0_9px_9px_0] text-[13px] outline-none w-full" />
+          </div>
+          <p style={{ fontSize: 11, fontWeight: 500, color: C.piedra, margin: '4px 0 0' }}>¿Por dónde lo enviás?</p>
+          {channelBtn('email', !!email, <MailSvg />, 'Enviar por email', email || 'El cliente no tiene email')}
+          {channelBtn('wa', !!phone, <WaIcon />, 'Enviar por WhatsApp', phone ? `+${phone} · se abre WhatsApp con el mensaje armado` : 'El cliente no tiene teléfono')}
+        </div>
+        <div style={{ padding: '4px 20px 18px', display: 'flex', justifyContent: 'flex-end' }}>
+          <button onClick={onClose} disabled={!!busy} style={{ padding: '0 16px', height: 34, background: 'none', border: 'none', color: C.arena, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 /* ── ReactivateModal ──────────────────────────────────────────────────────── */
@@ -164,6 +274,25 @@ export default function QuoteDetailPage() {
   const [downloading, setDownloading] = useState(false)
   const [reactivateOpen, setReactivateOpen] = useState(false)
   const [duplicating, setDuplicating] = useState(false)
+  const [resendMode, setResendMode] = useState(null)       // null | 'resend' | 'updated'
+  const [editAndSend, setEditAndSend] = useState(false)    // el modal de edición termina en "Enviar presupuesto actualizado"
+
+  const orgId = user?.org
+  const { data: orgData } = useQuery({
+    queryKey: ['organization', orgId],
+    queryFn: () => getOrganizations().then(r => r.data.data?.find(o => o.id === orgId)),
+    enabled: Boolean(orgId),
+    staleTime: 5 * 60 * 1000,
+  })
+
+  function closeEdit() { setEditOpen(false); setEditAndSend(false) }
+  async function handleEditSaved() {
+    const thenSend = editAndSend
+    closeEdit()
+    qc.invalidateQueries(['quotes'])
+    await qc.refetchQueries({ queryKey: ['quote', id] }) // el modal de envío usa los datos recién guardados
+    if (thenSend) setResendMode('updated')
+  }
 
   async function handleDuplicate() {
     if (!await confirm('Se va a crear un borrador nuevo con el mismo cliente, ítems, notas e imágenes. Las cuotas y las fechas no se copian.', { confirmLabel: 'Duplicar' })) return
@@ -353,19 +482,22 @@ export default function QuoteDetailPage() {
             <div>
               <p style={{ fontSize: 12, fontWeight: 600, color: C.warn, margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>El cliente pidió un presupuesto actualizado</p>
               <p style={{ fontSize: 13, color: C.arena, margin: 0, lineHeight: 1.5 }}>
-                Lo solicitó el {new Date(quote.renewalRequestedAt).toLocaleDateString('es-AR')} desde el enlace. Si hay que cambiar precios, editalo; después reactivalo con una nueva fecha y reenvialo.
+                Lo solicitó el {new Date(quote.renewalRequestedAt).toLocaleDateString('es-AR')} desde el enlace. Reenvialo tal cual con una nueva validez, o editalo y mandá la versión actualizada.
               </p>
             </div>
           </div>
           <div className="self-start sm:self-center" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', flexShrink: 0 }}>
+            {canWrite && (
+              <GhostBtn onClick={() => setResendMode('resend')}><RefreshSvg /> Enviar sin cambios</GhostBtn>
+            )}
             {canWrite && !isSigned && (
-              <GhostBtn onClick={() => setEditOpen(true)}><EditSvg /> Editar</GhostBtn>
+              <button onClick={() => { setEditAndSend(true); setEditOpen(true) }}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, height: 32, padding: '0 14px', background: C.warn, color: C.bg, border: 'none', borderRadius: '0 8px 8px 0', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                <EditSvg /> Editar y enviar
+              </button>
             )}
-            {canWrite && quote.status === 'expired' && (
-              <GhostBtn onClick={() => setReactivateOpen(true)}><RefreshSvg /> Reactivar</GhostBtn>
-            )}
-            <button onClick={handleAckRenewal} disabled={acking}
-              style={{ height: 32, padding: '0 16px', background: C.warn, color: C.bg, border: 'none', borderRadius: '0 8px 8px 0', fontSize: 12.5, fontWeight: 600, cursor: acking ? 'not-allowed' : 'pointer', opacity: acking ? 0.5 : 1, fontFamily: 'inherit' }}>
+            <button onClick={handleAckRenewal} disabled={acking} title="Ocultar este aviso"
+              style={{ height: 32, padding: '0 12px', background: 'none', border: 'none', color: C.piedra, fontSize: 12, fontWeight: 500, cursor: acking ? 'not-allowed' : 'pointer', opacity: acking ? 0.5 : 1, fontFamily: 'inherit' }}>
               {acking ? 'Guardando…' : 'Entendido'}
             </button>
           </div>
@@ -612,14 +744,23 @@ export default function QuoteDetailPage() {
       {/* Modales de edición */}
       {editOpen && (
         isPotential ? (
-          <QuoteModalPotential quoteId={id} onClose={() => setEditOpen(false)}
-            onSaved={() => { setEditOpen(false); qc.invalidateQueries(['quote', id]); qc.invalidateQueries(['quotes']) }}
-          />
+          <QuoteModalPotential quoteId={id} onClose={closeEdit} onSaved={handleEditSaved}
+            submitLabel={editAndSend ? 'Enviar presupuesto actualizado →' : undefined} />
         ) : (
-          <QuoteModal quoteId={id} onClose={() => setEditOpen(false)}
-            onSaved={() => { setEditOpen(false); qc.invalidateQueries(['quote', id]); qc.invalidateQueries(['quotes']) }}
-          />
+          <QuoteModal quoteId={id} onClose={closeEdit} onSaved={handleEditSaved}
+            submitLabel={editAndSend ? 'Enviar presupuesto actualizado →' : undefined} />
         )
+      )}
+
+      {resendMode && (
+        <ResendModal quote={quote} mode={resendMode} hasSignature={!!orgData?.signature}
+          onClose={() => setResendMode(null)}
+          onDone={(okMsg, errMsg) => {
+            setResendMode(null)
+            qc.invalidateQueries(['quote', id]); qc.invalidateQueries(['quotes']); qc.invalidateQueries({ queryKey: ['notifications'] })
+            if (errMsg) toast(errMsg, 'error'); else toast(okMsg, 'success')
+          }}
+        />
       )}
 
       {reactivateOpen && (

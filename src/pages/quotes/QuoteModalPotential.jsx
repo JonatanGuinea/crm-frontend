@@ -35,7 +35,7 @@ function parseExistingPhone(phone) {
   return { code: 'AR', number: phone }
 }
 
-export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
+export default function QuoteModalPotential({ quoteId, onClose, onSaved, submitLabel }) {
   const isEditing = Boolean(quoteId)
   const { user } = useAuth()
   const toast = useToast()
@@ -943,7 +943,7 @@ export default function QuoteModalPotential({ quoteId, onClose, onSaved }) {
           </button>
           <button type="submit" form="quote-potential-form" disabled={loading}
             className="du-btn-pri disabled:opacity-50" style={{ width: 'auto', height: 38, paddingInline: 20, fontSize: 14 }}>
-            {loading ? 'Guardando...' : isEditing ? 'Guardar cambios' : 'Crear presupuesto'}
+            {loading ? 'Guardando...' : isEditing ? (submitLabel || 'Guardar cambios') : 'Crear presupuesto'}
           </button>
         </div>
       </div>
