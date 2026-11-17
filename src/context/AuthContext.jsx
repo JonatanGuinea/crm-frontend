@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState } from 'react'
+import api from '../api/client'
 
 const AuthContext = createContext(null)
 
@@ -45,6 +46,9 @@ export function AuthProvider({ children }) {
   }
 
   function logout() {
+    // Deja el cierre de sesión en la auditoría (no bloquea: el JWT igual se descarta)
+    const t = localStorage.getItem('token') ?? sessionStorage.getItem('token')
+    if (t) api.post('/auth/logout', null, { headers: { Authorization: `Bearer ${t}` } }).catch(() => {})
     localStorage.removeItem('token')
     sessionStorage.removeItem('token')
     setToken(null)

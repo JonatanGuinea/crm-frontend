@@ -114,7 +114,12 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' })
   const [remember, setRemember] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState('')
+  // Aviso que deja el cliente de la API si la cuenta fue deshabilitada con la sesión abierta
+  const [error, setError] = useState(() => {
+    const notice = sessionStorage.getItem('auth-notice') || ''
+    sessionStorage.removeItem('auth-notice')
+    return notice
+  })
   const [loading, setLoading] = useState(false)
   const [showForgot, setShowForgot] = useState(false)
   const [captchaToken, setCaptchaToken] = useState(null)

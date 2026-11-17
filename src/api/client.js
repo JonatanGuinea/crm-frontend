@@ -25,6 +25,15 @@ api.interceptors.response.use(
       window.dispatchEvent(new CustomEvent('api-connection-error'))
     }
 
+    // Cuenta deshabilitada desde el panel Sistema: se cierra la sesión y se informa en el login
+    if (err.response?.status === 403 && /deshabilitada/i.test(err.response?.data?.error || '')) {
+      localStorage.removeItem('token')
+      sessionStorage.removeItem('token')
+      sessionStorage.setItem('auth-notice', err.response.data.error)
+      if (!window.location.pathname.startsWith('/login')) window.location.href = '/login'
+      return Promise.reject(err)
+    }
+
     if (err.response?.status === 401) {
       const authPaths = ['/login', '/register', '/accept-invite']
       const isAuthPage = authPaths.some(p => window.location.pathname.startsWith(p))

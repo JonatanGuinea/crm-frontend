@@ -43,7 +43,17 @@ import ProductsPage from './pages/stock/ProductsPage'
 import ProductDetailPage from './pages/stock/ProductDetailPage'
 import ProvidersPage from './pages/stock/ProvidersPage'
 import HelpPage from './pages/help/HelpPage'
-import SystemAdminPage from './pages/admin/SystemAdminPage'
+import AdminLayout from './layouts/AdminLayout'
+import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminOrganizations from './pages/admin/AdminOrganizations'
+import AdminOrganizationDetail from './pages/admin/AdminOrganizationDetail'
+import AdminUsers from './pages/admin/AdminUsers'
+import AdminUserDetail from './pages/admin/AdminUserDetail'
+import AdminExplorer from './pages/admin/AdminExplorer'
+import AdminFinance from './pages/admin/AdminFinance'
+import AdminAudit from './pages/admin/AdminAudit'
+import AdminInfra from './pages/admin/AdminInfra'
+import AdminBackups from './pages/admin/AdminBackups'
 
 const qc = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } }
@@ -136,7 +146,18 @@ export default function App() {
               <Route path="/organization" element={<OwnerRoute><OrgSettingsPage /></OwnerRoute>} />
               <Route path="/reports" element={<AdminRoute><ReportsPage /></AdminRoute>} />
               <Route path="/help" element={<HelpPage />} />
-              <Route path="/admin" element={<SystemAdminRoute><SystemAdminPage /></SystemAdminRoute>} />
+              <Route path="/admin" element={<SystemAdminRoute><AdminLayout /></SystemAdminRoute>}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="organizations" element={<AdminOrganizations />} />
+                <Route path="organizations/:id" element={<AdminOrganizationDetail />} />
+                <Route path="users" element={<AdminUsers />} />
+                <Route path="users/:id" element={<AdminUserDetail />} />
+                <Route path="explorer" element={<AdminExplorer />} />
+                <Route path="finances" element={<AdminFinance />} />
+                <Route path="audit" element={<AdminAudit />} />
+                <Route path="infra" element={<AdminInfra />} />
+                <Route path="backups" element={<AdminBackups />} />
+              </Route>
             </Route>
 
             <Route path="/p/presupuesto/:id" element={<QuotePublicPage />} />
