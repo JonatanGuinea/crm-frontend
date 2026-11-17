@@ -26,6 +26,19 @@ const PLAN_STYLE = {
 const ROLE_LABEL = { owner: 'Dueño', admin: 'Admin', member: 'Miembro' }
 const STATUS_LABEL = { invited: 'invitado', disabled: 'deshabilitado' }
 
+// Tipo de usuario según sus membresías activas: dueño de al menos una empresa,
+// solo miembro/admin de empresas ajenas, o sin ninguna empresa activa
+const USER_KIND = {
+  owner: { label: 'Dueño',       bg: 'rgba(242,237,227,0.1)',  color: C.crema, title: 'Dueño de al menos una empresa' },
+  team:  { label: 'Solo equipo', bg: 'rgba(142,177,222,0.12)', color: C.info,  title: 'No tiene empresa propia: es miembro o admin de empresas de otros' },
+  none:  { label: 'Sin empresa', bg: 'rgba(140,135,126,0.15)', color: C.piedra, title: 'No pertenece activamente a ninguna empresa' },
+}
+function userKind(u) {
+  const active = u.organizations.filter(o => o.status === 'active')
+  if (active.some(o => o.role === 'owner')) return 'owner'
+  return active.length ? 'team' : 'none'
+}
+
 const TABS = [
   { key: 'summary', label: 'Resumen' },
   { key: 'orgs',    label: 'Empresas' },
@@ -152,6 +165,8 @@ function SummaryTab({ data }) {
   const backupAgeH = lastBackup ? (new Date(data.generatedAt) - new Date(lastBackup.createdAt)) / 36e5 : null
   const backupColor = backupAgeH == null ? C.err : backupAgeH > 30 ? C.warn : C.ok
   const plans = summary.organizations.plans
+  const kinds = { owner: 0, team: 0, none: 0 }
+  for (const u of data.users) kinds[userKind(u)]++
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -160,7 +175,7 @@ function SummaryTab({ data }) {
           value={db.ok ? 'En línea' : 'Sin conexión'} color={db.ok ? C.ok : C.err}
           sub={db.ok ? `${db.latencyMs} ms · ${fmtBytes(db.sizeBytes)}` : db.error} />
         <Kpi icon={ClienteIcon} label="Usuarios" value={summary.users.total}
-          sub={`${summary.users.verified} verificados · ${summary.users.withoutOrg} sin empresa`} />
+          sub={`${kinds.owner} dueños · ${kinds.team} solo equipo · ${kinds.none} sin empresa`} />
         <Kpi icon={ModulosIcon} label="Empresas" value={summary.organizations.total}
           sub={PLANS.map(p => `${plans[p] || 0} ${PLAN_STYLE[p].label}`).join(' · ')} />
         <Kpi icon={EquipoIcon} label="Altas 30 días" value={summary.users.last30}
@@ -360,7 +375,7 @@ function OrgsTab({ orgs }) {
 /* ── Usuarios ────────────────────────────────────────────────────────────── */
 
 function OrgChips({ orgs }) {
-  if (!orgs.length) return <span style={{ fontSize: 12, color: C.piedra }}>Sin empresa</span>
+  if (!orgs.length) return <span style={{ fontSize: 12, color: C.piedra }}>—</span>
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
       {orgs.map(o => (
@@ -374,8 +389,10 @@ function OrgChips({ orgs }) {
 }
 
 function UserBadges({ u }) {
+  const kind = USER_KIND[userKind(u)]
   return (
     <>
+      <Badge bg={kind.bg} color={kind.color} label={kind.label} title={kind.title} />
       {u.isSystemAdmin && <Badge bg="rgba(142,177,222,0.12)" color={C.info} label="Sistema" />}
       {!u.emailVerified && <Badge bg="rgba(226,182,99,0.12)" color={C.warn} label="Sin verificar" />}
     </>
@@ -385,26 +402,22 @@ function UserBadges({ u }) {
 function UsersTab({ users }) {
   const [q, setQ] = useState('')
   const [verified, setVerified] = useState('all')
-  const [withOrg, setWithOrg] = useState('all')
+  const [kind, setKind] = useState('all')
 
   const list = useMemo(() => {
     const term = norm(q.trim())
     return users
       .filter(u => verified === 'all' || (verified === 'yes' ? u.emailVerified : !u.emailVerified))
-      .filter(u => {
-        if (withOrg === 'all') return true
-        const has = u.organizations.some(o => o.status === 'active')
-        return withOrg === 'yes' ? has : !has
-      })
+      .filter(u => kind === 'all' || userKind(u) === kind)
       .filter(u => !term || norm(`${u.name} ${u.email} ${u.organizations.map(o => o.name).join(' ')}`).includes(term))
-  }, [users, q, verified, withOrg])
+  }, [users, q, verified, kind])
 
   return (
     <div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
         <SearchInput value={q} onChange={setQ} placeholder="Buscar nombre, email o empresa…" />
         <FilterSelect value={verified} onChange={setVerified} options={[['all', 'Todos'], ['yes', 'Email verificado'], ['no', 'Sin verificar']]} />
-        <FilterSelect value={withOrg} onChange={setWithOrg} options={[['all', 'Con y sin empresa'], ['yes', 'Con empresa'], ['no', 'Sin empresa']]} />
+        <FilterSelect value={kind} onChange={setKind} options={[['all', 'Todos los tipos'], ['owner', 'Dueños de empresa'], ['team', 'Solo equipo (empresas ajenas)'], ['none', 'Sin empresa']]} />
       </div>
       <ResultCount shown={list.length} total={users.length} />
 

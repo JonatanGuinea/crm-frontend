@@ -1,5 +1,20 @@
 # CHANGELOG — crm-frontend
 
+## 2026-11-17 — Panel de sistema: tipo de usuario
+
+**Cambio:** en Usuarios, cada usuario lleva una etiqueta según sus membresías activas:
+- **Dueño:** es dueño de al menos una empresa.
+- **Solo equipo:** no tiene empresa propia, pero es miembro o admin de empresas de otros.
+- **Sin empresa:** no pertenece activamente a ninguna empresa.
+
+El filtro "Con/Sin empresa" pasa a filtrar por tipo, y el KPI Usuarios del Resumen muestra el desglose.
+
+**Motivo:** antes, quien era miembro o admin de una empresa ajena figuraba como "con empresa", igual que un dueño.
+
+**Archivos:** `src/pages/admin/SystemAdminPage.jsx`
+
+**Validación:** `eslint` y `vite build` OK.
+
 ## 2026-11-16 — Panel de sistema (`/admin`)
 
 **Cambio:** página nueva "Sistema", visible solo para administradores del sistema (`isSystemAdmin` en el JWT). Tiene tres pestañas:
