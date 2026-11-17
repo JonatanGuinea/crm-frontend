@@ -1,5 +1,15 @@
 # CHANGELOG — crm-frontend
 
+## 2026-11-17 — Panel de sistema: acceso desde el dropdown de perfil
+
+**Cambio:** "Sistema" pasa del menú lateral y del "Más" de mobile al dropdown de perfil. Se muestra debajo de Ayuda, solo con `isSystemAdmin`, y tiene su propio ícono de base de datos. La navegación vuelve a como estaba antes del panel.
+
+**Motivo:** es una herramienta de administración, no un módulo de trabajo diario.
+
+**Archivos:** `src/layouts/AppLayout.jsx`
+
+**Validación:** `vite build` OK. `eslint` sin errores nuevos (quedan los 3 que ya tenía el archivo).
+
 ## 2026-11-17 — Panel de sistema: tipo de usuario
 
 **Cambio:** en Usuarios, cada usuario lleva una etiqueta según sus membresías activas:

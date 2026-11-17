@@ -51,7 +51,6 @@ const navBottom = [
   { to: '/memberships', label: 'Membresías',  icon: MembresiaIcon, memberHidden: true },
   { to: '/reports',     label: 'Reportes',    icon: ReporteIcon,   memberHidden: true },
   { to: '/members',     label: 'Equipo',      icon: EquipoIcon },
-  { to: '/admin',       label: 'Sistema',     icon: AjustesIcon,   sysAdminOnly: true },
 ]
 
 const stockSub = [
@@ -77,15 +76,7 @@ const MORE_ITEMS = [
   { to: '/stock',             label: 'Stock',     icon: StockIcon,   expandable: true },
   { to: '/reports',           label: 'Reportes',  icon: ReporteIcon, memberHidden: true },
   { to: '/members',           label: 'Equipo',    icon: EquipoIcon },
-  { to: '/admin',             label: 'Sistema',   icon: AjustesIcon, sysAdminOnly: true },
 ]
-
-// "Sistema" solo lo ven los administradores del sistema (User.isSystemAdmin en el JWT)
-function isNavVisible(item, user) {
-  if (item.memberHidden && user?.role === 'member') return false
-  if (item.sysAdminOnly && !user?.isSystemAdmin) return false
-  return true
-}
 
 /* ── NavItem (sidebar desktop) ───────────────────────────────────────────── */
 
@@ -287,6 +278,8 @@ function ProfileDropdown({ profile, user, compact = false, position = 'up' }) {
     { label: 'Perfil',   icon: ProfileSvg,  action: () => go('/profile') },
     ...(isOwner ? [{ label: 'Empresa', icon: AjustesIcon, action: () => go('/organization') }] : []),
     { label: 'Ayuda',    icon: AyudaSvg,    action: () => go('/help') },
+    // Panel de sistema: solo administradores del sistema (isSystemAdmin en el JWT)
+    ...(user?.isSystemAdmin ? [{ label: 'Sistema', icon: SistemaSvg, action: () => go('/admin') }] : []),
   ]
 
   return (
@@ -452,6 +445,16 @@ function ProfileSvg({ style }) {
   )
 }
 
+function SistemaSvg({ style }) {
+  return (
+    <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <ellipse cx="12" cy="5" rx="9" ry="3" />
+      <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+    </svg>
+  )
+}
+
 function AyudaSvg({ style }) {
   return (
     <svg style={{ display: 'block', ...style }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
@@ -524,7 +527,7 @@ function SidebarContent({ collapsed, onNavClick, newProjectsCount, user }) {
         <StockGroup collapsed={collapsed} onNavClick={onNavClick} />
 
         {navBottom
-          .filter(item => isNavVisible(item, user))
+          .filter(item => !(isMember && item.memberHidden))
           .map(({ to, label, icon: Icon }) => (
             <NavItem
               key={to}
@@ -640,7 +643,8 @@ function BottomNav({ user, onMoreClick, moreOpen }) {
 function BottomSheet({ open, onClose, user }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const items = MORE_ITEMS.filter(item => isNavVisible(item, user))
+  const isMember = user?.role === 'member'
+  const items = MORE_ITEMS.filter(item => !(isMember && item.memberHidden))
   const isOnStock = location.pathname.startsWith('/stock')
   const [stockOpen, setStockOpen] = useState(isOnStock)
 
