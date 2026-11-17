@@ -51,6 +51,7 @@ const navBottom = [
   { to: '/memberships', label: 'Membresías',  icon: MembresiaIcon, memberHidden: true },
   { to: '/reports',     label: 'Reportes',    icon: ReporteIcon,   memberHidden: true },
   { to: '/members',     label: 'Equipo',      icon: EquipoIcon },
+  { to: '/admin',       label: 'Sistema',     icon: AjustesIcon,   sysAdminOnly: true },
 ]
 
 const stockSub = [
@@ -76,7 +77,15 @@ const MORE_ITEMS = [
   { to: '/stock',             label: 'Stock',     icon: StockIcon,   expandable: true },
   { to: '/reports',           label: 'Reportes',  icon: ReporteIcon, memberHidden: true },
   { to: '/members',           label: 'Equipo',    icon: EquipoIcon },
+  { to: '/admin',             label: 'Sistema',   icon: AjustesIcon, sysAdminOnly: true },
 ]
+
+// "Sistema" solo lo ven los administradores del sistema (User.isSystemAdmin en el JWT)
+function isNavVisible(item, user) {
+  if (item.memberHidden && user?.role === 'member') return false
+  if (item.sysAdminOnly && !user?.isSystemAdmin) return false
+  return true
+}
 
 /* ── NavItem (sidebar desktop) ───────────────────────────────────────────── */
 
@@ -515,7 +524,7 @@ function SidebarContent({ collapsed, onNavClick, newProjectsCount, user }) {
         <StockGroup collapsed={collapsed} onNavClick={onNavClick} />
 
         {navBottom
-          .filter(item => !(isMember && item.memberHidden))
+          .filter(item => isNavVisible(item, user))
           .map(({ to, label, icon: Icon }) => (
             <NavItem
               key={to}
@@ -631,8 +640,7 @@ function BottomNav({ user, onMoreClick, moreOpen }) {
 function BottomSheet({ open, onClose, user }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const isMember = user?.role === 'member'
-  const items = MORE_ITEMS.filter(item => !(isMember && item.memberHidden))
+  const items = MORE_ITEMS.filter(item => isNavVisible(item, user))
   const isOnStock = location.pathname.startsWith('/stock')
   const [stockOpen, setStockOpen] = useState(isOnStock)
 
